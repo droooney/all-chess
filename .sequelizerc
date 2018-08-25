@@ -1,0 +1,8 @@
+require('ts-node').register();
+
+module.exports = {
+  config: './app/server/db/config.ts',
+  'migrations-path': './app/server/db/migrations',
+  'models-path': './app/server/db/models',
+  'seeders-path': './app/server/db/seeders'
+};

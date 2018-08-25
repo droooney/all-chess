@@ -1,0 +1,6 @@
+.idea
+node_modules
+public
+
+app/server/config/index.ts
+app/server/db/config.ts
