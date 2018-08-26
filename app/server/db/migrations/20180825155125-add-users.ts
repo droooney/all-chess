@@ -10,6 +10,11 @@ export async function up(queryInterface: Sequelize.QueryInterface) {
       primaryKey: true,
       autoIncrement: true
     },
+    email: {
+      type: Sequelize.STRING,
+      allowNull: false,
+      unique: true
+    },
     login: {
       type: Sequelize.STRING,
       allowNull: false,
@@ -17,6 +22,15 @@ export async function up(queryInterface: Sequelize.QueryInterface) {
     },
     password: {
       type: Sequelize.STRING
+    },
+    confirmToken: {
+      type: Sequelize.STRING,
+      allowNull: true,
+      defaultValue: ''
+    },
+    confirmed: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false
     },
     createdAt: {
       type: Sequelize.DATE,

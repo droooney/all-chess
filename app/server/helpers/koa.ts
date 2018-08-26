@@ -1,25 +1,5 @@
 import { Middleware } from 'koa';
 
-import { User } from '../../types';
-
-declare module 'koa' {
-  interface Context {
-    urlIndexGroups: string[];
-    urlKeyGroups?: {
-      [key: string]: string;
-    };
-    session?: Express.Session;
-  }
-}
-
-declare global {
-  namespace Express {
-    interface Session {
-      user?: User;
-    }
-  }
-}
-
 type Method = 'get' | 'post' | 'put' | 'delete';
 type Url = string | RegExp;
 

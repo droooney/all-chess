@@ -1,6 +1,3 @@
-// eslint-disable-next-line spaced-comment
-/// <reference path="../helpers/koa.ts" />
-
 import * as fs from 'fs';
 import * as path from 'path';
 import { Context } from 'koa';
