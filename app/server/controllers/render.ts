@@ -1,3 +1,5 @@
+/// <reference path="../../typings/koa.d.ts" />
+
 import * as fs from 'fs';
 import * as path from 'path';
 import { Context } from 'koa';
@@ -11,7 +13,7 @@ export async function render(
 ): Promise<void> {
   if (ctx.accepts('text/html')) {
     ctx.body = html({
-      user: JSON.stringify(ctx.session!.user || null)
+      user: JSON.stringify(ctx.session!.user || null).replace(/</g, '\\u003c')
     });
   } else {
     await next();

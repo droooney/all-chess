@@ -12,4 +12,8 @@ declare module 'koa' {
     user?: UserModel;
     success(value?: any): void;
   }
+
+  interface Request {
+    body: any;
+  }
 }

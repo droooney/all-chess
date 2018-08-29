@@ -1,0 +1,42 @@
+@import (reference) '../../styles/mixins';
+
+html {
+  font-size: 14px;
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+  letter-spacing: 0.025em;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#root {
+  .flex-col-stretch();
+
+  min-height: 100%;
+}
+
+main {
+  .flex-child();
+  .flex-col-stretch();
+}
+
+.route {
+  .flex-child();
+  .flex-col-stretch();
+}
+
+a {
+  color: blue;
+  text-decoration: none;
+}
+
+input {
+  display: block;
+}

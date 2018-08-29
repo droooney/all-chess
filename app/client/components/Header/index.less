@@ -1,0 +1,19 @@
+@import (reference) '../../styles/mixins';
+
+header {
+  .flex-child-fixed(80px);
+  .flex();
+
+  border-bottom: 1px solid black;
+  padding: 0 20px;
+
+  .main-link {
+    .flex-child();
+
+    font-size: 30px;
+  }
+
+  .right-header-block {
+    .flex-child-fixed();
+  }
+}

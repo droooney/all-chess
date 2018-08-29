@@ -6,11 +6,7 @@ import { User as UserAttributes } from '../../../types';
 
 export interface UserModel extends Sequelize.Instance<UserModel>, UserAttributes {}
 
-export interface UserAddAttributes {
-  email: string;
-  login: string;
-  password: string;
-}
+export type UserAddAttributes = Partial<UserAttributes> & Pick<UserAttributes, 'email' | 'password' | 'login'>;
 
 export const User = sequelize.define<UserModel, UserAddAttributes>('users', {
   id: {
@@ -66,14 +62,16 @@ export const User = sequelize.define<UserModel, UserAddAttributes>('users', {
         })
       );
     }
-  },
-  instanceMethods: {
-    toJSON(this: UserModel, ...args: any[]) {
-      const json: UserAttributes = (this.constructor as any).super_.prototype.toJSON.apply(this, args);
-
-      delete json.password;
-
-      return json;
-    }
   }
 });
+
+const toJSON = ((User as any).prototype as UserModel).toJSON;
+
+((User as any).prototype as UserModel).toJSON = function (...args: any[]) {
+  const json: UserModel = toJSON.apply(this, args);
+
+  delete json.password;
+  delete json.confirmToken;
+
+  return json;
+};

@@ -173,13 +173,7 @@
     "no-unused-expressions": 2,
     "no-unused-vars": 0,
     "typescript/no-unused-vars": 2,
-    "no-use-before-define": [
-      "error",
-      {
-        "functions": false,
-        "classes": false
-      }
-    ],
+    "no-use-before-define": 0,
     "no-useless-call": 2,
     "no-useless-concat": 2,
     "no-useless-escape": 2,
@@ -290,10 +284,7 @@
     "space-unary-ops": [
       "error"
     ],
-    "spaced-comment": [
-      "error",
-      "always"
-    ],
+    "spaced-comment": 0,
     "switch-colon-spacing": [
       "error",
       {

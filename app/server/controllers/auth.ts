@@ -1,3 +1,5 @@
+/// <reference path="../../typings/koa.d.ts" />
+
 import * as path from 'path';
 import * as fs from 'fs';
 import * as bcrypt from 'bcrypt';
@@ -9,6 +11,35 @@ import { User, UserModel } from '../db';
 import { buildURL, sendEmail } from '../helpers';
 
 const registerHTML = pug.compile(fs.readFileSync(path.resolve('./app/server/emails/register.pug'), 'utf8'));
+
+export async function confirmRegister(ctx: Context) {
+  const {
+    query: {
+      email,
+      token
+    }
+  } = ctx;
+  const user = await User.findOne({
+    where: {
+      email,
+      confirmToken: token
+    }
+  });
+
+  if (!user) {
+    ctx.status = 400;
+    ctx.body = 'Wrong email or token';
+
+    return;
+  }
+
+  await user.update({
+    confirmed: true,
+    confirmToken: null
+  });
+
+  ctx.redirect('/');
+}
 
 export async function login(ctx: Context) {
   const {
@@ -32,7 +63,7 @@ export async function login(ctx: Context) {
     };
   }
 
-  const match = bcrypt.compare(password, user.password);
+  const match = await bcrypt.compare(password, user.password);
 
   if (!match) {
     return ctx.body = {
@@ -45,12 +76,15 @@ export async function login(ctx: Context) {
   await session.asyncSave();
 
   ctx.body = {
-    success: true
+    success: true,
+    user
   };
 }
 
 export async function logout(ctx: Context) {
   await ctx.session!.asyncDestroy();
+
+  ctx.success();
 }
 
 export async function register(ctx: Context) {
@@ -83,7 +117,7 @@ async function sendConfirmationEmail(ctx: Context, user: UserModel) {
     to: user.email,
     subject: 'Confirm registration',
     html: registerHTML({
-      login,
+      login: user.login,
       confirmLink: buildURL({
         protocol: ctx.protocol,
         host: ctx.get('host'),
