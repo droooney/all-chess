@@ -243,9 +243,11 @@ declare namespace SocketIOClient {
      * @param args Optional arguments to send with the event
      * @return This Socket
      */
-    emit<K extends keyof SocketIOEventMap>(event: K, data: SocketIOEventMap[K]): Socket;
+    emit<K extends keyof SocketIOEventWithDataMap>(event: K, data: SocketIOEventWithDataMap[K]): Socket;
+    emit<K extends SocketIOEventWithoutDataList>(event: K): Socket;
 
-    on<K extends keyof SocketIOEventMap>(event: K, listener: (data: SocketIOEventMap[K]) => any): Socket;
+    on<K extends keyof SocketIOEventWithDataMap>(event: K, listener: (data: SocketIOEventWithDataMap[K]) => any): Socket;
+    on<K extends SocketIOEventWithoutDataList>(event: K, listener: () => any): Socket;
 
     /**
      * Disconnects the socket manually

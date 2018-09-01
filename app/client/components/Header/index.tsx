@@ -48,9 +48,14 @@ class Header extends React.Component<Props> {
               )
             </React.Fragment>
           ) : (
-            <Link to="/login">
-              Login
-            </Link>
+            <React.Fragment>
+              <Link to="/Register" style={{ marginRight: 20 }}>
+                Register
+              </Link>
+              <Link to="/login">
+                Login
+              </Link>
+            </React.Fragment>
           )}
         </div>
       </header>

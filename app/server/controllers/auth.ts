@@ -97,12 +97,20 @@ export async function register(ctx: Context) {
       }
     }
   } = ctx;
-  const user = await User.create({
-    email,
-    login,
-    password,
-    confirmToken: uuid()
-  });
+  let user: UserModel;
+
+  try {
+    user = await User.create({
+      email,
+      login,
+      password,
+      confirmToken: uuid()
+    });
+  } catch (err) {
+    ctx.success(false);
+
+    return;
+  }
 
   await sendConfirmationEmail(ctx, user);
 

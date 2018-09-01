@@ -214,7 +214,8 @@ declare namespace SocketIO {
      * for the callback depend on the event
      * @return The default '/' Namespace
      */
-    on<K extends keyof SocketIOEventMap>(event: K, listener: (data: SocketIOEventMap[K]) => any): Namespace;
+    on<K extends keyof SocketIOEventWithDataMap>(event: K, listener: (data: SocketIOEventWithDataMap[K]) => any): Namespace;
+    on<K extends SocketIOEventWithoutDataList>(event: K, listener: () => any): Namespace;
 
     /**
      * Targets a room when emitting to the default '/' Namespace
@@ -248,7 +249,8 @@ declare namespace SocketIO {
      * take whatever data was sent with the packet
      * @return The default '/' Namespace
      */
-    emit<K extends keyof SocketIOEventMap>(event: K, data: SocketIOEventMap[K]): Namespace;
+    emit<K extends keyof SocketIOEventWithDataMap>(event: K, data: SocketIOEventWithDataMap[K]): Namespace;
+    emit<K extends SocketIOEventWithoutDataList>(event: K): Namespace;
 
     /**
      * Sends a 'message' event
@@ -462,7 +464,11 @@ declare namespace SocketIO {
      * for the callback depend on the event
      * @ This Namespace
      */
-    on( event: string, listener: Function ): this;
+    emit<K extends keyof SocketIOEventWithDataMap>(event: K, data: SocketIOEventWithDataMap[K]): any;
+    emit<K extends SocketIOEventWithoutDataList>(event: K): any;
+
+    on<K extends keyof SocketIOEventWithDataMap>(event: K, listener: (data: SocketIOEventWithDataMap[K]) => any): any;
+    on<K extends SocketIOEventWithoutDataList>(event: K, listener: () => any): any;
 
     /**
      * Gets a list of clients.
@@ -596,7 +602,11 @@ declare namespace SocketIO {
      */
     use( fn: ( packet: Packet, next: (err?: any) => void ) => void ): Socket;
 
-    emit<K extends keyof SocketIOEventMap>(event: K, data: SocketIOEventMap[K]): any;
+    emit<K extends keyof SocketIOEventWithDataMap>(event: K, data: SocketIOEventWithDataMap[K]): any;
+    emit<K extends SocketIOEventWithoutDataList>(event: K): any;
+
+    on<K extends keyof SocketIOEventWithDataMap>(event: K, listener: (data: SocketIOEventWithDataMap[K]) => any): any;
+    on<K extends SocketIOEventWithoutDataList>(event: K, listener: () => any): any;
 
     /**
      * Sends a 'message' event

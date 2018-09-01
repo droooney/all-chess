@@ -23,7 +23,6 @@ class Login extends React.Component<Props, State> {
 
   onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    console.log('submitting');
 
     const {
       dispatch,
