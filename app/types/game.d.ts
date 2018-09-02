@@ -38,7 +38,11 @@ export interface Piece {
   allowedMoves: Square[];
 }
 
-export type Board = (Piece | null)[][];
+export type Board = {
+  [rank: number]: {
+    [file: number]: Piece | null;
+  };
+};
 
 export interface Game {
   board: Board;
