@@ -4,6 +4,7 @@ import {
   Board,
   ColorEnum,
   Game as IGame,
+  GameResult,
   GameStatusEnum,
   Move,
   Piece,
@@ -86,7 +87,7 @@ export default class Game implements IGame {
 
     [ColorEnum.WHITE, ColorEnum.BLACK].forEach((color) => {
       // king first
-      pieces[color].splice(pieces[color].indexOf(kings[color]));
+      pieces[color].splice(pieces[color].indexOf(kings[color]), 1);
       pieces[color].unshift(kings[color]);
     });
 
@@ -101,6 +102,7 @@ export default class Game implements IGame {
   players: Player[];
   status: GameStatusEnum = GameStatusEnum.BEFORE_START;
   isCheck: boolean = false;
+  result: GameResult | null = null;
   turn: ColorEnum = ColorEnum.WHITE;
   possibleEnPassant: Square | null = null;
   positionsMap: { [position: string]: number; } = {};
@@ -129,24 +131,52 @@ export default class Game implements IGame {
     this.players = players;
 
     io.on('connection', (socket) => {
-      const isPlayer = !!socket.user && this.players.length < 2;
+      const user = socket.user;
+      const existingPlayer = (user && players.find(({ login }) => login === user.login)) || null;
+      const isNewPlayer = !existingPlayer && user && this.players.length < 2;
+      let player: Player | null = null;
 
-      if (isPlayer) {
+      if (isNewPlayer) {
         const color = this.players.length === 0
           ? Math.random() > 0.5
             ? ColorEnum.WHITE
             : ColorEnum.BLACK
-          : this.players[0].color;
+          : this.getOppositeColor(this.players[0].color);
 
-        socket.player = {
+        player = {
           ...socket.user!,
           color
         };
+
+        players.push(player!);
+
+        if (players.length === 2) {
+          this.status = GameStatusEnum.ONGOING;
+        }
+
+        socket.on('move', (move) => {
+          this.move(socket, move);
+        });
+      } else {
+        player = existingPlayer;
+      }
+
+      if (player) {
+        socket.player = player;
 
         socket.on('move', (move) => {
           this.move(socket, move);
         });
       }
+
+      if (isNewPlayer) {
+        socket.broadcast.emit('updateGame', this);
+      }
+
+      socket.emit('initialGameData', {
+        player,
+        game: this
+      });
     });
   }
 
@@ -166,8 +196,13 @@ export default class Game implements IGame {
     } = move;
     const piece = this.board[fromY][fromX];
 
-    if (!piece || piece.color !== player.color) {
-      // no piece or wrong color
+    if (
+      this.turn !== player.color
+      || !piece
+      || piece.color !== player.color
+      || this.status !== GameStatusEnum.ONGOING
+    ) {
+      // no piece, wrong turn, color or status
 
       return;
     }
@@ -201,8 +236,18 @@ export default class Game implements IGame {
     this.io.emit('updateGame', this);
 
     if (this.isCheckmate()) {
+      this.result = {
+        winner: this.getOpponentColor()
+      };
+      this.status = GameStatusEnum.FINISHED;
+
       this.io.emit('gameOver', { winner: this.getOpponentColor() });
     } else if (this.isDraw()) {
+      this.result = {
+        winner: null
+      };
+      this.status = GameStatusEnum.FINISHED;
+
       this.io.emit('gameOver', { winner: null });
     }
   }
@@ -235,7 +280,7 @@ export default class Game implements IGame {
       && !toPiece
     );
     const opponentPiece = isEnPassant
-      ? this.board[toY][toX + (this.turn === ColorEnum.WHITE ? -1 : 1)]
+      ? this.board[toY + (this.turn === ColorEnum.WHITE ? -1 : 1)][toX]
       : toPiece;
     const isPawnPromotion = piece.type === PieceEnum.PAWN && ((
       this.turn === ColorEnum.WHITE && toY === 7
@@ -252,7 +297,7 @@ export default class Game implements IGame {
     const opponentPieces = this.getOpponentPieces();
 
     if (opponentPiece) {
-      opponentPieces.splice(opponentPieces.indexOf(opponentPiece));
+      opponentPieces.splice(opponentPieces.indexOf(opponentPiece), 1);
 
       this.board[opponentPiece.square.y][opponentPiece.square.x] = null;
     }
@@ -345,25 +390,25 @@ export default class Game implements IGame {
       (
         !this.kings[ColorEnum.WHITE].moved
         && !!this.board[0][0]
-        && this.board[0][0]!.moved
+        && !this.board[0][0]!.moved
       ),
       // white king-side castling is possible
       (
         !this.kings[ColorEnum.WHITE].moved
         && !!this.board[0][7]
-        && this.board[0][7]!.moved
+        && !this.board[0][7]!.moved
       ),
       // black queen-side castling is possible
       (
         !this.kings[ColorEnum.BLACK].moved
         && !!this.board[7][0]
-        && this.board[7][0]!.moved
+        && !this.board[7][0]!.moved
       ),
       // black king-side castling is possible
       (
         !this.kings[ColorEnum.BLACK].moved
         && !!this.board[7][7]
-        && this.board[7][7]!.moved
+        && !this.board[7][7]!.moved
       ),
       _.map(this.board, (rank) => (
         _.map(rank, (piece) => (
@@ -373,23 +418,27 @@ export default class Game implements IGame {
     ]);
   }
 
-  getOpponentColor(): ColorEnum {
-    return this.turn === ColorEnum.WHITE
+  getOppositeColor(color: ColorEnum) {
+    return color === ColorEnum.WHITE
       ? ColorEnum.BLACK
       : ColorEnum.WHITE;
+  }
+
+  getOpponentColor(): ColorEnum {
+    return this.getOppositeColor(this.turn);
   }
 
   getOpponentPieces(): Piece[] {
     return this.pieces[this.getOpponentColor()];
   }
 
-  getPossibleMoves(square: Square): Square[] {
+  getPossibleMoves(square: Square, attacked: boolean): Square[] {
     const piece = this.board[square.y][square.x]!;
     const {
       x: pieceX,
       y: pieceY
     } = square;
-    const opponentColor = this.getOpponentColor();
+    const opponentColor = this.getOppositeColor(piece.color);
     const possibleSquares: Square[] = [];
     const traverseDirection = (incrementY: 0 | 1 | -1, incrementX: 0 | 1 | -1) => {
       let rankY = pieceY;
@@ -407,7 +456,7 @@ export default class Game implements IGame {
 
         const pieceInSquare = newRank[pieceX];
 
-        if (pieceInSquare && pieceInSquare.color === this.turn) {
+        if (pieceInSquare && pieceInSquare.color === piece.color) {
           break;
         }
 
@@ -471,7 +520,7 @@ export default class Game implements IGame {
 
         const square = rank[fileX];
 
-        if (square && square.color === this.turn) {
+        if (square && square.color === piece.color) {
           return;
         }
 
@@ -483,15 +532,15 @@ export default class Game implements IGame {
     }
 
     if (piece.type === PieceEnum.PAWN) {
-      const direction = this.turn === ColorEnum.WHITE ? -1 : 1;
+      const direction = this.turn === ColorEnum.WHITE ? 1 : -1;
       const rankY = pieceY + direction;
       const nextRank = this.board[rankY];
 
-      if (pieceX in nextRank) {
+      if (pieceX in nextRank && !attacked) {
         // 1-forward move
-        const square = nextRank[pieceX];
+        const squarePiece = nextRank[pieceX];
 
-        if (!square) {
+        if (!squarePiece) {
           possibleSquares.push({
             x: pieceX,
             y: rankY
@@ -499,9 +548,9 @@ export default class Game implements IGame {
 
           if (this.turn === ColorEnum.WHITE ? pieceY === 1 : pieceY === 6) {
             // 2-forward move
-            const square = this.board[rankY + direction][pieceX];
+            const squarePiece = this.board[rankY + direction][pieceX];
 
-            if (!square) {
+            if (!squarePiece) {
               possibleSquares.push({
                 x: pieceX,
                 y: rankY + direction
@@ -518,7 +567,7 @@ export default class Game implements IGame {
         if (fileX in nextRank) {
           const square = nextRank[fileX];
 
-          if (square && square.color !== this.turn) {
+          if (square && square.color !== piece.color) {
             possibleSquares.push({
               x: fileX,
               y: rankY
@@ -537,7 +586,7 @@ export default class Game implements IGame {
       }
     }
 
-    if (piece.type === PieceEnum.KING && !piece.moved && !this.isCheck) {
+    if (piece.type === PieceEnum.KING && !piece.moved && !this.isCheck && !attacked) {
       // castling
       ([
         [0, 2, 3, [1, 2, 3]],
@@ -564,7 +613,7 @@ export default class Game implements IGame {
   }
 
   getAllowedMoves(square: Square): Square[] {
-    const possibleMoves = this.getPossibleMoves(square);
+    const possibleMoves = this.getPossibleMoves(square, false);
     const king = this.kings[this.turn];
     const opponentColor = this.getOpponentColor();
 
@@ -585,39 +634,13 @@ export default class Game implements IGame {
     });
   }
 
-  getGuardedSquares(square: Square): Square[] {
-    const piece = this.board[square.y][square.x]!;
-
-    return this.getPossibleMoves(square).filter((square) => {
-      if (
-        piece.type === PieceEnum.QUEEN
-        || piece.type === PieceEnum.ROOK
-        || piece.type === PieceEnum.BISHOP
-        || piece.type === PieceEnum.KNIGHT
-      ) {
-        // all possible squares are guarded by the piece
-
-        return true;
-      }
-
-      if (piece.type === PieceEnum.KING) {
-        // not castling
-
-        return Math.abs(piece.square.x - square.x) < 2;
-      }
-
-      // pawn
-      return piece.square.x - square.x !== 0;
-    });
-  }
-
   isInCheck(): boolean {
     return this.isAttackedByOpponentPiece(this.kings[this.turn].square, this.getOpponentColor());
   }
 
   isAttackedByOpponentPiece(square: Square, opponentColor: ColorEnum): boolean {
     return this.pieces[opponentColor].some((piece) => (
-      this.getGuardedSquares(piece.square).some(({ x, y }) => (
+      this.getPossibleMoves(piece.square, true).some(({ x, y }) => (
         square.x === x
         && square.y === y
       ))
@@ -674,6 +697,13 @@ export default class Game implements IGame {
   }
 
   toJSON(): IGame {
-    return _.pick(this, ['board', 'turn', 'status', 'players']);
+    return _.pick(this, [
+      'board',
+      'turn',
+      'status',
+      'players',
+      'result',
+      'isCheck'
+    ]);
   }
 }

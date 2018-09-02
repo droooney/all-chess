@@ -1,3 +1,5 @@
+/// <reference path="../typings/socket.io.d.ts" />
+
 import { User } from './User';
 
 declare module 'socket.io' {
@@ -49,6 +51,8 @@ export interface Game {
   turn: ColorEnum;
   status: GameStatusEnum;
   players: Player[];
+  result: GameResult | null;
+  isCheck: boolean;
 }
 
 export interface Room {
@@ -66,4 +70,8 @@ export enum GameStatusEnum {
   BEFORE_START = 'BEFORE_START',
   ONGOING = 'ONGOING',
   FINISHED = 'FINISHED'
+}
+
+export interface GameResult {
+  winner: ColorEnum | null;
 }

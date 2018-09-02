@@ -241,14 +241,6 @@ declare namespace SocketIO {
      */
     use( fn: ( socket:Socket, fn: ( err?: any ) => void ) =>void ): Namespace;
 
-    /**
-     * Emits an event to the default Namespace
-     * @param event The event that we want to emit
-     * @param args Any number of optional arguments to pass with the event. If the
-     * last argument is a function, it will be called as an ack. The ack should
-     * take whatever data was sent with the packet
-     * @return The default '/' Namespace
-     */
     emit<K extends keyof SocketIOEventWithDataMap>(event: K, data: SocketIOEventWithDataMap[K]): Namespace;
     emit<K extends SocketIOEventWithoutDataList>(event: K): Namespace;
 
@@ -444,26 +436,10 @@ declare namespace SocketIO {
      */
     write( ...args: any[] ): Namespace;
 
-    /**
-     * The event fired when we get a new connection
-     * @param event The event being fired: 'connection'
-     * @param listener A listener that should take one parameter of type Socket
-     * @return This Namespace
-     */
     on( event: 'connection', listener: ( socket: Socket ) => void ): this;
 
-    /**
-     * @see on( 'connection', listener )
-     */
     on( event: 'connect', listener: ( socket: Socket ) => void ): this;
 
-    /**
-     * Base 'on' method to add a listener for an event
-     * @param event The event that we want to add a listener for
-     * @param listener The callback to call when we get the event. The parameters
-     * for the callback depend on the event
-     * @ This Namespace
-     */
     emit<K extends keyof SocketIOEventWithDataMap>(event: K, data: SocketIOEventWithDataMap[K]): any;
     emit<K extends SocketIOEventWithoutDataList>(event: K): any;
 

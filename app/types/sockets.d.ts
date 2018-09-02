@@ -1,7 +1,10 @@
 import {
   ColorEnum,
   Game,
+  GameResult,
   Move,
+  Piece,
+  Player,
   Room
 } from './game';
 
@@ -12,15 +15,21 @@ declare global {
     drawSuggested: {
       from: ColorEnum;
     };
-    gameOver: {
-      winner: ColorEnum | null;
-    };
+    gameOver: GameResult;
     updateGame: Game;
+    initialGameData: {
+      player: Player | null;
+      game: Game;
+    };
+    roomCreated: Room;
   }
 
   type SocketIOEventWithoutDataList = (
-    'newRoom'
+    'createRoom'
+    | 'drawAccepted'
     | 'drawDeclined'
     | 'resign'
+    | 'takeBackRequested'
+    | 'takeBackDeclined'
   );
 }
