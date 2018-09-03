@@ -1,6 +1,7 @@
 @import (reference) '../../styles/mixins';
 
 @size: 70px;
+@rank-file-size: 20px;
 
 .room-route {
   .game {
@@ -19,6 +20,25 @@
 
       .rank {
         .flex();
+
+        .rank-literal {
+          .flex();
+
+          width: @rank-file-size;
+          height: @size;
+        }
+
+        .file-literal {
+          .flex();
+
+          width: @size;
+          height: @rank-file-size;
+        }
+
+        .empty-corner {
+          width: @rank-file-size;
+          height: @rank-file-size;
+        }
 
         .square {
           .flex();

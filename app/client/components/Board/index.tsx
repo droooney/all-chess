@@ -11,6 +11,10 @@ import {
   Player,
   Square
 } from '../../../types';
+import {
+  getFileLiteral,
+  getRankLiteral
+} from '../../../shared/helpers';
 import Piece from '../Piece';
 
 interface OwnProps {
@@ -19,6 +23,7 @@ interface OwnProps {
   turn: ColorEnum;
   socket: Socket;
   isCheck: boolean;
+  withLiterals: boolean;
 }
 
 interface State {
@@ -28,6 +33,10 @@ interface State {
 type Props = OwnProps;
 
 export default class Board extends React.Component<Props, State> {
+  static defaultProps = {
+    withLiterals: true
+  };
+
   state: State = {
     selectedPiece: null
   };
@@ -124,50 +133,89 @@ export default class Board extends React.Component<Props, State> {
   render() {
     const {
       board,
-      player
+      player,
+      withLiterals
     } = this.props;
     const {
       selectedPiece
     } = this.state;
+    const files = Object.keys(
+      _.reduce(board, (files, rank) => (
+        Object.assign(files, Object.keys(rank))
+      ), {})
+    )
+      .map((rank) => +rank)
+      .sort();
+    const maxFile = Math.max(...files);
+    const filesElement = (
+      <div className="rank">
+        <div className="empty-corner" />
+        {files.map((file) => (
+          <div key={file} className="file-literal">
+            {getFileLiteral(file)}
+          </div>
+        ))}
+        <div className="empty-corner" />
+      </div>
+    );
 
     return (
       <div className={classNames('board', {
         opposite: player && player.color === ColorEnum.BLACK
       })}>
-        {_.map(board, (rank, rankY) => (
-          <div
-            key={rankY}
-            className="rank"
-          >
-            {_.map(rank, (piece, fileX) => {
-              const square = {
-                x: +fileX,
-                y: +rankY
-              };
+        {withLiterals && filesElement}
+        {_.map(board, (rank, rankY) => {
+          const rankLiteral = (
+            <div className="rank-literal">
+              {getRankLiteral(rankY)}
+            </div>
+          );
 
-              return (
-                <div
-                  key={fileX}
-                  className={`square ${(+rankY + +fileX) % 2 ? 'white' : 'black'}`}
-                  onClick={() => this.onSquareClick(square)}
-                >
-                  {selectedPiece && this.areSquaresEqual(selectedPiece.square, square) && (
-                    <div className="selected-square" />
-                  )}
-                  {this.isAllowed(square) && (
-                    <div className="allowed-square" />
-                  )}
-                  {this.isInCheck(square) && (
-                    <div className="check-square" />
-                  )}
-                  {piece && (
-                    <Piece piece={piece} />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ))}
+          return (
+            <div
+              key={rankY}
+              className="rank"
+            >
+              {withLiterals && rankLiteral}
+              {_.times(maxFile + 1, (fileX) => {
+                if (!(fileX in rank)) {
+                  return (
+                    <div className="square" />
+                  );
+                }
+
+                const piece = rank[fileX];
+                const square = {
+                  x: +fileX,
+                  y: +rankY
+                };
+
+                return (
+                  <div
+                    key={fileX}
+                    className={`square ${(+rankY + +fileX) % 2 ? 'white' : 'black'}`}
+                    onClick={() => this.onSquareClick(square)}
+                  >
+                    {selectedPiece && this.areSquaresEqual(selectedPiece.square, square) && (
+                      <div className="selected-square" />
+                    )}
+                    {this.isAllowed(square) && (
+                      <div className="allowed-square" />
+                    )}
+                    {this.isInCheck(square) && (
+                      <div className="check-square" />
+                    )}
+                    {piece && (
+                      <Piece piece={piece} />
+                    )}
+                  </div>
+                );
+              })}
+              {withLiterals && rankLiteral}
+            </div>
+          );
+        })}
+        {withLiterals && filesElement}
       </div>
     );
   }
