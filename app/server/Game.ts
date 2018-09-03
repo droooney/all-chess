@@ -454,7 +454,7 @@ export default class Game implements IGame {
           break;
         }
 
-        const pieceInSquare = newRank[pieceX];
+        const pieceInSquare = newRank[fileX];
 
         if (pieceInSquare && pieceInSquare.color === piece.color) {
           break;
@@ -532,7 +532,7 @@ export default class Game implements IGame {
     }
 
     if (piece.type === PieceEnum.PAWN) {
-      const direction = this.turn === ColorEnum.WHITE ? 1 : -1;
+      const direction = piece.color === ColorEnum.WHITE ? 1 : -1;
       const rankY = pieceY + direction;
       const nextRank = this.board[rankY];
 
@@ -546,7 +546,7 @@ export default class Game implements IGame {
             y: rankY
           });
 
-          if (this.turn === ColorEnum.WHITE ? pieceY === 1 : pieceY === 6) {
+          if (piece.color === ColorEnum.WHITE ? pieceY === 1 : pieceY === 6) {
             // 2-forward move
             const squarePiece = this.board[rankY + direction][pieceX];
 
@@ -614,7 +614,8 @@ export default class Game implements IGame {
 
   getAllowedMoves(square: Square): Square[] {
     const possibleMoves = this.getPossibleMoves(square, false);
-    const king = this.kings[this.turn];
+    const piece = this.board[square.y][square.x]!;
+    const king = this.kings[piece.color];
     const opponentColor = this.getOpponentColor();
 
     return possibleMoves.filter(({ x, y }) => {
@@ -687,9 +688,7 @@ export default class Game implements IGame {
   }
 
   isNoMoves() {
-    return this.pieces[this.turn].every((piece) => (
-      this.getAllowedMoves(piece.square).length === 0
-    ));
+    return this.pieces[this.turn].every((piece) => piece.allowedMoves.length === 0);
   }
 
   isStalemate(): boolean {

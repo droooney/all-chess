@@ -51,6 +51,10 @@ export default class Room extends React.Component<Props, State> {
           : null
       }));
     });
+
+    socket.on('gameOver', ({ winner }) => {
+      console.log(winner);
+    });
   }
 
   render() {
@@ -71,6 +75,7 @@ export default class Room extends React.Component<Props, State> {
         <GameComponent
           game={this.state.game}
           player={this.player}
+          socket={this.socket!}
         />
       );
     }
