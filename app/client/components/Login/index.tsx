@@ -15,8 +15,8 @@ interface State {
 }
 
 class Login extends React.Component<Props, State> {
-  loginInput: HTMLInputElement | null = null;
-  passwordInput: HTMLInputElement | null = null;
+  loginInputRef = React.createRef<HTMLInputElement>();
+  passwordInputRef = React.createRef<HTMLInputElement>();
   state = {
     error: false
   };
@@ -31,8 +31,8 @@ class Login extends React.Component<Props, State> {
     const {
       from = '/'
     } = qs.parse(location.search.slice(1));
-    const login = this.loginInput!.value;
-    const password = this.passwordInput!.value;
+    const login = this.loginInputRef.current!.value;
+    const password = this.passwordInputRef.current!.value;
 
     const {
       success,
@@ -71,12 +71,12 @@ class Login extends React.Component<Props, State> {
           <input
             type="text"
             placeholder="Login"
-            ref={(input) => this.loginInput = input}
+            ref={this.loginInputRef}
           />
           <input
             type="password"
             placeholder="Password"
-            ref={(input) => this.passwordInput = input}
+            ref={this.passwordInputRef}
           />
           <input
             type="submit"

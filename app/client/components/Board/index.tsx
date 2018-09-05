@@ -1,11 +1,11 @@
 import * as _ from 'lodash';
 import * as React from 'react';
 import classNames = require('classnames');
-import { Socket } from 'socket.io-client';
 
 import {
   Board as IBoard,
   ColorEnum,
+  Move,
   Piece as IPiece,
   PieceEnum,
   Player,
@@ -21,9 +21,10 @@ interface OwnProps {
   board: IBoard;
   player: Player | null;
   turn: ColorEnum;
-  socket: Socket;
+  sendMove(move: Move): void;
   isCheck: boolean;
   withLiterals: boolean;
+  isBlackBase: boolean;
 }
 
 interface State {
@@ -84,7 +85,7 @@ export default class Board extends React.Component<Props, State> {
       board,
       player,
       turn,
-      socket
+      sendMove
     } = this.props;
 
     if (!player || player.color !== turn) {
@@ -118,7 +119,7 @@ export default class Board extends React.Component<Props, State> {
           : null;
       }
 
-      socket.emit('move', {
+      sendMove({
         from: state.selectedPiece.square,
         to: square,
         promotion: PieceEnum.QUEEN
@@ -133,8 +134,8 @@ export default class Board extends React.Component<Props, State> {
   render() {
     const {
       board,
-      player,
-      withLiterals
+      withLiterals,
+      isBlackBase
     } = this.props;
     const {
       selectedPiece
@@ -161,7 +162,7 @@ export default class Board extends React.Component<Props, State> {
 
     return (
       <div className={classNames('board', {
-        opposite: player && player.color === ColorEnum.BLACK
+        opposite: isBlackBase
       })}>
         {withLiterals && filesElement}
         {_.map(board, (rank, rankY) => {

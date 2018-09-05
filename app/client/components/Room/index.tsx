@@ -55,6 +55,28 @@ export default class Room extends React.Component<Props, State> {
     socket.on('gameOver', ({ winner }) => {
       console.log(winner);
     });
+
+    socket.on('newChatMessage', (chatMessage) => {
+      this.setState(({ game }) => ({
+        game: game && ({
+          ...game,
+          chat: [
+            ...game.chat,
+            chatMessage
+          ]
+        })
+      }));
+    });
+
+    socket.on('gameOver', (result) => {
+      this.setState(({ game }) => ({
+        game: game && ({
+          ...game,
+          status: GameStatusEnum.FINISHED,
+          result
+        })
+      }));
+    });
   }
 
   render() {

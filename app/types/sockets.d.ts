@@ -1,9 +1,9 @@
 import {
+  ChatMessage,
   ColorEnum,
   Game,
   GameResult,
   Move,
-  Piece,
   Player,
   Room
 } from './game';
@@ -22,6 +22,8 @@ declare global {
       game: Game;
     };
     roomCreated: Room;
+    addChatMessage: string;
+    newChatMessage: ChatMessage;
   }
 
   type SocketIOEventWithoutDataList = (

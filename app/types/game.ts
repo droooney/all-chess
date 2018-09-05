@@ -16,7 +16,12 @@ export interface Square {
 
 export interface Player extends User {
   color: ColorEnum;
+  time: number | null;
 }
+
+export type GamePlayers = {
+  [color in ColorEnum]: Player;
+};
 
 export enum PieceEnum {
   KING = 'KING',
@@ -33,6 +38,7 @@ export enum ColorEnum {
 }
 
 export interface Piece {
+  id: number;
   type: PieceEnum;
   color: ColorEnum;
   square: Square;
@@ -50,9 +56,13 @@ export interface Game {
   board: Board;
   turn: ColorEnum;
   status: GameStatusEnum;
-  players: Player[];
+  players: GamePlayers;
   result: GameResult | null;
   isCheck: boolean;
+  timeControl: TimeControlEnum;
+  moves: ExtendedMove[];
+  lastMoveTimestamp: number;
+  chat: ChatMessage[];
 }
 
 export interface Room {
@@ -66,6 +76,15 @@ export interface Move {
   promotion?: PieceEnum;
 }
 
+export interface ExtendedMove extends Move {
+  algebraic: string;
+  figurine: string;
+}
+
+export interface RevertableMove extends ExtendedMove {
+  revertMove(): void;
+}
+
 export enum GameStatusEnum {
   BEFORE_START = 'BEFORE_START',
   ONGOING = 'ONGOING',
@@ -74,4 +93,21 @@ export enum GameStatusEnum {
 
 export interface GameResult {
   winner: ColorEnum | null;
+}
+
+export interface Timer {
+  base: number;
+  increment: number;
+}
+
+export enum TimeControlEnum {
+  TIMER = 'TIMER',
+  CORRESPONDENCE = 'CORRESPONDENCE',
+  NONE = 'NONE'
+}
+
+export interface ChatMessage {
+  login: string;
+  isPlayer: boolean;
+  message: string;
 }

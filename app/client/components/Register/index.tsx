@@ -11,10 +11,10 @@ interface State {
 }
 
 class Register extends React.Component<{}, State> {
-  loginInput: HTMLInputElement | null = null;
-  emailInput: HTMLInputElement | null = null;
-  passwordInput: HTMLInputElement | null = null;
-  passwordRepeatInput: HTMLInputElement | null = null;
+  loginInputRef = React.createRef<HTMLInputElement>();
+  emailInputRef = React.createRef<HTMLInputElement>();
+  passwordInputRef = React.createRef<HTMLInputElement>();
+  passwordRepeatInputRef = React.createRef<HTMLInputElement>();
   state = {
     success: false,
     error: false,
@@ -24,9 +24,9 @@ class Register extends React.Component<{}, State> {
   onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
-    const login = this.loginInput!.value;
-    const email = this.emailInput!.value;
-    const password = this.passwordInput!.value;
+    const login = this.loginInputRef.current!.value;
+    const email = this.emailInputRef.current!.value;
+    const password = this.passwordInputRef.current!.value;
 
     const {
       success
@@ -73,32 +73,36 @@ class Register extends React.Component<{}, State> {
               type="text"
               placeholder="Login"
               autoComplete="off"
-              ref={(input) => this.loginInput = input}
+              ref={this.loginInputRef}
             />
             <input
               type="email"
               placeholder="Email"
               autoComplete="off"
-              ref={(input) => this.emailInput = input}
+              ref={this.emailInputRef}
             />
             <input
               type="password"
               placeholder="Password"
               autoComplete="off"
-              ref={(input) => this.passwordInput = input}
+              ref={this.passwordInputRef}
               onChange={() => this.forceUpdate()}
             />
             <input
               type="password"
               placeholder="Repeat password"
               autoComplete="off"
-              ref={(input) => this.passwordRepeatInput = input}
+              ref={this.passwordRepeatInputRef}
               onChange={() => this.forceUpdate()}
             />
             <input
               type="submit"
               value="Register"
-              disabled={!!this.passwordInput && !!this.passwordRepeatInput && this.passwordInput.value !== this.passwordRepeatInput.value}
+              disabled={(
+                !!this.passwordInputRef.current
+                && !!this.passwordRepeatInputRef.current
+                && this.passwordInputRef.current.value !== this.passwordRepeatInputRef.current.value
+              )}
             />
           </form>
         )}

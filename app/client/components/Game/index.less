@@ -5,6 +5,8 @@
 
 .room-route {
   .game {
+    .flex(center);
+
     .board {
       .flex-col();
 
@@ -84,6 +86,66 @@
             width: 100%;
             height: 100%;
             z-index: 4;
+          }
+        }
+      }
+    }
+
+    .chat {
+      .flex-col-stretch();
+
+      width: 240px;
+      height: 400px;
+
+      .messages {
+        .flex-child();
+
+        width: 100%;
+        overflow: auto;
+
+        .message {
+          width: 100%;
+
+          .login {
+            font-weight: bold;
+            margin-right: 10px;
+            color: green;
+          }
+        }
+      }
+
+      .new-message-input {
+        .flex-child-fixed();
+      }
+    }
+
+    .right-panel {
+      .player {
+        .flex-col();
+
+        align-items: flex-start;
+
+        &.bottom {
+          flex-direction: column-reverse;
+        }
+      }
+
+      .moves {
+        width: 220px;
+        height: 250px;
+        overflow-y: auto;
+
+        .move-row {
+          .flex(flex-start);
+
+          width: 100%;
+
+          .move-index {
+            .flex-child-fixed(16%);
+          }
+
+          .move {
+            .flex-child-fixed(42%);
           }
         }
       }

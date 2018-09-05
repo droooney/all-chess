@@ -8,7 +8,7 @@ const config: Configuration = {
     filename: 'all.js'
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.d.ts', '.js']
+    extensions: ['.tsx', '.ts', '.js']
   },
   module: {
     rules: [

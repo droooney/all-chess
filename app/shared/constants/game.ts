@@ -9,10 +9,24 @@ export const SHORT_PIECE_NAMES: { [piece in PieceEnum]: string } = {
   [PieceEnum.ROOK]: 'R',
   [PieceEnum.BISHOP]: 'B',
   [PieceEnum.KNIGHT]: 'N',
-  [PieceEnum.PAWN]: ''
+  [PieceEnum.PAWN]: 'P'
 };
 
-export const STROKE_COLORS: { [color in ColorEnum]: ColorEnum } = {
-  [ColorEnum.WHITE]: ColorEnum.BLACK,
-  [ColorEnum.BLACK]: ColorEnum.WHITE
+export const PIECE_LITERALS: { [color in ColorEnum]: { [piece in PieceEnum]: string; }; } = {
+  [ColorEnum.WHITE]: {
+    [PieceEnum.KING]: '♔',
+    [PieceEnum.QUEEN]: '♕',
+    [PieceEnum.ROOK]: '♖',
+    [PieceEnum.BISHOP]: '♗',
+    [PieceEnum.KNIGHT]: '♘',
+    [PieceEnum.PAWN]: '♙'
+  },
+  [ColorEnum.BLACK]: {
+    [PieceEnum.KING]: '♚',
+    [PieceEnum.QUEEN]: '♛',
+    [PieceEnum.ROOK]: '♜',
+    [PieceEnum.BISHOP]: '♝',
+    [PieceEnum.KNIGHT]: '♞',
+    [PieceEnum.PAWN]: '♟'
+  }
 };

@@ -2,16 +2,23 @@ import * as _ from 'lodash';
 import { Namespace, Socket } from 'socket.io';
 import {
   Board,
+  ChatMessage,
   ColorEnum,
   Game as IGame,
+  GamePlayers,
   GameResult,
   GameStatusEnum,
   Move,
   Piece,
   PieceEnum,
   Player,
-  Square
+  RevertableMove,
+  Square,
+  TimeControlEnum,
+  Timer
 } from '../types';
+import { getFileLiteral, getRankLiteral } from '../shared/helpers';
+import { PIECE_LITERALS, SHORT_PIECE_NAMES } from '../shared/constants';
 
 interface BoardData {
   board: Board;
@@ -29,6 +36,7 @@ export default class Game implements IGame {
   }
 
   static generateClassicBoard(): BoardData {
+    let id = 0;
     const kings = {} as { [color in ColorEnum]: Piece; };
     const pieces: { [color in ColorEnum]: Piece[]; } = {
       [ColorEnum.WHITE]: [],
@@ -41,6 +49,7 @@ export default class Game implements IGame {
             ? ColorEnum.WHITE
             : ColorEnum.BLACK;
           const piece = {
+            id: ++id,
             type,
             color,
             square: { x, y },
@@ -99,11 +108,20 @@ export default class Game implements IGame {
   }
 
   board: Board;
-  players: Player[];
+  players: GamePlayers = {} as GamePlayers;
   status: GameStatusEnum = GameStatusEnum.BEFORE_START;
   isCheck: boolean = false;
   result: GameResult | null = null;
   turn: ColorEnum = ColorEnum.WHITE;
+  timer: Timer = {
+    base: 10 * 60 * 1000,
+    increment: 5 * 1000
+  };
+  timerTimeout?: number;
+  lastMoveTimestamp: number = 0;
+  moves: RevertableMove[] = [];
+  chat: ChatMessage[] = [];
+  timeControl: TimeControlEnum = TimeControlEnum.TIMER;
   possibleEnPassant: Square | null = null;
   positionsMap: { [position: string]: number; } = {};
   positionString: string;
@@ -128,27 +146,28 @@ export default class Game implements IGame {
 
     this.positionString = this.generatePositionString();
     this.positionsMap[this.positionString] = 1;
-    this.players = players;
 
     io.on('connection', (socket) => {
       const user = socket.user;
       const existingPlayer = (user && players.find(({ login }) => login === user.login)) || null;
-      const isNewPlayer = !existingPlayer && user && this.players.length < 2;
+      const isNewPlayer = !existingPlayer && user && players.length < 2;
       let player: Player | null = null;
 
       if (isNewPlayer) {
-        const color = this.players.length === 0
+        const color = players.length === 0
           ? Math.random() > 0.5
             ? ColorEnum.WHITE
             : ColorEnum.BLACK
-          : this.getOppositeColor(this.players[0].color);
+          : this.getOppositeColor(players[0].color);
 
         player = {
           ...socket.user!,
-          color
+          color,
+          time: this.timer.base
         };
 
         players.push(player!);
+        this.players[player.color] = player;
 
         if (players.length === 2) {
           this.status = GameStatusEnum.ONGOING;
@@ -176,6 +195,20 @@ export default class Game implements IGame {
       socket.emit('initialGameData', {
         player,
         game: this
+      });
+
+      socket.on('addChatMessage', (message) => {
+        if (message && typeof message === 'string' && message.length < 256) {
+          const chatMessage = {
+            login: user ? user.login : 'anonymous',
+            isPlayer: !!player,
+            message
+          };
+
+          this.chat.push(chatMessage);
+
+          this.io.emit('newChatMessage', chatMessage);
+        }
       });
     });
   }
@@ -227,29 +260,71 @@ export default class Game implements IGame {
       return;
     }
 
-    this.performMove(move);
+    const newTimestamp = Date.now();
+
+    if (!promotion) {
+      delete move.promotion;
+    }
+
+    if (this.moves.length > 1 && this.timeControl !== TimeControlEnum.NONE) {
+      if (this.timeControl === TimeControlEnum.TIMER) {
+        player.time! += this.lastMoveTimestamp - newTimestamp + this.timer.increment;
+      } else {
+        player.time = this.timer.base;
+      }
+    }
+
+    const {
+      algebraic,
+      figurine,
+      revertMove
+    } = this.performMove(move, true);
+
     this.constructAllowedMoves();
+
+    this.moves.push({
+      ...move,
+      algebraic,
+      figurine,
+      revertMove: () => {
+        revertMove();
+
+        this.constructAllowedMoves();
+        this.moves.pop();
+      }
+    });
+
+    this.lastMoveTimestamp = newTimestamp;
 
     this.positionString = this.generatePositionString();
     this.positionsMap[this.positionString] = (this.positionsMap[this.positionString] || 0) + 1;
 
     this.io.emit('updateGame', this);
 
-    if (this.isCheckmate()) {
-      this.result = {
-        winner: this.getOpponentColor()
-      };
-      this.status = GameStatusEnum.FINISHED;
-
-      this.io.emit('gameOver', { winner: this.getOpponentColor() });
+    if (this.isCheckmate(false)) {
+      this.end(this.getOpponentColor());
     } else if (this.isDraw()) {
-      this.result = {
-        winner: null
-      };
-      this.status = GameStatusEnum.FINISHED;
-
-      this.io.emit('gameOver', { winner: null });
+      this.end(null);
+    } else if (this.moves.length > 1 && this.timeControl !== TimeControlEnum.NONE) {
+      this.setTimeout(player);
     }
+  }
+
+  setTimeout(forPlayer: Player) {
+    clearTimeout(this.timerTimeout);
+
+    this.timerTimeout = setTimeout(() => {
+      this.end(this.getOpponentColor());
+    }, forPlayer.time!) as any;
+  }
+
+  end(winner: ColorEnum | null) {
+    this.result = {
+      winner: null
+    };
+    this.status = GameStatusEnum.FINISHED;
+
+    this.io.emit('gameOver', { winner });
   }
 
   constructAllowedMoves() {
@@ -258,7 +333,7 @@ export default class Game implements IGame {
     });
   }
 
-  performMove(move: Move): () => void {
+  performMove(move: Move, constructMoveLiterals: boolean): { algebraic: string; figurine: string; revertMove(): void; } {
     const {
       from: fromSquare,
       from: {
@@ -273,27 +348,29 @@ export default class Game implements IGame {
       promotion
     } = move;
     const piece = this.board[fromY][fromX]!;
+    const pieceType = piece.type;
     const toPiece = this.board[toY][toX];
     const isEnPassant = (
-      piece.type === PieceEnum.PAWN
+      pieceType === PieceEnum.PAWN
       && Math.abs(fromX - toX) !== 0
       && !toPiece
     );
     const opponentPiece = isEnPassant
       ? this.board[toY + (this.turn === ColorEnum.WHITE ? -1 : 1)][toX]
       : toPiece;
-    const isPawnPromotion = piece.type === PieceEnum.PAWN && ((
+    const isPawnPromotion = pieceType === PieceEnum.PAWN && ((
       this.turn === ColorEnum.WHITE && toY === 7
     ) || (
       this.turn === ColorEnum.BLACK && toY === 0
     ));
+    const isCastling = pieceType === PieceEnum.KING && Math.abs(toX - fromX) > 1;
 
     const prevTurn = this.turn;
     const prevIsCheck = this.isCheck;
     const prevPliesWithoutCaptureOrPawnMove = this.pliesWithoutCaptureOrPawnMove;
     const prevPossibleEnPassant = this.possibleEnPassant;
     const prevPieceMoved = piece.moved;
-    const prevPieceType = piece.type;
+    const prevPieceType = pieceType;
     const opponentPieces = this.getOpponentPieces();
 
     if (opponentPiece) {
@@ -302,13 +379,13 @@ export default class Game implements IGame {
       this.board[opponentPiece.square.y][opponentPiece.square.x] = null;
     }
 
-    if (piece.type === PieceEnum.PAWN || opponentPiece) {
+    if (pieceType === PieceEnum.PAWN || opponentPiece) {
       this.pliesWithoutCaptureOrPawnMove = 0;
     } else {
       this.pliesWithoutCaptureOrPawnMove++;
     }
 
-    if (piece.type === PieceEnum.PAWN && Math.abs(toY - fromY) === 2) {
+    if (pieceType === PieceEnum.PAWN && Math.abs(toY - fromY) === 2) {
       this.possibleEnPassant = {
         x: toX,
         y: Math.round((toY + fromY) / 2)
@@ -323,11 +400,11 @@ export default class Game implements IGame {
     piece.square = toSquare;
     piece.type = isPawnPromotion
       ? promotion!
-      : piece.type;
+      : pieceType;
 
     let castlingRook: Piece | undefined;
 
-    if (piece.type === PieceEnum.KING && Math.abs(toX - fromX) > 1) {
+    if (isCastling) {
       // castling
 
       const isKingSideCastling = toX - fromX > 0;
@@ -347,36 +424,115 @@ export default class Game implements IGame {
     this.turn = this.getOpponentColor();
     this.isCheck = this.isInCheck();
 
-    // return revert-move function
-    return () => {
-      this.turn = prevTurn;
-      this.isCheck = prevIsCheck;
-      this.pliesWithoutCaptureOrPawnMove = prevPliesWithoutCaptureOrPawnMove;
-      this.possibleEnPassant = prevPossibleEnPassant;
+    let algebraic = '';
+    let figurine = '';
 
-      this.board[fromY][fromX] = piece;
-      this.board[toY][toX] = null;
-      piece.square = fromSquare;
-      piece.moved = prevPieceMoved;
-      piece.type = prevPieceType;
+    if (constructMoveLiterals) {
+      if (isCastling) {
+        const castling = toX - fromX > 0 ? 'O-O' : 'O-O-O';
 
-      if (opponentPiece) {
-        opponentPieces.push(opponentPiece);
+        algebraic += castling;
+        figurine += castling;
+      } else {
+        if (pieceType !== PieceEnum.PAWN) {
+          algebraic += SHORT_PIECE_NAMES[pieceType];
+          figurine += PIECE_LITERALS[piece.color][pieceType];
 
-        this.board[opponentPiece.square.y][opponentPiece.square.x] = opponentPiece;
+          const otherPiecesAbleToMakeMove = this.pieces[piece.color].filter(({ id, type, allowedMoves }) => (
+            type === pieceType
+            && id !== piece.id
+            && allowedMoves.some(({ x, y }) => x === toX && y === toY)
+          ));
+
+          if (otherPiecesAbleToMakeMove.length) {
+            const areSameFile = otherPiecesAbleToMakeMove.some(({ square: { x, y } }) => (
+              x === fromX
+              && y !== fromY
+            ));
+            const areSameRank = otherPiecesAbleToMakeMove.some(({ square: { x, y } }) => (
+              y === fromY
+              && x !== fromX
+            ));
+            const fileLiteral = getFileLiteral(fromX);
+            const rankLiteral = getRankLiteral(fromY);
+
+            if (areSameFile && areSameRank) {
+              algebraic += fileLiteral + rankLiteral;
+              figurine += fileLiteral + rankLiteral;
+            } else if (areSameFile) {
+              algebraic += rankLiteral;
+              figurine += rankLiteral;
+            } else {
+              algebraic += fileLiteral;
+              figurine += fileLiteral;
+            }
+          }
+        } else if (opponentPiece) {
+          const file = getFileLiteral(fromX);
+
+          algebraic += file;
+          figurine += file;
+        }
+
+        if (opponentPiece) {
+          algebraic += 'x';
+          figurine += 'x';
+        }
+
+        const destination = getFileLiteral(toX) + getRankLiteral(toY);
+
+        algebraic += destination;
+        figurine += destination;
+
+        if (isPawnPromotion) {
+          algebraic += `=${SHORT_PIECE_NAMES[promotion!]}`;
+          figurine += `=${PIECE_LITERALS[piece.color][promotion!]}`;
+        }
       }
 
-      if (castlingRook) {
-        const isKingSideCastling = toX - fromX > 0;
-        const oldRookSquare = {
-          x: isKingSideCastling ? 7 : 0,
-          y: fromY
-        };
+      if (this.isCheckmate(true)) {
+        algebraic += '#';
+        figurine += '#';
+      } else if (this.isCheck) {
+        algebraic += '+';
+        figurine += '+';
+      }
+    }
 
-        this.board[castlingRook.square.y][castlingRook.square.x] = null;
-        this.board[oldRookSquare.y][oldRookSquare.x] = castlingRook;
-        castlingRook.moved = false;
-        castlingRook.square = oldRookSquare;
+    // return revert-move function
+    return {
+      algebraic,
+      figurine,
+      revertMove: () => {
+        this.turn = prevTurn;
+        this.isCheck = prevIsCheck;
+        this.pliesWithoutCaptureOrPawnMove = prevPliesWithoutCaptureOrPawnMove;
+        this.possibleEnPassant = prevPossibleEnPassant;
+
+        this.board[fromY][fromX] = piece;
+        this.board[toY][toX] = null;
+        piece.square = fromSquare;
+        piece.moved = prevPieceMoved;
+        piece.type = prevPieceType;
+
+        if (opponentPiece) {
+          opponentPieces.push(opponentPiece);
+
+          this.board[opponentPiece.square.y][opponentPiece.square.x] = opponentPiece;
+        }
+
+        if (castlingRook) {
+          const isKingSideCastling = toX - fromX > 0;
+          const oldRookSquare = {
+            x: isKingSideCastling ? 7 : 0,
+            y: fromY
+          };
+
+          this.board[castlingRook.square.y][castlingRook.square.x] = null;
+          this.board[oldRookSquare.y][oldRookSquare.x] = castlingRook;
+          castlingRook.moved = false;
+          castlingRook.square = oldRookSquare;
+        }
       }
     };
   }
@@ -619,14 +775,14 @@ export default class Game implements IGame {
     const opponentColor = this.getOpponentColor();
 
     return possibleMoves.filter(({ x, y }) => {
-      const revertMove = this.performMove({
+      const { revertMove } = this.performMove({
         from: {
           x: square.x,
           y: square.y
         },
         to: { x, y },
         promotion: PieceEnum.QUEEN
-      });
+      }, false);
       const isMoveAllowed = !this.isAttackedByOpponentPiece(king.square, opponentColor);
 
       revertMove();
@@ -648,8 +804,8 @@ export default class Game implements IGame {
     ));
   }
 
-  isCheckmate(): boolean {
-    return this.isCheck && this.isNoMoves();
+  isCheckmate(constructNewMoves: boolean): boolean {
+    return this.isCheck && this.isNoMoves(constructNewMoves);
   }
 
   isDraw(): boolean {
@@ -687,12 +843,18 @@ export default class Game implements IGame {
     ));
   }
 
-  isNoMoves() {
-    return this.pieces[this.turn].every((piece) => piece.allowedMoves.length === 0);
+  isNoMoves(constructNewMoves: boolean) {
+    return this.pieces[this.turn].every((piece) => (
+      (
+        constructNewMoves
+          ? this.getAllowedMoves(piece.square)
+          : piece.allowedMoves
+      ).length === 0
+    ));
   }
 
   isStalemate(): boolean {
-    return !this.isCheck && this.isNoMoves();
+    return !this.isCheck && this.isNoMoves(false);
   }
 
   toJSON(): IGame {
@@ -702,7 +864,11 @@ export default class Game implements IGame {
       'status',
       'players',
       'result',
-      'isCheck'
+      'isCheck',
+      'timeControl',
+      'moves',
+      'lastMoveTimestamp',
+      'chat'
     ]);
   }
 }
