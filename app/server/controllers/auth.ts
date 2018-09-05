@@ -112,7 +112,7 @@ export async function register(ctx: Context) {
     return;
   }
 
-  await sendConfirmationEmail(ctx, user);
+  sendConfirmationEmail(ctx, user);
 
   ctx.body = {
     success: true,
@@ -121,20 +121,24 @@ export async function register(ctx: Context) {
 }
 
 async function sendConfirmationEmail(ctx: Context, user: UserModel) {
-  await sendEmail({
-    to: user.email,
-    subject: 'Confirm registration',
-    html: registerHTML({
-      login: user.login,
-      confirmLink: buildURL({
-        protocol: ctx.protocol,
-        host: ctx.get('host'),
-        path: '/api/auth/confirm_register',
-        query: {
-          email: user.email,
-          token: user.confirmToken!
-        }
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: 'Confirm registration',
+      html: registerHTML({
+        login: user.login,
+        confirmLink: buildURL({
+          protocol: ctx.protocol,
+          host: ctx.get('host'),
+          path: '/api/auth/confirm_register',
+          query: {
+            email: user.email,
+            token: user.confirmToken!
+          }
+        })
       })
-    })
-  });
+    });
+  } catch (err) {
+    /* empty */
+  }
 }
