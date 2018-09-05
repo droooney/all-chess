@@ -21,4 +21,4 @@ const config: DBConfig = {
   }
 };
 
-export default config;
+export = config;
