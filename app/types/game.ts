@@ -1,6 +1,6 @@
 /// <reference path="../typings/socket.io.d.ts" />
 
-import { User } from './User';
+import { User } from './user';
 
 declare module 'socket.io' {
   interface Socket {

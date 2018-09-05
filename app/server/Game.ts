@@ -167,7 +167,7 @@ export default class Game implements IGame {
         };
 
         players.push(player!);
-        this.players[player.color] = player;
+        this.players[player.color] = player!;
 
         if (players.length === 2) {
           this.status = GameStatusEnum.ONGOING;
