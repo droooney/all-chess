@@ -2,7 +2,6 @@ import { Config } from '../../types';
 
 const config: Config = {
   cookieName: 'cookie_name',
-  domain: 'localhost',
   email: {
     auth: {
       user: 'username',

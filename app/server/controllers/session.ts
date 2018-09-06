@@ -22,7 +22,6 @@ const sessionMiddleware = util.promisify(expressSession({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    domain: config.domain,
     maxAge: config.sessionExpires
   }
 })) as (req: IncomingMessage, res: ServerResponse) => any;
