@@ -25,6 +25,7 @@ export async function fetch(options: RequestOptions): Promise<GenericResponse> {
   }
 
   const response = await window.fetch(options.url, {
+    credentials: 'same-origin',
     method: options.method.toUpperCase(),
     ...additionalData
   });
