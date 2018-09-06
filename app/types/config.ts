@@ -1,5 +1,6 @@
 export interface Config {
   cookieName: string,
+  domain: string;
   email: {
     auth: {
       user: string;
