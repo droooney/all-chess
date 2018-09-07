@@ -79,6 +79,10 @@ export default class Room extends React.Component<Props, State> {
     });
   }
 
+  componentWillUnmount() {
+    this.socket!.disconnect();
+  }
+
   render() {
     let content: JSX.Element | string;
 
