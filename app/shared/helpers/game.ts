@@ -3,7 +3,7 @@ import {
   Board,
   ChatMessage,
   ColorEnum,
-  Game,
+  Game as IGame,
   GameKings,
   GamePieces,
   GamePlayers,
@@ -15,6 +15,8 @@ import {
   ResultReasonEnum,
   RevertableMove,
   Square,
+  StartingBoard,
+  StartingPiece,
   TimeControlEnum
 } from '../../types';
 import { PIECE_LITERALS, SHORT_PIECE_NAMES } from '../constants';
@@ -25,40 +27,19 @@ interface BoardData {
   pieces: GamePieces;
 }
 
-export class GameHelper implements Game {
-  static generateBoard(): BoardData {
-    return this.generateClassicBoard();
-  }
-
-  static generateClassicBoard(): BoardData {
+export class Game implements IGame {
+  static classicStartingBoard = (() => {
     let id = 0;
-    const kings = {} as { [color in ColorEnum]: Piece; };
-    const pieces: { [color in ColorEnum]: Piece[]; } = {
-      [ColorEnum.WHITE]: [],
-      [ColorEnum.BLACK]: []
-    };
-    const board = _.times(8, (y) => (
+
+    return _.times(8, (y) => (
       _.times(8, (x) => {
-        const getPiece = (type: PieceEnum): Piece => {
-          const color = y < 2
+        const getPiece = (type: PieceEnum): StartingPiece => ({
+          id: ++id,
+          type,
+          color: y < 2
             ? ColorEnum.WHITE
-            : ColorEnum.BLACK;
-          const piece = {
-            id: ++id,
-            type,
-            color,
-            square: { x, y },
-            moved: false
-          };
-
-          pieces[color].push(piece);
-
-          if (type === PieceEnum.KING) {
-            kings[color] = piece;
-          }
-
-          return piece;
-        };
+            : ColorEnum.BLACK
+        });
 
         if (y === 1 || y === 6) {
           return getPiece(PieceEnum.PAWN);
@@ -87,11 +68,46 @@ export class GameHelper implements Game {
         return null;
       })
     ));
+  })();
 
-    [ColorEnum.WHITE, ColorEnum.BLACK].forEach((color) => {
+  static getStartingBoard(): StartingBoard {
+    return this.classicStartingBoard;
+  }
+
+  static generateBoardDataFromStartingBoard(startingBoard: StartingBoard): BoardData {
+    const kings = {} as { [color in ColorEnum]: Piece; };
+    const pieces: { [color in ColorEnum]: Piece[]; } = {
+      [ColorEnum.WHITE]: [],
+      [ColorEnum.BLACK]: []
+    };
+    const board = startingBoard.map((rank, y) => (
+      rank.map((startingPiece, x) => {
+        if (!startingPiece) {
+          return null;
+        }
+
+        const piece = {
+          ...startingPiece,
+          square: { x, y },
+          moved: false
+        };
+
+        pieces[piece.color].push(piece);
+
+        if (piece.type === PieceEnum.KING) {
+          kings[piece.color] = piece;
+        }
+
+        return piece;
+      })
+    ));
+
+    _.forEach(pieces, (pieces, color) => {
       // king first
-      pieces[color].splice(pieces[color].indexOf(kings[color]), 1);
-      pieces[color].unshift(kings[color]);
+      const king = kings[color as ColorEnum];
+
+      pieces.splice(pieces.indexOf(king), 1);
+      pieces.unshift(king);
     });
 
     return {
@@ -101,14 +117,15 @@ export class GameHelper implements Game {
     };
   }
 
-  static getFileLiteral(file: string | number): string {
-    return String.fromCharCode(+file + 97);
+  static getFileLiteral(file: number): string {
+    return String.fromCharCode(file + 97);
   }
 
-  static getRankLiteral(rank: string | number): number {
-    return +rank + 1;
+  static getRankLiteral(rank: number): number {
+    return rank + 1;
   }
 
+  startingBoard: StartingBoard;
   board: Board;
   players: GamePlayers = {} as GamePlayers;
   status: GameStatusEnum = GameStatusEnum.BEFORE_START;
@@ -125,12 +142,13 @@ export class GameHelper implements Game {
   kings: GameKings;
   pieces: GamePieces;
 
-  constructor(params: Pick<Game, 'timeControl'>) {
+  constructor(params: Pick<Game, 'timeControl'> & { startingBoard?: StartingBoard; }) {
+    this.startingBoard = params.startingBoard || Game.getStartingBoard();
     ({
       board: this.board,
       pieces: this.pieces,
       kings: this.kings
-    } = GameHelper.generateBoard());
+    } = Game.generateBoardDataFromStartingBoard(this.startingBoard));
 
     this.timeControl = params.timeControl;
     this.positionString = this.generatePositionString();
@@ -242,8 +260,8 @@ export class GameHelper implements Game {
               y === fromY
               && x !== fromX
             ));
-            const fileLiteral = GameHelper.getFileLiteral(fromX);
-            const rankLiteral = GameHelper.getRankLiteral(fromY);
+            const fileLiteral = Game.getFileLiteral(fromX);
+            const rankLiteral = Game.getRankLiteral(fromY);
 
             if (areSameFile && areSameRank) {
               algebraic += fileLiteral + rankLiteral;
@@ -257,7 +275,7 @@ export class GameHelper implements Game {
             }
           }
         } else if (opponentPiece) {
-          const file = GameHelper.getFileLiteral(fromX);
+          const file = Game.getFileLiteral(fromX);
 
           algebraic += file;
           figurine += file;
@@ -268,7 +286,7 @@ export class GameHelper implements Game {
           figurine += 'x';
         }
 
-        const destination = GameHelper.getFileLiteral(toX) + GameHelper.getRankLiteral(toY);
+        const destination = Game.getFileLiteral(toX) + Game.getRankLiteral(toY);
 
         algebraic += destination;
         figurine += destination;
@@ -277,16 +295,6 @@ export class GameHelper implements Game {
           algebraic += `=${SHORT_PIECE_NAMES[promotion!]}`;
           figurine += `=${PIECE_LITERALS[piece.color][promotion!]}`;
         }
-      }
-    }
-
-    if (constructMoveLiterals) {
-      if (this.isCheckmate()) {
-        algebraic += '#';
-        figurine += '#';
-      } else if (this.isCheck) {
-        algebraic += '+';
-        figurine += '+';
       }
     }
 
@@ -340,6 +348,16 @@ export class GameHelper implements Game {
 
     this.turn = this.getOpponentColor();
     this.isCheck = this.isInCheck();
+
+    if (constructMoveLiterals) {
+      if (this.isCheckmate()) {
+        algebraic += '#';
+        figurine += '#';
+      } else if (this.isCheck) {
+        algebraic += '+';
+        figurine += '+';
+      }
+    }
 
     // return revert-move function
     return {

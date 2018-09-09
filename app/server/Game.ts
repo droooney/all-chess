@@ -11,7 +11,7 @@ import {
   TimeControlEnum,
   Timer
 } from '../types';
-import { GameHelper } from '../shared/helpers';
+import { Game as GameHelper } from '../shared/helpers';
 
 export default class Game extends GameHelper {
   timer: Timer = {
@@ -221,12 +221,10 @@ export default class Game extends GameHelper {
 
   toJSON(): IGame {
     return _.pick(this, [
-      'board',
-      'turn',
+      'startingBoard',
       'status',
       'players',
       'result',
-      'isCheck',
       'timeControl',
       'moves',
       'chat'

@@ -152,19 +152,12 @@ export default class Board extends React.Component<Props, State> {
     const {
       selectedPiece
     } = this.state;
-    const files = _.keys(
-      _.reduce(board, (files, rank) => (
-        _.assign(files, _.keys(rank))
-      ), {})
-    )
-      .map((rank) => +rank)
-      .sort();
-    const maxRank = Math.max(..._.keys(board).map((rank) => +rank));
-    const maxFile = Math.max(...files);
+    const maxRank = board.length - 1;
+    const maxFile = board[0].length - 1;
     const filesElement = (
       <div className="rank">
         <div className="empty-corner" />
-        {files.map((file) => (
+        {board[0].map((_piece, file) => (
           <div key={file} className="file-literal">
             {Game.getFileLiteral(file)}
           </div>
@@ -178,7 +171,7 @@ export default class Board extends React.Component<Props, State> {
         opposite: isBlackBase
       })}>
         {withLiterals && filesElement}
-        {_.map(board, (rank, rankY) => {
+        {board.map((rank, rankY) => {
           const rankLiteral = (
             <div className="rank-literal">
               {Game.getRankLiteral(rankY)}
@@ -191,22 +184,16 @@ export default class Board extends React.Component<Props, State> {
               className="rank"
             >
               {withLiterals && rankLiteral}
-              {_.times(maxFile + 1, (fileX) => {
-                if (!(fileX in rank)) {
-                  return (
-                    <div className="square" />
-                  );
-                }
-
+              {rank.map((_piece, fileX) => {
                 const square = {
-                  x: +fileX,
-                  y: +rankY
+                  x: fileX,
+                  y: rankY
                 };
 
                 return (
                   <div
                     key={fileX}
-                    className={`square ${(+rankY + +fileX) % 2 ? 'white' : 'black'}`}
+                    className={`square ${(rankY + fileX) % 2 ? 'white' : 'black'}`}
                     onClick={readOnly ? undefined : (() => this.onSquareClick(square))}
                   >
                     {selectedPiece && this.areSquaresEqual(selectedPiece.square, square) && (

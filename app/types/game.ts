@@ -37,6 +37,12 @@ export enum ColorEnum {
   BLACK = 'BLACK'
 }
 
+export interface StartingPiece {
+  id: number;
+  type: PieceEnum;
+  color: ColorEnum;
+}
+
 export interface Piece {
   id: number;
   type: PieceEnum;
@@ -53,19 +59,15 @@ export type GameKings = {
   [color in ColorEnum]: Piece;
 };
 
-export type Board = {
-  [rank: number]: {
-    [file: number]: Piece | null;
-  };
-};
+export type Board = (Piece | null)[][];
+
+export type StartingBoard = (StartingPiece | null)[][];
 
 export interface Game {
-  board: Board;
-  turn: ColorEnum;
+  startingBoard: StartingBoard;
   status: GameStatusEnum;
   players: GamePlayers;
   result: GameResult | null;
-  isCheck: boolean;
   timeControl: TimeControlEnum;
   moves: ExtendedMove[];
   chat: ChatMessage[];

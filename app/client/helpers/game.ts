@@ -5,7 +5,7 @@ import {
   ColorEnum,
   Game as IGame
 } from '../../types';
-import { GameHelper } from '../../shared/helpers';
+import { Game as GameHelper } from '../../shared/helpers';
 
 type GameEvent = 'updateChat' | 'updateGame';
 
@@ -25,6 +25,7 @@ export class Game extends GameHelper {
 
   constructor(game: IGame, socket: Socket) {
     super({
+      startingBoard: game.startingBoard,
       timeControl: game.timeControl
     });
 
