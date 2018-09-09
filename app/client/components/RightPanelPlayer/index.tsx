@@ -22,6 +22,8 @@ const ONE_DAY = 24 * ONE_HOUR;
 
 export default class RightPanelPlayer extends React.Component<Props> {
   getTimeString(time: number): string {
+    time = Math.max(time, 0);
+
     if (time > ONE_DAY) {
       const days = Math.floor(moment.duration(time).asDays());
 

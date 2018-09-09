@@ -2,7 +2,8 @@ import * as React from 'react';
 
 import {
   Piece as IPiece,
-  PieceEnum
+  PieceEnum,
+  Square
 } from '../../../types';
 
 import King from './King';
@@ -14,15 +15,44 @@ import Pawn from './Pawn';
 
 interface OwnProps {
   piece: IPiece;
+  isBlackBase: boolean;
+  maxRank: number;
+  maxFile: number;
+  onClick?(square: Square): void;
 }
 
 type Props = OwnProps;
 
 export default class Piece extends React.Component<Props> {
+  onClick = () => {
+    const {
+      piece,
+      onClick
+    } = this.props;
+
+    onClick!(piece.square);
+  };
+
   render() {
     const {
-      piece
+      piece,
+      piece: {
+        square: {
+          x: pieceX,
+          y: pieceY
+        }
+      },
+      isBlackBase,
+      maxFile,
+      maxRank,
+      onClick
     } = this.props;
+    const x = isBlackBase
+      ? maxFile - pieceX
+      : pieceX;
+    const y = isBlackBase
+      ? pieceY
+      : maxRank - pieceY;
 
     return (
       <svg
@@ -38,6 +68,10 @@ export default class Piece extends React.Component<Props> {
         strokeMiterlimit="4"
         strokeDasharray="none"
         strokeOpacity="1"
+        style={{
+          transform: `translate(${x * 70}px,${y * 70}px)`
+        }}
+        onClick={onClick && this.onClick}
       >
         {piece.type === PieceEnum.KING ? (
           <King color={piece.color} />

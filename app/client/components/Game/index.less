@@ -11,6 +11,7 @@
       .flex-col();
 
       flex-direction: column-reverse;
+      position: relative;
 
       &.opposite {
         flex-direction: column;
@@ -48,46 +49,58 @@
           position: relative;
           width: @size;
           height: @size;
-          cursor: pointer;
 
           &.white {
             background-color: beige;
           }
 
           &.black {
-            background-color: chocolate;
+            background-color: lightsalmon;
           }
 
-          .selected-square {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(115,125,105,0.5);
-            z-index: 1;
-          }
-
-          .allowed-square {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(rgba(0,255,255,0.5), rgba(0,0,0,0));
-            z-index: 2;
-          }
-
+          .selected-square,
+          .current-move-square,
+          .allowed-square,
           .check-square {
             position: absolute;
             width: 100%;
             height: 100%;
-            background: radial-gradient(red, rgba(0,0,0,0));
+          }
+
+          .selected-square {
+            background-color: rgba(115,125,105,0.5);
+            z-index: 1;
+          }
+
+          .current-move-square {
+            background-color: rgba(0,255,0,0.5);
+            z-index: 2;
+          }
+
+          .allowed-square {
+            background: radial-gradient(rgba(0,255,255,0.5), rgba(0,0,0,0));
+            cursor: pointer;
             z-index: 3;
           }
 
-          .piece {
-            width: 100%;
-            height: 100%;
+          .check-square {
+            background: radial-gradient(red, rgba(0,0,0,0));
             z-index: 4;
           }
         }
+      }
+
+      .piece {
+        position: absolute;
+        top: @rank-file-size;
+        left: @rank-file-size;
+        width: @size;
+        height: @size;
+        transition-property: transform;
+        transition-duration: 0.2s;
+        transition-timing-function: ease-out;
+        cursor: pointer;
+        z-index: 5;
       }
     }
 
@@ -134,18 +147,31 @@
         width: 220px;
         height: 250px;
         overflow-y: auto;
+        padding: 10px 0;
+        margin: 10px 0;
+        border-top: 2px solid #888;
+        border-bottom: 2px solid #888;
 
         .move-row {
-          .flex(flex-start);
+          .flex-stretch(flex-start);
 
           width: 100%;
+          height: 20px;
 
           .move-index {
             .flex-child-fixed(10%);
+            .flex(flex-start);
           }
 
           .move {
             .flex-child-fixed(45%);
+            .flex(flex-start);
+
+            cursor: pointer;
+
+            &.current {
+              background-color: #ccc;
+            }
           }
         }
       }

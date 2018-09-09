@@ -1,5 +1,135 @@
-import { ColorEnum } from '../../types';
+import * as _ from 'lodash';
+import { Socket } from 'socket.io-client';
 
-export function isLightColor(color: ColorEnum): boolean {
-  return color === ColorEnum.WHITE;
+import {
+  ColorEnum,
+  Game as IGame
+} from '../../types';
+import { GameHelper } from '../../shared/helpers';
+
+type GameEvent = 'updateChat' | 'updateGame';
+
+export class Game extends GameHelper {
+  static isLightColor(color: ColorEnum): boolean {
+    return color === ColorEnum.WHITE;
+  }
+
+  socket: Socket;
+  currentMoveIndex: number;
+  listeners: {
+    [event in GameEvent]: (() => void)[];
+  } = {
+    updateChat: [],
+    updateGame: []
+  };
+
+  constructor(game: IGame, socket: Socket) {
+    super({
+      timeControl: game.timeControl
+    });
+
+    this.status = game.status;
+    this.result = game.result;
+    this.players = game.players;
+    this.currentMoveIndex = game.moves.length - 1;
+    this.chat = game.chat;
+    this.socket = socket;
+
+    game.moves.forEach((move) => {
+      this.registerMove(move);
+    });
+
+    socket.on('move', (move) => {
+      let { currentMoveIndex } = this;
+
+      if (currentMoveIndex === this.moves.length - 1) {
+        currentMoveIndex++;
+      }
+
+      this.navigateToMove(this.moves.length - 1, false);
+
+      this.moves = [...this.moves];
+
+      this.registerMove(move);
+
+      this.currentMoveIndex++;
+
+      this.navigateToMove(currentMoveIndex, false);
+      this.emit('updateGame');
+    });
+
+    socket.on('updatePlayers', (players) => {
+      this.players = players;
+
+      this.emit('updateGame');
+    });
+
+    socket.on('gameOver', (result) => {
+      this.end(result.winner, result.reason);
+      this.emit('updateGame');
+    });
+
+    socket.on('newChatMessage', (chatMessage) => {
+      this.chat = [
+        ...this.chat,
+        chatMessage
+      ];
+
+      this.emit('updateChat');
+    });
+  }
+
+  destroy() {
+    this.socket.disconnect();
+  }
+
+  emit(event: GameEvent) {
+    this.listeners[event].forEach((listener) => listener());
+  }
+
+  moveBack(updateGame: boolean = true) {
+    if (this.currentMoveIndex > -1) {
+      this.moves[this.currentMoveIndex].revertMove();
+      this.currentMoveIndex--;
+
+      if (updateGame) {
+        this.emit('updateGame');
+      }
+    }
+  }
+
+  moveForward(updateGame: boolean = true) {
+    if (this.currentMoveIndex + 1 < this.moves.length) {
+      this.currentMoveIndex++;
+      this.performMove(this.moves[this.currentMoveIndex], false);
+
+      if (updateGame) {
+        this.emit('updateGame');
+      }
+    }
+  }
+
+  navigateToMove(moveIndex: number, updateGame: boolean = true) {
+    if (this.currentMoveIndex === moveIndex) {
+      return;
+    }
+
+    if (moveIndex < this.currentMoveIndex) {
+      _.times(this.currentMoveIndex - moveIndex, () => {
+        this.moveBack(false);
+      });
+    } else {
+      _.times(moveIndex - this.currentMoveIndex, () => {
+        this.moveForward(false);
+      });
+    }
+
+    if (updateGame) {
+      this.emit('updateGame');
+    }
+  }
+
+  on<K extends GameEvent>(event: K, listener: () => void) {
+    this.listeners[event].push(listener);
+  }
 }

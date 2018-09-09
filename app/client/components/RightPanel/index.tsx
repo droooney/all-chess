@@ -1,24 +1,22 @@
 import * as _ from 'lodash';
 import * as React from 'react';
 
-import {
-  ColorEnum,
-  ExtendedMove,
-  GamePlayers,
-  GameStatusEnum,
-  TimeControlEnum
-} from '../../../types';
+import { ColorEnum, ExtendedMove, GamePlayers, GameStatusEnum, TimeControlEnum } from '../../../types';
 
 import RightPanelPlayer from '../RightPanelPlayer';
+import classNames = require('classnames');
 
 interface OwnProps {
   players: GamePlayers;
-  lastMoveTimestamp: number;
+  currentMoveIndex: number;
   timeControl: TimeControlEnum;
   moves: ExtendedMove[];
-  turn: ColorEnum;
   isBlackBase: boolean;
   status: GameStatusEnum;
+  timeDiff: number;
+  moveBack(): void;
+  moveForward(): void;
+  navigateToMove(moveIndex: number): void;
 }
 
 interface State {
@@ -46,6 +44,8 @@ export default class RightPanel extends React.Component<Props, State> {
     if (moves.length > 1 && status === GameStatusEnum.ONGOING) {
       this.activateInterval();
     }
+
+    document.addEventListener('keydown', this.onKeyDown);
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -60,7 +60,7 @@ export default class RightPanel extends React.Component<Props, State> {
       const lastMoveRow = _.last(movesElem.children)!;
       const maxScroll = movesElem.scrollHeight - movesElem.clientHeight;
 
-      if (maxScroll - movesElem.scrollTop <= lastMoveRow.clientHeight) {
+      if (maxScroll - movesElem.scrollTop - 10 <= lastMoveRow.clientHeight) {
         movesElem.scrollTop = maxScroll;
       }
     }
@@ -68,6 +68,29 @@ export default class RightPanel extends React.Component<Props, State> {
 
   componentWillUnmount() {
     clearInterval(this.timeControlInterval);
+
+    document.removeEventListener('keydown', this.onKeyDown);
+  }
+
+  onKeyDown = (e: KeyboardEvent) => {
+    const {
+      moveBack,
+      moveForward
+    } = this.props;
+
+    if (e.key === 'ArrowLeft') {
+      moveBack();
+    } else if (e.key === 'ArrowRight') {
+      moveForward();
+    }
+  };
+
+  navigateToMove(moveIndex: number) {
+    this.props.navigateToMove(moveIndex);
+  }
+
+  adjustServerTime(serverTime: number): number {
+    return serverTime + this.props.timeDiff;
   }
 
   activateInterval() {
@@ -91,18 +114,22 @@ export default class RightPanel extends React.Component<Props, State> {
   render() {
     const {
       players,
-      lastMoveTimestamp,
+      currentMoveIndex,
       moves,
       timeControl,
-      turn,
-      isBlackBase
+      isBlackBase,
+      navigateToMove
     } = this.props;
+    const realTurn = moves.length % 2
+      ? ColorEnum.BLACK
+      : ColorEnum.WHITE;
     const topPlayer = isBlackBase
       ? players[ColorEnum.WHITE]
       : players[ColorEnum.BLACK];
     const bottomPlayer = isBlackBase
       ? players[ColorEnum.BLACK]
       : players[ColorEnum.WHITE];
+    const lastMoveTimestamp = this.adjustServerTime(moves.length ? _.last(moves)!.timestamp : 0);
     const timePassedSinceLastMove = (this.state.intervalActivated ? Date.now() : lastMoveTimestamp) - lastMoveTimestamp;
 
     return (
@@ -112,7 +139,7 @@ export default class RightPanel extends React.Component<Props, State> {
           player={topPlayer}
           timePassedSinceLastMove={timePassedSinceLastMove}
           timeControl={timeControl}
-          turn={turn}
+          turn={realTurn}
           isTop
         />
 
@@ -120,11 +147,21 @@ export default class RightPanel extends React.Component<Props, State> {
           {_.chunk(moves, 2).map((moves, index) => (
             <div key={index} className="move-row">
               <div className="move-index">{index + 1}</div>
-              {moves.map((move, index) => (
-                <div key={index} className="move">
-                  {move.figurine}
-                </div>
-              ))}
+              {moves.map((move, turn) => {
+                const moveIndex = index * 2 + turn;
+
+                return (
+                  <div
+                    key={turn}
+                    className={classNames('move', {
+                      current: moveIndex === currentMoveIndex
+                    })}
+                    onClick={() => navigateToMove(moveIndex)}
+                  >
+                    {move.figurine}
+                  </div>
+                );
+              })}
             </div>
           ))}
         </div>
@@ -133,7 +170,7 @@ export default class RightPanel extends React.Component<Props, State> {
           player={bottomPlayer}
           timePassedSinceLastMove={timePassedSinceLastMove}
           timeControl={timeControl}
-          turn={turn}
+          turn={realTurn}
           isTop={false}
         />
 

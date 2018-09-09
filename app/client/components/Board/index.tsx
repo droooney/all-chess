@@ -5,26 +5,28 @@ import classNames = require('classnames');
 import {
   Board as IBoard,
   ColorEnum,
+  GamePieces,
   Move,
   Piece as IPiece,
   PieceEnum,
   Player,
   Square
 } from '../../../types';
-import {
-  getFileLiteral,
-  getRankLiteral
-} from '../../../shared/helpers';
+import { Game } from '../../helpers';
 import Piece from '../Piece';
 
 interface OwnProps {
+  pieces: GamePieces;
   board: IBoard;
   player: Player | null;
   turn: ColorEnum;
+  getAllowedMoves(square: Square): Square[];
   sendMove(move: Move): void;
   isCheck: boolean;
+  readOnly: boolean;
   withLiterals: boolean;
   isBlackBase: boolean;
+  currentMove: Move | undefined;
 }
 
 interface State {
@@ -42,6 +44,14 @@ export default class Board extends React.Component<Props, State> {
     selectedPiece: null
   };
 
+  componentDidUpdate(prevProps: Props) {
+    if (this.props.readOnly && !prevProps.readOnly) {
+      this.setState({
+        selectedPiece: null
+      });
+    }
+  }
+
   areSquaresEqual(square1: Square, square2: Square): boolean {
     return (
       square1.y === square2.y
@@ -51,6 +61,9 @@ export default class Board extends React.Component<Props, State> {
 
   isAllowed(square: Square, state: State = this.state): boolean {
     const {
+      getAllowedMoves
+    } = this.props;
+    const {
       selectedPiece
     } = state;
 
@@ -58,7 +71,7 @@ export default class Board extends React.Component<Props, State> {
       return false;
     }
 
-    return selectedPiece.allowedMoves.some((allowedSquare) => this.areSquaresEqual(square, allowedSquare));
+    return getAllowedMoves(selectedPiece.square).some((allowedSquare) => this.areSquaresEqual(square, allowedSquare));
   }
 
   isInCheck(square: Square): boolean {
@@ -80,23 +93,18 @@ export default class Board extends React.Component<Props, State> {
     );
   }
 
-  onSquareClick(square: Square) {
+  onSquareClick = (square: Square) => {
     const {
       board,
       player,
-      turn,
       sendMove
     } = this.props;
-
-    if (!player || player.color !== turn) {
-      return;
-    }
 
     this.setState((state) => {
       if (!state.selectedPiece) {
         const piece = board[square.y][square.x];
 
-        if (!piece || player.color !== piece.color) {
+        if (!piece || player!.color !== piece.color) {
           return null;
         }
 
@@ -122,6 +130,7 @@ export default class Board extends React.Component<Props, State> {
       sendMove({
         from: state.selectedPiece.square,
         to: square,
+        timestamp: Date.now(),
         promotion: PieceEnum.QUEEN
       });
 
@@ -129,31 +138,35 @@ export default class Board extends React.Component<Props, State> {
         selectedPiece: null
       };
     });
-  }
+  };
 
   render() {
     const {
+      readOnly,
       board,
+      pieces,
       withLiterals,
+      currentMove,
       isBlackBase
     } = this.props;
     const {
       selectedPiece
     } = this.state;
-    const files = Object.keys(
+    const files = _.keys(
       _.reduce(board, (files, rank) => (
-        Object.assign(files, Object.keys(rank))
+        _.assign(files, _.keys(rank))
       ), {})
     )
       .map((rank) => +rank)
       .sort();
+    const maxRank = Math.max(..._.keys(board).map((rank) => +rank));
     const maxFile = Math.max(...files);
     const filesElement = (
       <div className="rank">
         <div className="empty-corner" />
         {files.map((file) => (
           <div key={file} className="file-literal">
-            {getFileLiteral(file)}
+            {Game.getFileLiteral(file)}
           </div>
         ))}
         <div className="empty-corner" />
@@ -168,7 +181,7 @@ export default class Board extends React.Component<Props, State> {
         {_.map(board, (rank, rankY) => {
           const rankLiteral = (
             <div className="rank-literal">
-              {getRankLiteral(rankY)}
+              {Game.getRankLiteral(rankY)}
             </div>
           );
 
@@ -185,7 +198,6 @@ export default class Board extends React.Component<Props, State> {
                   );
                 }
 
-                const piece = rank[fileX];
                 const square = {
                   x: +fileX,
                   y: +rankY
@@ -195,19 +207,22 @@ export default class Board extends React.Component<Props, State> {
                   <div
                     key={fileX}
                     className={`square ${(+rankY + +fileX) % 2 ? 'white' : 'black'}`}
-                    onClick={() => this.onSquareClick(square)}
+                    onClick={readOnly ? undefined : (() => this.onSquareClick(square))}
                   >
                     {selectedPiece && this.areSquaresEqual(selectedPiece.square, square) && (
                       <div className="selected-square" />
+                    )}
+                    {currentMove && (
+                      this.areSquaresEqual(currentMove.from, square)
+                      || this.areSquaresEqual(currentMove.to, square)
+                    ) && (
+                      <div className="current-move-square" />
                     )}
                     {this.isAllowed(square) && (
                       <div className="allowed-square" />
                     )}
                     {this.isInCheck(square) && (
                       <div className="check-square" />
-                    )}
-                    {piece && (
-                      <Piece piece={piece} />
                     )}
                   </div>
                 );
@@ -217,6 +232,16 @@ export default class Board extends React.Component<Props, State> {
           );
         })}
         {withLiterals && filesElement}
+        {_.flatten(_.map(pieces)).map((piece) => (
+          <Piece
+            key={piece.id}
+            piece={piece}
+            isBlackBase={isBlackBase}
+            maxRank={maxRank}
+            maxFile={maxFile}
+            onClick={readOnly ? undefined : this.onSquareClick}
+          />
+        ))}
       </div>
     );
   }

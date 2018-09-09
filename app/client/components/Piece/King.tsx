@@ -3,7 +3,7 @@ import * as React from 'react';
 import {
   ColorEnum
 } from '../../../types';
-import { isLightColor } from '../../helpers';
+import { Game } from '../../helpers';
 
 interface OwnProps {
   color: ColorEnum;
@@ -17,7 +17,7 @@ export default class King extends React.Component<Props> {
       color
     } = this.props;
 
-    if (isLightColor(color)) {
+    if (Game.isLightColor(color)) {
       return (
         <React.Fragment>
 

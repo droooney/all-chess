@@ -26,7 +26,7 @@ export default class Chat extends React.Component<Props> {
       const lastMessage = _.last(messages.children)!;
       const maxScroll = messages.scrollHeight - messages.clientHeight;
 
-      if (maxScroll - messages.scrollTop <= lastMessage.clientHeight) {
+      if (maxScroll - messages.scrollTop - 10 <= lastMessage.clientHeight) {
         messages.scrollTop = maxScroll;
       }
     }

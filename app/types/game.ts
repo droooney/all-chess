@@ -43,8 +43,15 @@ export interface Piece {
   color: ColorEnum;
   square: Square;
   moved: boolean;
-  allowedMoves: Square[];
 }
+
+export type GamePieces = {
+  [color in ColorEnum]: Piece[];
+};
+
+export type GameKings = {
+  [color in ColorEnum]: Piece;
+};
 
 export type Board = {
   [rank: number]: {
@@ -61,7 +68,6 @@ export interface Game {
   isCheck: boolean;
   timeControl: TimeControlEnum;
   moves: ExtendedMove[];
-  lastMoveTimestamp: number;
   chat: ChatMessage[];
 }
 
@@ -73,6 +79,7 @@ export interface Room {
 export interface Move {
   from: Square;
   to: Square;
+  timestamp: number;
   promotion?: PieceEnum;
 }
 
@@ -91,8 +98,21 @@ export enum GameStatusEnum {
   FINISHED = 'FINISHED'
 }
 
+export enum ResultReasonEnum {
+  CHECKMATE = 'CHECKMATE',
+  STALEMATE = 'STALEMATE',
+  TIME_RAN_OUT = 'TIME_RAN_OUT',
+  RESIGN = 'RESIGN',
+  INSUFFICIENT_MATERIAL = 'INSUFFICIENT_MATERIAL',
+  THREEFOLD_REPETITION = 'THREEFOLD_REPETITION',
+  FIVEFOLD_REPETITION = 'FIVEFOLD_REPETITION',
+  FIFTY_MOVE_RULE = 'FIFTY_MOVE_RULE',
+  SEVENTY_FIVE_MOVE_RULE = 'SEVENTY_FIVE_MOVE_RULE'
+}
+
 export interface GameResult {
   winner: ColorEnum | null;
+  reason: ResultReasonEnum;
 }
 
 export interface Timer {

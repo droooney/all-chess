@@ -2,6 +2,7 @@ import {
   ChatMessage,
   ColorEnum,
   Game,
+  GamePlayers,
   GameResult,
   Move,
   Player,
@@ -16,8 +17,10 @@ declare global {
       from: ColorEnum;
     };
     gameOver: GameResult;
-    updateGame: Game;
+    startGame: GamePlayers;
+    updatePlayers: GamePlayers;
     initialGameData: {
+      timestamp: number;
       player: Player | null;
       game: Game;
     };

@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
+import io = require('socket.io-client');
 
 import {
   Game,
@@ -9,7 +10,6 @@ import {
 import GameComponent from '../Game';
 
 import './index.less';
-import io = require('socket.io-client');
 
 type Props = RouteComponentProps<{ roomId: string }>;
 
@@ -20,6 +20,7 @@ interface State {
 export default class Room extends React.Component<Props, State> {
   socket?: io.Socket;
   player: Player | null = null;
+  timeDiff?: number;
   state: State = {
     game: null
   };
@@ -34,47 +35,24 @@ export default class Room extends React.Component<Props, State> {
     } = this.props;
     const socket = this.socket = io.connect(`/rooms/${roomId}`);
 
-    socket.on('initialGameData', ({ player, game }) => {
+    socket.on('initialGameData', ({ timestamp, player, game }) => {
       console.log('gameData', player, game);
 
       this.player = player;
+      this.timeDiff = Date.now() - timestamp;
 
       this.setState({
         game
       });
     });
 
-    socket.on('updateGame', (game) => {
-      this.setState((state) => ({
-        game: state.game
-          ? game
-          : null
-      }));
-    });
-
-    socket.on('gameOver', ({ winner }) => {
-      console.log(winner);
-    });
-
-    socket.on('newChatMessage', (chatMessage) => {
+    socket.on('startGame', (players) => {
       this.setState(({ game }) => ({
-        game: game && ({
+        game: game && {
           ...game,
-          chat: [
-            ...game.chat,
-            chatMessage
-          ]
-        })
-      }));
-    });
-
-    socket.on('gameOver', (result) => {
-      this.setState(({ game }) => ({
-        game: game && ({
-          ...game,
-          status: GameStatusEnum.FINISHED,
-          result
-        })
+          status: GameStatusEnum.ONGOING,
+          players
+        }
       }));
     });
   }
@@ -95,13 +73,14 @@ export default class Room extends React.Component<Props, State> {
     } else if (this.state.game.status === GameStatusEnum.BEFORE_START) {
       content = this.player
         ? 'Waiting for the opponent...'
-        : 'Waiting for the other player...';
+        : 'Waiting for the players...';
     } else {
       content = (
         <GameComponent
           game={this.state.game}
           player={this.player}
           socket={this.socket!}
+          timeDiff={this.timeDiff!}
         />
       );
     }
