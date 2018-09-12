@@ -1,64 +1,119 @@
 import * as _ from 'lodash';
 import { Namespace, Socket } from 'socket.io';
 import {
+  BaseMove,
   ColorEnum,
   Game as IGame,
+  GameCreateSettings,
   GameStatusEnum,
+  GameVariantEnum,
   Move,
   PieceEnum,
+  PieceLocationEnum,
   Player,
   ResultReasonEnum,
-  TimeControlEnum,
-  Timer
+  TimeControlEnum
 } from '../types';
 import { Game as GameHelper } from '../shared/helpers';
+import {
+  POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS,
+  POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
+  POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS
+} from '../shared/constants';
+
+const VARIATIONS = _.keys(GameVariantEnum);
 
 export default class Game extends GameHelper {
-  timer: Timer = {
-    base: 10 * 60 * 1000,
-    increment: 5 * 1000
-  };
+  static validateSettings(settings: any): boolean {
+    if (!settings) {
+      return false;
+    }
+
+    return (
+      this.validateTimeControl(settings.timeControl)
+      && this.validateVariants(settings.variants)
+    );
+  }
+
+  static validateTimeControl(timeControl: any): boolean {
+    if (timeControl === null) {
+      return true;
+    }
+
+    if (!timeControl) {
+      return false;
+    }
+
+    if (timeControl.type === TimeControlEnum.TIMER) {
+      return (
+        POSSIBLE_TIMER_BASES_IN_MILLISECONDS.includes(timeControl.base)
+        && POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS.includes(timeControl.increment)
+        && _.isEqual(_.keys(timeControl).sort(), ['base', 'increment', 'type'])
+      );
+    }
+
+    if (timeControl.type === TimeControlEnum.CORRESPONDENCE) {
+      return (
+        POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS.includes(timeControl.base)
+        && _.isEqual(_.keys(timeControl).sort(), ['base', 'type'])
+      );
+    }
+
+    return false;
+  }
+
+  static validateVariants(variants: any): boolean {
+    if (!Array.isArray(variants)) {
+      return false;
+    }
+
+    if (variants.some((variation) => !VARIATIONS.includes(variation))) {
+      return false;
+    }
+
+    return super.validateVariants(variants);
+  }
+
   timerTimeout?: number;
   io: Namespace;
 
-  constructor(io: Namespace, players: Player[]) {
-    super({
-      timeControl: TimeControlEnum.TIMER
-    });
+  constructor(io: Namespace, settings: GameCreateSettings & { id: string; }) {
+    super(settings);
 
     this.io = io;
 
     io.on('connection', (socket) => {
       const user = socket.user;
-      const existingPlayer = (user && players.find(({ login }) => login === user.login)) || null;
-      const isNewPlayer = !existingPlayer && user && players.length < 2;
+      const existingPlayer = (user && _.find(this.players, (player) => player && player.login === user.login)) || null;
+      const isNewPlayer = (
+        !existingPlayer
+        && user
+        && this.status === GameStatusEnum.BEFORE_START
+        && _.some(this.players, (player) => !player)
+      );
       let player: Player | null = null;
 
       if (isNewPlayer) {
-        const color = players.length === 0
-          ? Math.random() > 0.5
+        const otherPlayer = _.find(this.players, Boolean);
+        const color = otherPlayer
+          ? this.getOppositeColor(otherPlayer.color)
+          : Math.random() > 0.5
             ? ColorEnum.WHITE
-            : ColorEnum.BLACK
-          : this.getOppositeColor(players[0].color);
+            : ColorEnum.BLACK;
 
         player = {
           ...socket.user!,
           color,
-          time: this.timer.base
+          time: this.timeControl && this.timeControl.base
         };
 
-        players.push(player!);
         this.players[player.color] = player!;
 
-        if (players.length === 2) {
+        if (otherPlayer) {
           this.status = GameStatusEnum.ONGOING;
 
           socket.broadcast.emit('startGame', this.players);
         }
-
-        socket.on('move', (move) => {
-          this.move(socket, move);
-        });
       } else {
         player = existingPlayer;
       }
@@ -70,7 +125,7 @@ export default class Game extends GameHelper {
           this.end(this.getOppositeColor(player!.color), ResultReasonEnum.RESIGN);
         });
 
-        socket.on('move', (move) => {
+        socket.on('makeMove', (move) => {
           this.move(socket, move);
         });
       }
@@ -102,33 +157,38 @@ export default class Game extends GameHelper {
       move
       && move.from
       && move.to
-      && this.board[move.from.y]
-      && typeof move.from.y === 'number'
-      && typeof move.from.x === 'number'
-      && typeof move.to.y === 'number'
-      && typeof move.to.x === 'number'
+      && ((
+        move.from.type === PieceLocationEnum.POCKET
+        && this.isPocketUsed
+      ) || (
+        move.from.type === PieceLocationEnum.BOARD
+        && this.board[move.from.y]
+        && typeof move.from.y === 'number'
+        && typeof move.from.x === 'number'
+        && typeof move.to.y === 'number'
+        && typeof move.to.x === 'number'
+      ))
     );
   }
 
-  move(socket: Socket, move: Move) {
-    if (!this.validateMove(move)) {
+  move(socket: Socket, moveForServer: BaseMove) {
+    if (!this.validateMove(moveForServer)) {
       return;
     }
 
     const player = socket.player!;
     const {
-      from: fromSquare,
-      from: {
-        x: fromX,
-        y: fromY
-      },
+      from: fromLocation,
+      to: toLocation,
       to: {
         x: toX,
         y: toY
       },
       promotion
-    } = move;
-    const piece = this.board[fromY][fromX];
+    } = moveForServer;
+    const piece = fromLocation.type === PieceLocationEnum.BOARD
+      ? this.board[fromLocation.y][fromLocation.x]
+      : this.pocket[player.color][fromLocation.pieceType][0];
 
     if (
       this.turn !== player.color
@@ -141,14 +201,18 @@ export default class Game extends GameHelper {
       return;
     }
 
-    const isSquareAllowed = this.getAllowedMoves(fromSquare).some(({ x, y }) => (
+    const isSquareAllowed = this.getAllowedMoves(fromLocation).some(({ x, y }) => (
       toX === x && toY === y
     ));
-    const isPawnPromotion = piece.type === PieceEnum.PAWN && ((
-      this.turn === ColorEnum.WHITE && toY === 7
-    ) || (
-      this.turn === ColorEnum.BLACK && toY === 0
-    ));
+    const isPawnPromotion = (
+      fromLocation.type === PieceLocationEnum.BOARD
+      && piece!.type === PieceEnum.PAWN
+      && ((
+        this.turn === ColorEnum.WHITE && toY === 7
+      ) || (
+        this.turn === ColorEnum.BLACK && toY === 0
+      ))
+    );
     const isValidPromotion =  (
       promotion === PieceEnum.QUEEN
       || promotion === PieceEnum.ROOK
@@ -161,34 +225,40 @@ export default class Game extends GameHelper {
       return;
     }
 
-    if (!isPawnPromotion) {
-      delete move.promotion;
+    const newTimestamp = Date.now();
+    const move: Move = {
+      from: fromLocation,
+      to: toLocation,
+      timestamp: newTimestamp
+    };
+
+    if (isPawnPromotion) {
+      move.promotion = promotion;
     }
 
     const prevMove = _.last(this.moves);
-    const newTimestamp = move.timestamp = Date.now();
 
     this.registerMove(move);
 
     if (
       this.status === GameStatusEnum.ONGOING
       && this.moves.length > 2
-      && this.timeControl !== TimeControlEnum.NONE
+      && this.timeControl
     ) {
-      if (this.timeControl === TimeControlEnum.TIMER) {
-        player.time! += prevMove!.timestamp - newTimestamp + this.timer.increment;
+      if (this.timeControl.type === TimeControlEnum.TIMER) {
+        player.time! += prevMove!.timestamp - newTimestamp + this.timeControl.increment;
       } else {
-        player.time = this.timer.base;
+        player.time = this.timeControl.base;
       }
     }
 
-    this.io.emit('move', move);
+    this.io.emit('moveMade', move);
     this.io.emit('updatePlayers', this.players);
 
     if (
       this.status === GameStatusEnum.ONGOING
       && this.moves.length > 1
-      && this.timeControl !== TimeControlEnum.NONE
+      && this.timeControl
     ) {
       this.setTimeout(player);
     }
@@ -221,7 +291,9 @@ export default class Game extends GameHelper {
 
   toJSON(): IGame {
     return _.pick(this, [
+      'id',
       'startingBoard',
+      'variants',
       'status',
       'players',
       'result',

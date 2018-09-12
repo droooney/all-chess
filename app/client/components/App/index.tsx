@@ -12,8 +12,8 @@ import Header from '../Header';
 import Home from '../Home';
 import Login from '../Login';
 import Register from '../Register';
-import Rooms from '../Rooms';
-import Room from '../Room';
+import Games from '../Games';
+import Game from '../Game';
 
 import './index.less';
 
@@ -32,8 +32,8 @@ export default class App extends React.Component {
               <Route exact strict path="/" component={Home} />
               <Route exact strict path="/login" component={Login} />
               <Route exact strict path="/register" component={Register} />
-              <Route exact strict path="/rooms" component={Rooms} />
-              <Route exact strict path="/rooms/:roomId" component={Room} />
+              <Route exact strict path="/games" component={Games} />
+              <Route exact strict path="/games/:gameId" component={Game} />
               <Redirect to="/" />
             </Switch>
           </main>

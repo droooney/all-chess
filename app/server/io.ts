@@ -4,6 +4,6 @@ import server from './server';
 
 const io = sio(server);
 
-export const rooms = io.of('/rooms');
+export const games = io.of('/games');
 
 export default io;

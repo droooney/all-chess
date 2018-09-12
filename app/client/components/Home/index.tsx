@@ -7,7 +7,7 @@ export default class Home extends React.Component {
   render() {
     return (
       <div className="route home-route">
-        <Link to="/rooms">
+        <Link to="/games">
           Play!
         </Link>
       </div>

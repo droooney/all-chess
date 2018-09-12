@@ -1,31 +1,31 @@
-import io, { rooms } from './io';
-import { Player, Room } from '../types';
-import { generateRoomId } from './helpers';
+import io, { games } from './io';
+import { generateGameId } from './helpers';
 import { socketAuth } from './controllers/session';
 import Game from './Game';
 
-const roomList: Room[] = [];
-const roomMap: { [roomId: string]: Room } = {};
-const gameMap: { [roomId: string]: Game } = {};
+const gameList: Game[] = [];
+const gameMap: { [gameId: string]: Game } = {};
 
-rooms.on('connection', (socket) => {
-  socket.emit('roomList', roomList);
+games.on('connection', (socket) => {
+  socket.emit('gameList', gameList);
 
-  socket.on('createRoom', () => {
-    const roomId = generateRoomId(roomMap);
-    const players: Player[] = [];
-    const room = {
-      id: roomId,
-      players
-    };
-    const gameNamespace = io.of(`/rooms/${roomId}`);
+  socket.on('createGame', (settings) => {
+    if (!Game.validateSettings(settings)) {
+      return;
+    }
+
+    const id = generateGameId(gameMap);
+    const gameNamespace = io.of(`/games/${id}`);
+    const game = new Game(gameNamespace, {
+      ...settings,
+      id
+    });
 
     gameNamespace.use(socketAuth);
 
-    roomList.push(room);
-    roomMap[roomId] = room;
-    gameMap[roomId] = new Game(gameNamespace, players);
+    gameList.push(game);
+    gameMap[id] = game;
 
-    rooms.emit('roomCreated', room);
+    games.emit('gameCreated', game);
   });
 });

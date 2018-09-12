@@ -1,24 +1,46 @@
+import * as _ from 'lodash';
 import moment = require('moment');
 import * as React from 'react';
+import classNames = require('classnames');
 
 import {
   ColorEnum,
+  Piece as IPiece,
+  PieceEnum,
+  PieceLocationEnum,
+  PiecePocketLocation,
   Player,
-  TimeControlEnum
+  PocketPiece,
+  PocketPieces,
+  TimeControl
 } from '../../../types';
 
+import Piece from '../Piece';
+
 interface OwnProps {
+  currentPlayer: Player | null;
   player: Player;
+  pocket: PocketPieces | null;
   timePassedSinceLastMove: number;
-  timeControl: TimeControlEnum;
+  timeControl: TimeControl;
   turn: ColorEnum;
   isTop: boolean;
+  selectedPiece: PocketPiece | null;
+  selectPiece(piece: IPiece | null): void;
 }
 
 type Props = OwnProps;
 
 const ONE_HOUR = 60 * 60 * 1000;
 const ONE_DAY = 24 * ONE_HOUR;
+const POCKET_PIECES_ORDER: { [piece in PieceEnum]: number; } = {
+  [PieceEnum.KING]: 1,
+  [PieceEnum.QUEEN]: 2,
+  [PieceEnum.ROOK]: 3,
+  [PieceEnum.BISHOP]: 4,
+  [PieceEnum.KNIGHT]: 5,
+  [PieceEnum.PAWN]: 6
+};
 
 export default class RightPanelPlayer extends React.Component<Props> {
   getTimeString(time: number): string {
@@ -37,11 +59,42 @@ export default class RightPanelPlayer extends React.Component<Props> {
     return moment(time).format('mm:ss');
   }
 
+  onPocketPieceClick(location: PiecePocketLocation) {
+    const {
+      currentPlayer,
+      player,
+      turn,
+      pocket,
+      selectPiece,
+      selectedPiece
+    } = this.props;
+
+    if (
+      !currentPlayer
+      || currentPlayer.color !== player.color
+      || player.color !== turn
+    ) {
+      return;
+    }
+
+    if (
+      selectedPiece
+      && selectedPiece.location.pieceType === location.pieceType
+    ) {
+      selectPiece(null);
+    } else {
+      selectPiece(pocket![location.pieceType][0]);
+    }
+  }
+
   render() {
     const {
       player,
+      currentPlayer,
       timePassedSinceLastMove,
       turn,
+      pocket,
+      selectedPiece,
       timeControl,
       isTop
     } = this.props;
@@ -49,7 +102,55 @@ export default class RightPanelPlayer extends React.Component<Props> {
     return (
       <div className={`player ${isTop ? 'top' : 'bottom'}`}>
 
-        {timeControl !== TimeControlEnum.NONE && (
+        {pocket && (
+          <div className="pocket">
+            {
+              _(pocket)
+                .entries()
+                .sortBy(([type]) => POCKET_PIECES_ORDER[type as PieceEnum])
+                .map(([type, pieces]: [PieceEnum, PocketPiece[]]) => (
+                  <div
+                    key={type}
+                    className={classNames('piece-container', {
+                      disabled: !pieces.length
+                    })}
+                    onClick={pieces.length ? (() => this.onPocketPieceClick(pieces[0].location)) : undefined}
+                  >
+                    {
+                      selectedPiece
+                      && currentPlayer
+                      && selectedPiece.location.pieceType === type
+                      && player.color === currentPlayer.color
+                      && (
+                        <div className="selected-square" />
+                      )
+                    }
+
+                    <Piece
+                      key={type}
+                      piece={pieces.length ? pieces[0] : {
+                        color: player.color,
+                        type,
+                        location: {
+                          type: PieceLocationEnum.POCKET,
+                          pieceType: type
+                        }
+                      }}
+                    />
+
+                    {pieces.length ? (
+                      <span className="count">
+                        {pieces.length}
+                      </span>
+                    ) : null}
+                  </div>
+                ))
+                .value()
+            }
+          </div>
+        )}
+
+        {timeControl && (
           <div className="timer">
             {this.getTimeString(
               player.color === turn

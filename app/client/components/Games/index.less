@@ -1,0 +1,40 @@
+@import (reference) '../../styles/mixins';
+
+.route.games-route {
+  .flex-col(flex-start);
+
+  .games {
+    width: 100%;
+    border: 1px solid black;
+    border-collapse: collapse;
+
+    .game {
+      cursor: pointer;
+
+      td {
+        border: 1px solid black;
+        text-align: center;
+      }
+    }
+  }
+}
+
+.game-create-settings-modal .modal-content {
+  .flex-col();
+
+  width: 350px;
+  padding: 20px 30px;
+
+  .time-control,
+  .variants {
+    .flex-col();
+  }
+
+  .variants {
+    align-items: flex-start;
+
+    .variant {
+      .flex(flex-start);
+    }
+  }
+}

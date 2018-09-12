@@ -1,19 +1,35 @@
 import * as _ from 'lodash';
 import * as React from 'react';
 
-import { ColorEnum, ExtendedMove, GamePlayers, GameStatusEnum, TimeControlEnum } from '../../../types';
+import {
+  ColorEnum,
+  ExtendedMove,
+  GamePlayers,
+  GameStatusEnum,
+  Piece as IPiece,
+  Player,
+  Pocket,
+  PocketPiece,
+  TimeControl,
+  TimeControlEnum
+} from '../../../types';
 
 import RightPanelPlayer from '../RightPanelPlayer';
 import classNames = require('classnames');
 
 interface OwnProps {
   players: GamePlayers;
+  player: Player | null;
+  pocket: Pocket;
+  isPocketUsed: boolean;
   currentMoveIndex: number;
-  timeControl: TimeControlEnum;
+  timeControl: TimeControl;
   moves: ExtendedMove[];
   isBlackBase: boolean;
   status: GameStatusEnum;
   timeDiff: number;
+  selectedPiece: PocketPiece | null;
+  selectPiece(piece: IPiece | null): void;
   moveBack(): void;
   moveForward(): void;
   navigateToMove(moveIndex: number): void;
@@ -98,7 +114,7 @@ export default class RightPanel extends React.Component<Props, State> {
       status,
       timeControl
     } = this.props;
-    const refreshInterval = timeControl === TimeControlEnum.TIMER
+    const refreshInterval = timeControl && timeControl.type === TimeControlEnum.TIMER
       ? 1000
       : 60 * 1000;
 
@@ -106,7 +122,7 @@ export default class RightPanel extends React.Component<Props, State> {
       intervalActivated: true
     });
 
-    if (status === GameStatusEnum.ONGOING && timeControl !== TimeControlEnum.NONE) {
+    if (status === GameStatusEnum.ONGOING && timeControl) {
       this.timeControlInterval = setInterval(() => this.forceUpdate(), refreshInterval) as any;
     }
   }
@@ -114,10 +130,15 @@ export default class RightPanel extends React.Component<Props, State> {
   render() {
     const {
       players,
+      player,
+      pocket,
+      isPocketUsed,
       currentMoveIndex,
       moves,
       timeControl,
       isBlackBase,
+      selectedPiece,
+      selectPiece,
       navigateToMove
     } = this.props;
     const realTurn = moves.length % 2
@@ -137,10 +158,14 @@ export default class RightPanel extends React.Component<Props, State> {
 
         <RightPanelPlayer
           player={topPlayer}
+          currentPlayer={player}
           timePassedSinceLastMove={timePassedSinceLastMove}
           timeControl={timeControl}
           turn={realTurn}
           isTop
+          pocket={isPocketUsed ? pocket[topPlayer.color] : null}
+          selectedPiece={selectedPiece}
+          selectPiece={selectPiece}
         />
 
         <div className="moves" ref={this.movesRef}>
@@ -168,10 +193,14 @@ export default class RightPanel extends React.Component<Props, State> {
 
         <RightPanelPlayer
           player={bottomPlayer}
+          currentPlayer={player}
           timePassedSinceLastMove={timePassedSinceLastMove}
           timeControl={timeControl}
           turn={realTurn}
           isTop={false}
+          pocket={isPocketUsed ? pocket[bottomPlayer.color] : null}
+          selectedPiece={selectedPiece}
+          selectPiece={selectPiece}
         />
 
       </div>

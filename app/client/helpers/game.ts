@@ -25,8 +25,10 @@ export class Game extends GameHelper {
 
   constructor(game: IGame, socket: Socket) {
     super({
+      id: game.id,
       startingBoard: game.startingBoard,
-      timeControl: game.timeControl
+      timeControl: game.timeControl,
+      variants: game.variants
     });
 
     this.status = game.status;
@@ -40,7 +42,7 @@ export class Game extends GameHelper {
       this.registerMove(move);
     });
 
-    socket.on('move', (move) => {
+    socket.on('moveMade', (move) => {
       let { currentMoveIndex } = this;
 
       if (currentMoveIndex === this.moves.length - 1) {

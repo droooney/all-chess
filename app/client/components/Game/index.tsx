@@ -1,130 +1,216 @@
 import * as React from 'react';
-import { Socket } from 'socket.io-client';
+import { RouteComponentProps } from 'react-router-dom';
+import io = require('socket.io-client');
 
 import {
+  BaseMove,
   ColorEnum,
   Game as IGame,
   GameStatusEnum,
-  Move,
+  PieceLocationEnum,
   Player,
+  PocketPiece,
+  RealPiece,
+  RealPieceLocation,
   Square
 } from '../../../types';
 import { Game as GameHelper } from '../../helpers';
 
-import Board from '../Board';
+import './index.less';
 import Chat from '../Chat';
+import Board from '../Board';
 import RightPanel from '../RightPanel';
 
-import './index.less';
+type Props = RouteComponentProps<{ gameId: string }>;
 
-interface OwnProps {
-  game: IGame;
-  player: Player | null;
-  socket: Socket;
-  timeDiff: number;
+interface State {
+  gameData: IGame | null;
+  selectedPiece: RealPiece | null;
 }
 
-type Props = OwnProps;
+export default class Game extends React.Component<Props, State> {
+  socket?: io.Socket;
+  player: Player | null = null;
+  timeDiff?: number;
+  game?: GameHelper;
+  state: State = {
+    selectedPiece: null,
+    gameData: null
+  };
 
-export default class Game extends React.Component<Props> {
-  game: GameHelper;
+  componentDidMount() {
+    const {
+      match: {
+        params: {
+          gameId
+        }
+      }
+    } = this.props;
+    const socket = this.socket = io.connect(`/games/${gameId}`);
 
-  constructor(props: Props) {
-    super(props);
+    socket.on('initialGameData', ({ timestamp, player, game }) => {
+      this.player = player;
+      this.timeDiff = Date.now() - timestamp;
+      this.game = new GameHelper(game, socket);
 
-    const game = this.game = new GameHelper(props.game, props.socket);
+      this.game.on('updateChat', () => {
+        this.forceUpdate();
+      });
 
-    game.on('updateChat', () => {
-      this.forceUpdate();
+      this.game.on('updateGame', () => {
+        this.forceUpdate();
+      });
+
+      this.setState({
+        gameData: game
+      });
+
+      console.log(this.game);
     });
 
-    game.on('updateGame', () => {
-      this.forceUpdate();
+    socket.on('startGame', (players) => {
+      this.game!.players = players;
+      this.game!.status = GameStatusEnum.ONGOING;
+
+      this.setState(({ gameData }) => ({
+        gameData: gameData && {
+          ...gameData,
+          status: GameStatusEnum.ONGOING,
+          players
+        }
+      }));
     });
   }
 
+  componentWillUnmount() {
+    this.socket!.disconnect();
+  }
+
   moveBack = () => {
-    this.game.moveBack();
+    this.game!.moveBack();
   };
 
   moveForward = () => {
-    this.game.moveForward();
+    this.game!.moveForward();
   };
 
   navigateToMove = (moveIndex: number) => {
-    this.game.navigateToMove(moveIndex);
+    this.game!.navigateToMove(moveIndex);
   };
 
-  sendMove = (move: Move) => {
-    this.props.socket.emit('move', move);
+  sendMove = (move: BaseMove) => {
+    this.socket!.emit('makeMove', move);
   };
 
   sendMessage = (message: string) => {
-    this.props.socket.emit('addChatMessage', message);
+    this.socket!.emit('addChatMessage', message);
   };
 
-  getAllowedMoves = (square: Square): Square[] => {
-    return this.game.getAllowedMoves(square);
+  getAllowedMoves = (location: RealPieceLocation): Square[] => {
+    return this.game!.getAllowedMoves(location);
+  };
+
+  selectPiece = (selectedPiece: RealPiece | null) => {
+    this.setState({
+      selectedPiece
+    });
   };
 
   render() {
-    const {
-      status,
-      board,
-      pieces,
-      chat,
-      turn,
-      players,
-      timeControl,
-      moves,
-      currentMoveIndex,
-      isCheck
-    } = this.game;
-    const {
-      timeDiff,
-      player
-    } = this.props;
-    const isBlackBase = !!player && player.color === ColorEnum.BLACK;
+    let content: JSX.Element | string;
+
+    if (!this.state.gameData) {
+      content = (
+        <div className="spinner">
+          Loading game...
+        </div>
+      );
+    } else if (this.state.gameData.status === GameStatusEnum.BEFORE_START) {
+      content = this.player
+        ? 'Waiting for the opponent...'
+        : 'Waiting for the players...';
+    } else {
+      const {
+        status,
+        board,
+        pieces,
+        chat,
+        turn,
+        players,
+        pocket,
+        isPocketUsed,
+        timeControl,
+        moves,
+        currentMoveIndex,
+        isCheck
+      } = this.game!;
+      const {
+        selectedPiece
+      } = this.state;
+      const player = this.player;
+      const isBlackBase = !!player && player.color === ColorEnum.BLACK;
+
+      content = (
+        <div className="game">
+
+          <Chat
+            chat={chat}
+            sendMessage={this.sendMessage}
+          />
+
+          <Board
+            board={board}
+            pieces={pieces}
+            player={player}
+            turn={turn}
+            selectedPiece={
+              selectedPiece
+                ? selectedPiece
+                : null
+            }
+            sendMove={this.sendMove}
+            getAllowedMoves={this.getAllowedMoves}
+            selectPiece={this.selectPiece}
+            isCheck={isCheck}
+            isBlackBase={isBlackBase}
+            readOnly={(
+              !player
+              || player.color !== turn
+              || status !== GameStatusEnum.ONGOING
+              || currentMoveIndex + 1 !== moves.length
+            )}
+            currentMove={moves[currentMoveIndex]}
+          />
+
+          <RightPanel
+            players={players}
+            player={player}
+            pocket={pocket}
+            isPocketUsed={isPocketUsed}
+            currentMoveIndex={currentMoveIndex}
+            timeControl={timeControl}
+            moves={moves}
+            isBlackBase={isBlackBase}
+            status={status}
+            timeDiff={this.timeDiff!}
+            selectedPiece={
+              selectedPiece && selectedPiece.location.type === PieceLocationEnum.POCKET
+                ? selectedPiece as PocketPiece
+                : null
+            }
+            selectPiece={this.selectPiece}
+            moveBack={this.moveBack}
+            moveForward={this.moveForward}
+            navigateToMove={this.navigateToMove}
+          />
+
+        </div>
+      );
+    }
 
     return (
-      <div className="game">
-
-        <Chat
-          chat={chat}
-          sendMessage={this.sendMessage}
-        />
-
-        <Board
-          board={board}
-          pieces={pieces}
-          player={player}
-          turn={turn}
-          sendMove={this.sendMove}
-          getAllowedMoves={this.getAllowedMoves}
-          isCheck={isCheck}
-          isBlackBase={isBlackBase}
-          readOnly={(
-            !player
-            || player.color !== turn
-            || status !== GameStatusEnum.ONGOING
-            || currentMoveIndex + 1 !== moves.length
-          )}
-          currentMove={moves[currentMoveIndex]}
-        />
-
-        <RightPanel
-          players={players}
-          currentMoveIndex={currentMoveIndex}
-          timeControl={timeControl}
-          moves={moves}
-          isBlackBase={isBlackBase}
-          status={status}
-          timeDiff={timeDiff}
-          moveBack={this.moveBack}
-          moveForward={this.moveForward}
-          navigateToMove={this.navigateToMove}
-        />
-
+      <div className="route game-route">
+        {content}
       </div>
     );
   }

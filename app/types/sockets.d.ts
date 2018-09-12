@@ -1,18 +1,20 @@
 import {
+  BaseMove,
   ChatMessage,
   ColorEnum,
   Game,
+  GameCreateSettings,
   GamePlayers,
   GameResult,
   Move,
-  Player,
-  Room
+  Player
 } from './game';
 
 declare global {
   interface SocketIOEventWithDataMap {
-    roomList: Room[];
-    move: Move;
+    gameList: Game[];
+    makeMove: BaseMove;
+    moveMade: Move;
     drawSuggested: {
       from: ColorEnum;
     };
@@ -24,17 +26,18 @@ declare global {
       player: Player | null;
       game: Game;
     };
-    roomCreated: Room;
+    createGame: GameCreateSettings;
+    gameCreated: Game;
     addChatMessage: string;
     newChatMessage: ChatMessage;
   }
 
   type SocketIOEventWithoutDataList = (
-    'createRoom'
-    | 'drawAccepted'
+    'drawAccepted'
     | 'drawDeclined'
     | 'resign'
-    | 'takeBackRequested'
-    | 'takeBackDeclined'
+    | 'takebackRequested'
+    | 'takebackAccepted'
+    | 'takebackDeclined'
   );
 }

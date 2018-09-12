@@ -47,42 +47,94 @@ export interface Piece {
   id: number;
   type: PieceEnum;
   color: ColorEnum;
-  square: Square;
+  location: PieceLocation;
   moved: boolean;
+  originalType: PieceEnum;
 }
+
+export interface BoardPiece extends Piece {
+  location: PieceBoardLocation;
+}
+
+export interface PocketPiece extends Piece {
+  location: PiecePocketLocation;
+}
+
+export type RealPiece = (
+  BoardPiece
+  | PocketPiece
+);
+
+export enum PieceLocationEnum {
+  BOARD = 'BOARD',
+  POCKET = 'POCKET'
+}
+
+export interface PieceBoardLocation extends Square {
+  type: PieceLocationEnum.BOARD;
+}
+
+export interface PiecePocketLocation {
+  type: PieceLocationEnum.POCKET;
+  pieceType: PieceEnum;
+}
+
+export type RealPieceLocation = PieceBoardLocation | PiecePocketLocation;
+
+export type PieceLocation = null | RealPieceLocation;
 
 export type GamePieces = {
   [color in ColorEnum]: Piece[];
 };
 
 export type GameKings = {
-  [color in ColorEnum]: Piece;
+  [color in ColorEnum]: BoardPiece;
 };
 
-export type Board = (Piece | null)[][];
+export type PocketPieces = {
+  [piece in PieceEnum]: PocketPiece[];
+};
+
+export type Pocket = {
+  [color in ColorEnum]: PocketPieces;
+};
+
+export type Board = (BoardPiece | null)[][];
 
 export type StartingBoard = (StartingPiece | null)[][];
 
 export interface Game {
+  id: string;
   startingBoard: StartingBoard;
   status: GameStatusEnum;
   players: GamePlayers;
   result: GameResult | null;
-  timeControl: TimeControlEnum;
+  timeControl: TimeControl;
   moves: ExtendedMove[];
   chat: ChatMessage[];
+  variants: GameVariantEnum[];
 }
 
-export interface Room {
-  id: string;
-  players: Player[];
+export interface GameCreateSettings {
+  timeControl: TimeControl;
+  variants: GameVariantEnum[];
 }
 
-export interface Move {
-  from: Square;
+export enum GameVariantEnum {
+  // CHESS_960 = 'CHESS_960',
+  CRAZYHOUSE = 'CRAZYHOUSE',
+  // ATOMIC = 'ATOMIC',
+  // KING_OF_THE_HILL = 'KING_OF_THE_HILL'
+}
+
+export interface BaseMove {
+  from: RealPieceLocation;
   to: Square;
-  timestamp: number;
   promotion?: PieceEnum;
+}
+
+export interface Move extends BaseMove {
+  timestamp: number;
 }
 
 export interface ExtendedMove extends Move {
@@ -117,16 +169,24 @@ export interface GameResult {
   reason: ResultReasonEnum;
 }
 
-export interface Timer {
-  base: number;
-  increment: number;
-}
-
 export enum TimeControlEnum {
   TIMER = 'TIMER',
   CORRESPONDENCE = 'CORRESPONDENCE',
   NONE = 'NONE'
 }
+
+export interface TimerTimeControl {
+  type: TimeControlEnum.TIMER;
+  base: number;
+  increment: number;
+}
+
+export interface CorrespondenceTimeControl {
+  type: TimeControlEnum.CORRESPONDENCE;
+  base: number;
+}
+
+export type TimeControl = null | TimerTimeControl | CorrespondenceTimeControl;
 
 export interface ChatMessage {
   login: string;

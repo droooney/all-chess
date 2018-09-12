@@ -1,9 +1,10 @@
 import * as React from 'react';
+import classNames = require('classnames');
 
 import {
-  Piece as IPiece,
   PieceEnum,
-  Square
+  RealPiece,
+  RealPieceLocation
 } from '../../../types';
 
 import King from './King';
@@ -14,11 +15,10 @@ import Knight from './Knight';
 import Pawn from './Pawn';
 
 interface OwnProps {
-  piece: IPiece;
-  isBlackBase: boolean;
-  maxRank: number;
-  maxFile: number;
-  onClick?(square: Square): void;
+  piece: Partial<RealPiece> & Pick<RealPiece, 'color' | 'type' | 'location'>;
+  className?: string;
+  style?: React.CSSProperties;
+  onClick?(location: RealPieceLocation): void;
 }
 
 type Props = OwnProps;
@@ -30,33 +30,20 @@ export default class Piece extends React.Component<Props> {
       onClick
     } = this.props;
 
-    onClick!(piece.square);
+    onClick!(piece.location);
   };
 
   render() {
     const {
+      className,
+      style,
       piece,
-      piece: {
-        square: {
-          x: pieceX,
-          y: pieceY
-        }
-      },
-      isBlackBase,
-      maxFile,
-      maxRank,
       onClick
     } = this.props;
-    const x = isBlackBase
-      ? maxFile - pieceX
-      : pieceX;
-    const y = isBlackBase
-      ? pieceY
-      : maxRank - pieceY;
 
     return (
       <svg
-        className="piece"
+        className={classNames('piece', className)}
         viewBox="0 0 45 45"
         fill="none"
         fillOpacity="1"
@@ -68,9 +55,7 @@ export default class Piece extends React.Component<Props> {
         strokeMiterlimit="4"
         strokeDasharray="none"
         strokeOpacity="1"
-        style={{
-          transform: `translate(${x * 70}px,${y * 70}px)`
-        }}
+        style={style}
         onClick={onClick && this.onClick}
       >
         {piece.type === PieceEnum.KING ? (
