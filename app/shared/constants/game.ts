@@ -41,7 +41,7 @@ export const POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS = POSSIBLE_TIMER_INCREMEN
 export const POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS = POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS.map((base) => base * 24 * 60 * 60 * 1000);
 
 export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
-  // [GameVariantEnum.CHESS_960]: 'Chess 960',
+  [GameVariantEnum.CHESS_960]: 'Chess 960',
   [GameVariantEnum.CRAZYHOUSE]: 'Crazyhouse'
   // [GameVariantEnum.ATOMIC]: 'Atomic',
   // [GameVariantEnum.KING_OF_THE_HILL]: 'King of the hill'

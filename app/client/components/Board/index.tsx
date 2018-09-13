@@ -120,7 +120,7 @@ export default class Board extends React.Component<Props> {
     if (!this.isAllowed(square, this.getAllowedMoves())) {
       const piece = board[square.y][square.x];
 
-      if (!piece) {
+      if (!piece || player!.color !== piece.color) {
         return;
       }
 

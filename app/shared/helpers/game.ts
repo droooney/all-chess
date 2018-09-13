@@ -83,7 +83,92 @@ export class Game implements IGame {
     ));
   })();
 
-  static getStartingBoard(): StartingBoard {
+  static generateStarting960Board(): StartingBoard {
+    let id = 0;
+    const pieces: (PieceEnum | null)[] = _.times(8, () => null);
+    const darkColoredBishopPosition = 2 * Math.floor(4 * Math.random());
+    const lightColoredBishopPosition = 2 * Math.floor(4 * Math.random()) + 1;
+
+    pieces[darkColoredBishopPosition] = PieceEnum.BISHOP;
+    pieces[lightColoredBishopPosition] = PieceEnum.BISHOP;
+
+    const placePiece = (type: PieceEnum, position: number) => {
+      let currentPosition = 0;
+
+      pieces.some((piece, ix) => {
+        if (!piece && currentPosition++ === position) {
+          pieces[ix] = type;
+
+          return true;
+        }
+
+        return false;
+      });
+    };
+    const queenPositionNumber = Math.floor(6 * Math.random());
+    const knight1PositionNumber = Math.floor(5 * Math.random());
+    const knight2PositionNumber = Math.floor(4 * Math.random());
+
+    placePiece(PieceEnum.QUEEN, queenPositionNumber);
+    placePiece(PieceEnum.KNIGHT, knight1PositionNumber);
+    placePiece(PieceEnum.KNIGHT, knight2PositionNumber);
+
+    const restPieces = [PieceEnum.ROOK, PieceEnum.KING, PieceEnum.ROOK];
+    let placedPieces = 0;
+
+    pieces.some((piece, ix) => {
+      if (!piece) {
+        pieces[ix] = restPieces[placedPieces++];
+
+        if (placedPieces === restPieces.length) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+    /*
+    // for tests
+    const pieces = [
+      PieceEnum.QUEEN,
+      PieceEnum.ROOK,
+      PieceEnum.KING,
+      PieceEnum.ROOK,
+      PieceEnum.BISHOP,
+      PieceEnum.BISHOP,
+      PieceEnum.KNIGHT,
+      PieceEnum.KNIGHT
+    ];
+    */
+
+    return _.times(8, (y) => (
+      _.times(8, (x) => {
+        const getPiece = (type: PieceEnum): StartingPiece => ({
+          id: ++id,
+          type,
+          color: y < 2
+            ? ColorEnum.WHITE
+            : ColorEnum.BLACK
+        });
+
+        if (y === 1 || y === 6) {
+          return getPiece(PieceEnum.PAWN);
+        }
+
+        if (y === 0 || y === 7) {
+          return getPiece(pieces[x]!);
+        }
+
+        return null;
+      })
+    ));
+  }
+
+  static getStartingBoard(settings: GameCreateSettings): StartingBoard {
+    if (_.includes(settings.variants, GameVariantEnum.CHESS_960)) {
+      return this.generateStarting960Board();
+    }
+
     return this.classicStartingBoard;
   }
 
@@ -183,11 +268,12 @@ export class Game implements IGame {
     PieceEnum.PAWN
   ];
   isPocketUsed: boolean;
+  is960: boolean;
   variants: GameVariantEnum[];
 
   constructor(settings: GameCreateSettings & { id: string; startingBoard?: StartingBoard; }) {
     this.id = settings.id;
-    this.startingBoard = settings.startingBoard || Game.getStartingBoard();
+    this.startingBoard = settings.startingBoard || Game.getStartingBoard(settings);
     ({
       board: this.board,
       pieces: this.pieces,
@@ -201,6 +287,7 @@ export class Game implements IGame {
     this.positionsMap[this.positionString] = 1;
 
     this.isPocketUsed = _.includes(this.variants, GameVariantEnum.CRAZYHOUSE);
+    this.is960 = _.includes(this.variants, GameVariantEnum.CHESS_960);
 
     if (this.isPocketUsed) {
       this.pocketPiecesUsed.forEach((pieceType) => {
@@ -269,9 +356,12 @@ export class Game implements IGame {
       && Math.abs(fromLocation.x - toX) !== 0
       && !toPiece
     );
+    const opponentColor = this.getOpponentColor();
     const opponentPiece = isEnPassant
-      ? this.board[toY + (this.turn === ColorEnum.WHITE ? -1 : 1)][toX]
-      : toPiece;
+      ? this.board[this.possibleEnPassant!.y][this.possibleEnPassant!.x]
+      : toPiece && toPiece.color === opponentColor
+        ? toPiece
+        : null;
     const isPawnPromotion = pieceType === PieceEnum.PAWN && ((
       this.turn === ColorEnum.WHITE && toY === 7
     ) || (
@@ -280,9 +370,18 @@ export class Game implements IGame {
     const isCastling = (
       fromLocation.type === PieceLocationEnum.BOARD
       && pieceType === PieceEnum.KING
-      && Math.abs(toX - fromLocation.x) > 1
+      && (
+        this.is960
+          ? !!toPiece && toPiece.color === this.turn && toPiece.type === PieceEnum.ROOK
+          : Math.abs(toX - fromLocation.x) > 1
+      )
     );
     const isKingSideCastling = isCastling && toX - (fromLocation as PieceBoardLocation).x > 0;
+    const castlingRook = isCastling
+      ? this.is960
+        ? toPiece!
+        : this.board[toY][isKingSideCastling ? 7 : 0]!
+      : null;
 
     const prevTurn = this.turn;
     const prevIsCheck = this.isCheck;
@@ -297,11 +396,25 @@ export class Game implements IGame {
     const prevOpponentPieceLocation = opponentPiece
       ? opponentPiece.location
       : null;
+    const prevCastlingRookLocation = castlingRook
+      ? castlingRook.location
+      : null;
     const prevPieceMoved = piece.moved;
     const prevPieceType = pieceType;
     const prevPieceLocation = piece.location;
+    const prevPieceOriginalType = piece.originalType;
     const playerPieces = this.pieces[this.turn];
-    const opponentPieces = this.pieces[this.getOpponentColor()];
+    const opponentPieces = this.pieces[opponentColor];
+    const newLocation: PieceBoardLocation = {
+      ...(
+        isCastling
+          ? isKingSideCastling
+            ? { x: 6, y: toY }
+            : { x: 2, y: toY }
+          : toLocation
+      ),
+      type: PieceLocationEnum.BOARD
+    };
 
     let algebraic = '';
     let figurine = '';
@@ -427,36 +540,37 @@ export class Game implements IGame {
       playerPocket[fromLocation.pieceType].shift();
     }
 
-    this.board[toY][toX] = piece as BoardPiece;
+    this.board[newLocation.y][newLocation.x] = piece as BoardPiece;
     piece.moved = true;
-    piece.location = {
-      ...toLocation,
-      type: PieceLocationEnum.BOARD
-    };
+    piece.location = newLocation;
     piece.type = isPawnPromotion
       ? promotion!
       : pieceType;
-
-    let castlingRook: BoardPiece | undefined;
+    piece.originalType = isPawnPromotion && this.isPocketUsed
+      ? piece.originalType
+      : piece.type;
 
     if (isCastling) {
       // castling
 
-      const rook = this.board[(fromLocation as PieceBoardLocation).y][isKingSideCastling ? 7 : 0]!;
+      const rook = castlingRook!;
       const newRookLocation = {
         type: PieceLocationEnum.BOARD,
         x: isKingSideCastling ? 5 : 3,
-        y: (fromLocation as PieceBoardLocation).y
+        y: toY
       } as PieceBoardLocation;
 
-      this.board[rook.location.y][rook.location.x] = null;
+      // if it's not 960 and king and rook didn't switch places
+      if (this.board[rook.location.y][rook.location.x]!.id === rook.id) {
+        this.board[rook.location.y][rook.location.x] = null;
+      }
+
       this.board[newRookLocation.y][newRookLocation.x] = rook;
       rook.moved = true;
       rook.location = newRookLocation;
-      castlingRook = rook;
     }
 
-    this.turn = this.getOpponentColor();
+    this.turn = opponentColor;
     this.isCheck = this.isInCheck();
 
     if (constructMoveLiterals) {
@@ -479,16 +593,18 @@ export class Game implements IGame {
         this.pliesWithoutCaptureOrPawnMove = prevPliesWithoutCaptureOrPawnMove;
         this.possibleEnPassant = prevPossibleEnPassant;
 
+        this.board[newLocation.y][newLocation.x] = null;
+
         if (fromLocation.type === PieceLocationEnum.BOARD) {
           this.board[fromLocation.y][fromLocation.x] = piece as BoardPiece;
         } else {
           playerPocket[fromLocation.pieceType].unshift(piece as PocketPiece);
         }
 
-        this.board[toY][toX] = null;
         piece.location = prevPieceLocation;
         piece.moved = prevPieceMoved;
         piece.type = prevPieceType;
+        piece.originalType = prevPieceOriginalType;
 
         if (opponentPiece) {
           opponentPieces.push(opponentPiece);
@@ -506,16 +622,14 @@ export class Game implements IGame {
         }
 
         if (castlingRook) {
-          const oldRookLocation = {
-            type: PieceLocationEnum.BOARD,
-            x: isKingSideCastling ? 7 : 0,
-            y: (fromLocation as PieceBoardLocation).y
-          } as PieceBoardLocation;
+          // if it's not 960 and king and rook didn't switch places
+          if (this.board[castlingRook.location.y][castlingRook.location.x]!.id === castlingRook!.id) {
+            this.board[castlingRook.location.y][castlingRook.location.x] = null;
+          }
 
-          this.board[castlingRook.location.y][castlingRook.location.x] = null;
-          this.board[oldRookLocation.y][oldRookLocation.x] = castlingRook;
+          this.board[prevCastlingRookLocation!.y][prevCastlingRookLocation!.x] = castlingRook;
           castlingRook.moved = false;
-          castlingRook.location = oldRookLocation;
+          castlingRook.location = prevCastlingRookLocation!;
         }
       }
     };
@@ -748,26 +862,71 @@ export class Game implements IGame {
     }
 
     if (piece.type === PieceEnum.KING && !piece.moved && !this.isCheck && !attacked) {
-      // castling
-      ([
-        [0, 2, 3, [1, 2, 3]],
-        [7, 6, 5, [5, 6]]
-      ] as [number, number, number, number[]][]).forEach(([rookX, newKingX, middleSquareX, passingSquares]) => {
-        const rook = this.board[pieceY][rookX];
-
-        if (
+      this.board[pieceY]
+        .filter((rook) => (
           rook
+          && rook.color === piece.color
+          && rook.type === PieceEnum.ROOK
           && !rook.moved
-          && !this.isAttackedByOpponentPiece({ x: newKingX, y: pieceY }, opponentColor)
-          && !this.isAttackedByOpponentPiece({ x: middleSquareX, y: pieceY }, opponentColor)
-          && passingSquares.every((x) => !this.board[pieceY][x])
-        ) {
-          possibleSquares.push({
-            x: newKingX,
-            y: pieceY
+        ))
+        .filter((rook) => {
+          const { location } = rook!;
+          const isKingSideRook = location.x - pieceX > 0;
+          const newKingX = isKingSideRook ? 6 : 2;
+          const newRookX = isKingSideRook ? 5 : 3;
+          let canKingMove = true;
+
+          _.times(Math.abs(pieceX - newKingX), (x) => {
+            const fileX = newKingX + (pieceX > newKingX ? +x : -x);
+
+            // square is attacked or square is a piece that is not the rook
+            if ((
+              fileX !== newKingX
+              && this.isAttackedByOpponentPiece({ x: fileX, y: pieceY }, opponentColor)
+            ) || (
+              this.board[pieceY][fileX]
+              && this.board[pieceY][fileX] !== rook
+            )) {
+              canKingMove = false;
+            }
           });
-        }
-      });
+
+          if (!canKingMove) {
+            return false;
+          }
+
+          let canRookMove = true;
+
+          _.times(Math.abs(location.x - newRookX), (x) => {
+            const fileX = newRookX + (location.x > newRookX ? +x : -x);
+
+            // square is a piece that is not the king
+            if (
+              this.board[pieceY][fileX]
+              && this.board[pieceY][fileX] !== piece
+            ) {
+              canRookMove = false;
+            }
+          });
+
+          return canRookMove;
+        })
+        .forEach((rook) => {
+          const { location } = rook!;
+          const isKingSideRook = location.x - pieceX > 0;
+
+          if (this.is960) {
+            possibleSquares.push({
+              x: location.x,
+              y: pieceY
+            });
+          } else {
+            possibleSquares.push({
+              x: isKingSideRook ? 6 : 2,
+              y: pieceY
+            });
+          }
+        });
     }
 
     return possibleSquares;
