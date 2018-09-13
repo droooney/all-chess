@@ -1,9 +1,11 @@
 import * as _ from 'lodash';
 import * as React from 'react';
+import classNames = require('classnames');
 
 import {
   BaseMove,
   Board as IBoard,
+  CenterSquareParams,
   ColorEnum,
   GamePieces,
   Move,
@@ -17,7 +19,6 @@ import {
 } from '../../../types';
 import { Game } from '../../helpers';
 import BoardPiece from '../BoardPiece';
-import classNames = require('classnames');
 
 interface OwnProps {
   pieces: GamePieces;
@@ -27,6 +28,7 @@ interface OwnProps {
   selectedPiece: RealPiece | null;
   selectPiece(piece: IPiece | null): void;
   getAllowedMoves(location: RealPieceLocation): Square[];
+  getCenterSquareParams(square: Square): CenterSquareParams;
   sendMove(move: BaseMove): void;
   isCheck: boolean;
   readOnly: boolean;
@@ -70,6 +72,19 @@ export default class Board extends React.Component<Props> {
     return selectedPiece
       ? getAllowedMoves(selectedPiece.location)
       : [] as Square[];
+  }
+
+  getSquareClasses(square: Square): string[] {
+    const {
+      getCenterSquareParams
+    } = this.props;
+    const params = getCenterSquareParams(square);
+
+    if (!params) {
+      return [];
+    }
+
+    return _.keys(params).map((direction) => `border-${direction}`);
   }
 
   isInCheck(square: Square): boolean {
@@ -188,7 +203,10 @@ export default class Board extends React.Component<Props> {
                 return (
                   <div
                     key={fileX}
-                    className={`square ${(rankY + fileX) % 2 ? 'white' : 'black'}`}
+                    className={classNames(
+                      `square ${(rankY + fileX) % 2 ? 'white' : 'black'}`,
+                      this.getSquareClasses(square)
+                    )}
                     onClick={readOnly ? undefined : (() => this.onSquareClick(square))}
                   >
                     {

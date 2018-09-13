@@ -124,7 +124,7 @@ export enum GameVariantEnum {
   CHESS_960 = 'CHESS_960',
   CRAZYHOUSE = 'CRAZYHOUSE',
   // ATOMIC = 'ATOMIC',
-  // KING_OF_THE_HILL = 'KING_OF_THE_HILL'
+  KING_OF_THE_HILL = 'KING_OF_THE_HILL'
 }
 
 export interface BaseMove {
@@ -154,6 +154,7 @@ export enum GameStatusEnum {
 
 export enum ResultReasonEnum {
   CHECKMATE = 'CHECKMATE',
+  KING_IN_THE_CENTER = 'KING_IN_THE_CENTER',
   STALEMATE = 'STALEMATE',
   TIME_RAN_OUT = 'TIME_RAN_OUT',
   RESIGN = 'RESIGN',
@@ -193,3 +194,5 @@ export interface ChatMessage {
   isPlayer: boolean;
   message: string;
 }
+
+export type CenterSquareParams = { top?: true; left?: true; bottom?: true; right?: true } | null;

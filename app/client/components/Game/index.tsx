@@ -4,6 +4,7 @@ import io = require('socket.io-client');
 
 import {
   BaseMove,
+  CenterSquareParams,
   ColorEnum,
   Game as IGame,
   GameStatusEnum,
@@ -110,6 +111,10 @@ export default class Game extends React.Component<Props, State> {
     return this.game!.getAllowedMoves(location);
   };
 
+  getCenterSquareParams = (square: Square): CenterSquareParams => {
+    return this.game!.getCenterSquareParams(square);
+  };
+
   selectPiece = (selectedPiece: RealPiece | null) => {
     this.setState({
       selectedPiece
@@ -170,6 +175,7 @@ export default class Game extends React.Component<Props, State> {
             }
             sendMove={this.sendMove}
             getAllowedMoves={this.getAllowedMoves}
+            getCenterSquareParams={this.getCenterSquareParams}
             selectPiece={this.selectPiece}
             isCheck={isCheck}
             isBlackBase={isBlackBase}

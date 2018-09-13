@@ -42,7 +42,7 @@ export const POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS = POSSIBLE_CORRESPOND
 
 export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.CHESS_960]: 'Chess 960',
-  [GameVariantEnum.CRAZYHOUSE]: 'Crazyhouse'
+  [GameVariantEnum.CRAZYHOUSE]: 'Crazyhouse',
   // [GameVariantEnum.ATOMIC]: 'Atomic',
-  // [GameVariantEnum.KING_OF_THE_HILL]: 'King of the hill'
+  [GameVariantEnum.KING_OF_THE_HILL]: 'King of the hill'
 };

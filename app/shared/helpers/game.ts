@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import {
   Board,
   BoardPiece,
+  CenterSquareParams,
   ChatMessage,
   ColorEnum,
   Game as IGame,
@@ -269,6 +270,7 @@ export class Game implements IGame {
   ];
   isPocketUsed: boolean;
   is960: boolean;
+  isKingOfTheHill: boolean;
   variants: GameVariantEnum[];
 
   constructor(settings: GameCreateSettings & { id: string; startingBoard?: StartingBoard; }) {
@@ -288,6 +290,7 @@ export class Game implements IGame {
 
     this.isPocketUsed = _.includes(this.variants, GameVariantEnum.CRAZYHOUSE);
     this.is960 = _.includes(this.variants, GameVariantEnum.CHESS_960);
+    this.isKingOfTheHill = _.includes(this.variants, GameVariantEnum.KING_OF_THE_HILL);
 
     if (this.isPocketUsed) {
       this.pocketPiecesUsed.forEach((pieceType) => {
@@ -315,8 +318,10 @@ export class Game implements IGame {
     this.positionString = this.generatePositionString();
     this.positionsMap[this.positionString] = (this.positionsMap[this.positionString] || 0) + 1;
 
-    if (this.isCheckmate()) {
-      this.end(this.getOpponentColor(), ResultReasonEnum.CHECKMATE);
+    const winReason = this.isWin();
+
+    if (winReason) {
+      this.end(this.getOpponentColor(), winReason);
     } else {
       const drawReason = this.isDraw();
 
@@ -574,7 +579,7 @@ export class Game implements IGame {
     this.isCheck = this.isInCheck();
 
     if (constructMoveLiterals) {
-      if (this.isCheckmate()) {
+      if (this.isWin()) {
         algebraic += '#';
         figurine += '#';
       } else if (this.isCheck) {
@@ -965,6 +970,49 @@ export class Game implements IGame {
           && square.y === y
         ))
       ));
+  }
+
+  getCenterSquareParams(square: Square): CenterSquareParams {
+    const {
+      x: squareX,
+      y: squareY
+    } = square;
+
+    if (squareX === 3 && squareY === 3) {
+      return { top: true, left: true };
+    }
+
+    if (squareX === 3 && squareY === 4) {
+      return { bottom: true, left: true };
+    }
+
+    if (squareX === 4 && squareY === 3) {
+      return { top: true, right: true };
+    }
+
+    if (squareX === 4 && squareY === 4) {
+      return { bottom: true, right: true };
+    }
+
+    return null;
+  }
+
+  isWin(): ResultReasonEnum | null {
+    if (this.isCheckmate()) {
+      return ResultReasonEnum.CHECKMATE;
+    }
+
+    if (this.isKingOfTheHill && this.isKingInTheCenter()) {
+      return ResultReasonEnum.KING_IN_THE_CENTER;
+    }
+
+    return null;
+  }
+
+  isKingInTheCenter(): boolean {
+    const king = this.kings[this.getOpponentColor()];
+
+    return !!this.getCenterSquareParams(king.location);
   }
 
   isCheckmate(): boolean {

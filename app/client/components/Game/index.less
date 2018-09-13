@@ -2,6 +2,7 @@
 
 @size: 70px;
 @rank-file-size: 20px;
+@border: 3px solid black;
 
 .route.game-route {
   .flex-col(center);
@@ -24,6 +25,46 @@
 
         .rank {
           flex-direction: row-reverse;
+
+          .square {
+            &.border-top {
+              border-top: @border;
+            }
+
+            &.border-bottom {
+              border-bottom: @border;
+            }
+
+            &.border-left {
+              border-right: @border;
+            }
+
+            &.border-right {
+              border-left: @border;
+            }
+          }
+        }
+      }
+
+      &:not(.opposite) {
+        .rank {
+          .square {
+            &.border-top {
+              border-bottom: @border;
+            }
+
+            &.border-bottom {
+              border-top: @border;
+            }
+
+            &.border-left {
+              border-left: @border;
+            }
+
+            &.border-right {
+              border-right: @border;
+            }
+          }
         }
       }
 
