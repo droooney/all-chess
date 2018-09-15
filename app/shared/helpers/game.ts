@@ -1110,7 +1110,7 @@ export class Game implements IGame {
 
   isAttackedByOpponentPiece(square: Square, opponentColor: ColorEnum): boolean {
     return this.pieces[opponentColor]
-      .filter(Game.isRealPiece)
+      .filter(Game.isBoardPiece)
       .some((piece) => (
         this.getPossibleMoves(piece.location, true).some(({ x, y }) => (
           square.x === x
