@@ -45,5 +45,6 @@ export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.CRAZYHOUSE]: 'Crazyhouse',
   [GameVariantEnum.ATOMIC]: 'Atomic',
   [GameVariantEnum.KING_OF_THE_HILL]: 'King of the hill',
-  [GameVariantEnum.CIRCE]: 'Circe'
+  [GameVariantEnum.CIRCE]: 'Circe',
+  [GameVariantEnum.PATROL]: 'Patrol'
 };

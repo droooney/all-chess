@@ -276,6 +276,7 @@ export class Game implements IGame {
   isKingOfTheHill: boolean;
   isAtomic: boolean;
   isCirce: boolean;
+  isPatrol: boolean;
   isLeftInCheckAllowed: boolean;
   variants: GameVariantEnum[];
 
@@ -299,6 +300,7 @@ export class Game implements IGame {
     this.isKingOfTheHill = _.includes(this.variants, GameVariantEnum.KING_OF_THE_HILL);
     this.isAtomic = _.includes(this.variants, GameVariantEnum.ATOMIC);
     this.isCirce = _.includes(this.variants, GameVariantEnum.CIRCE);
+    this.isPatrol = _.includes(this.variants, GameVariantEnum.PATROL);
     this.isLeftInCheckAllowed = this.isAtomic;
 
     if (this.isPocketUsed) {
@@ -827,7 +829,9 @@ export class Game implements IGame {
     return this.getOppositeColor(this.turn);
   }
 
-  getPossibleMoves(location: RealPieceLocation, attacked: boolean): Square[] {
+  getPossibleMoves(location: RealPieceLocation, onlyAttacked: boolean, onlyControlled: boolean): Square[] {
+    const forMove = !onlyControlled && !onlyAttacked;
+
     if (location.type === PieceLocationEnum.POCKET) {
       return this.board.reduce((possibleSquares, rank, rankY) => {
         let newSquares: Square[] = [];
@@ -874,16 +878,21 @@ export class Game implements IGame {
           break;
         }
 
+        const square = {
+          x: fileX,
+          y: rankY
+        };
         const pieceInSquare = newRank[fileX];
 
         if (pieceInSquare && pieceInSquare.color === piece.color) {
+          if (!forMove) {
+            possibleSquares.push(square);
+          }
+
           break;
         }
 
-        possibleSquares.push({
-          x: fileX,
-          y: rankY
-        });
+        possibleSquares.push(square);
 
         if (pieceInSquare) {
           break;
@@ -938,16 +947,14 @@ export class Game implements IGame {
           return;
         }
 
-        const square = rank[fileX];
+        const pieceInSquare = rank[fileX];
 
-        if (square && square.color === piece.color) {
-          return;
+        if (!forMove || !pieceInSquare || pieceInSquare.color !== piece.color) {
+          possibleSquares.push({
+            x: fileX,
+            y: rankY
+          });
         }
-
-        possibleSquares.push({
-          x: fileX,
-          y: rankY
-        });
       });
     }
 
@@ -956,7 +963,7 @@ export class Game implements IGame {
       const rankY = pieceY + direction;
       const nextRank = this.board[rankY];
 
-      if (pieceX in nextRank && !attacked) {
+      if (pieceX in nextRank && forMove) {
         // 1-forward move
         const squarePiece = nextRank[pieceX];
 
@@ -985,9 +992,9 @@ export class Game implements IGame {
         const fileX = pieceX + incrementX;
 
         if (fileX in nextRank) {
-          const square = nextRank[fileX];
+          const pieceInSquare = nextRank[fileX];
 
-          if (square && square.color !== piece.color) {
+          if (!forMove || (pieceInSquare && pieceInSquare.color !== piece.color)) {
             possibleSquares.push({
               x: fileX,
               y: rankY
@@ -1006,7 +1013,7 @@ export class Game implements IGame {
       }
     }
 
-    if (piece.type === PieceEnum.KING && !piece.moved && !this.isCheck && !attacked) {
+    if (piece.type === PieceEnum.KING && !piece.moved && !this.isCheck && forMove) {
       this.board[pieceY]
         .filter((rook) => (
           rook
@@ -1075,11 +1082,19 @@ export class Game implements IGame {
         });
     }
 
+    const isPiecePatrolled = onlyControlled || this.isPatrolledByFriendlyPiece(location);
+
+    if (this.isPatrol && !isPiecePatrolled) {
+      return possibleSquares.filter((square) => (
+        !this.board[square.y][square.x]
+      ));
+    }
+
     return possibleSquares;
   }
 
   getAllowedMoves(location: RealPieceLocation): Square[] {
-    const possibleMoves = this.getPossibleMoves(location, false);
+    const possibleMoves = this.getPossibleMoves(location, false, false);
 
     if (this.isLeftInCheckAllowed && !this.isAtomic) {
       return possibleMoves;
@@ -1116,7 +1131,18 @@ export class Game implements IGame {
     return this.pieces[opponentColor]
       .filter(Game.isBoardPiece)
       .some((piece) => (
-        this.getPossibleMoves(piece.location, true).some(({ x, y }) => (
+        this.getPossibleMoves(piece.location, true, false).some(({ x, y }) => (
+          square.x === x
+          && square.y === y
+        ))
+      ));
+  }
+
+  isPatrolledByFriendlyPiece(square: Square): boolean {
+    return this.pieces[this.board[square.y][square.x]!.color]
+      .filter(Game.isBoardPiece)
+      .some((piece) => (
+        this.getPossibleMoves(piece.location, true, true).some(({ x, y }) => (
           square.x === x
           && square.y === y
         ))

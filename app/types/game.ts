@@ -125,7 +125,8 @@ export enum GameVariantEnum {
   CRAZYHOUSE = 'CRAZYHOUSE',
   ATOMIC = 'ATOMIC',
   KING_OF_THE_HILL = 'KING_OF_THE_HILL',
-  CIRCE = 'CIRCE'
+  CIRCE = 'CIRCE',
+  PATROL = 'PATROL'
 }
 
 export interface BaseMove {
