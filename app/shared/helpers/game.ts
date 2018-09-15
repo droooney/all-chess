@@ -39,13 +39,10 @@ interface BoardData {
 
 export class Game implements IGame {
   static validateVariants(variants: GameVariantEnum[]): boolean {
-    return ((
-      !_.includes(variants, GameVariantEnum.CIRCE)
-      || !_.includes(variants, GameVariantEnum.CRAZYHOUSE)
-    ) && (
+    return (
       !_.includes(variants, GameVariantEnum.CIRCE)
       || !_.includes(variants, GameVariantEnum.CHESS_960)
-    ));
+    );
   }
 
   static classicStartingBoard = (() => {
@@ -474,35 +471,38 @@ export class Game implements IGame {
       location
     }));
     const movedPiecesLocations = disappearedOrMovedPieces.map(({ id, type, color, location }) => {
-      let newLocation: Square | null = null;
+      let newSquare: Square | null = null;
 
       if (this.isCirce) {
+        const oldSquare = piece.id === id
+          ? toLocation
+          : location;
         const pieceRankY = color === ColorEnum.WHITE
           ? 0
           : 7;
 
         if (type === PieceEnum.KING) {
           // don't allow the king to be reborn if he was exploded on the initial square
-          if (location.x !== 4 || location.y !== pieceRankY) {
-            newLocation = {
+          if (oldSquare.x !== 4 || oldSquare.y !== pieceRankY) {
+            newSquare = {
               x: 4,
               y: pieceRankY
             };
           }
         } else if (type === PieceEnum.QUEEN) {
-          newLocation = {
+          newSquare = {
             x: 3,
             y: pieceRankY
           };
         } else if (type === PieceEnum.PAWN) {
-          newLocation = {
-            x: location.x,
+          newSquare = {
+            x: oldSquare.x,
             y: color === ColorEnum.WHITE
               ? 1
               : 6
           };
         } else {
-          const squareColor = (location.x + location.y) % 2;
+          const squareColor = (oldSquare.x + oldSquare.y) % 2;
           const choicesX = type === PieceEnum.ROOK
             ? [0, 7]
             : type === PieceEnum.KNIGHT
@@ -510,23 +510,23 @@ export class Game implements IGame {
               : [2, 5];
           const fileX = _.find(choicesX, (fileX) => (fileX + pieceRankY) % 2 === squareColor)!;
 
-          newLocation = {
+          newSquare = {
             x: fileX,
             y: pieceRankY
           };
         }
 
-        if (newLocation) {
-          const piece = this.board[newLocation.y][newLocation.x];
+        if (newSquare) {
+          const piece = this.board[newSquare.y][newSquare.x];
 
           // don't allow rebirth if it takes place on the square with another piece
           if (piece && piece.id !== id) {
-            newLocation = null;
+            newSquare = null;
           }
         }
       }
 
-      return newLocation;
+      return newSquare;
     });
 
     if (constructMoveLiterals) {
@@ -742,11 +742,15 @@ export class Game implements IGame {
           const opponentColor = this.getOppositeColor(color);
           const playerPieces = this.pieces[color];
           const opponentPieces = this.pieces[opponentColor];
+          const disappeared = (
+            !this.isCirce
+            || !_.includes(playerPieces, disappearedOrMovedPiece)
+          );
 
-          if (this.isCirce && _.includes(playerPieces, disappearedOrMovedPiece)) {
-            this.board[disappearedOrMovedPiece.location.y][disappearedOrMovedPiece.location.x] = null;
-          } else {
+          if (disappeared) {
             playerPieces.push(disappearedOrMovedPiece);
+          } else {
+            this.board[disappearedOrMovedPiece.location.y][disappearedOrMovedPiece.location.x] = null;
           }
 
           disappearedOrMovedPiece.moved = moved;
@@ -754,7 +758,7 @@ export class Game implements IGame {
           disappearedOrMovedPiece.type = type;
           disappearedOrMovedPiece.location = location;
 
-          if (this.isPocketUsed && _.includes(this.pocketPiecesUsed, disappearedOrMovedPiece.originalType)) {
+          if (disappeared && this.isPocketUsed && _.includes(this.pocketPiecesUsed, disappearedOrMovedPiece.originalType)) {
             this.pocket[opponentColor][disappearedOrMovedPiece.originalType].pop();
             opponentPieces.splice(opponentPieces.indexOf(disappearedOrMovedPiece), 1);
           }
