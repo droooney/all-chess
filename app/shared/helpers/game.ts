@@ -38,8 +38,14 @@ interface BoardData {
 }
 
 export class Game implements IGame {
-  static validateVariants(_variants: GameVariantEnum[]): boolean {
-    return true;
+  static validateVariants(variants: GameVariantEnum[]): boolean {
+    return ((
+      !_.includes(variants, GameVariantEnum.CIRCE)
+      || !_.includes(variants, GameVariantEnum.CRAZYHOUSE)
+    ) && (
+      !_.includes(variants, GameVariantEnum.CIRCE)
+      || !_.includes(variants, GameVariantEnum.CHESS_960)
+    ));
   }
 
   static classicStartingBoard = (() => {
@@ -272,6 +278,7 @@ export class Game implements IGame {
   is960: boolean;
   isKingOfTheHill: boolean;
   isAtomic: boolean;
+  isCirce: boolean;
   isLeftInCheckAllowed: boolean;
   variants: GameVariantEnum[];
 
@@ -294,6 +301,7 @@ export class Game implements IGame {
     this.is960 = _.includes(this.variants, GameVariantEnum.CHESS_960);
     this.isKingOfTheHill = _.includes(this.variants, GameVariantEnum.KING_OF_THE_HILL);
     this.isAtomic = _.includes(this.variants, GameVariantEnum.ATOMIC);
+    this.isCirce = _.includes(this.variants, GameVariantEnum.CIRCE);
     this.isLeftInCheckAllowed = this.isAtomic;
 
     if (this.isPocketUsed) {
@@ -372,7 +380,7 @@ export class Game implements IGame {
         ? toPiece
         : null;
     const isCapture = !!opponentPiece;
-    const disappearedPieces: BoardPiece[] = [];
+    const disappearedOrMovedPieces: BoardPiece[] = [];
     const isPawnPromotion = pieceType === PieceEnum.PAWN && ((
       this.turn === ColorEnum.WHITE && toY === 7
     ) || (
@@ -445,25 +453,81 @@ export class Game implements IGame {
 
       additionalSquares.forEach((piece) => {
         if (piece && piece.type !== PieceEnum.PAWN) {
-          disappearedPieces.push(piece);
+          disappearedOrMovedPieces.push(piece);
         }
       });
     }
 
     // in case of longer en passant on bigger boards in the future
-    if (opponentPiece && !_.includes(disappearedPieces, opponentPiece)) {
-      disappearedPieces.push(opponentPiece);
+    if (opponentPiece && !_.includes(disappearedOrMovedPieces, opponentPiece)) {
+      disappearedOrMovedPieces.push(opponentPiece);
     }
 
-    if (this.isAtomic && isCapture && !_.includes(disappearedPieces, piece)) {
-      disappearedPieces.push(piece as BoardPiece);
+    if (this.isAtomic && isCapture && !_.includes(disappearedOrMovedPieces, piece)) {
+      disappearedOrMovedPieces.push(piece as BoardPiece);
     }
 
-    const disappearedPiecesData = disappearedPieces.map(({ color, type, location }) => ({
+    const disappearedOrMovedPiecesData = disappearedOrMovedPieces.map(({ moved, color, type, location }) => ({
+      moved,
       color,
       type,
       location
     }));
+    const movedPiecesLocations = disappearedOrMovedPieces.map(({ id, type, color, location }) => {
+      let newLocation: Square | null = null;
+
+      if (this.isCirce) {
+        const pieceRankY = color === ColorEnum.WHITE
+          ? 0
+          : 7;
+
+        if (type === PieceEnum.KING) {
+          // don't allow the king to be reborn if he was exploded on the initial square
+          if (location.x !== 4 || location.y !== pieceRankY) {
+            newLocation = {
+              x: 4,
+              y: pieceRankY
+            };
+          }
+        } else if (type === PieceEnum.QUEEN) {
+          newLocation = {
+            x: 3,
+            y: pieceRankY
+          };
+        } else if (type === PieceEnum.PAWN) {
+          newLocation = {
+            x: location.x,
+            y: color === ColorEnum.WHITE
+              ? 1
+              : 6
+          };
+        } else {
+          const squareColor = (location.x + location.y) % 2;
+          const choicesX = type === PieceEnum.ROOK
+            ? [0, 7]
+            : type === PieceEnum.KNIGHT
+              ? [1, 6]
+              : [2, 5];
+          const fileX = _.find(choicesX, (fileX) => (fileX + pieceRankY) % 2 === squareColor)!;
+
+          newLocation = {
+            x: fileX,
+            y: pieceRankY
+          };
+        }
+
+        if (newLocation) {
+          const piece = this.board[newLocation.y][newLocation.x];
+
+          // don't allow rebirth if it takes place on the square with another piece
+          if (piece && piece.id !== id) {
+            newLocation = null;
+          }
+        }
+      }
+
+      return newLocation;
+    });
 
     if (constructMoveLiterals) {
       if (fromLocation.type === PieceLocationEnum.POCKET) {
@@ -541,26 +605,28 @@ export class Game implements IGame {
       }
     }
 
-    disappearedPieces.forEach((disappearedPiece) => {
-      const playerPieces = this.pieces[disappearedPiece.color];
-      const opponentColor = this.getOppositeColor(disappearedPiece.color);
+    disappearedOrMovedPieces.forEach((disappearedPiece, ix) => {
+      if (!movedPiecesLocations[ix]) {
+        const playerPieces = this.pieces[disappearedPiece.color];
+        const opponentColor = this.getOppositeColor(disappearedPiece.color);
 
-      playerPieces.splice(playerPieces.indexOf(disappearedPiece), 1);
+        playerPieces.splice(playerPieces.indexOf(disappearedPiece), 1);
 
-      this.board[disappearedPiece.location.y][disappearedPiece.location.x] = null;
+        this.board[disappearedPiece.location.y][disappearedPiece.location.x] = null;
 
-      if (this.isPocketUsed && _.includes(this.pocketPiecesUsed, disappearedPiece.originalType)) {
-        const pieceType = disappearedPiece.originalType;
+        if (this.isPocketUsed && _.includes(this.pocketPiecesUsed, disappearedPiece.originalType)) {
+          const pieceType = disappearedPiece.originalType;
 
-        disappearedPiece.type = pieceType;
-        disappearedPiece.color = opponentColor;
-        (disappearedPiece as any as PocketPiece).location = {
-          type: PieceLocationEnum.POCKET,
-          pieceType
-        };
+          disappearedPiece.type = pieceType;
+          disappearedPiece.color = opponentColor;
+          (disappearedPiece as any as PocketPiece).location = {
+            type: PieceLocationEnum.POCKET,
+            pieceType
+          };
 
-        this.pocket[opponentColor][pieceType].push(disappearedPiece as any as PocketPiece);
-        this.pieces[opponentColor].push(disappearedPiece);
+          this.pocket[opponentColor][pieceType].push(disappearedPiece as any as PocketPiece);
+          this.pieces[opponentColor].push(disappearedPiece);
+        }
       }
     });
 
@@ -622,6 +688,19 @@ export class Game implements IGame {
       rook.location = newRookLocation;
     }
 
+    movedPiecesLocations.forEach((square, ix) => {
+      if (square) {
+        const movedPiece = disappearedOrMovedPieces[ix];
+
+        movedPiece.moved = false;
+        movedPiece.location = {
+          ...square,
+          type: PieceLocationEnum.BOARD
+        };
+        this.board[square.y][square.x] = movedPiece;
+      }
+    });
+
     this.turn = opponentColor;
     this.isCheck = this.isInCheck(this.kings[opponentColor]);
 
@@ -658,23 +737,29 @@ export class Game implements IGame {
         piece.type = prevPieceType;
         piece.originalType = prevPieceOriginalType;
 
-        disappearedPiecesData.forEach(({ color, type, location }, ix) => {
-          const disappearedPiece = disappearedPieces[ix];
+        disappearedOrMovedPiecesData.forEach(({ moved, color, type, location }, ix) => {
+          const disappearedOrMovedPiece = disappearedOrMovedPieces[ix];
           const opponentColor = this.getOppositeColor(color);
+          const playerPieces = this.pieces[color];
           const opponentPieces = this.pieces[opponentColor];
 
-          this.pieces[color].push(disappearedPiece);
-
-          if (this.isPocketUsed && _.includes(this.pocketPiecesUsed, disappearedPiece.originalType)) {
-            disappearedPiece.color = color;
-            disappearedPiece.type = type;
-            disappearedPiece.location = location;
-
-            this.pocket[opponentColor][disappearedPiece.originalType].pop();
-            opponentPieces.splice(opponentPieces.indexOf(disappearedPiece), 1);
+          if (this.isCirce && _.includes(playerPieces, disappearedOrMovedPiece)) {
+            this.board[disappearedOrMovedPiece.location.y][disappearedOrMovedPiece.location.x] = null;
+          } else {
+            playerPieces.push(disappearedOrMovedPiece);
           }
 
-          this.board[disappearedPiece.location.y][disappearedPiece.location.x] = disappearedPiece;
+          disappearedOrMovedPiece.moved = moved;
+          disappearedOrMovedPiece.color = color;
+          disappearedOrMovedPiece.type = type;
+          disappearedOrMovedPiece.location = location;
+
+          if (this.isPocketUsed && _.includes(this.pocketPiecesUsed, disappearedOrMovedPiece.originalType)) {
+            this.pocket[opponentColor][disappearedOrMovedPiece.originalType].pop();
+            opponentPieces.splice(opponentPieces.indexOf(disappearedOrMovedPiece), 1);
+          }
+
+          this.board[location.y][location.x] = disappearedOrMovedPiece;
         });
 
         if (castlingRook) {
