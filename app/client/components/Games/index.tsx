@@ -114,7 +114,7 @@ export default class Games extends React.Component<Props, State> {
     } else {
       this.setState({
         timeControl: timeControl === TimeControlEnum.TIMER
-          ? { type: TimeControlEnum.TIMER, base: 5 * 60 * 1000, increment: 10 * 1000 }
+          ? { type: TimeControlEnum.TIMER, base: 10 * 60 * 1000, increment: 5 * 1000 }
           : { type: TimeControlEnum.CORRESPONDENCE, base: 2 * 24 * 60 * 60 * 1000 }
       });
     }
