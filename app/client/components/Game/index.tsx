@@ -115,6 +115,14 @@ export default class Game extends React.Component<Props, State> {
     return this.game!.getCenterSquareParams(square);
   };
 
+  getOppositeColor = (color: ColorEnum): ColorEnum => {
+    return this.game!.getOppositeColor(color);
+  };
+
+  isAttackedByOpponentPiece = (square: Square, opponentColor: ColorEnum): boolean => {
+    return this.game!.isAttackedByOpponentPiece(square, opponentColor);
+  };
+
   selectPiece = (selectedPiece: RealPiece | null) => {
     this.setState({
       selectedPiece
@@ -144,10 +152,10 @@ export default class Game extends React.Component<Props, State> {
         players,
         pocket,
         isPocketUsed,
+        isKingOfTheHill,
         timeControl,
         moves,
-        currentMoveIndex,
-        isCheck
+        currentMoveIndex
       } = this.game!;
       const {
         selectedPiece
@@ -167,7 +175,6 @@ export default class Game extends React.Component<Props, State> {
             board={board}
             pieces={pieces}
             player={player}
-            turn={turn}
             selectedPiece={
               selectedPiece
                 ? selectedPiece
@@ -176,9 +183,11 @@ export default class Game extends React.Component<Props, State> {
             sendMove={this.sendMove}
             getAllowedMoves={this.getAllowedMoves}
             getCenterSquareParams={this.getCenterSquareParams}
+            getOppositeColor={this.getOppositeColor}
+            isAttackedByOpponentPiece={this.isAttackedByOpponentPiece}
             selectPiece={this.selectPiece}
-            isCheck={isCheck}
             isBlackBase={isBlackBase}
+            isKingOfTheHill={isKingOfTheHill}
             readOnly={(
               !player
               || player.color !== turn

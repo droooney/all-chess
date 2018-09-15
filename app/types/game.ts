@@ -123,7 +123,7 @@ export interface GameCreateSettings {
 export enum GameVariantEnum {
   CHESS_960 = 'CHESS_960',
   CRAZYHOUSE = 'CRAZYHOUSE',
-  // ATOMIC = 'ATOMIC',
+  ATOMIC = 'ATOMIC',
   KING_OF_THE_HILL = 'KING_OF_THE_HILL'
 }
 
@@ -155,6 +155,7 @@ export enum GameStatusEnum {
 export enum ResultReasonEnum {
   CHECKMATE = 'CHECKMATE',
   KING_IN_THE_CENTER = 'KING_IN_THE_CENTER',
+  KING_EXPLODED = 'KING_EXPLODED',
   STALEMATE = 'STALEMATE',
   TIME_RAN_OUT = 'TIME_RAN_OUT',
   RESIGN = 'RESIGN',

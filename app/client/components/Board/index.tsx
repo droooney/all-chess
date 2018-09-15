@@ -24,15 +24,16 @@ interface OwnProps {
   pieces: GamePieces;
   board: IBoard;
   player: Player | null;
-  turn: ColorEnum;
   selectedPiece: RealPiece | null;
   selectPiece(piece: IPiece | null): void;
   getAllowedMoves(location: RealPieceLocation): Square[];
+  isAttackedByOpponentPiece(square: Square, opponentColor: ColorEnum): boolean;
+  getOppositeColor(color: ColorEnum): ColorEnum;
   getCenterSquareParams(square: Square): CenterSquareParams;
   sendMove(move: BaseMove): void;
-  isCheck: boolean;
   readOnly: boolean;
   withLiterals: boolean;
+  isKingOfTheHill: boolean;
   isBlackBase: boolean;
   currentMove: Move | undefined;
 }
@@ -76,8 +77,14 @@ export default class Board extends React.Component<Props> {
 
   getSquareClasses(square: Square): string[] {
     const {
+      isKingOfTheHill,
       getCenterSquareParams
     } = this.props;
+
+    if (!isKingOfTheHill) {
+      return [];
+    }
+
     const params = getCenterSquareParams(square);
 
     if (!params) {
@@ -90,8 +97,8 @@ export default class Board extends React.Component<Props> {
   isInCheck(square: Square): boolean {
     const {
       board,
-      turn,
-      isCheck
+      getOppositeColor,
+      isAttackedByOpponentPiece
     } = this.props;
     const piece = board[square.y][square.x];
 
@@ -101,8 +108,7 @@ export default class Board extends React.Component<Props> {
 
     return (
       piece.type === PieceEnum.KING
-      && piece.color === turn
-      && isCheck
+      && isAttackedByOpponentPiece(piece.location, getOppositeColor(piece.color))
     );
   }
 
