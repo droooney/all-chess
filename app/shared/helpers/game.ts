@@ -277,6 +277,7 @@ export class Game implements IGame {
   isAtomic: boolean;
   isCirce: boolean;
   isPatrol: boolean;
+  isMadrasi: boolean;
   isLeftInCheckAllowed: boolean;
   variants: GameVariantEnum[];
 
@@ -301,6 +302,7 @@ export class Game implements IGame {
     this.isAtomic = _.includes(this.variants, GameVariantEnum.ATOMIC);
     this.isCirce = _.includes(this.variants, GameVariantEnum.CIRCE);
     this.isPatrol = _.includes(this.variants, GameVariantEnum.PATROL);
+    this.isMadrasi = _.includes(this.variants, GameVariantEnum.MADRASI);
     this.isLeftInCheckAllowed = this.isAtomic;
 
     if (this.isPocketUsed) {
@@ -619,6 +621,7 @@ export class Game implements IGame {
         if (this.isPocketUsed && _.includes(this.pocketPiecesUsed, disappearedPiece.originalType)) {
           const pieceType = disappearedPiece.originalType;
 
+          disappearedPiece.moved = false;
           disappearedPiece.type = pieceType;
           disappearedPiece.color = opponentColor;
           (disappearedPiece as any as PocketPiece).location = {
@@ -859,10 +862,14 @@ export class Game implements IGame {
 
     const piece = this.board[location.y][location.x]!;
     const {
+      color: pieceColor,
+      type: pieceType
+    } = piece;
+    const {
       x: pieceX,
       y: pieceY
     } = location;
-    const opponentColor = this.getOppositeColor(piece.color);
+    const opponentColor = this.getOppositeColor(pieceColor);
     const possibleSquares: Square[] = [];
     const traverseDirection = (incrementY: 0 | 1 | -1, incrementX: 0 | 1 | -1) => {
       let rankY = pieceY;
@@ -884,7 +891,7 @@ export class Game implements IGame {
         };
         const pieceInSquare = newRank[fileX];
 
-        if (pieceInSquare && pieceInSquare.color === piece.color) {
+        if (pieceInSquare && pieceInSquare.color === pieceColor) {
           if (!forMove) {
             possibleSquares.push(square);
           }
@@ -898,16 +905,16 @@ export class Game implements IGame {
           break;
         }
 
-        if (piece.type === PieceEnum.KING) {
+        if (pieceType === PieceEnum.KING) {
           break;
         }
       }
     };
 
     if (
-      piece.type === PieceEnum.KING
-      || piece.type === PieceEnum.QUEEN
-      || piece.type === PieceEnum.ROOK
+      pieceType === PieceEnum.KING
+      || pieceType === PieceEnum.QUEEN
+      || pieceType === PieceEnum.ROOK
     ) {
       traverseDirection(+1, 0);
       traverseDirection(-1, 0);
@@ -916,9 +923,9 @@ export class Game implements IGame {
     }
 
     if (
-      piece.type === PieceEnum.KING
-      || piece.type === PieceEnum.QUEEN
-      || piece.type === PieceEnum.BISHOP
+      pieceType === PieceEnum.KING
+      || pieceType === PieceEnum.QUEEN
+      || pieceType === PieceEnum.BISHOP
     ) {
       traverseDirection(+1, +1);
       traverseDirection(+1, -1);
@@ -926,7 +933,7 @@ export class Game implements IGame {
       traverseDirection(-1, -1);
     }
 
-    if (piece.type === PieceEnum.KNIGHT) {
+    if (pieceType === PieceEnum.KNIGHT) {
       const increments = [
         [-2, -1],
         [-2, +1],
@@ -949,7 +956,7 @@ export class Game implements IGame {
 
         const pieceInSquare = rank[fileX];
 
-        if (!forMove || !pieceInSquare || pieceInSquare.color !== piece.color) {
+        if (!forMove || !pieceInSquare || pieceInSquare.color !== pieceColor) {
           possibleSquares.push({
             x: fileX,
             y: rankY
@@ -958,8 +965,8 @@ export class Game implements IGame {
       });
     }
 
-    if (piece.type === PieceEnum.PAWN) {
-      const direction = piece.color === ColorEnum.WHITE ? 1 : -1;
+    if (pieceType === PieceEnum.PAWN) {
+      const direction = pieceColor === ColorEnum.WHITE ? 1 : -1;
       const rankY = pieceY + direction;
       const nextRank = this.board[rankY];
 
@@ -973,7 +980,7 @@ export class Game implements IGame {
             y: rankY
           });
 
-          if (piece.color === ColorEnum.WHITE ? pieceY === 1 : pieceY === 6) {
+          if (pieceColor === ColorEnum.WHITE ? pieceY === 1 : pieceY === 6) {
             // 2-forward move
             const squarePiece = this.board[rankY + direction][pieceX];
 
@@ -994,7 +1001,7 @@ export class Game implements IGame {
         if (fileX in nextRank) {
           const pieceInSquare = nextRank[fileX];
 
-          if (!forMove || (pieceInSquare && pieceInSquare.color !== piece.color)) {
+          if (!forMove || (pieceInSquare && pieceInSquare.color !== pieceColor)) {
             possibleSquares.push({
               x: fileX,
               y: rankY
@@ -1013,11 +1020,11 @@ export class Game implements IGame {
       }
     }
 
-    if (piece.type === PieceEnum.KING && !piece.moved && !this.isCheck && forMove) {
+    if (pieceType === PieceEnum.KING && !piece.moved && !this.isCheck && forMove) {
       this.board[pieceY]
         .filter((rook) => (
           rook
-          && rook.color === piece.color
+          && rook.color === pieceColor
           && rook.type === PieceEnum.ROOK
           && !rook.moved
         ))
@@ -1080,6 +1087,21 @@ export class Game implements IGame {
             });
           }
         });
+    }
+
+    if (
+      this.isMadrasi
+      && possibleSquares.some((square) => {
+        const pieceInSquare = this.board[square.y][square.x];
+
+        return (
+          !!pieceInSquare
+          && pieceInSquare.color !== pieceColor
+          && pieceInSquare.type === pieceType
+        );
+      })
+    ) {
+      return [];
     }
 
     const isPiecePatrolled = onlyControlled || this.isPatrolledByFriendlyPiece(location);
@@ -1230,6 +1252,10 @@ export class Game implements IGame {
   }
 
   isInsufficientMaterial(): boolean {
+    if (this.isKingOfTheHill) {
+      return false;
+    }
+
     const pieces = _
       .sortBy([
         this.pieces[ColorEnum.WHITE],
@@ -1239,16 +1265,28 @@ export class Game implements IGame {
         pieces.filter(Game.isBoardPiece)
       ));
 
-    if ((
+    if (
       // king vs king
       pieces[0].length === 1
       && pieces[1].length === 1
-    ) || (
+    ) {
+      return true;
+    }
+
+    if (
+      this.isPatrol
+      || this.isAtomic
+      || this.isMadrasi
+    ) {
+      return false;
+    }
+
+    if (
       // king vs king & knight
       pieces[0].length === 1
       && pieces[1].length === 2
       && pieces[1][1].type === PieceEnum.KNIGHT
-    )) {
+    ) {
       return true;
     }
 
