@@ -271,6 +271,10 @@ export class Game implements IGame {
     PieceEnum.KNIGHT,
     PieceEnum.PAWN
   ];
+  teleportUsed: { [color in ColorEnum]: boolean } = {
+    [ColorEnum.WHITE]: false,
+    [ColorEnum.BLACK]: false
+  };
   isPocketUsed: boolean;
   is960: boolean;
   isKingOfTheHill: boolean;
@@ -278,6 +282,7 @@ export class Game implements IGame {
   isCirce: boolean;
   isPatrol: boolean;
   isMadrasi: boolean;
+  isLastChance: boolean;
   isLeftInCheckAllowed: boolean;
   variants: GameVariantEnum[];
 
@@ -303,6 +308,7 @@ export class Game implements IGame {
     this.isCirce = _.includes(this.variants, GameVariantEnum.CIRCE);
     this.isPatrol = _.includes(this.variants, GameVariantEnum.PATROL);
     this.isMadrasi = _.includes(this.variants, GameVariantEnum.MADRASI);
+    this.isLastChance = _.includes(this.variants, GameVariantEnum.LAST_CHANCE);
     this.isLeftInCheckAllowed = this.isAtomic;
 
     if (this.isPocketUsed) {
@@ -387,9 +393,24 @@ export class Game implements IGame {
     ) || (
       this.turn === ColorEnum.BLACK && toY === 0
     ));
+    let isTeleportMove = false;
+
+    if (
+      this.isLastChance
+      && piece.type === PieceEnum.KING
+      && !this.teleportUsed[piece.color]
+    ) {
+      this.teleportUsed[piece.color] = true;
+
+      isTeleportMove = !_.includes(this.getAllowedMoves(fromLocation), toLocation);
+
+      this.teleportUsed[piece.color] = false;
+    }
+
     const isCastling = (
       fromLocation.type === PieceLocationEnum.BOARD
       && pieceType === PieceEnum.KING
+      && !isTeleportMove
       && (
         this.is960
           ? !!toPiece && toPiece.color === this.turn && toPiece.type === PieceEnum.ROOK
@@ -407,6 +428,7 @@ export class Game implements IGame {
     const prevIsCheck = this.isCheck;
     const prevPliesWithoutCaptureOrPawnMove = this.pliesWithoutCaptureOrPawnMove;
     const prevPossibleEnPassant = this.possibleEnPassant;
+    const prevTeleportUsed = this.teleportUsed[this.turn];
     const prevCastlingRookLocation = castlingRook
       ? castlingRook.location
       : null;
@@ -597,6 +619,11 @@ export class Game implements IGame {
           figurine += 'x';
         }
 
+        if (isTeleportMove) {
+          algebraic += '→';
+          figurine += '→';
+        }
+
         const destination = Game.getFileLiteral(toX) + Game.getRankLiteral(toY);
 
         algebraic += destination;
@@ -639,6 +666,10 @@ export class Game implements IGame {
       this.pliesWithoutCaptureOrPawnMove = 0;
     } else {
       this.pliesWithoutCaptureOrPawnMove++;
+    }
+
+    if (isTeleportMove) {
+      this.teleportUsed[this.turn] = true;
     }
 
     if (
@@ -728,6 +759,7 @@ export class Game implements IGame {
         this.isCheck = prevIsCheck;
         this.pliesWithoutCaptureOrPawnMove = prevPliesWithoutCaptureOrPawnMove;
         this.possibleEnPassant = prevPossibleEnPassant;
+        this.teleportUsed[this.turn] = prevTeleportUsed;
 
         this.board[newLocation.y][newLocation.x] = null;
 
@@ -834,14 +866,13 @@ export class Game implements IGame {
 
   getPossibleMoves(location: RealPieceLocation, onlyAttacked: boolean, onlyControlled: boolean): Square[] {
     const forMove = !onlyControlled && !onlyAttacked;
-
-    if (location.type === PieceLocationEnum.POCKET) {
+    const getSquaresForDrop = (pieceType: PieceEnum): Square[] => {
       return this.board.reduce((possibleSquares, rank, rankY) => {
         let newSquares: Square[] = [];
 
         if (
           (rankY !== 0 && rankY !== 7)
-          || location.pieceType !== PieceEnum.PAWN
+          || pieceType !== PieceEnum.PAWN
         ) {
           newSquares = rank
             .map((piece, fileX) => ({
@@ -858,6 +889,10 @@ export class Game implements IGame {
           ...newSquares
         ];
       }, [] as Square[]);
+    };
+
+    if (location.type === PieceLocationEnum.POCKET) {
+      return getSquaresForDrop(location.pieceType);
     }
 
     const piece = this.board[location.y][location.x]!;
@@ -1018,6 +1053,16 @@ export class Game implements IGame {
         // en passant
         possibleSquares.push(this.possibleEnPassant);
       }
+    }
+
+    if (
+      forMove
+      && this.isLastChance
+      && !this.isCheck
+      && pieceType === PieceEnum.KING
+      && !this.teleportUsed[pieceColor]
+    ) {
+      possibleSquares.push(...getSquaresForDrop(pieceType));
     }
 
     if (pieceType === PieceEnum.KING && !piece.moved && !this.isCheck && forMove) {
