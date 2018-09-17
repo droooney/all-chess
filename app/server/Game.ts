@@ -204,15 +204,7 @@ export default class Game extends GameHelper {
     const isSquareAllowed = this.getAllowedMoves(fromLocation).some(({ x, y }) => (
       toX === x && toY === y
     ));
-    const isPawnPromotion = (
-      fromLocation.type === PieceLocationEnum.BOARD
-      && piece!.type === PieceEnum.PAWN
-      && ((
-        this.turn === ColorEnum.WHITE && toY === 7
-      ) || (
-        this.turn === ColorEnum.BLACK && toY === 0
-      ))
-    );
+    const isPawnPromotion = this.isPawnPromotion(moveForServer);
     const isValidPromotion =  (
       promotion === PieceEnum.QUEEN
       || promotion === PieceEnum.ROOK

@@ -123,6 +123,10 @@ export default class Game extends React.Component<Props, State> {
     return this.game!.isAttackedByOpponentPiece(square, opponentColor);
   };
 
+  isPawnPromotion = (move: BaseMove): boolean => {
+    return this.game!.isPawnPromotion(move);
+  };
+
   selectPiece = (selectedPiece: RealPiece | null) => {
     this.setState({
       selectedPiece
@@ -185,6 +189,7 @@ export default class Game extends React.Component<Props, State> {
             getCenterSquareParams={this.getCenterSquareParams}
             getOppositeColor={this.getOppositeColor}
             isAttackedByOpponentPiece={this.isAttackedByOpponentPiece}
+            isPawnPromotion={this.isPawnPromotion}
             selectPiece={this.selectPiece}
             isBlackBase={isBlackBase}
             isKingOfTheHill={isKingOfTheHill}

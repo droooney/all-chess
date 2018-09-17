@@ -12,13 +12,17 @@ import {
   Piece as IPiece,
   PieceEnum,
   PieceLocationEnum,
+  PiecePocketLocation,
   Player,
   RealPiece,
   RealPieceLocation,
   Square
 } from '../../../types';
 import { Game } from '../../helpers';
+
 import BoardPiece from '../BoardPiece';
+import Piece from '../Piece';
+import Modal from '../Modal';
 
 interface OwnProps {
   pieces: GamePieces;
@@ -28,6 +32,7 @@ interface OwnProps {
   selectPiece(piece: IPiece | null): void;
   getAllowedMoves(location: RealPieceLocation): Square[];
   isAttackedByOpponentPiece(square: Square, opponentColor: ColorEnum): boolean;
+  isPawnPromotion(move: BaseMove): boolean;
   getOppositeColor(color: ColorEnum): ColorEnum;
   getCenterSquareParams(square: Square): CenterSquareParams;
   sendMove(move: BaseMove): void;
@@ -38,20 +43,22 @@ interface OwnProps {
   currentMove: Move | undefined;
 }
 
+interface State {
+  promotionModalVisible: boolean;
+  promotionMove: BaseMove | null;
+}
+
 type Props = OwnProps;
 
-export default class Board extends React.Component<Props> {
+export default class Board extends React.Component<Props, State> {
   static defaultProps = {
     withLiterals: true
   };
 
-  componentDidUpdate(prevProps: Props) {
-    if (this.props.readOnly && !prevProps.readOnly) {
-      this.setState({
-        selectedPiece: null
-      });
-    }
-  }
+  state: State = {
+    promotionModalVisible: false,
+    promotionMove: null
+  };
 
   areSquaresEqual(square1: Square, square2: Square): boolean {
     return (
@@ -117,6 +124,7 @@ export default class Board extends React.Component<Props> {
       board,
       player,
       selectedPiece,
+      isPawnPromotion,
       selectPiece,
       sendMove
     } = this.props;
@@ -148,17 +156,46 @@ export default class Board extends React.Component<Props> {
       return selectPiece(piece);
     }
 
-    sendMove({
+    const move = {
       from: selectedPiece.location,
       to: square,
       promotion: PieceEnum.QUEEN
-    });
+    };
+
+    if (isPawnPromotion(move)) {
+      this.setState({
+        promotionModalVisible: true,
+        promotionMove: move
+      });
+    } else {
+      sendMove(move);
+    }
 
     selectPiece(null);
   };
 
+  closePromotionPopup = () => {
+    this.setState({
+      promotionModalVisible: false,
+      promotionMove: null
+    });
+  };
+
+  promoteToPiece = (location: PiecePocketLocation) => {
+    const {
+      sendMove
+    } = this.props;
+
+    sendMove({
+      ...this.state.promotionMove!,
+      promotion: location.pieceType
+    });
+    this.closePromotionPopup();
+  };
+
   render() {
     const {
+      player,
       selectedPiece,
       readOnly,
       board,
@@ -260,6 +297,28 @@ export default class Board extends React.Component<Props> {
               />
             ))
         }
+        <Modal
+          visible={this.state.promotionModalVisible}
+          onOverlayClick={this.closePromotionPopup}
+          className="promotion-modal"
+        >
+          <div className="modal-content">
+            {[PieceEnum.QUEEN, PieceEnum.ROOK, PieceEnum.BISHOP, PieceEnum.KNIGHT].map((pieceType) => (
+              <Piece
+                key={pieceType}
+                piece={{
+                  type: pieceType,
+                  color: player!.color,
+                  location: {
+                    type: PieceLocationEnum.POCKET,
+                    pieceType
+                  }
+                }}
+                onClick={this.promoteToPiece}
+              />
+            ))}
+          </div>
+        </Modal>
       </div>
     );
   }

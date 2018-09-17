@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import {
+  BaseMove,
   Board,
   BoardPiece,
   CenterSquareParams,
@@ -391,11 +392,7 @@ export class Game implements IGame {
         : null;
     const isCapture = !!opponentPiece;
     const disappearedOrMovedPieces: BoardPiece[] = [];
-    const isPawnPromotion = pieceType === PieceEnum.PAWN && ((
-      this.turn === ColorEnum.WHITE && toY === 7
-    ) || (
-      this.turn === ColorEnum.BLACK && toY === 0
-    ));
+    const isPawnPromotion = this.isPawnPromotion(move);
     const isMainPieceMovedOrDisappeared = this.isAtomic && isCapture;
     let isTeleportMove = false;
 
@@ -1167,6 +1164,28 @@ export class Game implements IGame {
 
       return isMoveAllowed;
     });
+  }
+
+  isPawnPromotion(move: BaseMove): boolean {
+    const {
+      from: fromLocation,
+      to: {
+        y: toY
+      }
+    } = move;
+    const piece = fromLocation.type === PieceLocationEnum.BOARD
+      ? this.board[fromLocation.y][fromLocation.x]!
+      : null!;
+
+    return (
+      fromLocation.type === PieceLocationEnum.BOARD
+      && piece.type === PieceEnum.PAWN
+      && ((
+        piece.color === ColorEnum.WHITE && toY === 7
+      ) || (
+        piece.color === ColorEnum.BLACK && toY === 0
+      ))
+    );
   }
 
   isInCheck(king: BoardPiece): boolean {
