@@ -479,7 +479,7 @@ export class Game implements IGame {
       });
     }
 
-    // in case of longer en passant on bigger boards in the future
+    // in case of en passant
     if (opponentPiece && !_.includes(disappearedOrMovedPieces, opponentPiece)) {
       disappearedOrMovedPieces.push(opponentPiece);
     }
@@ -831,6 +831,31 @@ export class Game implements IGame {
         ))
       ))
     ]);
+  }
+
+  getCenterSquareParams(square: Square): CenterSquareParams {
+    const {
+      x: squareX,
+      y: squareY
+    } = square;
+
+    if (squareX === 3 && squareY === 3) {
+      return { top: true, left: true };
+    }
+
+    if (squareX === 3 && squareY === 4) {
+      return { bottom: true, left: true };
+    }
+
+    if (squareX === 4 && squareY === 3) {
+      return { top: true, right: true };
+    }
+
+    if (squareX === 4 && squareY === 4) {
+      return { bottom: true, right: true };
+    }
+
+    return null;
   }
 
   getOppositeColor(color: ColorEnum): ColorEnum {
@@ -1215,31 +1240,6 @@ export class Game implements IGame {
           && square.y === y
         ))
       ));
-  }
-
-  getCenterSquareParams(square: Square): CenterSquareParams {
-    const {
-      x: squareX,
-      y: squareY
-    } = square;
-
-    if (squareX === 3 && squareY === 3) {
-      return { top: true, left: true };
-    }
-
-    if (squareX === 3 && squareY === 4) {
-      return { bottom: true, left: true };
-    }
-
-    if (squareX === 4 && squareY === 3) {
-      return { top: true, right: true };
-    }
-
-    if (squareX === 4 && squareY === 4) {
-      return { bottom: true, right: true };
-    }
-
-    return null;
   }
 
   isWin(): ResultReasonEnum | null {
