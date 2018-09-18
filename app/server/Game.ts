@@ -229,6 +229,7 @@ export default class Game extends GameHelper {
     }
 
     const prevMove = _.last(this.moves);
+    const prevTurn = this.turn;
 
     this.registerMove(move);
 
@@ -236,6 +237,7 @@ export default class Game extends GameHelper {
       this.status === GameStatusEnum.ONGOING
       && this.moves.length > 2
       && this.timeControl
+      && prevTurn !== this.turn
     ) {
       if (this.timeControl.type === TimeControlEnum.TIMER) {
         player.time! += prevMove!.timestamp - newTimestamp + this.timeControl.increment;
@@ -251,8 +253,9 @@ export default class Game extends GameHelper {
       this.status === GameStatusEnum.ONGOING
       && this.moves.length > 1
       && this.timeControl
+      && prevTurn !== this.turn
     ) {
-      this.setTimeout(player);
+      this.setTimeout(this.players[this.turn]);
     }
   }
 

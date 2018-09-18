@@ -48,5 +48,6 @@ export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.CIRCE]: 'Circe',
   [GameVariantEnum.PATROL]: 'Patrol',
   [GameVariantEnum.MADRASI]: 'Madrasi',
-  [GameVariantEnum.LAST_CHANCE]: 'Last chance'
+  [GameVariantEnum.LAST_CHANCE]: 'Last chance',
+  [GameVariantEnum.MONSTER_CHESS]: 'Monster chess'
 };

@@ -157,6 +157,7 @@ export default class Game extends React.Component<Props, State> {
         pocket,
         isPocketUsed,
         isKingOfTheHill,
+        isMonsterChess,
         timeControl,
         moves,
         currentMoveIndex
@@ -207,6 +208,7 @@ export default class Game extends React.Component<Props, State> {
             player={player}
             pocket={pocket}
             isPocketUsed={isPocketUsed}
+            isMonsterChess={isMonsterChess}
             currentMoveIndex={currentMoveIndex}
             timeControl={timeControl}
             moves={moves}

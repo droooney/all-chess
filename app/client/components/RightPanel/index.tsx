@@ -26,6 +26,7 @@ interface OwnProps {
   timeControl: TimeControl;
   moves: ExtendedMove[];
   isBlackBase: boolean;
+  isMonsterChess: boolean;
   status: GameStatusEnum;
   timeDiff: number;
   selectedPiece: PocketPiece | null;
@@ -133,6 +134,7 @@ export default class RightPanel extends React.Component<Props, State> {
       player,
       pocket,
       isPocketUsed,
+      isMonsterChess,
       currentMoveIndex,
       moves,
       timeControl,
@@ -152,6 +154,7 @@ export default class RightPanel extends React.Component<Props, State> {
       : players[ColorEnum.WHITE];
     const lastMoveTimestamp = this.adjustServerTime(moves.length ? _.last(moves)!.timestamp : 0);
     const timePassedSinceLastMove = (this.state.intervalActivated ? Date.now() : lastMoveTimestamp) - lastMoveTimestamp;
+    const movesChunkSize = isMonsterChess ? 3 : 2;
 
     return (
       <div className="right-panel">
@@ -169,11 +172,11 @@ export default class RightPanel extends React.Component<Props, State> {
         />
 
         <div className="moves" ref={this.movesRef}>
-          {_.chunk(moves, 2).map((moves, index) => (
-            <div key={index} className="move-row">
+          {_.chunk(moves, movesChunkSize).map((moves, index) => (
+            <div key={index} className={`move-row moves-${movesChunkSize}`}>
               <div className="move-index">{index + 1}</div>
               {moves.map((move, turn) => {
-                const moveIndex = index * 2 + turn;
+                const moveIndex = index * movesChunkSize + turn;
 
                 return (
                   <div

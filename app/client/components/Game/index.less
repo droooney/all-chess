@@ -264,7 +264,7 @@
       }
 
       .moves {
-        width: 220px;
+        width: 250px;
         height: 250px;
         overflow-y: auto;
         padding: 10px 0;
@@ -276,7 +276,7 @@
           .flex-stretch(flex-start);
 
           width: 100%;
-          height: 20px;
+          height: 25px;
 
           .move-index {
             .flex-child-fixed(10%);
@@ -292,6 +292,26 @@
 
             &.current {
               background-color: #ccc;
+            }
+          }
+
+          &.moves-2 {
+            .move-index {
+              .flex-child-fixed(10%);
+            }
+
+            .move {
+              .flex-child-fixed(45%);
+            }
+          }
+
+          &.moves-3 {
+            .move-index {
+              .flex-child-fixed(10%);
+            }
+
+            .move {
+              .flex-child-fixed(30%);
             }
           }
         }
