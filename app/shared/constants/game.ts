@@ -1,7 +1,8 @@
 import {
   ColorEnum,
   GameVariantEnum,
-  PieceEnum
+  PieceEnum,
+  ResultReasonEnum
 } from '../../types';
 
 export const SHORT_PIECE_NAMES: { [piece in PieceEnum]: string } = {
@@ -50,4 +51,19 @@ export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.MADRASI]: 'Madrasi',
   [GameVariantEnum.LAST_CHANCE]: 'Last chance',
   [GameVariantEnum.MONSTER_CHESS]: 'Monster chess'
+};
+
+export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
+  [ResultReasonEnum.CHECKMATE]: 'checkmate',
+  [ResultReasonEnum.KING_IN_THE_CENTER]: 'king in the center',
+  [ResultReasonEnum.KING_EXPLODED]: 'king exploded',
+  [ResultReasonEnum.KING_CAPTURED]: 'king captured',
+  [ResultReasonEnum.STALEMATE]: 'stalemate',
+  [ResultReasonEnum.TIME_RAN_OUT]: 'opponent\'s time ran out',
+  [ResultReasonEnum.RESIGN]: 'opponent resigned',
+  [ResultReasonEnum.INSUFFICIENT_MATERIAL]: 'insufficient material',
+  [ResultReasonEnum.THREEFOLD_REPETITION]: 'threefold repetition',
+  [ResultReasonEnum.FIVEFOLD_REPETITION]: 'fivefold repetition',
+  [ResultReasonEnum.FIFTY_MOVE_RULE]: '50 moves without pawn moves or captures',
+  [ResultReasonEnum.SEVENTY_FIVE_MOVE_RULE]: '75 moves without pawn moves or captures'
 };

@@ -15,9 +15,7 @@ declare global {
     gameList: Game[];
     makeMove: BaseMove;
     moveMade: Move;
-    drawSuggested: {
-      from: ColorEnum;
-    };
+    drawOffered: ColorEnum;
     gameOver: GameResult;
     startGame: GamePlayers;
     updatePlayers: GamePlayers;

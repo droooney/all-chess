@@ -138,11 +138,11 @@ export default class RightPanelPlayer extends React.Component<Props> {
                       }}
                     />
 
-                    {pieces.length ? (
+                    {!!pieces.length && (
                       <span className="count">
                         {pieces.length}
                       </span>
-                    ) : null}
+                    )}
                   </div>
                 ))
                 .value()

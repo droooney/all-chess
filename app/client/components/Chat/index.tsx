@@ -47,6 +47,9 @@ export default class Chat extends React.Component<Props> {
 
     return (
       <div className="chat">
+        <div className="header">
+          Chat
+        </div>
         <div className="messages" ref={this.messagesRef}>
           {chat.map(({ login, message }, index) => (
             <div key={index} className="message">

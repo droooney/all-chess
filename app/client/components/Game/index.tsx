@@ -18,7 +18,7 @@ import {
 import { Game as GameHelper } from '../../helpers';
 
 import './index.less';
-import Chat from '../Chat';
+import LeftPanel from '../LeftPanel';
 import Board from '../Board';
 import RightPanel from '../RightPanel';
 
@@ -160,6 +160,8 @@ export default class Game extends React.Component<Props, State> {
         isMonsterChess,
         timeControl,
         moves,
+        result,
+        variants,
         currentMoveIndex
       } = this.game!;
       const {
@@ -171,8 +173,11 @@ export default class Game extends React.Component<Props, State> {
       content = (
         <div className="game">
 
-          <Chat
+          <LeftPanel
             chat={chat}
+            result={result}
+            variants={variants}
+            players={players}
             sendMessage={this.sendMessage}
           />
 

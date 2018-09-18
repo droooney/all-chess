@@ -4,6 +4,7 @@ import { Configuration } from 'webpack';
 const config: Configuration = {
   entry: './app/client/index.tsx',
   output: {
+    publicPath: '/public/',
     path: path.resolve(__dirname, 'public'),
     filename: 'all.js'
   },
@@ -13,6 +14,14 @@ const config: Configuration = {
   module: {
     rules: [
       { parser: { amd: false } },
+      {
+        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        loader: 'url-loader?limit=10000&mimetype=application/font-woff'
+      },
+      {
+        test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        loader: 'file-loader'
+      },
       {
         test: /\.less$/,
         use: ['style-loader', 'css-loader', 'less-loader']
