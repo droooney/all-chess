@@ -183,11 +183,13 @@ export class Game implements IGame {
   }
 
   static getStartingBoard(settings: GameCreateSettings): StartingBoard {
-    const startingBoard = _.includes(settings.variants, GameVariantEnum.CHESS_960)
+    let startingBoard = _.includes(settings.variants, GameVariantEnum.CHESS_960)
       ? this.generateStarting960Board()
       : this.classicStartingBoard;
 
     if (_.includes(settings.variants, GameVariantEnum.MONSTER_CHESS)) {
+      startingBoard = startingBoard.map((rank) => [...rank]);
+
       startingBoard.slice(0, 2).forEach((rank) => {
         rank.forEach((piece, x) => {
           if (

@@ -308,7 +308,7 @@ export default class Board extends React.Component<Props, State> {
                 key={pieceType}
                 piece={{
                   type: pieceType,
-                  color: player!.color,
+                  color: player ? player.color : ColorEnum.WHITE,
                   location: {
                     type: PieceLocationEnum.POCKET,
                     pieceType

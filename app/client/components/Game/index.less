@@ -19,6 +19,7 @@
 
       flex-direction: column-reverse;
       position: relative;
+      margin: 0 20px;
 
       &.opposite {
         flex-direction: column;
@@ -188,14 +189,17 @@
           padding: 3px 8px;
           max-height: 100px;
           overflow-y: auto;
+
+          .variant {
+            font-weight: bold;
+            color: green;
+          }
         }
 
         .buttons {
           .flex-stretch();
 
           @button-size: 40px;
-
-          height: @button-size;
 
           .button {
             .flex();
@@ -208,10 +212,21 @@
             margin: 5px;
             background-color: rgba(0,0,0,0);
 
-            &:hover {
-              background-color: rgba(0,0,0,0.2);
+            &.disabled {
+              cursor: not-allowed;
+              opacity: 0.25;
+            }
+
+            &:not(.disabled) {
+              &:hover {
+                background-color: rgba(0,0,0,0.2);
+              }
             }
           }
+        }
+
+        .result {
+          text-align: center;
         }
       }
 
@@ -234,6 +249,8 @@
 
           width: 100%;
           overflow: auto;
+          -webkit-overflow-scrolling: touch;
+          padding: 10px;
 
           .message {
             width: 100%;
@@ -385,4 +402,8 @@
     cursor: pointer;
     border: 2px solid black;
   }
+}
+
+.resign-modal .modal-content {
+
 }
