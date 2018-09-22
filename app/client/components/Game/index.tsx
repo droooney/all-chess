@@ -133,6 +133,34 @@ export default class Game extends React.Component<Props, State> {
     });
   };
 
+  offerDraw = () => {
+    this.socket!.emit('offerDraw');
+  };
+
+  acceptDraw = () => {
+    this.socket!.emit('drawAccepted');
+  };
+
+  cancelDraw = () => {
+    this.socket!.emit('drawCanceled');
+  };
+
+  declineDraw = () => {
+    this.socket!.emit('drawDeclined');
+  };
+
+  resign = () => {
+    this.socket!.emit('resign');
+  };
+
+  declareThreefoldRepetitionDraw = () => {
+    this.socket!.emit('declareThreefoldRepetitionDraw');
+  };
+
+  declare50MoveDraw = () => {
+    this.socket!.emit('declare50MoveDraw');
+  };
+
   render() {
     let content: JSX.Element | string;
 
@@ -158,6 +186,10 @@ export default class Game extends React.Component<Props, State> {
         isPocketUsed,
         isKingOfTheHill,
         isMonsterChess,
+        isThreefoldRepetitionDrawPossible,
+        is50MoveDrawPossible,
+        numberOfMovesBeforeStart,
+        drawOffer,
         timeControl,
         moves,
         result,
@@ -178,7 +210,18 @@ export default class Game extends React.Component<Props, State> {
             result={result}
             variants={variants}
             players={players}
+            isThreefoldRepetitionDrawPossible={isThreefoldRepetitionDrawPossible}
+            is50MoveDrawPossible={is50MoveDrawPossible}
+            drawOffer={drawOffer}
+            player={player}
             sendMessage={this.sendMessage}
+            offerDraw={this.offerDraw}
+            acceptDraw={this.acceptDraw}
+            cancelDraw={this.cancelDraw}
+            declineDraw={this.declineDraw}
+            resign={this.resign}
+            declareThreefoldRepetitionDraw={this.declareThreefoldRepetitionDraw}
+            declare50MoveDraw={this.declare50MoveDraw}
           />
 
           <Board
@@ -216,6 +259,7 @@ export default class Game extends React.Component<Props, State> {
             isMonsterChess={isMonsterChess}
             currentMoveIndex={currentMoveIndex}
             timeControl={timeControl}
+            numberOfMovesBeforeStart={numberOfMovesBeforeStart}
             moves={moves}
             isBlackBase={isBlackBase}
             status={status}

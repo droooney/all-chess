@@ -196,32 +196,56 @@
           }
         }
 
-        .buttons {
-          .flex-stretch();
+        .actions {
+          .flex-col-stretch();
 
-          @button-size: 40px;
+          .buttons {
+            .flex-stretch();
 
-          .button {
-            .flex();
+            @button-size: 40px;
 
-            line-height: @button-size;
-            width: @button-size;
-            height: @button-size;
-            font-size: 25px;
-            cursor: pointer;
-            margin: 5px;
-            background-color: rgba(0,0,0,0);
+            .button {
+              .flex();
 
-            &.disabled {
-              cursor: not-allowed;
-              opacity: 0.25;
-            }
+              line-height: @button-size;
+              width: @button-size;
+              height: @button-size;
+              font-size: 25px;
+              cursor: pointer;
+              margin: 5px;
+              background-color: rgba(0,0,0,0);
 
-            &:not(.disabled) {
-              &:hover {
-                background-color: rgba(0,0,0,0.2);
+              &.disabled {
+                cursor: not-allowed;
+                opacity: 0.25;
+              }
+
+              &:not(.disabled) {
+                &:hover {
+                  background-color: rgba(0,0,0,0.2);
+                }
               }
             }
+          }
+
+          .action {
+            .flex();
+
+            text-align: center;
+          }
+
+          .fa-check,
+          .fa-times {
+            cursor: pointer;
+            margin-left: 5px;
+          }
+
+          .fa-check {
+            color: green;
+          }
+
+          .fa-times {
+            color: red;
           }
         }
 
@@ -259,6 +283,12 @@
               font-weight: bold;
               margin-right: 10px;
               color: green;
+            }
+
+            &.system {
+              .login {
+                color: red;
+              }
             }
           }
         }

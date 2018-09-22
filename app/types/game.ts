@@ -4,7 +4,6 @@ import { User } from './user';
 
 declare module 'socket.io' {
   interface Socket {
-    player?: Player;
     user: User | null;
   }
 }
@@ -113,6 +112,7 @@ export interface Game {
   moves: ExtendedMove[];
   chat: ChatMessage[];
   variants: GameVariantEnum[];
+  drawOffer: ColorEnum | null;
 }
 
 export interface GameCreateSettings {
@@ -198,8 +198,7 @@ export interface CorrespondenceTimeControl {
 export type TimeControl = null | TimerTimeControl | CorrespondenceTimeControl;
 
 export interface ChatMessage {
-  login: string;
-  isPlayer: boolean;
+  login: string | null;
   message: string;
 }
 

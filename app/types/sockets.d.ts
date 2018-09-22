@@ -33,9 +33,13 @@ declare global {
   type SocketIOEventWithoutDataList = (
     'drawAccepted'
     | 'drawDeclined'
+    | 'drawCanceled'
+    | 'offerDraw'
     | 'resign'
     | 'takebackRequested'
     | 'takebackAccepted'
     | 'takebackDeclined'
+    | 'declareThreefoldRepetitionDraw'
+    | 'declare50MoveDraw'
   );
 }

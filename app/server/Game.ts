@@ -1,7 +1,8 @@
 import * as _ from 'lodash';
-import { Namespace, Socket } from 'socket.io';
+import { Namespace } from 'socket.io';
 import {
   BaseMove,
+  ChatMessage,
   ColorEnum,
   Game as IGame,
   GameCreateSettings,
@@ -16,6 +17,7 @@ import {
 } from '../types';
 import { Game as GameHelper } from '../shared/helpers';
 import {
+  COLOR_NAMES,
   POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS,
   POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
   POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS
@@ -119,14 +121,82 @@ export default class Game extends GameHelper {
       }
 
       if (player) {
-        socket.player = player;
+        const {
+          color: playerColor
+        } = player!;
 
         socket.on('resign', () => {
-          this.end(this.getOppositeColor(player!.color), ResultReasonEnum.RESIGN);
+          if (this.status === GameStatusEnum.ONGOING) {
+            this.end(this.getOppositeColor(playerColor), ResultReasonEnum.RESIGN);
+          }
+        });
+
+        socket.on('offerDraw', () => {
+          if (this.drawOffer) {
+            if (this.drawOffer !== playerColor) {
+              this.drawOffer = null;
+
+              this.end(null, ResultReasonEnum.AGREED_TO_DRAW);
+            }
+          } else {
+            this.drawOffer = playerColor;
+
+            this.addChatMessage({
+              login: null,
+              message: `${COLOR_NAMES[playerColor]} offered a draw`
+            });
+            this.io.emit('drawOffered', this.drawOffer);
+          }
+        });
+
+        socket.on('drawAccepted', () => {
+          if (this.drawOffer && this.drawOffer !== playerColor) {
+            this.drawOffer = null;
+
+            this.end(null, ResultReasonEnum.AGREED_TO_DRAW);
+          }
+        });
+
+        socket.on('drawDeclined', () => {
+          if (this.drawOffer && this.drawOffer !== playerColor) {
+            this.drawOffer = null;
+
+            this.addChatMessage({
+              login: null,
+              message: 'Draw offer declined'
+            });
+            this.io.emit('drawDeclined');
+          }
+        });
+
+        socket.on('drawCanceled', () => {
+          if (this.drawOffer === playerColor) {
+            this.drawOffer = null;
+
+            this.addChatMessage({
+              login: null,
+              message: 'Draw offer canceled'
+            });
+            this.io.emit('drawCanceled');
+          }
+        });
+
+        socket.on('declareThreefoldRepetitionDraw', () => {
+          if (this.isThreefoldRepetitionDrawPossible) {
+            this.end(null, ResultReasonEnum.THREEFOLD_REPETITION);
+          }
+        });
+
+        socket.on('declare50MoveDraw', () => {
+          if (this.is50MoveDrawPossible) {
+            this.end(null, ResultReasonEnum.FIFTY_MOVE_RULE);
+          }
         });
 
         socket.on('makeMove', (move) => {
-          this.move(socket, move);
+          if (this.turn === playerColor && this.status === GameStatusEnum.ONGOING) {
+            this.move(player!, move);
+          }
         });
       }
 
@@ -136,20 +206,23 @@ export default class Game extends GameHelper {
         game: this
       });
 
-      socket.on('addChatMessage', (message) => {
-        if (message && typeof message === 'string' && message.length < 256) {
-          const chatMessage = {
-            login: user ? user.login : 'anonymous',
-            isPlayer: !!player,
-            message
-          };
-
-          this.chat.push(chatMessage);
-
-          this.io.emit('newChatMessage', chatMessage);
-        }
-      });
+      if (user) {
+        socket.on('addChatMessage', (message) => {
+          if (message && typeof message === 'string' && message.length < 256) {
+            this.addChatMessage({
+              login: user.login,
+              message
+            });
+          }
+        });
+      }
     });
+  }
+
+  addChatMessage(chatMessage: ChatMessage) {
+    this.chat.push(chatMessage);
+
+    this.io.emit('newChatMessage', chatMessage);
   }
 
   validateMove(move: any): boolean {
@@ -171,12 +244,11 @@ export default class Game extends GameHelper {
     );
   }
 
-  move(socket: Socket, moveForServer: BaseMove) {
+  move(player: Player, moveForServer: BaseMove) {
     if (!this.validateMove(moveForServer)) {
       return;
     }
 
-    const player = socket.player!;
     const {
       from: fromLocation,
       to: toLocation,
@@ -190,13 +262,8 @@ export default class Game extends GameHelper {
       ? this.board[fromLocation.y][fromLocation.x]
       : this.pocket[player.color][fromLocation.pieceType][0];
 
-    if (
-      this.turn !== player.color
-      || !piece
-      || piece.color !== player.color
-      || this.status !== GameStatusEnum.ONGOING
-    ) {
-      // no piece, wrong turn, color or status
+    if (!piece || piece.color !== player.color) {
+      // no piece or wrong color
 
       return;
     }
@@ -235,7 +302,7 @@ export default class Game extends GameHelper {
 
     if (
       this.status === GameStatusEnum.ONGOING
-      && this.moves.length > 2
+      && this.moves.length > this.numberOfMovesBeforeStart
       && this.timeControl
       && prevTurn !== this.turn
     ) {
@@ -251,16 +318,25 @@ export default class Game extends GameHelper {
 
     if (
       this.status === GameStatusEnum.ONGOING
-      && this.moves.length > 1
+      && this.moves.length >= this.numberOfMovesBeforeStart
       && this.timeControl
       && prevTurn !== this.turn
     ) {
       this.setTimeout(this.players[this.turn]);
+    } else if (
+      this.status !== GameStatusEnum.ONGOING
+      && this.timerTimeout
+    ) {
+      this.clearTimeout();
     }
   }
 
-  setTimeout(forPlayer: Player) {
+  clearTimeout() {
     clearTimeout(this.timerTimeout);
+  }
+
+  setTimeout(forPlayer: Player) {
+    this.clearTimeout();
 
     this.timerTimeout = setTimeout(() => {
       forPlayer.time = 0;
@@ -276,6 +352,7 @@ export default class Game extends GameHelper {
     // anything that client can't recognize
     if (
       reason === ResultReasonEnum.RESIGN
+      || reason === ResultReasonEnum.AGREED_TO_DRAW
       || reason === ResultReasonEnum.TIME_RAN_OUT
       || reason === ResultReasonEnum.THREEFOLD_REPETITION
       || reason === ResultReasonEnum.FIFTY_MOVE_RULE
@@ -293,6 +370,7 @@ export default class Game extends GameHelper {
       'players',
       'result',
       'timeControl',
+      'drawOffer',
       'moves',
       'chat'
     ]);

@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import * as React from 'react';
+import classNames = require('classnames');
 
 import { ChatMessage } from '../../../types';
 
@@ -51,16 +52,20 @@ export default class Chat extends React.Component<Props> {
           Chat
         </div>
         <div className="messages" ref={this.messagesRef}>
-          {chat.map(({ login, message }, index) => (
-            <div key={index} className="message">
-              <span className="login">
-                {login}
-              </span>
-              <span className="content">
-                {message}
-              </span>
-            </div>
-          ))}
+          {chat.map(({ login, message }, index) => {
+            const isSystem = login === null;
+
+            return (
+              <div key={index} className={classNames('message', { system: isSystem })}>
+                <span className="login">
+                  {isSystem ? 'System' : login}
+                </span>
+                <span className="content">
+                  {message}
+                </span>
+              </div>
+            );
+          })}
         </div>
         <input
           ref={this.messageRef}

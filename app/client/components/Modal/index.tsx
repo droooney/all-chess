@@ -4,7 +4,7 @@ import classNames = require('classnames');
 
 import './index.less';
 
-interface OwnProps {
+export interface OwnProps {
   visible: boolean;
   className?: string;
   onOverlayClick(): void;

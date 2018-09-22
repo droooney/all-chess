@@ -27,6 +27,7 @@ interface OwnProps {
   moves: ExtendedMove[];
   isBlackBase: boolean;
   isMonsterChess: boolean;
+  numberOfMovesBeforeStart: number;
   status: GameStatusEnum;
   timeDiff: number;
   selectedPiece: PocketPiece | null;
@@ -52,13 +53,14 @@ export default class RightPanel extends React.Component<Props, State> {
   componentDidMount() {
     const {
       status,
+      numberOfMovesBeforeStart,
       moves
     } = this.props;
     const movesElem = this.movesRef.current!;
 
     movesElem.scrollTop = movesElem.scrollHeight - movesElem.clientHeight;
 
-    if (moves.length > 1 && status === GameStatusEnum.ONGOING) {
+    if (moves.length >= numberOfMovesBeforeStart && status === GameStatusEnum.ONGOING) {
       this.activateInterval();
     }
 
@@ -66,13 +68,19 @@ export default class RightPanel extends React.Component<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props) {
-    if (this.props.status !== GameStatusEnum.ONGOING) {
+    const {
+      status,
+      moves,
+      numberOfMovesBeforeStart
+    } = this.props;
+
+    if (status !== GameStatusEnum.ONGOING) {
       clearInterval(this.timeControlInterval);
-    } else if (this.props.moves.length > 1 && prevProps.moves.length <= 1) {
+    } else if (moves.length >= numberOfMovesBeforeStart && prevProps.moves.length < numberOfMovesBeforeStart) {
       this.activateInterval();
     }
 
-    if (this.props.moves.length > prevProps.moves.length) {
+    if (moves.length > prevProps.moves.length) {
       const movesElem = this.movesRef.current!;
       const lastMoveRow = _.last(movesElem.children)!;
       const maxScroll = movesElem.scrollHeight - movesElem.clientHeight;
@@ -164,7 +172,7 @@ export default class RightPanel extends React.Component<Props, State> {
           currentPlayer={player}
           timePassedSinceLastMove={timePassedSinceLastMove}
           timeControl={timeControl}
-          turn={realTurn}
+          realTurn={realTurn}
           isTop
           pocket={isPocketUsed ? pocket[topPlayer.color] : null}
           selectedPiece={selectedPiece}
@@ -199,7 +207,7 @@ export default class RightPanel extends React.Component<Props, State> {
           currentPlayer={player}
           timePassedSinceLastMove={timePassedSinceLastMove}
           timeControl={timeControl}
-          turn={realTurn}
+          realTurn={realTurn}
           isTop={false}
           pocket={isPocketUsed ? pocket[bottomPlayer.color] : null}
           selectedPiece={selectedPiece}

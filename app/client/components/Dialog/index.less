@@ -1,0 +1,35 @@
+@import (reference) '../../styles/mixins';
+
+.dialog-modal .modal-content {
+  .flex-col-stretch();
+
+  border-radius: 5px;
+  padding: 4px 10px;
+  width: 180px;
+
+  .dialog-question {
+    .flex();
+
+    text-align: center;
+  }
+
+  .dialog-choices {
+    .flex-col-stretch();
+
+    .dialog-choice {
+      .flex();
+
+      height: 30px;
+      border-top: 1px solid black;
+      cursor: pointer;
+
+      &.ok {
+        color: green;
+      }
+
+      &.cancel {
+        color: red;
+      }
+    }
+  }
+}

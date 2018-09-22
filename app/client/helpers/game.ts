@@ -31,6 +31,7 @@ export class Game extends GameHelper {
       variants: game.variants
     });
 
+    this.drawOffer = game.drawOffer;
     this.status = game.status;
     this.result = game.result;
     this.players = game.players;
@@ -58,18 +59,18 @@ export class Game extends GameHelper {
       this.currentMoveIndex++;
 
       this.navigateToMove(currentMoveIndex, false);
-      this.emit('updateGame');
+      this.updateGame();
     });
 
     socket.on('updatePlayers', (players) => {
       this.players = players;
 
-      this.emit('updateGame');
+      this.updateGame();
     });
 
     socket.on('gameOver', (result) => {
       this.end(result.winner, result.reason);
-      this.emit('updateGame');
+      this.updateGame();
     });
 
     socket.on('newChatMessage', (chatMessage) => {
@@ -79,6 +80,24 @@ export class Game extends GameHelper {
       ];
 
       this.emit('updateChat');
+    });
+
+    socket.on('drawOffered', (color) => {
+      this.drawOffer = color;
+
+      this.updateGame();
+    });
+
+    socket.on('drawDeclined', () => {
+      this.drawOffer = null;
+
+      this.updateGame();
+    });
+
+    socket.on('drawCanceled', () => {
+      this.drawOffer = null;
+
+      this.updateGame();
     });
   }
 
@@ -96,7 +115,7 @@ export class Game extends GameHelper {
       this.currentMoveIndex--;
 
       if (updateGame) {
-        this.emit('updateGame');
+        this.updateGame();
       }
     }
   }
@@ -107,7 +126,7 @@ export class Game extends GameHelper {
       this.performMove(this.moves[this.currentMoveIndex], false);
 
       if (updateGame) {
-        this.emit('updateGame');
+        this.updateGame();
       }
     }
   }
@@ -128,11 +147,15 @@ export class Game extends GameHelper {
     }
 
     if (updateGame) {
-      this.emit('updateGame');
+      this.updateGame();
     }
   }
 
   on<K extends GameEvent>(event: K, listener: () => void) {
     this.listeners[event].push(listener);
+  }
+
+  updateGame() {
+    this.emit('updateGame');
   }
 }

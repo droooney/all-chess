@@ -319,7 +319,11 @@ export class Game implements IGame {
   isLastChance: boolean;
   isMonsterChess: boolean;
   isLeftInCheckAllowed: boolean;
+  isThreefoldRepetitionDrawPossible: boolean = false;
+  is50MoveDrawPossible: boolean = false;
+  numberOfMovesBeforeStart: number;
   variants: GameVariantEnum[];
+  drawOffer: ColorEnum | null = null;
 
   constructor(settings: GameCreateSettings & { id: string; startingBoard?: StartingBoard; }) {
     this.id = settings.id;
@@ -346,6 +350,7 @@ export class Game implements IGame {
     this.isLastChance = _.includes(this.variants, GameVariantEnum.LAST_CHANCE);
     this.isMonsterChess = _.includes(this.variants, GameVariantEnum.MONSTER_CHESS);
     this.isLeftInCheckAllowed = this.isAtomic || this.isMonsterChess;
+    this.numberOfMovesBeforeStart = this.isMonsterChess ? 3 : 2;
 
     if (this.isPocketUsed) {
       this.pocketPiecesUsed.forEach((pieceType) => {
@@ -372,6 +377,8 @@ export class Game implements IGame {
 
     this.positionString = this.generatePositionString();
     this.positionsMap[this.positionString] = (this.positionsMap[this.positionString] || 0) + 1;
+    this.isThreefoldRepetitionDrawPossible = this.positionsMap[this.positionString] >= 3;
+    this.is50MoveDrawPossible = this.pliesWithoutCaptureOrPawnMove >= 100;
 
     const winReason = this.isWin();
 

@@ -26,7 +26,10 @@ export const User = sequelize.define<UserModel, UserAddAttributes>('users', {
   login: {
     type: Sequelize.STRING,
     allowNull: false,
-    unique: true
+    unique: true,
+    validate: {
+      notEmpty: true
+    }
   },
   password: {
     type: Sequelize.STRING

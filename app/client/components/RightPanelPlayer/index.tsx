@@ -23,7 +23,7 @@ interface OwnProps {
   pocket: PocketPieces | null;
   timePassedSinceLastMove: number;
   timeControl: TimeControl;
-  turn: ColorEnum;
+  realTurn: ColorEnum;
   isTop: boolean;
   selectedPiece: PocketPiece | null;
   selectPiece(piece: IPiece | null): void;
@@ -63,7 +63,7 @@ export default class RightPanelPlayer extends React.Component<Props> {
     const {
       currentPlayer,
       player,
-      turn,
+      realTurn,
       pocket,
       selectPiece,
       selectedPiece
@@ -72,7 +72,7 @@ export default class RightPanelPlayer extends React.Component<Props> {
     if (
       !currentPlayer
       || currentPlayer.color !== player.color
-      || player.color !== turn
+      || player.color !== realTurn
     ) {
       return;
     }
@@ -92,7 +92,7 @@ export default class RightPanelPlayer extends React.Component<Props> {
       player,
       currentPlayer,
       timePassedSinceLastMove,
-      turn,
+      realTurn,
       pocket,
       selectedPiece,
       timeControl,
@@ -153,7 +153,7 @@ export default class RightPanelPlayer extends React.Component<Props> {
         {timeControl && (
           <div className="timer">
             {this.getTimeString(
-              player.color === turn
+              player.color === realTurn
                 ? player.time! - timePassedSinceLastMove
                 : player.time!
             )}
