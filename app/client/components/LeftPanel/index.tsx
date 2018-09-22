@@ -49,7 +49,14 @@ export default class LeftPanel extends React.Component<Props, State> {
   };
 
   offerDraw = () => {
-    this.props.offerDraw();
+    const {
+      drawOffer,
+      offerDraw
+    } = this.props;
+
+    if (!drawOffer) {
+      offerDraw();
+    }
   };
 
   acceptDraw = () => {
@@ -83,11 +90,25 @@ export default class LeftPanel extends React.Component<Props, State> {
   };
 
   declareThreefoldRepetitionDraw = () => {
-    this.props.declareThreefoldRepetitionDraw();
+    const {
+      isThreefoldRepetitionDrawPossible,
+      declareThreefoldRepetitionDraw
+    } = this.props;
+
+    if (isThreefoldRepetitionDrawPossible) {
+      declareThreefoldRepetitionDraw();
+    }
   };
 
   declare50MoveDraw = () => {
-    this.props.declare50MoveDraw();
+    const {
+      is50MoveDrawPossible,
+      declare50MoveDraw
+    } = this.props;
+
+    if (is50MoveDrawPossible) {
+      declare50MoveDraw();
+    }
   };
 
   render() {
@@ -129,7 +150,7 @@ export default class LeftPanel extends React.Component<Props, State> {
               {result.winner ? `${COLOR_NAMES[result.winner]} won` : 'Draw'}
               {` (${RESULT_REASON_NAMES[result.reason]})`}
             </div>
-          ) : (
+          ) : player && (
             <div className="actions">
               <div className="buttons">
                 <div
@@ -140,7 +161,7 @@ export default class LeftPanel extends React.Component<Props, State> {
                   <i className="fa fa-flag-o" />
                 </div>
                 <div
-                  className={classNames('button', { disabled: player && player.color === drawOffer })}
+                  className={classNames('button', { disabled: drawOffer })}
                   title="Offer a draw"
                   onClick={this.offerDraw}
                 >
@@ -160,7 +181,7 @@ export default class LeftPanel extends React.Component<Props, State> {
                   50
                 </div>
               </div>
-              {drawOffer && player && (
+              {drawOffer && (
                 <div className="action">
                   {
                     player.color === drawOffer ? (
