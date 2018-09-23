@@ -1364,6 +1364,15 @@ export class Game implements IGame {
             }
           });
 
+          if (this.boards.length > 1) {
+            // a piece cannot move to a square that is occupied on the next board
+            canRookMove = canRookMove && !this.boards[this.getNextBoard(location.board)][location.y][location.x];
+
+            if (this.boards.length > 2) {
+              canRookMove = canRookMove && !this.boards[this.getNextBoard(this.getNextBoard(location.board))][location.y][location.x];
+            }
+          }
+
           return canRookMove;
         })
         .forEach((rook) => {
@@ -1406,7 +1415,7 @@ export class Game implements IGame {
       if (this.boards.length > 2) {
         // a piece cannot move to a square that is occupied on the next board after the next board
         possibleSquares = possibleSquares.filter(({ board, x, y }) => (
-          !this.boards[this.getNextBoard(board)][y][x]
+          !this.boards[this.getNextBoard(this.getNextBoard(board))][y][x]
         ));
       }
     }
