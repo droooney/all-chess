@@ -1,5 +1,6 @@
 import {
   ColorEnum,
+  GameSettings,
   GameVariantEnum,
   PieceEnum,
   ResultReasonEnum
@@ -73,4 +74,9 @@ export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
 export const COLOR_NAMES: { [color in ColorEnum]: string } = {
   [ColorEnum.WHITE]: 'White',
   [ColorEnum.BLACK]: 'Black'
+};
+
+export const GAME_DEFAULT_SETTINGS: { [key in keyof GameSettings]: GameSettings[key]; } = {
+  showFantomPieces: false,
+  timeControl: null
 };

@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import * as React from 'react';
+import { connect } from 'react-redux';
 import classNames = require('classnames');
 
 import {
@@ -19,6 +20,7 @@ import {
   Square
 } from '../../../types';
 import { Game } from '../../helpers';
+import { ReduxState } from '../../store';
 
 import BoardPiece from '../BoardPiece';
 import Piece from '../Piece';
@@ -30,6 +32,7 @@ export interface OwnProps {
   player: Player | null;
   selectedPiece: RealPiece | null;
   selectPiece(piece: IPiece | null): void;
+  getPrevBoard(board: number): number;
   getAllowedMoves(location: RealPieceLocation): Square[];
   isAttackedByOpponentPiece(square: Square, opponentColor: ColorEnum): boolean;
   isPawnPromotion(move: BaseMove): boolean;
@@ -49,9 +52,9 @@ interface State {
   promotionMove: BaseMove | null;
 }
 
-type Props = OwnProps;
+type Props = OwnProps & ReturnType<typeof mapStateToProps>;
 
-export default class Board extends React.Component<Props, State> {
+class Boards extends React.Component<Props, State> {
   static defaultProps = {
     withLiterals: true
   };
@@ -205,7 +208,9 @@ export default class Board extends React.Component<Props, State> {
       withLiterals,
       currentMove,
       isAliceChess,
-      isBlackBase
+      isBlackBase,
+      showFantomPieces,
+      getPrevBoard
     } = this.props;
     const maxRank = boards[0].length - 1;
     const maxFile = boards[0][0].length - 1;
@@ -213,6 +218,7 @@ export default class Board extends React.Component<Props, State> {
     const literalSize = isAliceChess ? 13 : 20;
     const literalFontSize = isAliceChess ? 10 : 16;
     const allowedMoves = this.getAllowedMoves();
+    const boardPieces = _.flatten(_.map(pieces)).filter(Game.isBoardPiece);
 
     return (
       <div className={classNames('boards', { opposite: isBlackBase })}>
@@ -320,22 +326,37 @@ export default class Board extends React.Component<Props, State> {
             </div>
           );
         })}
-        {
-          _.flatten(_.map(pieces))
-            .filter(Game.isBoardPiece)
-            .map((piece) => (
-              <BoardPiece
-                key={piece.id}
-                piece={piece}
-                isBlackBase={isBlackBase}
-                maxRank={maxRank}
-                maxFile={maxFile}
-                squareSize={squareSize}
-                literalSize={literalSize}
-                onClick={readOnly ? undefined : this.onSquareClick}
-              />
-            ))
-        }
+        {boardPieces.map((piece) => (
+          <BoardPiece
+            key={piece.id}
+            piece={piece}
+            isBlackBase={isBlackBase}
+            isFantom={false}
+            maxRank={maxRank}
+            maxFile={maxFile}
+            squareSize={squareSize}
+            literalSize={literalSize}
+            onClick={readOnly ? undefined : this.onSquareClick}
+          />
+        ))}
+        {isAliceChess && showFantomPieces && boardPieces.map((piece) => (
+          <BoardPiece
+            key={piece.id}
+            piece={{
+              ...piece,
+              location: {
+                ...piece.location,
+                board: getPrevBoard(piece.location.board)
+              }
+            }}
+            isBlackBase={isBlackBase}
+            isFantom
+            maxRank={maxRank}
+            maxFile={maxFile}
+            squareSize={squareSize}
+            literalSize={literalSize}
+          />
+        ))}
         <Modal
           visible={this.state.promotionModalVisible}
           onOverlayClick={this.closePromotionPopup}
@@ -362,3 +383,11 @@ export default class Board extends React.Component<Props, State> {
     );
   }
 }
+
+function mapStateToProps(state: ReduxState) {
+  return {
+    showFantomPieces: state.gameSettings.showFantomPieces
+  };
+}
+
+export default connect(mapStateToProps)(Boards);

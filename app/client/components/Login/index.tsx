@@ -1,6 +1,6 @@
 import * as qs from 'querystring';
 import * as React from 'react';
-import { connect, DispatchProp } from 'react-redux';
+import { connect, DispatchProps } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 
 import { setUserData } from '../../actions';
@@ -8,7 +8,7 @@ import { fetch } from '../../helpers';
 
 import './index.less';
 
-type Props = RouteComponentProps<any> & DispatchProp;
+type Props = RouteComponentProps<any> & DispatchProps;
 
 interface State {
   error: boolean;

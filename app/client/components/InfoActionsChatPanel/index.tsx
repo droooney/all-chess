@@ -1,6 +1,10 @@
 import * as React from 'react';
+import { connect, DispatchProps } from 'react-redux';
 import classNames = require('classnames');
 
+import {
+  changeSettings
+} from '../../actions';
 import {
   ChatMessage,
   ColorEnum,
@@ -14,6 +18,7 @@ import {
   RESULT_REASON_NAMES,
   GAME_VARIANT_NAMES
 } from '../../../shared/constants';
+import { ReduxState } from '../../store';
 
 import Chat from '../Chat';
 import Dialog from '../Dialog';
@@ -42,9 +47,9 @@ interface State {
   resignModalVisible: boolean;
 }
 
-type Props = OwnProps;
+type Props = OwnProps & ReturnType<typeof mapStateToProps> & DispatchProps;
 
-export default class InfoActionsChatPanel extends React.Component<Props, State> {
+class InfoActionsChatPanel extends React.Component<Props, State> {
   state: State = {
     resignModalVisible: false
   };
@@ -112,6 +117,15 @@ export default class InfoActionsChatPanel extends React.Component<Props, State> 
     }
   };
 
+  toggleFantomPieces = () => {
+    const {
+      dispatch,
+      showFantomPieces
+    } = this.props;
+
+    dispatch(changeSettings('showFantomPieces', !showFantomPieces));
+  };
+
   render() {
     const {
       chat,
@@ -122,8 +136,59 @@ export default class InfoActionsChatPanel extends React.Component<Props, State> 
       isAliceChess,
       drawOffer,
       player,
+      showFantomPieces,
       sendMessage
     } = this.props;
+    const buttons: JSX.Element[] = [];
+
+    if (!result && player) {
+      buttons.push(
+        <div
+          key="resign"
+          className="button"
+          title="Resign"
+          onClick={this.openResignModal}
+        >
+          <i className="fa fa-flag-o" />
+        </div>,
+        <div
+          key="offer-draw"
+          className={classNames('button', { disabled: drawOffer })}
+          title="Offer a draw"
+          onClick={this.offerDraw}
+        >
+          <i className="fa fa-handshake-o" />
+        </div>,
+        <div
+          key="threefold-draw"
+          className={classNames('button', { disabled: !isThreefoldRepetitionDrawPossible })}
+          title="Declare threefold repetition draw"
+          onClick={this.declareThreefoldRepetitionDraw}>
+          3
+        </div>,
+        <div
+          key="50-move-draw"
+          className={classNames('button', { disabled: !is50MoveDrawPossible })}
+          title="Declare 50-move draw"
+          onClick={this.declare50MoveDraw}
+        >
+          50
+        </div>
+      );
+    }
+
+    if (isAliceChess) {
+      buttons.push(
+        <div
+          key="show-fantom-pieces"
+          className={classNames('button', { enabled: showFantomPieces })}
+          title={showFantomPieces ? 'Hide fantom pieces' : 'Show fantom pieces'}
+          onClick={this.toggleFantomPieces}
+        >
+          <i className={showFantomPieces ? 'fa fa-eye-slash' : 'fa fa-eye'} />
+        </div>
+      );
+    }
 
     return (
       <div className={classNames('info-actions-chat-panel', { 'is-bottom': isAliceChess })}>
@@ -147,74 +212,50 @@ export default class InfoActionsChatPanel extends React.Component<Props, State> 
             </div>
           )}
 
-          {result ? (
+          {result && (
             <div className="result">
               {result.winner ? `${COLOR_NAMES[result.winner]} won` : 'Draw'}
               {` (${RESULT_REASON_NAMES[result.reason]})`}
             </div>
-          ) : player && (
-            <div className="actions">
-              <div className="buttons">
-                <div
-                  className="button"
-                  title="Resign"
-                  onClick={this.openResignModal}
-                >
-                  <i className="fa fa-flag-o" />
-                </div>
-                <div
-                  className={classNames('button', { disabled: drawOffer })}
-                  title="Offer a draw"
-                  onClick={this.offerDraw}
-                >
-                  <i className="fa fa-handshake-o" />
-                </div>
-                <div
-                  className={classNames('button', { disabled: !isThreefoldRepetitionDrawPossible })}
-                  title="Declare threefold repetition draw"
-                  onClick={this.declareThreefoldRepetitionDraw}>
-                  3
-                </div>
-                <div
-                  className={classNames('button', { disabled: !is50MoveDrawPossible })}
-                  title="Declare 50-move draw"
-                  onClick={this.declare50MoveDraw}
-                >
-                  50
-                </div>
-              </div>
-              {drawOffer && (
-                <div className="action">
-                  {
-                    player.color === drawOffer ? (
-                      <React.Fragment>
-                        You offered a draw
-                        <i
-                          className="fa fa-times"
-                          title="Cancel"
-                          onClick={this.cancelDraw}
-                        />
-                      </React.Fragment>
-                    ) : (
-                      <React.Fragment>
-                        {COLOR_NAMES[drawOffer]} offered a draw
-                        <i
-                          className="fa fa-check"
-                          title="Accept"
-                          onClick={this.acceptDraw}
-                        />
-                        <i
-                          className="fa fa-times"
-                          title="Decline"
-                          onClick={this.declineDraw}
-                        />
-                      </React.Fragment>
-                    )
-                  }
-                </div>
-              )}
-            </div>
           )}
+
+          <div className="actions">
+            {!!buttons.length && (
+              <div className="buttons">
+                {buttons}
+              </div>
+            )}
+            {player && drawOffer && !result && (
+              <div className="action">
+                {
+                  player.color === drawOffer ? (
+                    <React.Fragment>
+                      You offered a draw
+                      <i
+                        className="fa fa-times"
+                        title="Cancel"
+                        onClick={this.cancelDraw}
+                      />
+                    </React.Fragment>
+                  ) : (
+                    <React.Fragment>
+                      {COLOR_NAMES[drawOffer]} offered a draw
+                      <i
+                        className="fa fa-check"
+                        title="Accept"
+                        onClick={this.acceptDraw}
+                      />
+                      <i
+                        className="fa fa-times"
+                        title="Decline"
+                        onClick={this.declineDraw}
+                      />
+                    </React.Fragment>
+                  )
+                }
+              </div>
+            )}
+          </div>
 
         </div>
 
@@ -238,3 +279,11 @@ export default class InfoActionsChatPanel extends React.Component<Props, State> 
     );
   }
 }
+
+function mapStateToProps(state: ReduxState) {
+  return {
+    showFantomPieces: state.gameSettings.showFantomPieces
+  };
+}
+
+export default connect(mapStateToProps)(InfoActionsChatPanel);

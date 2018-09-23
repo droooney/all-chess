@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { connect, DispatchProp } from 'react-redux';
+import { connect, DispatchProps } from 'react-redux';
 import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
 
 import { ReduxState } from '../../store';
@@ -8,7 +8,7 @@ import { fetch } from '../../helpers';
 
 import './index.less';
 
-type Props = ReturnType<typeof mapStateToProps> & DispatchProp & RouteComponentProps<any>;
+type Props = ReturnType<typeof mapStateToProps> & DispatchProps & RouteComponentProps<any>;
 
 class Header extends React.Component<Props> {
   logout = async () => {

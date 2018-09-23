@@ -1,8 +1,10 @@
 import * as _ from 'lodash';
 import * as React from 'react';
+import { connect, DispatchProps } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import io = require('socket.io-client');
 
+import { ReduxState } from '../../store';
 import { Game as GameHelper } from '../../helpers';
 import {
   CorrespondenceTimeControl,
@@ -12,6 +14,9 @@ import {
   TimeControlEnum,
   TimerTimeControl
 } from '../../../types';
+import {
+  changeSettings
+} from '../../actions';
 import {
   GAME_VARIANT_NAMES,
   POSSIBLE_TIMER_BASES_IN_MINUTES,
@@ -32,7 +37,7 @@ interface GameVariant {
   allowed: boolean;
 }
 
-type Props = RouteComponentProps<any>;
+type Props = RouteComponentProps<any> & ReturnType<typeof mapStateToProps> & DispatchProps;
 
 interface State {
   createGameModalVisible: boolean;
@@ -41,11 +46,11 @@ interface State {
   variants: GameVariant[];
 }
 
-export default class Games extends React.Component<Props, State> {
+class Games extends React.Component<Props, State> {
   socket?: io.Socket;
   state: State = {
     createGameModalVisible: false,
-    timeControl: null,
+    timeControl: this.props.timeControl,
     variants: _.map(GameVariantEnum, (variant) => ({
       variant,
       allowed: true,
@@ -105,41 +110,64 @@ export default class Games extends React.Component<Props, State> {
   };
 
   onTimeControlChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const {
+      dispatch
+    } = this.props;
     const timeControl = e.target.value as TimeControlEnum;
+    const newTimeControl: TimeControl = timeControl === TimeControlEnum.NONE
+      ? null
+      : timeControl === TimeControlEnum.TIMER
+        ? { type: TimeControlEnum.TIMER, base: 10 * 60 * 1000, increment: 5 * 1000 }
+        : { type: TimeControlEnum.CORRESPONDENCE, base: 2 * 24 * 60 * 60 * 1000 };
 
-    if (timeControl === TimeControlEnum.NONE) {
-      this.setState({
-        timeControl: null
-      });
-    } else {
-      this.setState({
-        timeControl: timeControl === TimeControlEnum.TIMER
-          ? { type: TimeControlEnum.TIMER, base: 10 * 60 * 1000, increment: 5 * 1000 }
-          : { type: TimeControlEnum.CORRESPONDENCE, base: 2 * 24 * 60 * 60 * 1000 }
-      });
-    }
+    dispatch(changeSettings('timeControl', newTimeControl));
+
+    this.setState({
+      timeControl: newTimeControl
+    });
   };
 
   onTimeControlBaseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const {
+      dispatch
+    } = this.props;
     const newBase = +e.target.value;
 
-    this.setState(({ timeControl }) => ({
-      timeControl: {
+    this.setState(({ timeControl }) => {
+      const newTimeControl = {
         ...timeControl as CorrespondenceTimeControl | TimerTimeControl,
         base: newBase
-      }
-    }));
+      };
+
+      dispatch(changeSettings('timeControl', newTimeControl));
+
+      return {
+        timeControl: newTimeControl
+      };
+    });
   };
 
   onTimeControlIncrementChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const {
+      dispatch
+    } = this.props;
     const newIncrement = +e.target.value;
 
-    this.setState(({ timeControl }) => ({
-      timeControl: {
+    this.setState(({ timeControl }) => {
+      const newTimeControl = {
         ...timeControl as TimerTimeControl,
         increment: newIncrement
-      }
-    }));
+      };
+
+      dispatch(changeSettings('timeControl', newTimeControl));
+
+      return {
+        timeControl: {
+          ...timeControl as TimerTimeControl,
+          increment: newIncrement
+        }
+      };
+    });
   };
 
   onVariationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -308,3 +336,11 @@ export default class Games extends React.Component<Props, State> {
     );
   }
 }
+
+function mapStateToProps(state: ReduxState) {
+  return {
+    timeControl: state.gameSettings.timeControl
+  };
+}
+
+export default connect(mapStateToProps)(Games);

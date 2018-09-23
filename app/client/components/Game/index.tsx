@@ -115,6 +115,10 @@ export default class Game extends React.Component<Props, State> {
     return this.game!.getCenterSquareParams(square);
   };
 
+  getPrevBoard = (board: number): number => {
+    return this.game!.getPrevBoard(board);
+  };
+
   getOppositeColor = (color: ColorEnum): ColorEnum => {
     return this.game!.getOppositeColor(color);
   };
@@ -218,6 +222,7 @@ export default class Game extends React.Component<Props, State> {
             getAllowedMoves={this.getAllowedMoves}
             getCenterSquareParams={this.getCenterSquareParams}
             getOppositeColor={this.getOppositeColor}
+            getPrevBoard={this.getPrevBoard}
             isAttackedByOpponentPiece={this.isAttackedByOpponentPiece}
             isPawnPromotion={this.isPawnPromotion}
             selectPiece={this.selectPiece}

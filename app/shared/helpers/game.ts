@@ -878,11 +878,11 @@ export class Game implements IGame {
       }
     };
 
-    if (this.isAliceChess && piece === king) {
-      setMoveIsAllowed();
-    }
-
     if (this.isAliceChess) {
+      if (piece === king) {
+        setMoveIsAllowed();
+      }
+
       const nextBoard = this.getNextBoard(toBoard);
       const boardAfterNext = this.getNextBoard(nextBoard);
 
@@ -1093,6 +1093,10 @@ export class Game implements IGame {
 
   getNextBoard(board: number): number {
     return (board + 1) % this.boards.length;
+  }
+
+  getPrevBoard(board: number): number {
+    return (board + this.boards.length - 1) % this.boards.length;
   }
 
   getOpponentColor(): ColorEnum {

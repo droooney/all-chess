@@ -1,4 +1,5 @@
 import * as React from 'react';
+import classNames = require('classnames');
 
 import {
   BoardPiece as IBoardPiece,
@@ -10,6 +11,7 @@ import Piece from '../Piece';
 interface OwnProps {
   piece: IBoardPiece;
   isBlackBase: boolean;
+  isFantom: boolean;
   maxRank: number;
   maxFile: number;
   literalSize: number;
@@ -40,6 +42,7 @@ export default class BoardPiece extends React.Component<Props> {
         }
       },
       isBlackBase,
+      isFantom,
       literalSize,
       squareSize,
       maxFile,
@@ -66,6 +69,7 @@ export default class BoardPiece extends React.Component<Props> {
         <Piece
           piece={piece}
           onClick={onClick}
+          className={classNames({ fantom: isFantom })}
         />
 
         {piece.type !== piece.originalType && (
