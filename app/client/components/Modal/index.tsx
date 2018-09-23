@@ -20,13 +20,12 @@ export default class Modal extends React.Component<Props> {
   constructor(props: Props) {
     super(props);
 
-    this.modal.className = classNames('modal', props.className);
     this.modal.addEventListener('click', (e) => {
       if (e.target && (e.target as HTMLElement).classList.contains('modal')) {
         props.onOverlayClick();
       }
     }, false);
-    this.toggleVisibility();
+    this.setClassName();
   }
 
   componentDidMount() {
@@ -38,11 +37,11 @@ export default class Modal extends React.Component<Props> {
   }
 
   componentDidUpdate() {
-    this.toggleVisibility();
+    this.setClassName();
   }
 
-  toggleVisibility() {
-    this.modal.classList.toggle('hidden', !this.props.visible);
+  setClassName() {
+    this.modal.className = classNames('modal', this.props.className, { hidden: !this.props.visible });
   }
 
   render() {
