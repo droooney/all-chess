@@ -607,11 +607,34 @@ export class Game implements IGame {
           y: fromY
         } = fromLocation;
 
-        if (pieceType !== PieceEnum.PAWN) {
+        if (pieceType === PieceEnum.PAWN) {
+          const otherPawnsOnOtherBoardsAbleToMakeMove = playerPieces
+            .filter(Game.isBoardPiece)
+            .filter(({ id, type, location }) => (
+              type === pieceType
+              && id !== piece.id
+              && location.board !== piece.id
+              && this.getAllowedMoves(location).some(({ x, y }) => x === toX && y === toY)
+            ));
+
+          if (otherPawnsOnOtherBoardsAbleToMakeMove.length) {
+            const boardLiteral = Game.getBoardLiteral(fromBoard);
+
+            algebraic += boardLiteral;
+            figurine += boardLiteral;
+          }
+
+          if (isCapture) {
+            const fileLiteral = Game.getFileLiteral(fromX);
+
+            algebraic += fileLiteral;
+            figurine += fileLiteral;
+          }
+        } else {
           algebraic += SHORT_PIECE_NAMES[pieceType];
           figurine += PIECE_LITERALS[piece.color][pieceType];
 
-          let otherPiecesAbleToMakeMove = playerPieces
+          const otherPiecesAbleToMakeMove = playerPieces
             .filter(Game.isBoardPiece)
             .filter(({ id, type, location }) => (
               type === pieceType
@@ -620,42 +643,48 @@ export class Game implements IGame {
             ));
 
           if (otherPiecesAbleToMakeMove.length) {
-            if (otherPiecesAbleToMakeMove.some(({ location }) => location.board !== fromBoard)) {
-              const boardLiteral = Game.getBoardLiteral(toBoard);
-
-              algebraic += boardLiteral;
-              figurine += boardLiteral;
-
-              otherPiecesAbleToMakeMove = otherPiecesAbleToMakeMove.filter(({ location }) => location.board === fromBoard);
-            }
-
-            const areSameFile = otherPiecesAbleToMakeMove.some(({ location: { x, y } }) => (
-              x === fromX
-              && y !== fromY
-            ));
-            const areSameRank = otherPiecesAbleToMakeMove.some(({ location: { x, y } }) => (
-              y === fromY
-              && x !== fromX
-            ));
+            const boardLiteral = Game.getBoardLiteral(fromBoard);
             const fileLiteral = Game.getFileLiteral(fromX);
             const rankLiteral = Game.getRankLiteral(fromY);
 
-            if (areSameFile && areSameRank) {
-              algebraic += fileLiteral + rankLiteral;
-              figurine += fileLiteral + rankLiteral;
-            } else if (areSameFile) {
-              algebraic += rankLiteral;
-              figurine += rankLiteral;
-            } else {
+            if (otherPiecesAbleToMakeMove.every(({ location }) => location.board !== fromBoard)) {
+              algebraic += boardLiteral;
+              figurine += boardLiteral;
+            } else if (otherPiecesAbleToMakeMove.every(({ location }) => location.x !== fromX)) {
               algebraic += fileLiteral;
               figurine += fileLiteral;
+            } else if (otherPiecesAbleToMakeMove.every(({ location }) => location.y !== fromY)) {
+              algebraic += rankLiteral;
+              figurine += rankLiteral;
+            } else if (
+              otherPiecesAbleToMakeMove.every(({ location }) => (
+                location.board !== fromBoard
+                || location.x !== fromX
+              ))
+            ) {
+              algebraic += boardLiteral + fileLiteral;
+              figurine += boardLiteral + fileLiteral;
+            } else if (
+              otherPiecesAbleToMakeMove.every(({ location }) => (
+                location.board !== fromBoard
+                || location.y !== fromY
+              ))
+            ) {
+              algebraic += boardLiteral + rankLiteral;
+              figurine += boardLiteral + rankLiteral;
+            } else if (
+              otherPiecesAbleToMakeMove.every(({ location }) => (
+                location.x !== fromX
+                || location.y !== fromY
+              ))
+            ) {
+              algebraic += fileLiteral + rankLiteral;
+              figurine += fileLiteral + rankLiteral;
+            } else {
+              algebraic += boardLiteral + fileLiteral + rankLiteral;
+              figurine += boardLiteral + fileLiteral + rankLiteral;
             }
           }
-        } else if (isCapture) {
-          const file = Game.getFileLiteral(fromX);
-
-          algebraic += file;
-          figurine += file;
         }
 
         if (isCapture) {
@@ -849,10 +878,13 @@ export class Game implements IGame {
       }
     };
 
-    setMoveIsAllowed();
+    if (this.isAliceChess && piece === king) {
+      setMoveIsAllowed();
+    }
 
     if (this.isAliceChess) {
       const nextBoard = this.getNextBoard(toBoard);
+      const boardAfterNext = this.getNextBoard(nextBoard);
 
       if (!isMainPieceMovedOrDisappeared && fromLocation.type === PieceLocationEnum.BOARD) {
         this.boards[newLocation.board][newLocation.y][newLocation.x] = null;
@@ -867,6 +899,10 @@ export class Game implements IGame {
       disappearedOrMovedPieces.forEach((disappearedOrMovedPiece, ix) => {
         const playerPieces = this.pieces[disappearedOrMovedPiecesData[ix].color];
         const moved = _.includes(playerPieces, disappearedOrMovedPiece);
+        const {
+          x: pieceX,
+          y: pieceY
+        } = disappearedOrMovedPiece.location;
 
         if (moved) {
           const prevBoardSquare = disappearedOrMovedPiece.location;
@@ -876,11 +912,12 @@ export class Game implements IGame {
           };
           const piece = this.boards[nextBoardSquare.board][nextBoardSquare.y][nextBoardSquare.x];
 
-          // don't allow move to the other board if it's occupied by another piece
-          if (piece) {
+          this.boards[prevBoardSquare.board][pieceY][pieceX] = null;
+
+          // don't allow move to the next board if the square there or on the next board is occupied by another piece
+          if (piece || this.boards[boardAfterNext][pieceY][pieceX]) {
             removePieceOrMoveToOpponentPocket(disappearedOrMovedPiece);
           } else {
-            this.boards[prevBoardSquare.board][prevBoardSquare.y][prevBoardSquare.x] = null;
             disappearedOrMovedPiece.location = nextBoardSquare;
             this.boards[nextBoardSquare.board][nextBoardSquare.y][nextBoardSquare.x] = disappearedOrMovedPiece;
           }
@@ -1080,7 +1117,10 @@ export class Game implements IGame {
                 x: fileX,
                 y: rankY
               }))
-              .filter(({ piece }) => !piece)
+              .filter(({ board, x, y, piece }) => (
+                !piece
+                && !this.boards[this.getNextBoard(board)][y][x]
+              ))
               .map(({ board, x, y }) => ({ board, x, y }));
           }
 
@@ -1359,6 +1399,13 @@ export class Game implements IGame {
 
     if (this.boards.length > 1) {
       // a piece cannot move to a square that is occupied on the next board
+      possibleSquares = possibleSquares.filter(({ board, x, y }) => (
+        !this.boards[this.getNextBoard(board)][y][x]
+      ));
+    }
+
+    if (this.boards.length > 2) {
+      // a piece cannot move to a square that is occupied on the next board after the next board
       possibleSquares = possibleSquares.filter(({ board, x, y }) => (
         !this.boards[this.getNextBoard(board)][y][x]
       ));
