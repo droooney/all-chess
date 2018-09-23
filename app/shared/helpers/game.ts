@@ -1397,18 +1397,18 @@ export class Game implements IGame {
       return [];
     }
 
-    if (this.boards.length > 1) {
+    if (this.boards.length > 1 && !this.isAtomic) {
       // a piece cannot move to a square that is occupied on the next board
       possibleSquares = possibleSquares.filter(({ board, x, y }) => (
         !this.boards[this.getNextBoard(board)][y][x]
       ));
-    }
 
-    if (this.boards.length > 2) {
-      // a piece cannot move to a square that is occupied on the next board after the next board
-      possibleSquares = possibleSquares.filter(({ board, x, y }) => (
-        !this.boards[this.getNextBoard(board)][y][x]
-      ));
+      if (this.boards.length > 2) {
+        // a piece cannot move to a square that is occupied on the next board after the next board
+        possibleSquares = possibleSquares.filter(({ board, x, y }) => (
+          !this.boards[this.getNextBoard(board)][y][x]
+        ));
+      }
     }
 
     if (
