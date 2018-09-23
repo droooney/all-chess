@@ -26,7 +26,7 @@ export class Game extends GameHelper {
   constructor(game: IGame, socket: Socket) {
     super({
       id: game.id,
-      startingBoard: game.startingBoard,
+      startingBoards: game.startingBoards,
       timeControl: game.timeControl,
       variants: game.variants
     });
@@ -123,7 +123,7 @@ export class Game extends GameHelper {
   moveForward(updateGame: boolean = true) {
     if (this.currentMoveIndex + 1 < this.moves.length) {
       this.currentMoveIndex++;
-      this.performMove(this.moves[this.currentMoveIndex], false);
+      this.performMove(this.moves[this.currentMoveIndex], false, false);
 
       if (updateGame) {
         this.updateGame();

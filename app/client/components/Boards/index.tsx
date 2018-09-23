@@ -24,9 +24,9 @@ import BoardPiece from '../BoardPiece';
 import Piece from '../Piece';
 import Modal from '../Modal';
 
-interface OwnProps {
+export interface OwnProps {
   pieces: GamePieces;
-  board: IBoard;
+  boards: IBoard[];
   player: Player | null;
   selectedPiece: RealPiece | null;
   selectPiece(piece: IPiece | null): void;
@@ -39,6 +39,7 @@ interface OwnProps {
   readOnly: boolean;
   withLiterals: boolean;
   isKingOfTheHill: boolean;
+  isAliceChess: boolean;
   isBlackBase: boolean;
   currentMove: Move | undefined;
 }
@@ -62,7 +63,8 @@ export default class Board extends React.Component<Props, State> {
 
   areSquaresEqual(square1: Square, square2: Square): boolean {
     return (
-      square1.y === square2.y
+      square1.board === square2.board
+      && square1.y === square2.y
       && square1.x === square2.x
     );
   }
@@ -103,11 +105,11 @@ export default class Board extends React.Component<Props, State> {
 
   isInCheck(square: Square): boolean {
     const {
-      board,
+      boards,
       getOppositeColor,
       isAttackedByOpponentPiece
     } = this.props;
-    const piece = board[square.y][square.x];
+    const piece = boards[square.board][square.y][square.x];
 
     if (!piece) {
       return false;
@@ -121,7 +123,7 @@ export default class Board extends React.Component<Props, State> {
 
   onSquareClick = (square: Square) => {
     const {
-      board,
+      boards,
       player,
       selectedPiece,
       isPawnPromotion,
@@ -130,7 +132,7 @@ export default class Board extends React.Component<Props, State> {
     } = this.props;
 
     if (!selectedPiece) {
-      const piece = board[square.y][square.x];
+      const piece = boards[square.board][square.y][square.x];
 
       if (!piece || player!.color !== piece.color) {
         return;
@@ -147,7 +149,7 @@ export default class Board extends React.Component<Props, State> {
     }
 
     if (!this.isAllowed(square, this.getAllowedMoves())) {
-      const piece = board[square.y][square.x];
+      const piece = boards[square.board][square.y][square.x];
 
       if (!piece || player!.color !== piece.color) {
         return;
@@ -198,91 +200,126 @@ export default class Board extends React.Component<Props, State> {
       player,
       selectedPiece,
       readOnly,
-      board,
+      boards,
       pieces,
       withLiterals,
       currentMove,
+      isAliceChess,
       isBlackBase
     } = this.props;
-    const maxRank = board.length - 1;
-    const maxFile = board[0].length - 1;
-    const filesElement = (
-      <div className="rank">
-        <div className="empty-corner" />
-        {board[0].map((_piece, file) => (
-          <div key={file} className="file-literal">
-            {Game.getFileLiteral(file)}
-          </div>
-        ))}
-        <div className="empty-corner" />
-      </div>
-    );
+    const maxRank = boards[0].length - 1;
+    const maxFile = boards[0][0].length - 1;
+    const squareSize = isAliceChess ? 45 : 70;
+    const literalSize = isAliceChess ? 13 : 20;
+    const literalFontSize = isAliceChess ? 10 : 16;
     const allowedMoves = this.getAllowedMoves();
 
     return (
-      <div className={classNames('board', {
-        opposite: isBlackBase
-      })}>
-        {withLiterals && filesElement}
-        {board.map((rank, rankY) => {
-          const rankLiteral = (
-            <div className="rank-literal">
-              {Game.getRankLiteral(rankY)}
+      <div className={classNames('boards', { opposite: isBlackBase })}>
+        {boards.map((board, boardNumber) => {
+          const emptyCorner = (
+            <div
+              className="empty-corner"
+              style={{ width: literalSize, height: literalSize }}
+            />
+          );
+          const filesElement = (
+            <div className="rank">
+              {(boardNumber === 0 || isBlackBase) && emptyCorner}
+              {boards[0][0].map((_piece, file) => (
+                <div
+                  key={file}
+                  className="file-literal"
+                  style={{
+                    fontSize: literalFontSize,
+                    width: squareSize,
+                    height: literalSize
+                  }}
+                >
+                  {Game.getFileLiteral(file)}
+                </div>
+              ))}
+              {(boardNumber === 0 || !isBlackBase) && emptyCorner}
             </div>
           );
 
           return (
-            <div
-              key={rankY}
-              className="rank"
-            >
-              {withLiterals && rankLiteral}
-              {rank.map((_piece, fileX) => {
-                const square = {
-                  x: fileX,
-                  y: rankY
-                };
+            <div key={boardNumber} className="board">
+              {withLiterals && filesElement}
+              {board.map((rank, rankY) => {
+                const rankLiteral = (
+                  <div
+                    className="rank-literal"
+                    style={{
+                      fontSize: literalFontSize,
+                      width: literalSize,
+                      height: squareSize
+                    }}
+                  >
+                    {Game.getRankLiteral(rankY)}
+                  </div>
+                );
 
                 return (
                   <div
-                    key={fileX}
-                    className={classNames(
-                      `square ${(rankY + fileX) % 2 ? 'white' : 'black'}`,
-                      this.getSquareClasses(square)
-                    )}
-                    onClick={readOnly ? undefined : (() => this.onSquareClick(square))}
+                    key={rankY}
+                    className="rank"
                   >
-                    {
-                      selectedPiece
-                      && selectedPiece.location.type === PieceLocationEnum.BOARD
-                      && this.areSquaresEqual(selectedPiece.location, square)
-                      && (
-                        <div className="selected-square" />
-                      )
-                    }
-                    {currentMove && (
-                      (
-                        currentMove.from
-                        && currentMove.from.type !== PieceLocationEnum.POCKET
-                        && this.areSquaresEqual(currentMove.from, square)
-                      ) || this.areSquaresEqual(currentMove.to, square)
-                    ) && (
-                      <div className="current-move-square" />
-                    )}
-                    {this.isAllowed(square, allowedMoves) && (
-                      <div className="allowed-square" />
-                    )}
-                    {this.isInCheck(square) && (
-                      <div className="check-square" />
-                    )}
+                    {withLiterals && (boardNumber === 0 || isBlackBase) && rankLiteral}
+                    {rank.map((_piece, fileX) => {
+                      const square = {
+                        board: boardNumber,
+                        x: fileX,
+                        y: rankY
+                      };
+
+                      return (
+                        <div
+                          key={fileX}
+                          className={classNames(
+                            `square ${(rankY + fileX) % 2 ? 'white' : 'black'}`,
+                            this.getSquareClasses(square)
+                          )}
+                          style={{
+                            width: squareSize,
+                            height: squareSize
+                          }}
+                          onClick={readOnly ? undefined : (() => this.onSquareClick(square))}
+                        >
+                          {
+                            selectedPiece
+                            && selectedPiece.location.type === PieceLocationEnum.BOARD
+                            && this.areSquaresEqual(selectedPiece.location, square)
+                            && (
+                              <div className="selected-square" />
+                            )
+                          }
+                          {currentMove && (
+                            (
+                              currentMove.from
+                              && currentMove.from.type !== PieceLocationEnum.POCKET
+                              && this.areSquaresEqual(currentMove.from, square)
+                            ) || this.areSquaresEqual(currentMove.to, square)
+                          ) && (
+                            <div className="current-move-square" />
+                          )}
+                          {this.isAllowed(square, allowedMoves) && (
+                            <div className="allowed-square" />
+                          )}
+                          {this.isInCheck(square) && (
+                            <div className="check-square" />
+                          )}
+                        </div>
+                      );
+                    })}
+                    {withLiterals && (boardNumber === 0 || !isBlackBase) && rankLiteral}
                   </div>
                 );
               })}
-              {withLiterals && rankLiteral}
+              {withLiterals && filesElement}
             </div>
           );
         })}
-        {withLiterals && filesElement}
         {
           _.flatten(_.map(pieces))
             .filter(Game.isBoardPiece)
@@ -293,6 +330,8 @@ export default class Board extends React.Component<Props, State> {
                 isBlackBase={isBlackBase}
                 maxRank={maxRank}
                 maxFile={maxFile}
+                squareSize={squareSize}
+                literalSize={literalSize}
                 onClick={readOnly ? undefined : this.onSquareClick}
               />
             ))

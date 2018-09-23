@@ -50,7 +50,8 @@ export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.PATROL]: 'Patrol',
   [GameVariantEnum.MADRASI]: 'Madrasi',
   [GameVariantEnum.LAST_CHANCE]: 'Last chance',
-  [GameVariantEnum.MONSTER_CHESS]: 'Monster chess'
+  [GameVariantEnum.MONSTER_CHESS]: 'Monster chess',
+  [GameVariantEnum.ALICE_CHESS]: 'Alice chess'
 };
 
 export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {

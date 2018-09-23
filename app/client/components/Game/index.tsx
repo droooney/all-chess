@@ -17,10 +17,10 @@ import {
 } from '../../../types';
 import { Game as GameHelper } from '../../helpers';
 
-import './index.less';
 import LeftPanel from '../LeftPanel';
-import Board from '../Board';
 import RightPanel from '../RightPanel';
+
+import './index.less';
 
 type Props = RouteComponentProps<{ gameId: string }>;
 
@@ -177,7 +177,7 @@ export default class Game extends React.Component<Props, State> {
     } else {
       const {
         status,
-        board,
+        boards,
         pieces,
         chat,
         turn,
@@ -185,6 +185,7 @@ export default class Game extends React.Component<Props, State> {
         pocket,
         isPocketUsed,
         isKingOfTheHill,
+        isAliceChess,
         isMonsterChess,
         isThreefoldRepetitionDrawPossible,
         is50MoveDrawPossible,
@@ -206,28 +207,8 @@ export default class Game extends React.Component<Props, State> {
         <div className="game">
 
           <LeftPanel
-            chat={chat}
-            result={result}
-            variants={variants}
-            players={players}
-            isThreefoldRepetitionDrawPossible={isThreefoldRepetitionDrawPossible}
-            is50MoveDrawPossible={is50MoveDrawPossible}
-            drawOffer={drawOffer}
-            player={player}
-            sendMessage={this.sendMessage}
-            offerDraw={this.offerDraw}
-            acceptDraw={this.acceptDraw}
-            cancelDraw={this.cancelDraw}
-            declineDraw={this.declineDraw}
-            resign={this.resign}
-            declareThreefoldRepetitionDraw={this.declareThreefoldRepetitionDraw}
-            declare50MoveDraw={this.declare50MoveDraw}
-          />
-
-          <Board
-            board={board}
+            boards={boards}
             pieces={pieces}
-            player={player}
             selectedPiece={
               selectedPiece
                 ? selectedPiece
@@ -240,6 +221,14 @@ export default class Game extends React.Component<Props, State> {
             isAttackedByOpponentPiece={this.isAttackedByOpponentPiece}
             isPawnPromotion={this.isPawnPromotion}
             selectPiece={this.selectPiece}
+            sendMessage={this.sendMessage}
+            offerDraw={this.offerDraw}
+            acceptDraw={this.acceptDraw}
+            cancelDraw={this.cancelDraw}
+            declineDraw={this.declineDraw}
+            resign={this.resign}
+            declareThreefoldRepetitionDraw={this.declareThreefoldRepetitionDraw}
+            declare50MoveDraw={this.declare50MoveDraw}
             isBlackBase={isBlackBase}
             isKingOfTheHill={isKingOfTheHill}
             readOnly={(
@@ -249,6 +238,16 @@ export default class Game extends React.Component<Props, State> {
               || currentMoveIndex + 1 !== moves.length
             )}
             currentMove={moves[currentMoveIndex]}
+            chat={chat}
+            result={result}
+            variants={variants}
+            players={players}
+            isThreefoldRepetitionDrawPossible={isThreefoldRepetitionDrawPossible}
+            is50MoveDrawPossible={is50MoveDrawPossible}
+            isAliceChess={isAliceChess}
+            drawOffer={drawOffer}
+            player={player}
+            withLiterals
           />
 
           <RightPanel

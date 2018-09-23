@@ -230,16 +230,19 @@ export default class Game extends GameHelper {
       move
       && move.from
       && move.to
+      && typeof move.to.board === 'number'
+      && typeof move.to.y === 'number'
+      && typeof move.to.x === 'number'
       && ((
         move.from.type === PieceLocationEnum.POCKET
         && this.isPocketUsed
       ) || (
         move.from.type === PieceLocationEnum.BOARD
-        && this.board[move.from.y]
+        && this.boards[move.from.board]
+        && this.boards[move.from.board][move.from.y]
+        && typeof move.from.board === 'number'
         && typeof move.from.y === 'number'
         && typeof move.from.x === 'number'
-        && typeof move.to.y === 'number'
-        && typeof move.to.x === 'number'
       ))
     );
   }
@@ -259,7 +262,7 @@ export default class Game extends GameHelper {
       promotion
     } = moveForServer;
     const piece = fromLocation.type === PieceLocationEnum.BOARD
-      ? this.board[fromLocation.y][fromLocation.x]
+      ? this.boards[fromLocation.board][fromLocation.y][fromLocation.x]
       : this.pocket[player.color][fromLocation.pieceType][0];
 
     if (!piece || piece.color !== player.color) {
@@ -364,7 +367,7 @@ export default class Game extends GameHelper {
   toJSON(): IGame {
     return _.pick(this, [
       'id',
-      'startingBoard',
+      'startingBoards',
       'variants',
       'status',
       'players',

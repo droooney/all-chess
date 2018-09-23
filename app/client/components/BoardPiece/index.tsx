@@ -12,6 +12,8 @@ interface OwnProps {
   isBlackBase: boolean;
   maxRank: number;
   maxFile: number;
+  literalSize: number;
+  squareSize: number;
   onClick?(location: PieceBoardLocation): void;
 }
 
@@ -32,11 +34,14 @@ export default class BoardPiece extends React.Component<Props> {
       piece,
       piece: {
         location: {
+          board: pieceBoard,
           x: pieceX,
           y: pieceY
         }
       },
       isBlackBase,
+      literalSize,
+      squareSize,
       maxFile,
       maxRank,
       onClick
@@ -52,7 +57,10 @@ export default class BoardPiece extends React.Component<Props> {
       <div
         className="piece-container"
         style={{
-          transform: `translate(${x * 70}px,${y * 70}px)`
+          width: squareSize,
+          height: squareSize,
+          left: x * squareSize + literalSize + (literalSize + (maxFile + 1) * squareSize) * pieceBoard,
+          top: y * squareSize + literalSize
         }}
       >
         <Piece

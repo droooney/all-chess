@@ -9,6 +9,7 @@ declare module 'socket.io' {
 }
 
 export interface Square {
+  board: number;
   x: number;
   y: number;
 }
@@ -104,7 +105,7 @@ export type StartingBoard = (StartingPiece | null)[][];
 
 export interface Game {
   id: string;
-  startingBoard: StartingBoard;
+  startingBoards: StartingBoard[];
   status: GameStatusEnum;
   players: GamePlayers;
   result: GameResult | null;
@@ -129,7 +130,8 @@ export enum GameVariantEnum {
   PATROL = 'PATROL',
   MADRASI = 'MADRASI',
   LAST_CHANCE = 'LAST_CHANCE',
-  MONSTER_CHESS = 'MONSTER_CHESS'
+  MONSTER_CHESS = 'MONSTER_CHESS',
+  ALICE_CHESS = 'ALICE_CHESS'
 }
 
 export interface BaseMove {

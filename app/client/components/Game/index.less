@@ -1,7 +1,5 @@
 @import (reference) '../../styles/mixins';
 
-@size: 70px;
-@rank-file-size: 20px;
 @border: 3px solid black;
 
 .route.game-route {
@@ -14,139 +12,128 @@
   .game {
     .flex(center);
 
-    .board {
-      .flex-col();
+    .boards {
+      .flex();
 
-      flex-direction: column-reverse;
       position: relative;
-      margin: 0 20px;
+      margin: 20px;
 
       &.opposite {
-        flex-direction: column;
+        .board {
+          flex-direction: column;
 
-        .rank {
-          flex-direction: row-reverse;
+          .rank {
+            flex-direction: row-reverse;
 
-          .square {
-            &.border-top {
-              border-top: @border;
-            }
+            .square {
+              &.border-top {
+                border-top: @border;
+              }
 
-            &.border-bottom {
-              border-bottom: @border;
-            }
+              &.border-bottom {
+                border-bottom: @border;
+              }
 
-            &.border-left {
-              border-right: @border;
-            }
+              &.border-left {
+                border-right: @border;
+              }
 
-            &.border-right {
-              border-left: @border;
+              &.border-right {
+                border-left: @border;
+              }
             }
           }
         }
       }
 
       &:not(.opposite) {
-        .rank {
-          .square {
-            &.border-top {
-              border-bottom: @border;
-            }
+        .board {
+          .rank {
+            .square {
+              &.border-top {
+                border-bottom: @border;
+              }
 
-            &.border-bottom {
-              border-top: @border;
-            }
+              &.border-bottom {
+                border-top: @border;
+              }
 
-            &.border-left {
-              border-left: @border;
-            }
+              &.border-left {
+                border-left: @border;
+              }
 
-            &.border-right {
-              border-right: @border;
+              &.border-right {
+                border-right: @border;
+              }
             }
           }
         }
       }
 
-      .rank {
-        .flex();
+      .board {
+        .flex-col();
 
-        .rank-literal {
+        flex-direction: column-reverse;
+
+        .rank {
           .flex();
 
-          width: @rank-file-size;
-          height: @size;
-        }
-
-        .file-literal {
-          .flex();
-
-          width: @size;
-          height: @rank-file-size;
-        }
-
-        .empty-corner {
-          width: @rank-file-size;
-          height: @rank-file-size;
-        }
-
-        .square {
-          .flex();
-
-          position: relative;
-          width: @size;
-          height: @size;
-
-          &.white {
-            background-color: beige;
+          .rank-literal,
+          .file-literal {
+            .flex();
           }
 
-          &.black {
-            background-color: silver;
-          }
+          .square {
+            .flex();
 
-          .selected-square,
-          .current-move-square,
-          .allowed-square,
-          .check-square {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-          }
+            position: relative;
 
-          .selected-square {
-            background-color: rgba(115,125,105,0.5);
-            z-index: 1;
-          }
+            &.white {
+              background-color: beige;
+            }
 
-          .current-move-square {
-            background-color: rgba(0,255,0,0.5);
-            z-index: 2;
-          }
+            &.black {
+              background-color: silver;
+            }
 
-          .allowed-square {
-            background: radial-gradient(rgba(0,255,255,0.5), rgba(0,0,0,0));
-            cursor: pointer;
-            z-index: 3;
-          }
+            .selected-square,
+            .current-move-square,
+            .allowed-square,
+            .check-square {
+              position: absolute;
+              width: 100%;
+              height: 100%;
+              top: 0;
+              left: 0;
+            }
 
-          .check-square {
-            background: radial-gradient(red, rgba(0,0,0,0));
-            z-index: 4;
+            .selected-square {
+              background-color: rgba(115,125,105,0.5);
+              z-index: 1;
+            }
+
+            .current-move-square {
+              background-color: rgba(0,255,0,0.5);
+              z-index: 2;
+            }
+
+            .allowed-square {
+              background: radial-gradient(rgba(0,255,255,0.5), rgba(0,0,0,0));
+              cursor: pointer;
+              z-index: 3;
+            }
+
+            .check-square {
+              background: radial-gradient(red, rgba(0,0,0,0));
+              z-index: 4;
+            }
           }
         }
       }
 
       .piece-container {
         position: absolute;
-        top: @rank-file-size;
-        left: @rank-file-size;
-        width: @size;
-        height: @size;
-        transition-property: transform;
+        transition-property: left, top;
         transition-duration: 0.2s;
         transition-timing-function: ease-out;
         cursor: pointer;
@@ -173,12 +160,37 @@
       }
     }
 
-    .left-panel {
-      .flex-col-stretch();
+    .info-actions-chat-panel {
+      &:not(.is-bottom) {
+        .flex-col-stretch();
 
-      width: 250px;
+        width: 250px;
 
-      .top-left-panel {
+        .info-action-panel {
+          margin-bottom: 10px;
+        }
+
+        .chat {
+          height: 400px;
+        }
+      }
+
+      &.is-bottom {
+        .flex-stretch();
+
+        height: 180px;
+
+        .info-action-panel {
+          margin-right: 20px;
+        }
+
+        .chat {
+          width: 480px;
+        }
+      }
+
+      .info-action-panel {
+        width: 250px;
         height: 180px;
 
         .variants {
@@ -257,7 +269,6 @@
       .chat {
         .flex-col-stretch();
 
-        height: 400px;
         border: 1px solid black;
 
         .header {
@@ -295,6 +306,22 @@
 
         .new-message-input {
           .flex-child-fixed();
+        }
+      }
+    }
+
+    .left-panel {
+      display: flex;
+
+      &:not(.is-board-at-top) {
+        flex-direction: row;
+      }
+
+      &.is-board-at-top {
+        flex-direction: column;
+
+        .info-actions-chat-panel {
+          order: 2;
         }
       }
     }
@@ -427,8 +454,8 @@
   .flex();
 
   .piece {
-    width: @size;
-    height: @size;
+    width: 70px;
+    height: 70px;
     cursor: pointer;
     border: 2px solid black;
   }
