@@ -1406,11 +1406,18 @@ export class Game implements IGame {
       return [];
     }
 
-    if (this.boards.length > 1 && !this.isAtomic) {
+    if (this.boards.length > 1 && forMove) {
       // a piece cannot move to a square that is occupied on the next board
-      possibleSquares = possibleSquares.filter(({ board, x, y }) => (
-        !this.boards[this.getNextBoard(board)][y][x]
-      ));
+      possibleSquares = possibleSquares.filter(({ board, x, y }) => {
+        const pieceOnThisBoard = this.boards[board][y][x];
+        const pieceOnTheNextBoard = this.boards[this.getNextBoard(board)][y][x];
+
+        return !pieceOnTheNextBoard || (
+          this.isAtomic
+          && pieceOnThisBoard
+          && pieceOnThisBoard.color !== pieceColor
+        );
+      });
 
       if (this.boards.length > 2) {
         // a piece cannot move to a square that is occupied on the next board after the next board
@@ -1491,8 +1498,9 @@ export class Game implements IGame {
     return this.pieces[opponentColor]
       .filter(Game.isBoardPiece)
       .some((piece) => (
-        this.getPossibleMoves(piece.location, true, false).some(({ x, y }) => (
-          square.x === x
+        this.getPossibleMoves(piece.location, true, false).some(({ board, x, y }) => (
+          square.board === board
+          && square.x === x
           && square.y === y
         ))
       ));
