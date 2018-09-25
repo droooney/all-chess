@@ -19,7 +19,6 @@ import {
   PieceTypeEnum,
   PocketPiece,
   RealPiece,
-  RealPieceLocation,
   ResultReasonEnum,
   RevertableMove,
   Square,
@@ -284,6 +283,12 @@ export class Game implements IGame {
     return rank + 1;
   }
 
+  static getOppositeColor(color: ColorEnum): ColorEnum {
+    return color === ColorEnum.WHITE
+      ? ColorEnum.BLACK
+      : ColorEnum.WHITE;
+  }
+
   static isBoardPiece(piece: Piece): piece is BoardPiece {
     return Game.isRealPiece(piece) && piece.location.type === PieceLocationEnum.BOARD;
   }
@@ -464,10 +469,7 @@ export class Game implements IGame {
     ) {
       this.teleportUsed[piece.color] = true;
 
-      isTeleportMove = this.getAllowedMoves(fromLocation).every(({ x, y }) => (
-        toY !== y
-        || toX !== x
-      ));
+      isTeleportMove = this.getAllowedMoves(piece).every((square) => !Game.areSquaresEqual(square, toLocation));
 
       this.teleportUsed[piece.color] = false;
     }
@@ -566,7 +568,7 @@ export class Game implements IGame {
         algebraic += SHORT_PIECE_NAMES[pieceType];
         figurine += PIECE_LITERALS[piece.color][pieceType];
 
-        const otherBoardsToDropPiece = this.getAllowedMoves(fromLocation).some(({ board, x, y }) => (
+        const otherBoardsToDropPiece = this.getAllowedMoves(piece).some(({ board, x, y }) => (
           board !== toBoard
           && x === toX
           && y === toY
@@ -598,11 +600,11 @@ export class Game implements IGame {
         if (pieceType === PieceTypeEnum.PAWN) {
           const otherPawnsOnOtherBoardsAbleToMakeMove = playerPieces
             .filter(Game.isBoardPiece)
-            .filter(({ id, type, location }) => (
-              type === pieceType
-              && id !== piece.id
-              && location.board !== piece.id
-              && this.getAllowedMoves(location).some(({ x, y }) => x === toX && y === toY)
+            .filter((otherPawn) => (
+              otherPawn.type === pieceType
+              && otherPawn.id !== piece.id
+              && otherPawn.location.board !== fromBoard
+              && this.getAllowedMoves(otherPawn).some(({ x, y }) => x === toX && y === toY)
             ));
 
           if (otherPawnsOnOtherBoardsAbleToMakeMove.length) {
@@ -624,10 +626,10 @@ export class Game implements IGame {
 
           const otherPiecesAbleToMakeMove = playerPieces
             .filter(Game.isBoardPiece)
-            .filter(({ id, type, location }) => (
-              type === pieceType
-              && id !== piece.id
-              && this.getAllowedMoves(location).some(({ x, y }) => x === toX && y === toY)
+            .filter((otherPiece) => (
+              otherPiece.type === pieceType
+              && otherPiece.id !== piece.id
+              && this.getAllowedMoves(otherPiece).some(({ x, y }) => x === toX && y === toY)
             ));
 
           if (otherPiecesAbleToMakeMove.length) {
@@ -756,7 +758,7 @@ export class Game implements IGame {
 
       if (this.isPocketUsed && _.includes(this.pocketPiecesUsed, piece.originalType)) {
         const pieceType = piece.originalType;
-        const opponentColor = this.getOppositeColor(piece.color);
+        const opponentColor = Game.getOppositeColor(piece.color);
 
         piece.moved = false;
         piece.type = pieceType;
@@ -1024,34 +1026,32 @@ export class Game implements IGame {
   }
 
   getCenterSquareParams(square: Square): CenterSquareParams {
+    const leftCenterX = Math.round(this.startingBoards[0][0].length / 2) - 1;
+    const rightCenterX = leftCenterX + 1;
+    const topCenterY = Math.round(this.startingBoards[0].length / 2) - 1;
+    const bottomCenterY = topCenterY + 1;
     const {
       x: squareX,
       y: squareY
     } = square;
 
-    if (squareX === 3 && squareY === 3) {
+    if (squareX === leftCenterX && squareY === topCenterY) {
       return { top: true, left: true };
     }
 
-    if (squareX === 3 && squareY === 4) {
+    if (squareX === leftCenterX && squareY === bottomCenterY) {
       return { bottom: true, left: true };
     }
 
-    if (squareX === 4 && squareY === 3) {
+    if (squareX === rightCenterX && squareY === topCenterY) {
       return { top: true, right: true };
     }
 
-    if (squareX === 4 && squareY === 4) {
+    if (squareX === rightCenterX && squareY === bottomCenterY) {
       return { bottom: true, right: true };
     }
 
     return null;
-  }
-
-  getOppositeColor(color: ColorEnum): ColorEnum {
-    return color === ColorEnum.WHITE
-      ? ColorEnum.BLACK
-      : ColorEnum.WHITE;
   }
 
   getNextBoard(board: number): number {
@@ -1063,7 +1063,7 @@ export class Game implements IGame {
   }
 
   getOpponentColor(): ColorEnum {
-    return this.getOppositeColor(this.turn);
+    return Game.getOppositeColor(this.turn);
   }
 
   getPieces(playerColor: ColorEnum): RealPiece[] {
@@ -1109,7 +1109,7 @@ export class Game implements IGame {
     });
   }
 
-  getPossibleMoves(location: RealPieceLocation, onlyAttacked: boolean, onlyControlled: boolean): Square[] {
+  getPossibleMoves(piece: RealPiece, onlyAttacked: boolean, onlyControlled: boolean): Square[] {
     const forMove = !onlyControlled && !onlyAttacked;
     const getSquaresForDrop = (pieceType: PieceTypeEnum): Square[] => {
       return this.startingBoards.reduce((possibleSquares, board, boardNumber) => (
@@ -1142,25 +1142,24 @@ export class Game implements IGame {
       ), [] as Square[]);
     };
 
-    if (location.type === PieceLocationEnum.POCKET) {
-      return getSquaresForDrop(location.pieceType);
+    if (piece.location.type === PieceLocationEnum.POCKET) {
+      return getSquaresForDrop(piece.location.pieceType);
     }
 
-    const board = location.board;
-    const piece = this.getBoardPiece(location)!;
     const {
       color: pieceColor,
       type: pieceType
     } = piece;
     const {
+      board,
       x: pieceX,
       y: pieceY
-    } = location;
-    const opponentColor = this.getOppositeColor(pieceColor);
+    } = piece.location;
+    const opponentColor = Game.getOppositeColor(pieceColor);
     const captureAllowed = (
       !this.isPatrol
       || onlyControlled
-      || this.isPatrolledByFriendlyPiece(piece)
+      || this.isPatrolledByFriendlyPiece(piece as BoardPiece)
     );
     let possibleSquares: Square[] = [];
     const traverseDirection = (incrementY: 0 | 1 | -1, incrementX: 0 | 1 | -1) => {
@@ -1476,8 +1475,8 @@ export class Game implements IGame {
     return possibleSquares;
   }
 
-  getAllowedMoves(location: RealPieceLocation): Square[] {
-    const possibleMoves = this.getPossibleMoves(location, false, false);
+  getAllowedMoves(piece: RealPiece): Square[] {
+    const possibleMoves = this.getPossibleMoves(piece, false, false);
 
     if (this.isLeftInCheckAllowed && !this.isAtomic) {
       return possibleMoves;
@@ -1485,7 +1484,7 @@ export class Game implements IGame {
 
     return possibleMoves.filter((square) => {
       const { allowed, revertMove } = this.performMove({
-        from: location,
+        from: piece.location,
         to: square,
         timestamp: 0,
         promotion: PieceTypeEnum.QUEEN
@@ -1520,11 +1519,13 @@ export class Game implements IGame {
   }
 
   isInCheck(color: ColorEnum): boolean {
+    const opponentColor = Game.getOppositeColor(color);
+
     return (
       !this.isLeftInCheckAllowed
       && this.kings[color].some((king) => (
         Game.isBoardPiece(king)
-        && this.isAttackedByOpponentPiece(king.location, this.getOppositeColor(king.color))
+        && this.isAttackedByOpponentPiece(king.location, opponentColor)
       ))
     );
   }
@@ -1532,7 +1533,7 @@ export class Game implements IGame {
   isAttackedByOpponentPiece(square: Square, opponentColor: ColorEnum): boolean {
     return this.getPieces(opponentColor).some((piece) => (
       Game.isBoardPiece(piece)
-      && this.getPossibleMoves(piece.location, true, false).some((possibleSquare) => (
+      && this.getPossibleMoves(piece, true, false).some((possibleSquare) => (
         Game.areSquaresEqual(possibleSquare, square)
       ))
     ));
@@ -1543,7 +1544,7 @@ export class Game implements IGame {
 
     return this.getPieces(piece.color).some((piece) => (
       Game.isBoardPiece(piece)
-      && this.getPossibleMoves(piece.location, true, true).some((square) => (
+      && this.getPossibleMoves(piece, true, true).some((square) => (
         Game.areSquaresEqual(square, pieceLocation)
       ))
     ));
@@ -1660,7 +1661,7 @@ export class Game implements IGame {
 
   isNoMoves(): boolean {
     return this.getPieces(this.turn).every((piece) => (
-      this.getAllowedMoves(piece.location).length === 0
+      this.getAllowedMoves(piece).length === 0
     ));
   }
 

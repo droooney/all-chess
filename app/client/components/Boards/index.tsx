@@ -15,7 +15,6 @@ import {
   PiecePocketLocation,
   Player,
   RealPiece,
-  RealPieceLocation,
   Square,
   StartingBoard
 } from '../../../types';
@@ -33,11 +32,10 @@ export interface OwnProps {
   selectedPiece: RealPiece | null;
   selectPiece(piece: IPiece | null): void;
   getPrevBoard(board: number): number;
-  getAllowedMoves(location: RealPieceLocation): Square[];
+  getAllowedMoves(piece: RealPiece): Square[];
   getBoardPiece(square: Square): IBoardPiece | null;
   isAttackedByOpponentPiece(square: Square, opponentColor: ColorEnum): boolean;
   isPawnPromotion(move: BaseMove): boolean;
-  getOppositeColor(color: ColorEnum): ColorEnum;
   getCenterSquareParams(square: Square): CenterSquareParams;
   sendMove(move: BaseMove): void;
   readOnly: boolean;
@@ -76,7 +74,7 @@ class Boards extends React.Component<Props, State> {
     } = this.props;
 
     return selectedPiece
-      ? getAllowedMoves(selectedPiece.location)
+      ? getAllowedMoves(selectedPiece)
       : [] as Square[];
   }
 
@@ -102,7 +100,6 @@ class Boards extends React.Component<Props, State> {
   isInCheck(square: Square): boolean {
     const {
       getBoardPiece,
-      getOppositeColor,
       isAttackedByOpponentPiece
     } = this.props;
     const pieceInSquare = getBoardPiece(square);
@@ -113,7 +110,7 @@ class Boards extends React.Component<Props, State> {
 
     return (
       pieceInSquare.type === PieceTypeEnum.KING
-      && isAttackedByOpponentPiece(pieceInSquare.location, getOppositeColor(pieceInSquare.color))
+      && isAttackedByOpponentPiece(pieceInSquare.location, Game.getOppositeColor(pieceInSquare.color))
     );
   }
 

@@ -14,7 +14,6 @@ import {
   Player,
   PocketPiece,
   RealPiece,
-  RealPieceLocation,
   Square
 } from '../../../types';
 import { Game as GameHelper } from '../../helpers';
@@ -109,8 +108,8 @@ export default class Game extends React.Component<Props, State> {
     this.socket!.emit('addChatMessage', message);
   };
 
-  getAllowedMoves = (location: RealPieceLocation): Square[] => {
-    return this.game!.getAllowedMoves(location);
+  getAllowedMoves = (piece: RealPiece): Square[] => {
+    return this.game!.getAllowedMoves(piece);
   };
 
   getCenterSquareParams = (square: Square): CenterSquareParams => {
@@ -119,10 +118,6 @@ export default class Game extends React.Component<Props, State> {
 
   getPrevBoard = (board: number): number => {
     return this.game!.getPrevBoard(board);
-  };
-
-  getOppositeColor = (color: ColorEnum): ColorEnum => {
-    return this.game!.getOppositeColor(color);
   };
 
   getBoardPiece = (square: Square): BoardPiece | null => {
@@ -231,7 +226,6 @@ export default class Game extends React.Component<Props, State> {
             sendMove={this.sendMove}
             getAllowedMoves={this.getAllowedMoves}
             getCenterSquareParams={this.getCenterSquareParams}
-            getOppositeColor={this.getOppositeColor}
             getPrevBoard={this.getPrevBoard}
             getBoardPiece={this.getBoardPiece}
             isAttackedByOpponentPiece={this.isAttackedByOpponentPiece}

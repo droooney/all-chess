@@ -98,7 +98,7 @@ export default class Game extends GameHelper {
       if (isNewPlayer) {
         const otherPlayer = _.find(this.players, Boolean);
         const color = otherPlayer
-          ? this.getOppositeColor(otherPlayer.color)
+          ? Game.getOppositeColor(otherPlayer.color)
           : Math.random() > 0.5
             ? ColorEnum.WHITE
             : ColorEnum.BLACK;
@@ -127,7 +127,7 @@ export default class Game extends GameHelper {
 
         socket.on('resign', () => {
           if (this.status === GameStatusEnum.ONGOING) {
-            this.end(this.getOppositeColor(playerColor), ResultReasonEnum.RESIGN);
+            this.end(Game.getOppositeColor(playerColor), ResultReasonEnum.RESIGN);
           }
         });
 
@@ -271,7 +271,7 @@ export default class Game extends GameHelper {
       return;
     }
 
-    const isSquareAllowed = this.getAllowedMoves(fromLocation).some(({ x, y }) => (
+    const isSquareAllowed = this.getAllowedMoves(piece).some(({ x, y }) => (
       toX === x && toY === y
     ));
     const isPawnPromotion = this.isPawnPromotion(moveForServer);
