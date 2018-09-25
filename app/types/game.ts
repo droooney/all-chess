@@ -23,7 +23,7 @@ export type GamePlayers = {
   [color in ColorEnum]: Player;
 };
 
-export enum PieceEnum {
+export enum PieceTypeEnum {
   KING = 'KING',
   QUEEN = 'QUEEN',
   ROOK = 'ROOK',
@@ -39,17 +39,17 @@ export enum ColorEnum {
 
 export interface StartingPiece {
   id: number;
-  type: PieceEnum;
+  type: PieceTypeEnum;
   color: ColorEnum;
 }
 
 export interface Piece {
   id: number;
-  type: PieceEnum;
+  type: PieceTypeEnum;
   color: ColorEnum;
   location: PieceLocation;
   moved: boolean;
-  originalType: PieceEnum;
+  originalType: PieceTypeEnum;
 }
 
 export interface BoardPiece extends Piece {
@@ -76,30 +76,16 @@ export interface PieceBoardLocation extends Square {
 
 export interface PiecePocketLocation {
   type: PieceLocationEnum.POCKET;
-  pieceType: PieceEnum;
+  pieceType: PieceTypeEnum;
 }
 
 export type RealPieceLocation = PieceBoardLocation | PiecePocketLocation;
 
 export type PieceLocation = null | RealPieceLocation;
 
-export type GamePieces = {
+export type GameKings = {
   [color in ColorEnum]: Piece[];
 };
-
-export type GameKings = {
-  [color in ColorEnum]: BoardPiece;
-};
-
-export type PocketPieces = {
-  [piece in PieceEnum]: PocketPiece[];
-};
-
-export type Pocket = {
-  [color in ColorEnum]: PocketPieces;
-};
-
-export type Board = (BoardPiece | null)[][];
 
 export type StartingBoard = (StartingPiece | null)[][];
 
@@ -137,7 +123,7 @@ export enum GameVariantEnum {
 export interface BaseMove {
   from: RealPieceLocation;
   to: Square;
-  promotion?: PieceEnum;
+  promotion?: PieceTypeEnum;
 }
 
 export interface Move extends BaseMove {

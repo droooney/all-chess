@@ -1,26 +1,28 @@
 import * as _ from 'lodash';
 import * as React from 'react';
+import classNames = require('classnames');
 
 import {
   ColorEnum,
   ExtendedMove,
   GamePlayers,
   GameStatusEnum,
-  Piece as IPiece,
+  Piece,
+  PieceTypeEnum,
   Player,
-  Pocket,
   PocketPiece,
   TimeControl,
   TimeControlEnum
 } from '../../../types';
+import { Game } from '../../helpers';
 
 import RightPanelPlayer from '../RightPanelPlayer';
-import classNames = require('classnames');
 
 interface OwnProps {
   players: GamePlayers;
   player: Player | null;
-  pocket: Pocket;
+  pieces: Piece[];
+  pocketPiecesUsed: PieceTypeEnum[];
   isPocketUsed: boolean;
   currentMoveIndex: number;
   timeControl: TimeControl;
@@ -31,10 +33,11 @@ interface OwnProps {
   status: GameStatusEnum;
   timeDiff: number;
   selectedPiece: PocketPiece | null;
-  selectPiece(piece: IPiece | null): void;
+  selectPiece(piece: Piece | null): void;
   moveBack(): void;
   moveForward(): void;
   navigateToMove(moveIndex: number): void;
+  getPocketPiece(type: PieceTypeEnum, color: ColorEnum): PocketPiece | null;
 }
 
 interface State {
@@ -140,7 +143,8 @@ export default class RightPanel extends React.Component<Props, State> {
     const {
       players,
       player,
-      pocket,
+      pieces,
+      pocketPiecesUsed,
       isPocketUsed,
       isMonsterChess,
       currentMoveIndex,
@@ -148,10 +152,12 @@ export default class RightPanel extends React.Component<Props, State> {
       timeControl,
       isBlackBase,
       selectedPiece,
+      getPocketPiece,
       selectPiece,
       navigateToMove
     } = this.props;
-    const realTurn = moves.length % 2
+    const movesChunkSize = isMonsterChess ? 3 : 2;
+    const realTurn = moves.length % movesChunkSize === movesChunkSize - 1
       ? ColorEnum.BLACK
       : ColorEnum.WHITE;
     const topPlayer = isBlackBase
@@ -162,7 +168,6 @@ export default class RightPanel extends React.Component<Props, State> {
       : players[ColorEnum.WHITE];
     const lastMoveTimestamp = this.adjustServerTime(moves.length ? _.last(moves)!.timestamp : 0);
     const timePassedSinceLastMove = (this.state.intervalActivated ? Date.now() : lastMoveTimestamp) - lastMoveTimestamp;
-    const movesChunkSize = isMonsterChess ? 3 : 2;
 
     return (
       <div className="right-panel">
@@ -174,9 +179,12 @@ export default class RightPanel extends React.Component<Props, State> {
           timeControl={timeControl}
           realTurn={realTurn}
           isTop
-          pocket={isPocketUsed ? pocket[topPlayer.color] : null}
+          isPocketUsed={isPocketUsed}
+          pocketPiecesUsed={pocketPiecesUsed}
+          pocket={pieces.filter((piece) => Game.isPocketPiece(piece) && piece.color === topPlayer.color) as PocketPiece[]}
           selectedPiece={selectedPiece}
           selectPiece={selectPiece}
+          getPocketPiece={getPocketPiece}
         />
 
         <div className="moves" ref={this.movesRef}>
@@ -209,9 +217,12 @@ export default class RightPanel extends React.Component<Props, State> {
           timeControl={timeControl}
           realTurn={realTurn}
           isTop={false}
-          pocket={isPocketUsed ? pocket[bottomPlayer.color] : null}
+          isPocketUsed={isPocketUsed}
+          pocketPiecesUsed={pocketPiecesUsed}
+          pocket={pieces.filter((piece) => Game.isPocketPiece(piece) && piece.color === bottomPlayer.color) as PocketPiece[]}
           selectedPiece={selectedPiece}
           selectPiece={selectPiece}
+          getPocketPiece={getPocketPiece}
         />
 
       </div>

@@ -4,11 +4,13 @@ import io = require('socket.io-client');
 
 import {
   BaseMove,
+  BoardPiece,
   CenterSquareParams,
   ColorEnum,
   Game as IGame,
   GameStatusEnum,
   PieceLocationEnum,
+  PieceTypeEnum,
   Player,
   PocketPiece,
   RealPiece,
@@ -123,6 +125,14 @@ export default class Game extends React.Component<Props, State> {
     return this.game!.getOppositeColor(color);
   };
 
+  getBoardPiece = (square: Square): BoardPiece | null => {
+    return this.game!.getBoardPiece(square);
+  };
+
+  getPocketPiece = (type: PieceTypeEnum, color: ColorEnum): PocketPiece | null => {
+    return this.game!.getPocketPiece(type, color);
+  };
+
   isAttackedByOpponentPiece = (square: Square, opponentColor: ColorEnum): boolean => {
     return this.game!.isAttackedByOpponentPiece(square, opponentColor);
   };
@@ -181,12 +191,12 @@ export default class Game extends React.Component<Props, State> {
     } else {
       const {
         status,
-        boards,
+        startingBoards,
         pieces,
         chat,
         turn,
         players,
-        pocket,
+        pocketPiecesUsed,
         isPocketUsed,
         isKingOfTheHill,
         isAliceChess,
@@ -211,7 +221,7 @@ export default class Game extends React.Component<Props, State> {
         <div className="game">
 
           <LeftPanel
-            boards={boards}
+            startingBoards={startingBoards}
             pieces={pieces}
             selectedPiece={
               selectedPiece
@@ -223,6 +233,7 @@ export default class Game extends React.Component<Props, State> {
             getCenterSquareParams={this.getCenterSquareParams}
             getOppositeColor={this.getOppositeColor}
             getPrevBoard={this.getPrevBoard}
+            getBoardPiece={this.getBoardPiece}
             isAttackedByOpponentPiece={this.isAttackedByOpponentPiece}
             isPawnPromotion={this.isPawnPromotion}
             selectPiece={this.selectPiece}
@@ -258,7 +269,8 @@ export default class Game extends React.Component<Props, State> {
           <RightPanel
             players={players}
             player={player}
-            pocket={pocket}
+            pieces={pieces}
+            pocketPiecesUsed={pocketPiecesUsed}
             isPocketUsed={isPocketUsed}
             isMonsterChess={isMonsterChess}
             currentMoveIndex={currentMoveIndex}
@@ -273,6 +285,7 @@ export default class Game extends React.Component<Props, State> {
                 ? selectedPiece as PocketPiece
                 : null
             }
+            getPocketPiece={this.getPocketPiece}
             selectPiece={this.selectPiece}
             moveBack={this.moveBack}
             moveForward={this.moveForward}

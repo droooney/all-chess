@@ -2,35 +2,35 @@ import {
   ColorEnum,
   GameSettings,
   GameVariantEnum,
-  PieceEnum,
+  PieceTypeEnum,
   ResultReasonEnum
 } from '../../types';
 
-export const SHORT_PIECE_NAMES: { [piece in PieceEnum]: string } = {
-  [PieceEnum.KING]: 'K',
-  [PieceEnum.QUEEN]: 'Q',
-  [PieceEnum.ROOK]: 'R',
-  [PieceEnum.BISHOP]: 'B',
-  [PieceEnum.KNIGHT]: 'N',
-  [PieceEnum.PAWN]: 'P'
+export const SHORT_PIECE_NAMES: { [piece in PieceTypeEnum]: string } = {
+  [PieceTypeEnum.KING]: 'K',
+  [PieceTypeEnum.QUEEN]: 'Q',
+  [PieceTypeEnum.ROOK]: 'R',
+  [PieceTypeEnum.BISHOP]: 'B',
+  [PieceTypeEnum.KNIGHT]: 'N',
+  [PieceTypeEnum.PAWN]: 'P'
 };
 
-export const PIECE_LITERALS: { [color in ColorEnum]: { [piece in PieceEnum]: string; }; } = {
+export const PIECE_LITERALS: { [color in ColorEnum]: { [piece in PieceTypeEnum]: string; }; } = {
   [ColorEnum.WHITE]: {
-    [PieceEnum.KING]: '♔',
-    [PieceEnum.QUEEN]: '♕',
-    [PieceEnum.ROOK]: '♖',
-    [PieceEnum.BISHOP]: '♗',
-    [PieceEnum.KNIGHT]: '♘',
-    [PieceEnum.PAWN]: '♙'
+    [PieceTypeEnum.KING]: '♔',
+    [PieceTypeEnum.QUEEN]: '♕',
+    [PieceTypeEnum.ROOK]: '♖',
+    [PieceTypeEnum.BISHOP]: '♗',
+    [PieceTypeEnum.KNIGHT]: '♘',
+    [PieceTypeEnum.PAWN]: '♙'
   },
   [ColorEnum.BLACK]: {
-    [PieceEnum.KING]: '♚',
-    [PieceEnum.QUEEN]: '♛',
-    [PieceEnum.ROOK]: '♜',
-    [PieceEnum.BISHOP]: '♝',
-    [PieceEnum.KNIGHT]: '♞',
-    [PieceEnum.PAWN]: '♟'
+    [PieceTypeEnum.KING]: '♚',
+    [PieceTypeEnum.QUEEN]: '♛',
+    [PieceTypeEnum.ROOK]: '♜',
+    [PieceTypeEnum.BISHOP]: '♝',
+    [PieceTypeEnum.KNIGHT]: '♞',
+    [PieceTypeEnum.PAWN]: '♟'
   }
 };
 

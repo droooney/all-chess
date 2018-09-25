@@ -9,7 +9,7 @@ import {
   GameStatusEnum,
   GameVariantEnum,
   Move,
-  PieceEnum,
+  PieceTypeEnum,
   PieceLocationEnum,
   Player,
   ResultReasonEnum,
@@ -226,7 +226,7 @@ export default class Game extends GameHelper {
   }
 
   validateMove(move: any): boolean {
-    return (
+    return !!(
       move
       && move.from
       && move.to
@@ -238,8 +238,8 @@ export default class Game extends GameHelper {
         && this.isPocketUsed
       ) || (
         move.from.type === PieceLocationEnum.BOARD
-        && this.boards[move.from.board]
-        && this.boards[move.from.board][move.from.y]
+        && this.startingBoards[move.from.board]
+        && this.startingBoards[move.from.board][move.from.y]
         && typeof move.from.board === 'number'
         && typeof move.from.y === 'number'
         && typeof move.from.x === 'number'
@@ -262,8 +262,8 @@ export default class Game extends GameHelper {
       promotion
     } = moveForServer;
     const piece = fromLocation.type === PieceLocationEnum.BOARD
-      ? this.boards[fromLocation.board][fromLocation.y][fromLocation.x]
-      : this.pocket[player.color][fromLocation.pieceType][0];
+      ? this.getBoardPiece(fromLocation)!
+      : this.getPocketPiece(fromLocation.pieceType, this.turn)!;
 
     if (!piece || piece.color !== player.color) {
       // no piece or wrong color
@@ -276,10 +276,10 @@ export default class Game extends GameHelper {
     ));
     const isPawnPromotion = this.isPawnPromotion(moveForServer);
     const isValidPromotion =  (
-      promotion === PieceEnum.QUEEN
-      || promotion === PieceEnum.ROOK
-      || promotion === PieceEnum.BISHOP
-      || promotion === PieceEnum.KNIGHT
+      promotion === PieceTypeEnum.QUEEN
+      || promotion === PieceTypeEnum.ROOK
+      || promotion === PieceTypeEnum.BISHOP
+      || promotion === PieceTypeEnum.KNIGHT
     );
     const isMoveAllowed = isSquareAllowed && (!isPawnPromotion || isValidPromotion);
 

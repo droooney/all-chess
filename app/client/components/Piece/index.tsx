@@ -2,7 +2,7 @@ import * as React from 'react';
 import classNames = require('classnames');
 
 import {
-  PieceEnum,
+  PieceTypeEnum,
   RealPiece,
   RealPieceLocation
 } from '../../../types';
@@ -58,17 +58,17 @@ export default class Piece extends React.Component<Props> {
         style={style}
         onClick={onClick && this.onClick}
       >
-        {piece.type === PieceEnum.KING ? (
+        {piece.type === PieceTypeEnum.KING ? (
           <King color={piece.color} />
-        ) : piece.type === PieceEnum.QUEEN ? (
+        ) : piece.type === PieceTypeEnum.QUEEN ? (
           <Queen color={piece.color} />
-        ) : piece.type === PieceEnum.ROOK ? (
+        ) : piece.type === PieceTypeEnum.ROOK ? (
           <Rook color={piece.color} />
-        ) : piece.type === PieceEnum.BISHOP ? (
+        ) : piece.type === PieceTypeEnum.BISHOP ? (
           <Bishop color={piece.color} />
-        ) : piece.type === PieceEnum.KNIGHT ? (
+        ) : piece.type === PieceTypeEnum.KNIGHT ? (
           <Knight color={piece.color} />
-        ) : piece.type === PieceEnum.PAWN ? (
+        ) : piece.type === PieceTypeEnum.PAWN ? (
           <Pawn color={piece.color} />
         ) : null}
       </svg>

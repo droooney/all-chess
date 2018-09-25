@@ -5,19 +5,19 @@ import classNames = require('classnames');
 
 import {
   BaseMove,
-  Board as IBoard,
+  BoardPiece as IBoardPiece,
   CenterSquareParams,
   ColorEnum,
-  GamePieces,
   Move,
   Piece as IPiece,
-  PieceEnum,
+  PieceTypeEnum,
   PieceLocationEnum,
   PiecePocketLocation,
   Player,
   RealPiece,
   RealPieceLocation,
-  Square
+  Square,
+  StartingBoard
 } from '../../../types';
 import { Game } from '../../helpers';
 import { ReduxState } from '../../store';
@@ -27,13 +27,14 @@ import Piece from '../Piece';
 import Modal from '../Modal';
 
 export interface OwnProps {
-  pieces: GamePieces;
-  boards: IBoard[];
+  pieces: IPiece[];
+  startingBoards: StartingBoard[];
   player: Player | null;
   selectedPiece: RealPiece | null;
   selectPiece(piece: IPiece | null): void;
   getPrevBoard(board: number): number;
   getAllowedMoves(location: RealPieceLocation): Square[];
+  getBoardPiece(square: Square): IBoardPiece | null;
   isAttackedByOpponentPiece(square: Square, opponentColor: ColorEnum): boolean;
   isPawnPromotion(move: BaseMove): boolean;
   getOppositeColor(color: ColorEnum): ColorEnum;
@@ -64,16 +65,8 @@ class Boards extends React.Component<Props, State> {
     promotionMove: null
   };
 
-  areSquaresEqual(square1: Square, square2: Square): boolean {
-    return (
-      square1.board === square2.board
-      && square1.y === square2.y
-      && square1.x === square2.x
-    );
-  }
-
   isAllowed(square: Square, allowedMoves: Square[]): boolean {
-    return allowedMoves.some((allowedSquare) => this.areSquaresEqual(square, allowedSquare));
+    return allowedMoves.some((allowedSquare) => Game.areSquaresEqual(square, allowedSquare));
   }
 
   getAllowedMoves(): Square[] {
@@ -108,63 +101,63 @@ class Boards extends React.Component<Props, State> {
 
   isInCheck(square: Square): boolean {
     const {
-      boards,
+      getBoardPiece,
       getOppositeColor,
       isAttackedByOpponentPiece
     } = this.props;
-    const piece = boards[square.board][square.y][square.x];
+    const pieceInSquare = getBoardPiece(square);
 
-    if (!piece) {
+    if (!pieceInSquare) {
       return false;
     }
 
     return (
-      piece.type === PieceEnum.KING
-      && isAttackedByOpponentPiece(piece.location, getOppositeColor(piece.color))
+      pieceInSquare.type === PieceTypeEnum.KING
+      && isAttackedByOpponentPiece(pieceInSquare.location, getOppositeColor(pieceInSquare.color))
     );
   }
 
   onSquareClick = (square: Square) => {
     const {
-      boards,
       player,
       selectedPiece,
+      getBoardPiece,
       isPawnPromotion,
       selectPiece,
       sendMove
     } = this.props;
 
     if (!selectedPiece) {
-      const piece = boards[square.board][square.y][square.x];
+      const pieceInSquare = getBoardPiece(square);
 
-      if (!piece || player!.color !== piece.color) {
+      if (!pieceInSquare || player!.color !== pieceInSquare.color) {
         return;
       }
 
-      return selectPiece(piece);
+      return selectPiece(pieceInSquare);
     }
 
     if (
       selectedPiece.location.type === PieceLocationEnum.BOARD
-      && this.areSquaresEqual(square, selectedPiece.location)
+      && Game.areSquaresEqual(square, selectedPiece.location)
     ) {
       return selectPiece(null);
     }
 
     if (!this.isAllowed(square, this.getAllowedMoves())) {
-      const piece = boards[square.board][square.y][square.x];
+      const pieceInSquare = getBoardPiece(square);
 
-      if (!piece || player!.color !== piece.color) {
+      if (!pieceInSquare || player!.color !== pieceInSquare.color) {
         return;
       }
 
-      return selectPiece(piece);
+      return selectPiece(pieceInSquare);
     }
 
     const move = {
       from: selectedPiece.location,
       to: square,
-      promotion: PieceEnum.QUEEN
+      promotion: PieceTypeEnum.QUEEN
     };
 
     if (isPawnPromotion(move)) {
@@ -203,7 +196,7 @@ class Boards extends React.Component<Props, State> {
       player,
       selectedPiece,
       readOnly,
-      boards,
+      startingBoards,
       pieces,
       withLiterals,
       currentMove,
@@ -212,17 +205,17 @@ class Boards extends React.Component<Props, State> {
       showFantomPieces,
       getPrevBoard
     } = this.props;
-    const maxRank = boards[0].length - 1;
-    const maxFile = boards[0][0].length - 1;
+    const maxRank = startingBoards[0].length - 1;
+    const maxFile = startingBoards[0][0].length - 1;
     const squareSize = isAliceChess ? 45 : 70;
     const literalSize = isAliceChess ? 13 : 20;
     const literalFontSize = isAliceChess ? 10 : 16;
     const allowedMoves = this.getAllowedMoves();
-    const boardPieces = _.flatten(_.map(pieces)).filter(Game.isBoardPiece);
+    const boardPieces = pieces.filter(Game.isBoardPiece);
 
     return (
       <div className={classNames('boards', { opposite: isBlackBase })}>
-        {boards.map((board, boardNumber) => {
+        {startingBoards.map((board, boardNumber) => {
           const emptyCorner = (
             <div
               className="empty-corner"
@@ -232,7 +225,7 @@ class Boards extends React.Component<Props, State> {
           const filesElement = (
             <div className="rank">
               {(boardNumber === 0 || isBlackBase) && emptyCorner}
-              {boards[0][0].map((_piece, file) => (
+              {startingBoards[0][0].map((_piece, file) => (
                 <div
                   key={file}
                   className="file-literal"
@@ -295,7 +288,7 @@ class Boards extends React.Component<Props, State> {
                           {
                             selectedPiece
                             && selectedPiece.location.type === PieceLocationEnum.BOARD
-                            && this.areSquaresEqual(selectedPiece.location, square)
+                            && Game.areSquaresEqual(selectedPiece.location, square)
                             && (
                               <div className="selected-square" />
                             )
@@ -304,8 +297,8 @@ class Boards extends React.Component<Props, State> {
                             (
                               currentMove.from
                               && currentMove.from.type !== PieceLocationEnum.POCKET
-                              && this.areSquaresEqual(currentMove.from, square)
-                            ) || this.areSquaresEqual(currentMove.to, square)
+                              && Game.areSquaresEqual(currentMove.from, square)
+                            ) || Game.areSquaresEqual(currentMove.to, square)
                           ) && (
                             <div className="current-move-square" />
                           )}
@@ -363,7 +356,7 @@ class Boards extends React.Component<Props, State> {
           className="promotion-modal"
         >
           <div className="modal-content">
-            {[PieceEnum.QUEEN, PieceEnum.ROOK, PieceEnum.BISHOP, PieceEnum.KNIGHT].map((pieceType) => (
+            {[PieceTypeEnum.QUEEN, PieceTypeEnum.ROOK, PieceTypeEnum.BISHOP, PieceTypeEnum.KNIGHT].map((pieceType) => (
               <Piece
                 key={pieceType}
                 piece={{
