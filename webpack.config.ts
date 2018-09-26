@@ -1,7 +1,6 @@
 import * as path from 'path';
 import { Configuration } from 'webpack';
-
-const autoprefixer = require('autoprefixer');
+import autoprefixer = require('autoprefixer');
 
 const config: Configuration = {
   entry: './app/client/index.tsx',
