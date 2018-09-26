@@ -1,6 +1,8 @@
 import * as path from 'path';
 import { Configuration } from 'webpack';
 
+const autoprefixer = require('autoprefixer');
+
 const config: Configuration = {
   entry: './app/client/index.tsx',
   output: {
@@ -24,7 +26,32 @@ const config: Configuration = {
       },
       {
         test: /\.less$/,
-        use: ['style-loader', 'css-loader', 'less-loader']
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              sourseMap: true
+            }
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              plugins: [
+                autoprefixer({
+                  browsers: ['ie >= 8', 'last 4 versions']
+                })
+              ],
+              sourceMap: true
+            }
+          },
+          {
+            loader: 'less-loader',
+            options: {
+              sourceMap: true
+            }
+          }
+        ]
       },
       {
         test: /\.tsx?$/,
