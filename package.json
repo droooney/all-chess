@@ -41,6 +41,7 @@
     "@babel/core": "^7.0.0-rc.2",
     "@babel/preset-env": "^7.0.0-rc.2",
     "@babel/preset-react": "^7.0.0-rc.2",
+    "@types/autoprefixer": "^6.7.3",
     "@types/bcrypt": "^2.0.0",
     "@types/classnames": "^2.2.6",
     "@types/connect-redis": "0.0.7",
