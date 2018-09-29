@@ -26,7 +26,7 @@ export class Game extends GameHelper {
   constructor(game: IGame, socket: Socket) {
     super({
       id: game.id,
-      startingBoards: game.startingBoards,
+      startingData: game.startingData,
       timeControl: game.timeControl,
       variants: game.variants
     });

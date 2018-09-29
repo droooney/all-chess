@@ -9,7 +9,7 @@ type Props = InfoActionsChatPanelProps & BoardsProps;
 export default class LeftPanel extends React.Component<Props> {
   render() {
     return (
-      <div className={classNames('left-panel', { 'is-board-at-top': this.props.isAliceChess })}>
+      <div className={classNames('left-panel', { 'is-board-at-top': this.props.isBoardAtTop })}>
         <InfoActionsChatPanel {...this.props} />
         <Boards {...this.props} />
       </div>

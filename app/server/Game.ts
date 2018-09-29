@@ -238,11 +238,10 @@ export default class Game extends GameHelper {
         && this.isPocketUsed
       ) || (
         move.from.type === PieceLocationEnum.BOARD
-        && this.startingBoards[move.from.board]
-        && this.startingBoards[move.from.board][move.from.y]
         && typeof move.from.board === 'number'
         && typeof move.from.y === 'number'
         && typeof move.from.x === 'number'
+        && !this.isNullSquare(move.from)
       ))
     );
   }
@@ -367,7 +366,7 @@ export default class Game extends GameHelper {
   toJSON(): IGame {
     return _.pick(this, [
       'id',
-      'startingBoards',
+      'startingData',
       'variants',
       'status',
       'players',

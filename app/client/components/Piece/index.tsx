@@ -68,7 +68,7 @@ export default class Piece extends React.Component<Props> {
           <Bishop color={piece.color} />
         ) : piece.type === PieceTypeEnum.KNIGHT ? (
           <Knight color={piece.color} />
-        ) : piece.type === PieceTypeEnum.PAWN ? (
+        ) : piece.type === PieceTypeEnum.PAWN || piece.type === PieceTypeEnum.MAN ? (
           <Pawn color={piece.color} />
         ) : null}
       </svg>

@@ -12,7 +12,8 @@ export const SHORT_PIECE_NAMES: { [piece in PieceTypeEnum]: string } = {
   [PieceTypeEnum.ROOK]: 'R',
   [PieceTypeEnum.BISHOP]: 'B',
   [PieceTypeEnum.KNIGHT]: 'N',
-  [PieceTypeEnum.PAWN]: 'P'
+  [PieceTypeEnum.PAWN]: 'P',
+  [PieceTypeEnum.MAN]: 'M'
 };
 
 export const PIECE_LITERALS: { [color in ColorEnum]: { [piece in PieceTypeEnum]: string; }; } = {
@@ -22,7 +23,8 @@ export const PIECE_LITERALS: { [color in ColorEnum]: { [piece in PieceTypeEnum]:
     [PieceTypeEnum.ROOK]: '♖',
     [PieceTypeEnum.BISHOP]: '♗',
     [PieceTypeEnum.KNIGHT]: '♘',
-    [PieceTypeEnum.PAWN]: '♙'
+    [PieceTypeEnum.PAWN]: '♙',
+    [PieceTypeEnum.MAN]: '♙'
   },
   [ColorEnum.BLACK]: {
     [PieceTypeEnum.KING]: '♚',
@@ -30,7 +32,8 @@ export const PIECE_LITERALS: { [color in ColorEnum]: { [piece in PieceTypeEnum]:
     [PieceTypeEnum.ROOK]: '♜',
     [PieceTypeEnum.BISHOP]: '♝',
     [PieceTypeEnum.KNIGHT]: '♞',
-    [PieceTypeEnum.PAWN]: '♟'
+    [PieceTypeEnum.PAWN]: '♟',
+    [PieceTypeEnum.MAN]: '♟'
   }
 };
 
@@ -52,7 +55,9 @@ export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.MADRASI]: 'Madrasi',
   [GameVariantEnum.LAST_CHANCE]: 'Last chance',
   [GameVariantEnum.MONSTER_CHESS]: 'Monster chess',
-  [GameVariantEnum.ALICE_CHESS]: 'Alice chess'
+  [GameVariantEnum.ALICE_CHESS]: 'Alice chess',
+  [GameVariantEnum.TWO_FAMILIES]: 'Two families',
+  [GameVariantEnum.CHESSENCE]: 'Chessence'
 };
 
 export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {

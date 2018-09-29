@@ -15,8 +15,7 @@ import {
   PiecePocketLocation,
   Player,
   RealPiece,
-  Square,
-  StartingBoard
+  Square
 } from '../../../types';
 import { Game } from '../../helpers';
 import { ReduxState } from '../../store';
@@ -27,7 +26,9 @@ import Modal from '../Modal';
 
 export interface OwnProps {
   pieces: IPiece[];
-  startingBoards: StartingBoard[];
+  boardCount: number;
+  boardWidth: number;
+  boardHeight: number;
   player: Player | null;
   selectedPiece: RealPiece | null;
   selectPiece(piece: IPiece | null): void;
@@ -36,12 +37,15 @@ export interface OwnProps {
   getBoardPiece(square: Square): IBoardPiece | null;
   isAttackedByOpponentPiece(square: Square, opponentColor: ColorEnum): boolean;
   isPawnPromotion(move: BaseMove): boolean;
+  isVoidSquare(square: Square): boolean;
   getCenterSquareParams(square: Square): CenterSquareParams;
   sendMove(move: BaseMove): void;
   readOnly: boolean;
   withLiterals: boolean;
   isKingOfTheHill: boolean;
   isAliceChess: boolean;
+  isBoardAtTop: boolean;
+  isChessence: boolean;
   isBlackBase: boolean;
   currentMove: Move | undefined;
 }
@@ -193,26 +197,29 @@ class Boards extends React.Component<Props, State> {
       player,
       selectedPiece,
       readOnly,
-      startingBoards,
+      boardCount,
+      boardWidth,
+      boardHeight,
       pieces,
       withLiterals,
       currentMove,
+      isBoardAtTop,
       isAliceChess,
+      isChessence,
       isBlackBase,
       showFantomPieces,
+      isVoidSquare,
       getPrevBoard
     } = this.props;
-    const maxRank = startingBoards[0].length - 1;
-    const maxFile = startingBoards[0][0].length - 1;
-    const squareSize = isAliceChess ? 45 : 70;
-    const literalSize = isAliceChess ? 13 : 20;
-    const literalFontSize = isAliceChess ? 10 : 16;
+    const squareSize = isChessence ? 60 : isAliceChess ? 45 : 70;
+    const literalSize = isBoardAtTop ? 13 : 20;
+    const literalFontSize = isBoardAtTop ? 10 : 16;
     const allowedMoves = this.getAllowedMoves();
     const boardPieces = pieces.filter(Game.isBoardPiece);
 
     return (
       <div className={classNames('boards', { opposite: isBlackBase })}>
-        {startingBoards.map((board, boardNumber) => {
+        {_.times(boardCount, (board) => {
           const emptyCorner = (
             <div
               className="empty-corner"
@@ -221,8 +228,8 @@ class Boards extends React.Component<Props, State> {
           );
           const filesElement = (
             <div className="rank">
-              {(boardNumber === 0 || isBlackBase) && emptyCorner}
-              {startingBoards[0][0].map((_piece, file) => (
+              {(board === 0 || isBlackBase) && emptyCorner}
+              {_.times(boardWidth, (file) => (
                 <div
                   key={file}
                   className="file-literal"
@@ -235,14 +242,31 @@ class Boards extends React.Component<Props, State> {
                   {Game.getFileLiteral(file)}
                 </div>
               ))}
-              {(boardNumber === 0 || !isBlackBase) && emptyCorner}
+              {(board === 0 || !isBlackBase) && emptyCorner}
             </div>
           );
+          const pieces = boardPieces
+            .filter(({ location }) => location.board === board)
+            .map((piece) => ({ ...piece, isFantom: false }));
+          let fantomPieces: (IBoardPiece & { isFantom: boolean; })[] = [];
+
+          if (isAliceChess && showFantomPieces) {
+            const prevBoard = getPrevBoard(board);
+
+            fantomPieces = boardPieces
+              .filter(({ location }) => location.board === prevBoard)
+              .map((piece) => ({ ...piece, location: { ...piece.location, board }, isFantom: true }));
+          }
+
+          const allPieces = _.sortBy([
+            ...pieces,
+            ...fantomPieces
+          ], 'id');
 
           return (
-            <div key={boardNumber} className="board">
+            <div key={board} className="board">
               {withLiterals && filesElement}
-              {board.map((rank, rankY) => {
+              {_.times(boardHeight, (rankY) => {
                 const rankLiteral = (
                   <div
                     className="rank-literal"
@@ -261,10 +285,10 @@ class Boards extends React.Component<Props, State> {
                     key={rankY}
                     className="rank"
                   >
-                    {withLiterals && (boardNumber === 0 || isBlackBase) && rankLiteral}
-                    {rank.map((_piece, fileX) => {
+                    {withLiterals && (board === 0 || isBlackBase) && rankLiteral}
+                    {_.times(boardWidth, (fileX) => {
                       const square = {
-                        board: boardNumber,
+                        board,
                         x: fileX,
                         y: rankY
                       };
@@ -305,48 +329,33 @@ class Boards extends React.Component<Props, State> {
                           {this.isInCheck(square) && (
                             <div className="check-square" />
                           )}
+                          {isVoidSquare(square) && (
+                            <div className="void-square" />
+                          )}
                         </div>
                       );
                     })}
-                    {withLiterals && (boardNumber === 0 || !isBlackBase) && rankLiteral}
+                    {withLiterals && (board === 0 || !isBlackBase) && rankLiteral}
                   </div>
                 );
               })}
               {withLiterals && filesElement}
+              {allPieces.map((piece) => (
+                <BoardPiece
+                  key={piece.id}
+                  piece={piece}
+                  isBlackBase={isBlackBase}
+                  isFantom={piece.isFantom}
+                  boardWidth={boardWidth}
+                  boardHeight={boardHeight}
+                  squareSize={squareSize}
+                  literalSize={literalSize}
+                  onClick={readOnly ? undefined : this.onSquareClick}
+                />
+              ))}
             </div>
           );
         })}
-        {boardPieces.map((piece) => (
-          <BoardPiece
-            key={piece.id}
-            piece={piece}
-            isBlackBase={isBlackBase}
-            isFantom={false}
-            maxRank={maxRank}
-            maxFile={maxFile}
-            squareSize={squareSize}
-            literalSize={literalSize}
-            onClick={readOnly ? undefined : this.onSquareClick}
-          />
-        ))}
-        {isAliceChess && showFantomPieces && boardPieces.map((piece) => (
-          <BoardPiece
-            key={piece.id}
-            piece={{
-              ...piece,
-              location: {
-                ...piece.location,
-                board: getPrevBoard(piece.location.board)
-              }
-            }}
-            isBlackBase={isBlackBase}
-            isFantom
-            maxRank={maxRank}
-            maxFile={maxFile}
-            squareSize={squareSize}
-            literalSize={literalSize}
-          />
-        ))}
         <Modal
           visible={this.state.promotionModalVisible}
           onOverlayClick={this.closePromotionPopup}

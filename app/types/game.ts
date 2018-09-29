@@ -29,7 +29,8 @@ export enum PieceTypeEnum {
   ROOK = 'ROOK',
   BISHOP = 'BISHOP',
   KNIGHT = 'KNIGHT',
-  PAWN = 'PAWN'
+  PAWN = 'PAWN',
+  MAN = 'MAN'
 }
 
 export enum ColorEnum {
@@ -37,10 +38,13 @@ export enum ColorEnum {
   BLACK = 'BLACK'
 }
 
-export interface StartingPiece {
-  id: number;
-  type: PieceTypeEnum;
-  color: ColorEnum;
+export interface StartingData {
+  boardCount: number;
+  boardWidth: number;
+  boardHeight: number;
+  pieces: RealPiece[];
+  voidSquares: Square[];
+  emptySquares: Square[];
 }
 
 export interface Piece {
@@ -87,11 +91,9 @@ export type GameKings = {
   [color in ColorEnum]: Piece[];
 };
 
-export type StartingBoard = (StartingPiece | null)[][];
-
 export interface Game {
   id: string;
-  startingBoards: StartingBoard[];
+  startingData: StartingData;
   status: GameStatusEnum;
   players: GamePlayers;
   result: GameResult | null;
@@ -117,7 +119,9 @@ export enum GameVariantEnum {
   MADRASI = 'MADRASI',
   LAST_CHANCE = 'LAST_CHANCE',
   MONSTER_CHESS = 'MONSTER_CHESS',
-  ALICE_CHESS = 'ALICE_CHESS'
+  ALICE_CHESS = 'ALICE_CHESS',
+  TWO_FAMILIES = 'TWO_FAMILIES',
+  CHESSENCE = 'CHESSENCE'
 }
 
 export interface BaseMove {

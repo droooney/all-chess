@@ -136,6 +136,10 @@ export default class Game extends React.Component<Props, State> {
     return this.game!.isPawnPromotion(move);
   };
 
+  isVoidSquare = (square: Square): boolean => {
+    return this.game!.isVoidSquare(square);
+  };
+
   selectPiece = (selectedPiece: RealPiece | null) => {
     this.setState({
       selectedPiece
@@ -186,7 +190,9 @@ export default class Game extends React.Component<Props, State> {
     } else {
       const {
         status,
-        startingBoards,
+        boardCount,
+        boardWidth,
+        boardHeight,
         pieces,
         chat,
         turn,
@@ -196,6 +202,7 @@ export default class Game extends React.Component<Props, State> {
         isKingOfTheHill,
         isAliceChess,
         isMonsterChess,
+        isChessence,
         isThreefoldRepetitionDrawPossible,
         is50MoveDrawPossible,
         numberOfMovesBeforeStart,
@@ -211,12 +218,15 @@ export default class Game extends React.Component<Props, State> {
       } = this.state;
       const player = this.player;
       const isBlackBase = !!player && player.color === ColorEnum.BLACK;
+      const isBoardAtTop = isAliceChess && !isChessence;
 
       content = (
         <div className="game">
 
           <LeftPanel
-            startingBoards={startingBoards}
+            boardCount={boardCount}
+            boardWidth={boardWidth}
+            boardHeight={boardHeight}
             pieces={pieces}
             selectedPiece={
               selectedPiece
@@ -230,6 +240,7 @@ export default class Game extends React.Component<Props, State> {
             getBoardPiece={this.getBoardPiece}
             isAttackedByOpponentPiece={this.isAttackedByOpponentPiece}
             isPawnPromotion={this.isPawnPromotion}
+            isVoidSquare={this.isVoidSquare}
             selectPiece={this.selectPiece}
             sendMessage={this.sendMessage}
             offerDraw={this.offerDraw}
@@ -241,6 +252,7 @@ export default class Game extends React.Component<Props, State> {
             declare50MoveDraw={this.declare50MoveDraw}
             isBlackBase={isBlackBase}
             isKingOfTheHill={isKingOfTheHill}
+            isChessence={isChessence}
             readOnly={(
               !player
               || player.color !== turn
@@ -255,6 +267,7 @@ export default class Game extends React.Component<Props, State> {
             isThreefoldRepetitionDrawPossible={isThreefoldRepetitionDrawPossible}
             is50MoveDrawPossible={is50MoveDrawPossible}
             isAliceChess={isAliceChess}
+            isBoardAtTop={isBoardAtTop}
             drawOffer={drawOffer}
             player={player}
             withLiterals

@@ -31,6 +31,7 @@ export interface OwnProps {
   isThreefoldRepetitionDrawPossible: boolean;
   is50MoveDrawPossible: boolean;
   isAliceChess: boolean;
+  isBoardAtTop: boolean;
   drawOffer: ColorEnum | null;
   player: Player | null;
   offerDraw(): void;
@@ -134,6 +135,7 @@ class InfoActionsChatPanel extends React.Component<Props, State> {
       isThreefoldRepetitionDrawPossible,
       is50MoveDrawPossible,
       isAliceChess,
+      isBoardAtTop,
       drawOffer,
       player,
       showFantomPieces,
@@ -191,7 +193,7 @@ class InfoActionsChatPanel extends React.Component<Props, State> {
     }
 
     return (
-      <div className={classNames('info-actions-chat-panel', { 'is-bottom': isAliceChess })}>
+      <div className={classNames('info-actions-chat-panel', { 'is-bottom': isBoardAtTop })}>
 
         <div className="info-action-panel">
 

@@ -12,8 +12,8 @@ interface OwnProps {
   piece: IBoardPiece;
   isBlackBase: boolean;
   isFantom: boolean;
-  maxRank: number;
-  maxFile: number;
+  boardWidth: number;
+  boardHeight: number;
   literalSize: number;
   squareSize: number;
   onClick?(location: PieceBoardLocation): void;
@@ -45,16 +45,16 @@ export default class BoardPiece extends React.Component<Props> {
       isFantom,
       literalSize,
       squareSize,
-      maxFile,
-      maxRank,
+      boardWidth,
+      boardHeight,
       onClick
     } = this.props;
     const x = isBlackBase
-      ? maxFile - pieceX
+      ? boardWidth - 1 - pieceX
       : pieceX;
     const y = isBlackBase
       ? pieceY
-      : maxRank - pieceY;
+      : boardHeight - 1 - pieceY;
 
     return (
       <div
@@ -62,7 +62,7 @@ export default class BoardPiece extends React.Component<Props> {
         style={{
           width: squareSize,
           height: squareSize,
-          left: x * squareSize + literalSize + (literalSize + (maxFile + 1) * squareSize) * pieceBoard,
+          left: x * squareSize + (pieceBoard ? 0 : literalSize),
           top: y * squareSize + literalSize
         }}
       >
