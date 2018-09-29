@@ -1111,7 +1111,7 @@ export class Game implements IGame {
           const pieceOnTheNextAfterNextBoard = this.getBoardPiece(nextAfterNextBoardSquare);
 
           // don't allow move to the next board if the square there or on the next board is occupied by another piece
-          if (pieceOnTheNextBoard || pieceOnTheNextAfterNextBoard) {
+          if (pieceOnTheNextBoard || (pieceOnTheNextAfterNextBoard && pieceOnTheNextAfterNextBoard.id !== disappearedOrMovedPiece.id)) {
             removePieceOrMoveToOpponentPocket(disappearedOrMovedPiece);
           } else {
             disappearedOrMovedPiece.location = nextBoardSquare;
