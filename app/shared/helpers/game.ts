@@ -305,7 +305,7 @@ export class Game implements IGame {
     const boardWidth = 8;
     const boardHeight = 8;
     const pieces: RealPiece[] = [];
-    const pieceTypes = _.times(8, () => PieceTypeEnum.QUEEN);
+    const pieceTypes: PieceTypeEnum[] = _.times(8, () => null!);
     const darkColoredBishopPosition = 2 * Math.floor(4 * Math.random());
     const lightColoredBishopPosition = 2 * Math.floor(4 * Math.random()) + 1;
 
