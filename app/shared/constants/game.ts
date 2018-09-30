@@ -57,7 +57,8 @@ export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.MONSTER_CHESS]: 'Monster chess',
   [GameVariantEnum.ALICE_CHESS]: 'Alice chess',
   [GameVariantEnum.TWO_FAMILIES]: 'Two families',
-  [GameVariantEnum.CHESSENCE]: 'Chessence'
+  [GameVariantEnum.CHESSENCE]: 'Chessence',
+  [GameVariantEnum.HORDE]: 'Horde'
 };
 
 export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
@@ -65,6 +66,7 @@ export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
   [ResultReasonEnum.KING_IN_THE_CENTER]: 'king in the center',
   [ResultReasonEnum.KING_EXPLODED]: 'king exploded',
   [ResultReasonEnum.KING_CAPTURED]: 'king captured',
+  [ResultReasonEnum.HORDE_DESTROYED]: 'horde destroyed',
   [ResultReasonEnum.STALEMATE]: 'stalemate',
   [ResultReasonEnum.TIME_RAN_OUT]: 'opponent\'s time ran out',
   [ResultReasonEnum.RESIGN]: 'opponent resigned',
