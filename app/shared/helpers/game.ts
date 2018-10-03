@@ -113,9 +113,6 @@ export class Game implements IGame {
         && !_.includes(variants, GameVariantEnum.HORDE)
       )
     ) && (
-      !_.includes(variants, GameVariantEnum.TWO_FAMILIES)
-      || !_.includes(variants, GameVariantEnum.CHESS_960)
-    ) && (
       !_.includes(variants, GameVariantEnum.CHESSENCE)
       || (
         !_.includes(variants, GameVariantEnum.CHESS_960)
@@ -138,48 +135,6 @@ export class Game implements IGame {
       )
     ));
   }
-
-  static classicStartingData = (() => {
-    let id = 0;
-    const boardWidth = 8;
-    const boardHeight = 8;
-    const pieces: RealPiece[] = [];
-
-    [ColorEnum.WHITE, ColorEnum.BLACK].forEach((color) => {
-      const pieceRankY = color === ColorEnum.WHITE ? 0 : boardHeight - 1;
-      const pawnRankY = color === ColorEnum.WHITE ? 1 : boardHeight - 2;
-      const getPiece = (type: PieceTypeEnum, x: number, y: number): BoardPiece => ({
-        id: ++id,
-        type,
-        originalType: type,
-        color,
-        moved: false,
-        location: {
-          type: PieceLocationEnum.BOARD,
-          board: 0,
-          x,
-          y
-        }
-      });
-
-      CLASSIC_PIECE_PLACEMENT.forEach((type, x) => {
-        pieces.push(getPiece(type, x, pieceRankY));
-      });
-
-      _.times(boardWidth, (x) => {
-        pieces.push(getPiece(PieceTypeEnum.PAWN, x, pawnRankY));
-      });
-    });
-
-    return {
-      boardCount: 1,
-      boardWidth,
-      boardHeight,
-      pieces,
-      voidSquares: [],
-      emptySquares: []
-    };
-  })();
 
   static chessenceStartingMenSquares = (() => {
     const whiteMenStartingCoordinates = [
@@ -313,104 +268,74 @@ export class Game implements IGame {
     };
   })();
 
-  static startingData10by8 = (() => {
+  static generateClassicStartingData(boardWidth: number, boardHeight: number, isRandom: boolean): StartingData {
     let id = 0;
-    const boardWidth = 10;
-    const boardHeight = 8;
-    const pieces: RealPiece[] = [];
-    const pieceTypes = [
-      ...CLASSIC_PIECE_PLACEMENT.slice(0, 4),
-      PieceTypeEnum.KING,
-      PieceTypeEnum.QUEEN,
-      ...CLASSIC_PIECE_PLACEMENT.slice(4)
-    ];
+    let pieceTypes: PieceTypeEnum[];
 
-    [ColorEnum.WHITE, ColorEnum.BLACK].forEach((color) => {
-      const pieceRankY = color === ColorEnum.WHITE ? 0 : boardHeight - 1;
-      const pawnRankY = color === ColorEnum.WHITE ? 1 : boardHeight - 2;
-      const getPiece = (type: PieceTypeEnum, x: number, y: number): BoardPiece => ({
-        id: ++id,
-        type,
-        originalType: type,
-        color,
-        moved: false,
-        location: {
-          type: PieceLocationEnum.BOARD,
-          board: 0,
-          x,
-          y
-        }
-      });
+    if (isRandom) {
+      pieceTypes = _.times(boardWidth, () => null!);
 
-      pieceTypes.forEach((type, x) => {
-        pieces.push(getPiece(type, x, pieceRankY));
-      });
+      const halfBoard = Math.round(boardWidth / 2);
+      const darkColoredBishopPosition = 2 * Math.floor(halfBoard * Math.random());
+      const lightColoredBishopPosition = 2 * Math.floor(halfBoard * Math.random()) + 1;
 
-      _.times(boardWidth, (x) => {
-        pieces.push(getPiece(PieceTypeEnum.PAWN, x, pawnRankY));
-      });
-    });
+      pieceTypes[darkColoredBishopPosition] = PieceTypeEnum.BISHOP;
+      pieceTypes[lightColoredBishopPosition] = PieceTypeEnum.BISHOP;
 
-    return {
-      boardCount: 1,
-      boardWidth,
-      boardHeight,
-      pieces,
-      voidSquares: [],
-      emptySquares: []
-    };
-  })();
+      const placePiece = (type: PieceTypeEnum, position: number) => {
+        let currentPosition = 0;
 
-  static generateStarting960Data(): StartingData {
-    let id = 0;
-    const boardWidth = 8;
-    const boardHeight = 8;
-    const pieces: RealPiece[] = [];
-    const pieceTypes: PieceTypeEnum[] = _.times(8, () => null!);
-    const darkColoredBishopPosition = 2 * Math.floor(4 * Math.random());
-    const lightColoredBishopPosition = 2 * Math.floor(4 * Math.random()) + 1;
+        pieceTypes.some((piece, ix) => {
+          if (!piece && currentPosition++ === position) {
+            pieceTypes[ix] = type;
 
-    pieceTypes[darkColoredBishopPosition] = PieceTypeEnum.BISHOP;
-    pieceTypes[lightColoredBishopPosition] = PieceTypeEnum.BISHOP;
+            return true;
+          }
 
-    const placePiece = (type: PieceTypeEnum, position: number) => {
-      let currentPosition = 0;
+          return false;
+        });
+      };
+
+      placePiece(PieceTypeEnum.QUEEN, Math.floor((boardWidth - 2) * Math.random()));
+      placePiece(PieceTypeEnum.KNIGHT, Math.floor((boardWidth - 3) * Math.random()));
+      placePiece(PieceTypeEnum.KNIGHT, Math.floor((boardWidth - 4) * Math.random()));
+
+      if (boardWidth === 10) {
+        placePiece(PieceTypeEnum.QUEEN, Math.floor((boardWidth - 5) * Math.random()));
+      }
+
+      const restPieces = [PieceTypeEnum.ROOK, PieceTypeEnum.KING, PieceTypeEnum.ROOK];
+
+      if (boardWidth === 10) {
+        restPieces.splice(1, 0, PieceTypeEnum.KING);
+      }
+
+      let placedPieces = 0;
 
       pieceTypes.some((piece, ix) => {
-        if (!piece && currentPosition++ === position) {
-          pieceTypes[ix] = type;
+        if (!piece) {
+          pieceTypes[ix] = restPieces[placedPieces++];
 
-          return true;
+          if (placedPieces === restPieces.length) {
+            return true;
+          }
         }
 
         return false;
       });
-    };
-    const queenPositionNumber = Math.floor(6 * Math.random());
-    const knight1PositionNumber = Math.floor(5 * Math.random());
-    const knight2PositionNumber = Math.floor(4 * Math.random());
+    } else if (boardWidth === 10) {
+      pieceTypes = [
+        ...CLASSIC_PIECE_PLACEMENT.slice(0, 4),
+        PieceTypeEnum.KING,
+        PieceTypeEnum.QUEEN,
+        ...CLASSIC_PIECE_PLACEMENT.slice(4)
+      ];
+    } else {
+      pieceTypes = CLASSIC_PIECE_PLACEMENT;
+    }
 
-    placePiece(PieceTypeEnum.QUEEN, queenPositionNumber);
-    placePiece(PieceTypeEnum.KNIGHT, knight1PositionNumber);
-    placePiece(PieceTypeEnum.KNIGHT, knight2PositionNumber);
-
-    const restPieces = [PieceTypeEnum.ROOK, PieceTypeEnum.KING, PieceTypeEnum.ROOK];
-    let placedPieces = 0;
-
-    pieceTypes.some((piece, ix) => {
-      if (!piece) {
-        pieceTypes[ix] = restPieces[placedPieces++];
-
-        if (placedPieces === restPieces.length) {
-          return true;
-        }
-      }
-
-      return false;
-    });
     /*
-    // for tests
-    const pieceTypes = [
+    pieceTypes = [
       PieceTypeEnum.QUEEN,
       PieceTypeEnum.ROOK,
       PieceTypeEnum.KING,
@@ -421,6 +346,8 @@ export class Game implements IGame {
       PieceTypeEnum.KNIGHT
     ];
     */
+
+    const pieces: RealPiece[] = [];
 
     [ColorEnum.WHITE, ColorEnum.BLACK].forEach((color) => {
       const pieceRankY = color === ColorEnum.WHITE ? 0 : boardHeight - 1;
@@ -461,16 +388,18 @@ export class Game implements IGame {
   static getStartingData(settings: GameCreateSettings): StartingData {
     let startingData: StartingData;
 
-    if (_.includes(settings.variants, GameVariantEnum.CHESS_960)) {
-      startingData = this.generateStarting960Data();
-    } else if (_.includes(settings.variants, GameVariantEnum.TWO_FAMILIES)) {
-      startingData = this.startingData10by8;
-    } else if (_.includes(settings.variants, GameVariantEnum.CHESSENCE)) {
+    if (_.includes(settings.variants, GameVariantEnum.CHESSENCE)) {
       startingData = this.chessenceStartingData;
     } else if (_.includes(settings.variants, GameVariantEnum.HORDE)) {
       startingData = this.hordeStartingData;
     } else {
-      startingData = this.classicStartingData;
+      startingData = this.generateClassicStartingData(
+        _.includes(settings.variants, GameVariantEnum.TWO_FAMILIES)
+          ? 10
+          : 8,
+        8,
+        _.includes(settings.variants, GameVariantEnum.CHESS_960)
+      );
     }
 
     startingData = { ...startingData };
