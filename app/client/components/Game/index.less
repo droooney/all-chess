@@ -10,12 +10,27 @@
   }
 
   .game {
-    .flex(center);
+    display: grid;
+    grid-column-gap: 20px;
+    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-rows: 120px auto;
+    grid-template-areas:
+      "info-actions boards right-panel"
+      "chat boards right-panel";
+
+    &.top-boards-grid {
+      grid-template-columns: 1fr 2fr 1fr;
+      grid-template-rows: auto;
+      grid-template-areas:
+        "boards boards right-panel"
+        "info-actions chat right-panel";
+    }
 
     .boards {
-      .flex();
+      grid-area: boards;
+      justify-self: center;
 
-      margin-left: 20px;
+      .flex();
 
       &.opposite {
         .board {
@@ -174,183 +189,138 @@
       }
     }
 
-    .info-actions-chat-panel {
-      &:not(.is-bottom) {
+    .info-actions-panel {
+      grid-area: info-actions;
+      justify-self: center;
+      width: 250px;
+      height: 180px;
+
+      .variants {
+        .variants-header {
+          margin-left: 10px;
+        }
+
+        padding: 3px 8px;
+        max-height: 100px;
+        overflow-y: auto;
+
+        .variant {
+          font-weight: bold;
+          color: green;
+        }
+      }
+
+      .actions {
         .flex-col-stretch();
 
-        width: 250px;
+        .buttons {
+          .flex-stretch();
 
-        .info-action-panel {
-          margin-bottom: 10px;
-        }
+          @button-size: 40px;
 
-        .chat {
-          height: 400px;
-        }
-      }
-
-      &.is-bottom {
-        .flex-stretch();
-
-        height: 180px;
-
-        .info-action-panel {
-          margin-right: 20px;
-        }
-
-        .chat {
-          .flex-child();
-        }
-      }
-
-      .info-action-panel {
-        width: 250px;
-        height: 180px;
-
-        .variants {
-          .variants-header {
-            margin-left: 10px;
-          }
-
-          padding: 3px 8px;
-          max-height: 100px;
-          overflow-y: auto;
-
-          .variant {
-            font-weight: bold;
-            color: green;
-          }
-        }
-
-        .actions {
-          .flex-col-stretch();
-
-          .buttons {
-            .flex-stretch();
-
-            @button-size: 40px;
-
-            .button {
-              .flex();
-
-              line-height: @button-size;
-              width: @button-size;
-              height: @button-size;
-              font-size: 25px;
-              cursor: pointer;
-              margin: 5px;
-              background-color: rgba(0,0,0,0);
-
-              &.enabled {
-                background-color: #0c0;
-              }
-
-              &.disabled {
-                cursor: not-allowed;
-                opacity: 0.25;
-              }
-
-              &:not(.disabled) {
-                &:hover {
-                  background-color: rgba(0,0,0,0.2);
-                }
-              }
-            }
-          }
-
-          .action {
+          .button {
             .flex();
 
-            text-align: center;
-          }
-
-          .fa-check,
-          .fa-times {
+            line-height: @button-size;
+            width: @button-size;
+            height: @button-size;
+            font-size: 25px;
             cursor: pointer;
-            margin-left: 5px;
-          }
+            margin: 5px;
+            background-color: rgba(0,0,0,0);
 
-          .fa-check {
-            color: green;
-          }
-
-          .fa-times {
-            color: red;
-          }
-        }
-
-        .result {
-          text-align: center;
-        }
-      }
-
-      .chat {
-        .flex-col-stretch();
-
-        border: 1px solid black;
-
-        .header {
-          .flex-child-fixed();
-          .flex();
-
-          padding: 5px 0;
-          border-bottom: 1px solid black;
-        }
-
-        .messages {
-          .flex-child();
-
-          width: 100%;
-          overflow: auto;
-          -webkit-overflow-scrolling: touch;
-          padding: 10px;
-
-          .message {
-            width: 100%;
-
-            .login {
-              font-weight: bold;
-              margin-right: 10px;
-              color: green;
+            &.enabled {
+              background-color: #0c0;
             }
 
-            &.system {
-              .login {
-                color: red;
+            &.disabled {
+              cursor: not-allowed;
+              opacity: 0.25;
+            }
+
+            &:not(.disabled) {
+              &:hover {
+                background-color: rgba(0,0,0,0.2);
               }
             }
           }
         }
 
-        .new-message-input {
-          .flex-child-fixed();
+        .action {
+          .flex();
+
+          text-align: center;
         }
+
+        .fa-check,
+        .fa-times {
+          cursor: pointer;
+          margin-left: 5px;
+        }
+
+        .fa-check {
+          color: green;
+        }
+
+        .fa-times {
+          color: red;
+        }
+      }
+
+      .result {
+        text-align: center;
       }
     }
 
-    .left-panel {
-      display: flex;
-      margin-right: 20px;
+    .chat {
+      grid-area: chat;
 
-      &:not(.is-board-at-top) {
-        flex-direction: row;
+      .flex-col-stretch();
+
+      border: 1px solid black;
+
+      .header {
+        .flex-child-fixed();
+        .flex();
+
+        padding: 5px 0;
+        border-bottom: 1px solid black;
       }
 
-      &.is-board-at-top {
-        flex-direction: column;
+      .messages {
+        .flex-child();
 
-        .info-actions-chat-panel {
-          order: 2;
-        }
+        width: 100%;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 10px;
 
-        .boards {
-          margin-left: unset;
-          margin-bottom: 20px;
+        .message {
+          width: 100%;
+
+          .login {
+            font-weight: bold;
+            margin-right: 10px;
+            color: green;
+          }
+
+          &.system {
+            .login {
+              color: red;
+            }
+          }
         }
+      }
+
+      .new-message-input {
+        .flex-child-fixed();
       }
     }
 
     .right-panel {
+      grid-area: right-panel;
+      justify-self: center;
+
       .flex-col();
 
       align-items: flex-start;

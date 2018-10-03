@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import io = require('socket.io-client');
+import classNames = require('classnames');
 
 import {
   BaseMove,
@@ -18,8 +19,10 @@ import {
 } from '../../../types';
 import { Game as GameHelper } from '../../helpers';
 
-import LeftPanel from '../LeftPanel';
 import RightPanel from '../RightPanel';
+import InfoActionsPanel from '../InfoActionsPanel';
+import Chat from '../Chat';
+import Boards from '../Boards';
 
 import './index.less';
 
@@ -221,28 +224,17 @@ export default class Game extends React.Component<Props, State> {
       const isBoardAtTop = isAliceChess && !isChessence;
 
       content = (
-        <div className="game">
+        <div className={classNames('game', { 'top-boards-grid': isBoardAtTop })}>
 
-          <LeftPanel
-            boardCount={boardCount}
-            boardWidth={boardWidth}
-            boardHeight={boardHeight}
-            pieces={pieces}
-            selectedPiece={
-              selectedPiece
-                ? selectedPiece
-                : null
-            }
-            sendMove={this.sendMove}
-            getAllowedMoves={this.getAllowedMoves}
-            getCenterSquareParams={this.getCenterSquareParams}
-            getPrevBoard={this.getPrevBoard}
-            getBoardPiece={this.getBoardPiece}
-            isAttackedByOpponentPiece={this.isAttackedByOpponentPiece}
-            isPawnPromotion={this.isPawnPromotion}
-            isVoidSquare={this.isVoidSquare}
-            selectPiece={this.selectPiece}
-            sendMessage={this.sendMessage}
+          <InfoActionsPanel
+            result={result}
+            variants={variants}
+            players={players}
+            isThreefoldRepetitionDrawPossible={isThreefoldRepetitionDrawPossible}
+            is50MoveDrawPossible={is50MoveDrawPossible}
+            isAliceChess={isAliceChess}
+            drawOffer={drawOffer}
+            player={player}
             offerDraw={this.offerDraw}
             acceptDraw={this.acceptDraw}
             cancelDraw={this.cancelDraw}
@@ -250,27 +242,46 @@ export default class Game extends React.Component<Props, State> {
             resign={this.resign}
             declareThreefoldRepetitionDraw={this.declareThreefoldRepetitionDraw}
             declare50MoveDraw={this.declare50MoveDraw}
-            isBlackBase={isBlackBase}
-            isKingOfTheHill={isKingOfTheHill}
-            isChessence={isChessence}
+          />
+
+          <Chat
+            chat={chat}
+            sendMessage={this.sendMessage}
+          />
+
+          <Boards
+            pieces={pieces}
+            boardCount={boardCount}
+            boardWidth={boardWidth}
+            boardHeight={boardHeight}
+            player={player}
+            selectedPiece={
+              selectedPiece
+                ? selectedPiece
+                : null
+            }
+            selectPiece={this.selectPiece}
+            getPrevBoard={this.getPrevBoard}
+            getAllowedMoves={this.getAllowedMoves}
+            getBoardPiece={this.getBoardPiece}
+            isAttackedByOpponentPiece={this.isAttackedByOpponentPiece}
+            isPawnPromotion={this.isPawnPromotion}
+            isVoidSquare={this.isVoidSquare}
+            getCenterSquareParams={this.getCenterSquareParams}
+            sendMove={this.sendMove}
             readOnly={(
               !player
               || player.color !== turn
               || status !== GameStatusEnum.ONGOING
               || currentMoveIndex + 1 !== moves.length
             )}
-            currentMove={moves[currentMoveIndex]}
-            chat={chat}
-            result={result}
-            variants={variants}
-            players={players}
-            isThreefoldRepetitionDrawPossible={isThreefoldRepetitionDrawPossible}
-            is50MoveDrawPossible={is50MoveDrawPossible}
+            withLiterals
+            isKingOfTheHill={isKingOfTheHill}
             isAliceChess={isAliceChess}
             isBoardAtTop={isBoardAtTop}
-            drawOffer={drawOffer}
-            player={player}
-            withLiterals
+            isChessence={isChessence}
+            isBlackBase={isBlackBase}
+            currentMove={moves[currentMoveIndex]}
           />
 
           <RightPanel

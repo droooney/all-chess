@@ -6,7 +6,6 @@ import {
   changeSettings
 } from '../../actions';
 import {
-  ChatMessage,
   ColorEnum,
   GamePlayers,
   GameResult,
@@ -20,18 +19,15 @@ import {
 } from '../../../shared/constants';
 import { ReduxState } from '../../store';
 
-import Chat from '../Chat';
 import Dialog from '../Dialog';
 
 export interface OwnProps {
   result: GameResult | null;
   variants: GameVariantEnum[];
   players: GamePlayers;
-  chat: ChatMessage[];
   isThreefoldRepetitionDrawPossible: boolean;
   is50MoveDrawPossible: boolean;
   isAliceChess: boolean;
-  isBoardAtTop: boolean;
   drawOffer: ColorEnum | null;
   player: Player | null;
   offerDraw(): void;
@@ -41,7 +37,6 @@ export interface OwnProps {
   resign(): void;
   declareThreefoldRepetitionDraw(): void;
   declare50MoveDraw(): void;
-  sendMessage(message: string): void;
 }
 
 interface State {
@@ -50,7 +45,7 @@ interface State {
 
 type Props = OwnProps & ReturnType<typeof mapStateToProps> & DispatchProps;
 
-class InfoActionsChatPanel extends React.Component<Props, State> {
+class InfoActionsPanel extends React.Component<Props, State> {
   state: State = {
     resignModalVisible: false
   };
@@ -129,17 +124,14 @@ class InfoActionsChatPanel extends React.Component<Props, State> {
 
   render() {
     const {
-      chat,
       variants,
       result,
       isThreefoldRepetitionDrawPossible,
       is50MoveDrawPossible,
       isAliceChess,
-      isBoardAtTop,
       drawOffer,
       player,
-      showFantomPieces,
-      sendMessage
+      showFantomPieces
     } = this.props;
     const buttons: JSX.Element[] = [];
 
@@ -193,9 +185,9 @@ class InfoActionsChatPanel extends React.Component<Props, State> {
     }
 
     return (
-      <div className={classNames('info-actions-chat-panel', { 'is-bottom': isBoardAtTop })}>
+      <React.Fragment>
 
-        <div className="info-action-panel">
+        <div className="info-actions-panel">
 
           {!!variants.length && (
             <div className="variants">
@@ -261,11 +253,6 @@ class InfoActionsChatPanel extends React.Component<Props, State> {
 
         </div>
 
-        <Chat
-          chat={chat}
-          sendMessage={sendMessage}
-        />
-
         <Dialog
           visible={this.state.resignModalVisible}
           onOverlayClick={this.closeResignModal}
@@ -277,7 +264,7 @@ class InfoActionsChatPanel extends React.Component<Props, State> {
           onChoose={this.resign}
         />
 
-      </div>
+      </React.Fragment>
     );
   }
 }
@@ -288,4 +275,4 @@ function mapStateToProps(state: ReduxState) {
   };
 }
 
-export default connect(mapStateToProps)(InfoActionsChatPanel);
+export default connect(mapStateToProps)(InfoActionsPanel);
