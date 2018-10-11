@@ -12,18 +12,24 @@
   .game {
     display: grid;
     grid-column-gap: 20px;
-    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-columns: 300px auto 250px;
     grid-template-rows: 120px auto;
     grid-template-areas:
       "info-actions boards right-panel"
       "chat boards right-panel";
 
     &.top-boards-grid {
-      grid-template-columns: 1fr 2fr 1fr;
+      grid-row-gap: 15px;
+      grid-template-columns: 1fr 2fr 250px;
       grid-template-rows: auto;
       grid-template-areas:
         "boards boards right-panel"
-        "info-actions chat right-panel";
+        "info-actions chat .";
+
+      .chat {
+        height: 200px;
+        width: 500px;
+      }
     }
 
     .boards {
@@ -85,7 +91,7 @@
       }
 
       .board {
-        .flex-col();
+       .flex-col();
 
         position: relative;
         flex-direction: column-reverse;
@@ -193,7 +199,6 @@
       grid-area: info-actions;
       justify-self: center;
       width: 250px;
-      height: 180px;
 
       .variants {
         .variants-header {
@@ -274,6 +279,8 @@
 
     .chat {
       grid-area: chat;
+      min-height: 200px;
+      max-height: 500px;
 
       .flex-col-stretch();
 
@@ -296,12 +303,24 @@
         padding: 10px;
 
         .message {
+          display: flex;
           width: 100%;
+          margin-bottom: 2px;
 
           .login {
             font-weight: bold;
+            margin-top: 2px;
             margin-right: 10px;
             color: green;
+          }
+
+          .content {
+            word-wrap: break-word;
+            width: calc(100% - 30px);
+          }
+
+          &:last-child {
+            margin-bottom: 0;
           }
 
           &.system {
