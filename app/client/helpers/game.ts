@@ -269,26 +269,22 @@ export class Game extends GameHelper {
 
     this.turn = this.getNextTurn();
     this.pieces = move.pieces;
+    this.visiblePieces[this.darkChessMode!] = move.pieces as any;
 
     return () => {
       this.turn = oldTurn;
       this.pieces = oldPieces;
+      this.visiblePieces[this.darkChessMode!] = oldPieces as any;
     };
   }
 
   registerLocalDarkChessMove(move: DarkChessMove) {
-    const oldPieces = this.pieces;
-    const oldTurn = this.turn;
-    const revertableMove = {
-      ...move,
-      revertMove: () => {
-        this.turn = oldTurn;
-        this.pieces = oldPieces;
-      }
-    };
+    const revertMove = this.performDarkChessMove(move);
 
-    this.performDarkChessMove(move);
-    this.colorMoves[this.darkChessMode!].push(revertableMove);
+    this.colorMoves[this.darkChessMode!].push({
+      ...move,
+      revertMove
+    });
   }
 
   revertAnyMove() {
