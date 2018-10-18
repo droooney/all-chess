@@ -15,6 +15,9 @@ import {
   ResultReasonEnum,
   TimeControlEnum
 } from '../types';
+import {
+  sessionMiddleware
+} from './controllers/session';
 import { Game as GameHelper } from '../shared/helpers';
 import {
   COLOR_NAMES,
@@ -84,138 +87,167 @@ export default class Game extends GameHelper {
 
     this.io = io;
 
-    io.on('connection', (socket) => {
-      const user = socket.user;
-      const existingPlayer = (user && _.find(this.players, (player) => player && player.login === user.login)) || null;
-      const isNewPlayer = (
-        !existingPlayer
-        && user
-        && this.status === GameStatusEnum.BEFORE_START
-        && _.some(this.players, (player) => !player)
-      );
-      let player: Player | null = null;
+    io.use(async (socket, next) => {
+      try {
+        await sessionMiddleware(socket.request, socket.request.res);
 
-      if (isNewPlayer) {
-        const otherPlayer = _.find(this.players, Boolean);
-        const color = otherPlayer
-          ? Game.getOppositeColor(otherPlayer.color)
-          : Math.random() > 0.5
-            ? ColorEnum.WHITE
-            : ColorEnum.BLACK;
+        const user = socket.request.session
+          ? socket.request.session.user || null
+          : null;
 
-        player = {
-          ...socket.user!,
-          color,
-          time: this.timeControl && this.timeControl.base
-        };
+        const existingPlayer = (user && _.find(this.players, (player) => player && player.login === user.login)) || null;
+        const isNewPlayer = (
+          !existingPlayer
+          && user
+          && this.status === GameStatusEnum.BEFORE_START
+          && _.some(this.players, (player) => !player)
+        );
+        const isOngoingDarkChessGame = this.isDarkChess && this.status !== GameStatusEnum.FINISHED;
+        let player: Player | null = null;
 
-        this.players[player.color] = player!;
+        if (isNewPlayer) {
+          const otherPlayer = _.find(this.players, Boolean);
+          const color = otherPlayer
+            ? Game.getOppositeColor(otherPlayer.color)
+            : Math.random() > 0.5
+              ? ColorEnum.WHITE
+              : ColorEnum.BLACK;
 
-        if (otherPlayer) {
-          this.status = GameStatusEnum.ONGOING;
+          player = {
+            ...user,
+            color,
+            time: this.timeControl && this.timeControl.base
+          };
 
-          socket.broadcast.emit('startGame', this.players);
-        }
-      } else {
-        player = existingPlayer;
-      }
+          this.players[player!.color] = player!;
 
-      if (player) {
-        const {
-          color: playerColor
-        } = player!;
+          if (otherPlayer) {
+            this.status = GameStatusEnum.ONGOING;
 
-        socket.on('resign', () => {
-          if (this.status === GameStatusEnum.ONGOING) {
-            this.end(Game.getOppositeColor(playerColor), ResultReasonEnum.RESIGN);
+            socket.broadcast.emit('startGame', this.players);
           }
-        });
+        } else {
+          player = existingPlayer;
+        }
 
-        socket.on('offerDraw', () => {
-          if (this.drawOffer) {
-            if (this.drawOffer !== playerColor) {
+        if (player) {
+          const {
+            color: playerColor
+          } = player!;
+
+          socket.on('resign', () => {
+            if (this.status === GameStatusEnum.ONGOING) {
+              this.end(Game.getOppositeColor(playerColor), ResultReasonEnum.RESIGN);
+            }
+          });
+
+          socket.on('offerDraw', () => {
+            if (this.drawOffer) {
+              if (this.drawOffer !== playerColor) {
+                this.drawOffer = null;
+
+                this.end(null, ResultReasonEnum.AGREED_TO_DRAW);
+              }
+            } else {
+              this.drawOffer = playerColor;
+
+              this.addChatMessage({
+                login: null,
+                message: `${COLOR_NAMES[playerColor]} offered a draw`
+              });
+              this.io.emit('drawOffered', this.drawOffer);
+            }
+          });
+
+          socket.on('drawAccepted', () => {
+            if (this.drawOffer && this.drawOffer !== playerColor) {
               this.drawOffer = null;
 
               this.end(null, ResultReasonEnum.AGREED_TO_DRAW);
             }
-          } else {
-            this.drawOffer = playerColor;
+          });
 
-            this.addChatMessage({
-              login: null,
-              message: `${COLOR_NAMES[playerColor]} offered a draw`
-            });
-            this.io.emit('drawOffered', this.drawOffer);
-          }
-        });
+          socket.on('drawDeclined', () => {
+            if (this.drawOffer && this.drawOffer !== playerColor) {
+              this.drawOffer = null;
 
-        socket.on('drawAccepted', () => {
-          if (this.drawOffer && this.drawOffer !== playerColor) {
-            this.drawOffer = null;
+              this.addChatMessage({
+                login: null,
+                message: 'Draw offer declined'
+              });
+              this.io.emit('drawDeclined');
+            }
+          });
 
-            this.end(null, ResultReasonEnum.AGREED_TO_DRAW);
-          }
-        });
+          socket.on('drawCanceled', () => {
+            if (this.drawOffer === playerColor) {
+              this.drawOffer = null;
 
-        socket.on('drawDeclined', () => {
-          if (this.drawOffer && this.drawOffer !== playerColor) {
-            this.drawOffer = null;
+              this.addChatMessage({
+                login: null,
+                message: 'Draw offer canceled'
+              });
+              this.io.emit('drawCanceled');
+            }
+          });
 
-            this.addChatMessage({
-              login: null,
-              message: 'Draw offer declined'
-            });
-            this.io.emit('drawDeclined');
-          }
-        });
+          socket.on('declareThreefoldRepetitionDraw', () => {
+            if (this.isThreefoldRepetitionDrawPossible) {
+              this.end(null, ResultReasonEnum.THREEFOLD_REPETITION);
+            }
+          });
 
-        socket.on('drawCanceled', () => {
-          if (this.drawOffer === playerColor) {
-            this.drawOffer = null;
+          socket.on('declare50MoveDraw', () => {
+            if (this.is50MoveDrawPossible) {
+              this.end(null, ResultReasonEnum.FIFTY_MOVE_RULE);
+            }
+          });
 
-            this.addChatMessage({
-              login: null,
-              message: 'Draw offer canceled'
-            });
-            this.io.emit('drawCanceled');
-          }
-        });
+          socket.on('makeMove', (move) => {
+            if (this.turn === playerColor && this.status === GameStatusEnum.ONGOING) {
+              this.move(player!, move);
+            }
+          });
+        } else if (isOngoingDarkChessGame) {
+          return next(new Error('DARK_CHESS_CANNOT_BE_OBSERVED'));
+        }
 
-        socket.on('declareThreefoldRepetitionDraw', () => {
-          if (this.isThreefoldRepetitionDrawPossible) {
-            this.end(null, ResultReasonEnum.THREEFOLD_REPETITION);
-          }
-        });
+        socket.player = player;
 
-        socket.on('declare50MoveDraw', () => {
-          if (this.is50MoveDrawPossible) {
-            this.end(null, ResultReasonEnum.FIFTY_MOVE_RULE);
-          }
-        });
+        const timestamp = Date.now();
 
-        socket.on('makeMove', (move) => {
-          if (this.turn === playerColor && this.status === GameStatusEnum.ONGOING) {
-            this.move(player!, move);
-          }
-        });
+        if (isOngoingDarkChessGame) {
+          socket.emit('initialDarkChessGameData', {
+            timestamp,
+            player,
+            game: {
+              ...this.toJSON(),
+              moves: this.colorMoves[player!.color]
+            }
+          });
+        } else {
+          socket.emit('initialGameData', {
+            timestamp,
+            player,
+            game: this
+          });
+        }
+
+        if (user) {
+          socket.on('addChatMessage', (message) => {
+            if (message && typeof message === 'string' && message.length < 256) {
+              this.addChatMessage({
+                login: user.login,
+                message
+              });
+            }
+          });
+        }
+      } catch (err) {
+        return next(err);
       }
 
-      socket.emit('initialGameData', {
-        timestamp: Date.now(),
-        player,
-        game: this
-      });
-
-      if (user) {
-        socket.on('addChatMessage', (message) => {
-          if (message && typeof message === 'string' && message.length < 256) {
-            this.addChatMessage({
-              login: user.login,
-              message
-            });
-          }
-        });
-      }
+      next();
     });
   }
 
@@ -300,7 +332,7 @@ export default class Game extends GameHelper {
     const prevMove = _.last(this.moves);
     const prevTurn = this.turn;
 
-    this.registerMove(move);
+    this.registerAnyMove(move);
 
     if (
       this.status === GameStatusEnum.ONGOING
@@ -315,7 +347,16 @@ export default class Game extends GameHelper {
       }
     }
 
-    this.io.emit('moveMade', move);
+    if (this.isDarkChess) {
+      _.forEach(this.io.sockets, (socket) => {
+        const socketPlayer = socket.player!;
+
+        socket.emit('darkChessMoveMade', _.last(this.colorMoves[socketPlayer.color])!);
+      });
+    } else {
+      this.io.emit('moveMade', move);
+    }
+
     this.io.emit('updatePlayers', this.players);
 
     if (
@@ -325,11 +366,6 @@ export default class Game extends GameHelper {
       && prevTurn !== this.turn
     ) {
       this.setTimeout(this.players[this.turn]);
-    } else if (
-      this.status !== GameStatusEnum.ONGOING
-      && this.timerTimeout
-    ) {
-      this.clearTimeout();
     }
   }
 
@@ -352,7 +388,11 @@ export default class Game extends GameHelper {
     super.end(winner, reason);
 
     // anything that client can't recognize
-    if (
+    if (this.isDarkChess) {
+      setTimeout(() => {
+        this.io.emit('darkChessMoves', this.moves);
+      }, 0);
+    } else if (
       reason === ResultReasonEnum.RESIGN
       || reason === ResultReasonEnum.AGREED_TO_DRAW
       || reason === ResultReasonEnum.TIME_RAN_OUT
@@ -361,6 +401,8 @@ export default class Game extends GameHelper {
     ) {
       this.io.emit('gameOver', this.result!);
     }
+
+    this.clearTimeout();
   }
 
   toJSON(): IGame {

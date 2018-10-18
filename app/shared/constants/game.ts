@@ -58,7 +58,8 @@ export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.ALICE_CHESS]: 'Alice chess',
   [GameVariantEnum.TWO_FAMILIES]: 'Two families',
   [GameVariantEnum.CHESSENCE]: 'Chessence',
-  [GameVariantEnum.HORDE]: 'Horde'
+  [GameVariantEnum.HORDE]: 'Horde',
+  [GameVariantEnum.DARK_CHESS]: 'Dark chess'
 };
 
 export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
@@ -84,6 +85,6 @@ export const COLOR_NAMES: { [color in ColorEnum]: string } = {
 };
 
 export const GAME_DEFAULT_SETTINGS: { [key in keyof GameSettings]: GameSettings[key]; } = {
-  showFantomPieces: false,
+  showFantomPieces: true,
   timeControl: null
 };

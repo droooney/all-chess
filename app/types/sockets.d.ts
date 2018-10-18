@@ -2,30 +2,31 @@ import {
   BaseMove,
   ChatMessage,
   ColorEnum,
-  Game,
+  DarkChessGameInitialData,
+  DarkChessMove,
   GameCreateSettings,
+  GameInitialData,
+  GameMinimalData,
   GamePlayers,
   GameResult,
-  Move,
-  Player
+  Move
 } from './game';
 
 declare global {
   interface SocketIOEventWithDataMap {
-    gameList: Game[];
+    gameList: GameMinimalData[];
     makeMove: BaseMove;
     moveMade: Move;
+    darkChessMoveMade: DarkChessMove;
     drawOffered: ColorEnum;
     gameOver: GameResult;
+    darkChessMoves: Move[];
     startGame: GamePlayers;
     updatePlayers: GamePlayers;
-    initialGameData: {
-      timestamp: number;
-      player: Player | null;
-      game: Game;
-    };
+    initialGameData: GameInitialData;
+    initialDarkChessGameData: DarkChessGameInitialData;
     createGame: GameCreateSettings;
-    gameCreated: Game;
+    gameCreated: GameMinimalData;
     addChatMessage: string;
     newChatMessage: ChatMessage;
   }

@@ -1,11 +1,14 @@
-import { Game } from '../../types';
+import * as _ from 'lodash';
 
-export function generateGameId(gameMap: { [gameId: string]: Game }): string {
-  let gameId: string;
+import { Game, GameMinimalData } from '../../types';
 
-  do {
-    gameId = Math.random().toString(36).slice(2);
-  } while (gameMap[gameId]);
-
-  return gameId;
+export function pickGameMinimalData(game: Game): GameMinimalData {
+  return _.pick(game, [
+    'id',
+    'status',
+    'players',
+    'result',
+    'timeControl',
+    'variants'
+  ]);
 }

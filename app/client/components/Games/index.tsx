@@ -8,7 +8,7 @@ import { ReduxState } from '../../store';
 import { Game as GameHelper } from '../../helpers';
 import {
   CorrespondenceTimeControl,
-  Game,
+  GameMinimalData,
   GameVariantEnum,
   TimeControl,
   TimeControlEnum,
@@ -41,7 +41,7 @@ type Props = RouteComponentProps<any> & ReturnType<typeof mapStateToProps> & Dis
 
 interface State {
   createGameModalVisible: boolean;
-  games: Game[];
+  games: GameMinimalData[];
   timeControl: TimeControl;
   variants: GameVariant[];
 }

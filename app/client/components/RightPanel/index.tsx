@@ -3,8 +3,8 @@ import * as React from 'react';
 import classNames = require('classnames');
 
 import {
+  AnyMove,
   ColorEnum,
-  ExtendedMove,
   GamePlayers,
   GameStatusEnum,
   Piece,
@@ -26,7 +26,7 @@ interface OwnProps {
   isPocketUsed: boolean;
   currentMoveIndex: number;
   timeControl: TimeControl;
-  moves: ExtendedMove[];
+  moves: AnyMove[];
   isBlackBase: boolean;
   isMonsterChess: boolean;
   numberOfMovesBeforeStart: number;

@@ -4,11 +4,11 @@ import { connect } from 'react-redux';
 import classNames = require('classnames');
 
 import {
+  AnyMove,
   BaseMove,
   BoardPiece as IBoardPiece,
   CenterSquareParams,
   ColorEnum,
-  Move,
   Piece as IPiece,
   PieceTypeEnum,
   PieceLocationEnum,
@@ -34,6 +34,7 @@ export interface OwnProps {
   selectPiece(piece: IPiece | null): void;
   getPrevBoard(board: number): number;
   getAllowedMoves(piece: RealPiece): Square[];
+  getVisibleSquares(): Square[];
   getBoardPiece(square: Square): IBoardPiece | null;
   isAttackedByOpponentPiece(square: Square, opponentColor: ColorEnum): boolean;
   isPawnPromotion(move: BaseMove): boolean;
@@ -44,10 +45,12 @@ export interface OwnProps {
   withLiterals: boolean;
   isKingOfTheHill: boolean;
   isAliceChess: boolean;
+  isDarkChess: boolean;
   isBoardAtTop: boolean;
   isChessence: boolean;
   isBlackBase: boolean;
-  currentMove: Move | undefined;
+  darkChessMode: ColorEnum | null;
+  currentMove: AnyMove | undefined;
 }
 
 interface State {
@@ -62,10 +65,21 @@ class Boards extends React.Component<Props, State> {
     withLiterals: true
   };
 
+  boardsRef = React.createRef<HTMLDivElement>();
   state: State = {
     promotionModalVisible: false,
     promotionMove: null
   };
+
+  componentDidUpdate(prevProps: Props) {
+    if (prevProps.isBlackBase !== this.props.isBlackBase) {
+      this.boardsRef.current!.classList.add('no-transition');
+
+      setTimeout(() => {
+        this.boardsRef.current!.classList.remove('no-transition');
+      }, 0);
+    }
+  }
 
   isAllowed(square: Square, allowedMoves: Square[]): boolean {
     return allowedMoves.some((allowedSquare) => Game.areSquaresEqual(square, allowedSquare));
@@ -206,8 +220,11 @@ class Boards extends React.Component<Props, State> {
       isBoardAtTop,
       isAliceChess,
       isChessence,
+      isDarkChess,
       isBlackBase,
+      darkChessMode,
       showFantomPieces,
+      getVisibleSquares,
       isVoidSquare,
       getPrevBoard
     } = this.props;
@@ -215,10 +232,16 @@ class Boards extends React.Component<Props, State> {
     const literalSize = isBoardAtTop ? 13 : 20;
     const literalFontSize = isBoardAtTop ? 10 : 16;
     const allowedMoves = this.getAllowedMoves();
+    const visibleSquares = isDarkChess && darkChessMode ? getVisibleSquares() : [];
     const boardPieces = pieces.filter(Game.isBoardPiece);
+    const isHiddenSquare = (square: Square): boolean => (
+      !!darkChessMode
+      && isDarkChess
+      && visibleSquares.every((visibleSquare) => !Game.areSquaresEqual(square, visibleSquare))
+    );
 
     return (
-      <div className={classNames('boards', { opposite: isBlackBase })}>
+      <div ref={this.boardsRef} className={classNames('boards', { opposite: isBlackBase })}>
         {_.times(boardCount, (board) => {
           const emptyCorner = (
             <div
@@ -319,7 +342,10 @@ class Boards extends React.Component<Props, State> {
                               currentMove.from
                               && currentMove.from.type !== PieceLocationEnum.POCKET
                               && Game.areSquaresEqual(currentMove.from, square)
-                            ) || Game.areSquaresEqual(currentMove.to, square)
+                            ) || (
+                              currentMove.to
+                              && Game.areSquaresEqual(currentMove.to, square)
+                            )
                           ) && (
                             <div className="current-move-square" />
                           )}
@@ -331,6 +357,9 @@ class Boards extends React.Component<Props, State> {
                           )}
                           {isVoidSquare(square) && (
                             <div className="void-square" />
+                          )}
+                          {isHiddenSquare(square) && (
+                            <div className="hidden-square" />
                           )}
                         </div>
                       );

@@ -4,7 +4,7 @@ import { User } from './user';
 
 declare module 'socket.io' {
   interface Socket {
-    user: User | null;
+    player: Player | null;
   }
 }
 
@@ -48,7 +48,7 @@ export interface StartingData {
 }
 
 export interface Piece {
-  id: number;
+  id: string;
   type: PieceTypeEnum;
   color: ColorEnum;
   location: PieceLocation;
@@ -91,17 +91,40 @@ export type GameKings = {
   [color in ColorEnum]: Piece[];
 };
 
-export interface Game {
+export interface GameMinimalData {
   id: string;
-  startingData: StartingData;
   status: GameStatusEnum;
   players: GamePlayers;
   result: GameResult | null;
   timeControl: TimeControl;
-  moves: ExtendedMove[];
-  chat: ChatMessage[];
   variants: GameVariantEnum[];
+}
+
+export interface CommonGameData extends GameMinimalData {
+  startingData: StartingData;
+  result: GameResult | null;
+  chat: ChatMessage[];
   drawOffer: ColorEnum | null;
+}
+
+export interface Game extends CommonGameData {
+  moves: ExtendedMove[];
+}
+
+export interface DarkChessGame extends CommonGameData {
+  moves: DarkChessMove[];
+}
+
+export interface GameInitialData {
+  timestamp: number;
+  player: Player | null;
+  game: Game;
+}
+
+export interface DarkChessGameInitialData {
+  timestamp: number;
+  player: Player | null;
+  game: DarkChessGame;
 }
 
 export interface GameCreateSettings {
@@ -122,7 +145,8 @@ export enum GameVariantEnum {
   ALICE_CHESS = 'ALICE_CHESS',
   TWO_FAMILIES = 'TWO_FAMILIES',
   CHESSENCE = 'CHESSENCE',
-  HORDE = 'HORDE'
+  HORDE = 'HORDE',
+  DARK_CHESS = 'DARK_CHESS'
 }
 
 export interface BaseMove {
@@ -143,6 +167,19 @@ export interface ExtendedMove extends Move {
 export interface RevertableMove extends ExtendedMove {
   revertMove(): void;
 }
+
+export interface DarkChessMove {
+  from: PieceLocation;
+  to: Square | null;
+  promotion?: PieceTypeEnum;
+  timestamp: number;
+  algebraic: string;
+  figurine: string;
+  pieces: Piece[];
+  revertMove(): void;
+}
+
+export type AnyMove = ExtendedMove | DarkChessMove;
 
 export enum GameStatusEnum {
   BEFORE_START = 'BEFORE_START',

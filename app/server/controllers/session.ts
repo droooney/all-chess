@@ -5,13 +5,13 @@ import { IncomingMessage, ServerResponse } from 'http';
 import expressSession = require('express-session');
 import redis = require('connect-redis');
 import { Context } from 'koa';
-import { Socket } from 'socket.io';
 
 import { createClient } from '../helpers';
 import config from '../config';
 
 const Store = redis(expressSession);
-const sessionMiddleware = util.promisify(expressSession({
+
+export const sessionMiddleware = util.promisify(expressSession({
   name: config.cookieName,
   store: new Store({
     client: createClient(),
@@ -54,18 +54,4 @@ export async function sessionRequired(ctx: Context, next: (err?: any) => Promise
   }
 
   await next();
-}
-
-export async function socketAuth(socket: Socket, next: (err?: any) => void) {
-  try {
-    await sessionMiddleware(socket.request, socket.request.res);
-
-    socket.user = socket.request.session
-      ? socket.request.session.user || null
-      : null;
-  } catch (err) {
-    socket.user = null;
-  }
-
-  next();
 }

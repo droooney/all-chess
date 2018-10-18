@@ -8,7 +8,10 @@ import {
   BoardPiece,
   CenterSquareParams,
   ColorEnum,
+  DarkChessGame,
+  DarkChessGameInitialData,
   Game as IGame,
+  GameInitialData,
   GameStatusEnum,
   PieceLocationEnum,
   PieceTypeEnum,
@@ -29,8 +32,10 @@ import './index.less';
 type Props = RouteComponentProps<{ gameId: string }>;
 
 interface State {
-  gameData: IGame | null;
+  gameData: IGame | DarkChessGame | null;
   selectedPiece: RealPiece | null;
+  isBlackBase: boolean;
+  showHiddenPieces: boolean;
 }
 
 export default class Game extends React.Component<Props, State> {
@@ -40,7 +45,9 @@ export default class Game extends React.Component<Props, State> {
   game?: GameHelper;
   state: State = {
     selectedPiece: null,
-    gameData: null
+    gameData: null,
+    isBlackBase: false,
+    showHiddenPieces: true
   };
 
   componentDidMount() {
@@ -53,25 +60,8 @@ export default class Game extends React.Component<Props, State> {
     } = this.props;
     const socket = this.socket = io.connect(`/games/${gameId}`);
 
-    socket.on('initialGameData', ({ timestamp, player, game }) => {
-      this.player = player;
-      this.timeDiff = Date.now() - timestamp;
-      this.game = new GameHelper(game, socket);
-
-      this.game.on('updateChat', () => {
-        this.forceUpdate();
-      });
-
-      this.game.on('updateGame', () => {
-        this.forceUpdate();
-      });
-
-      this.setState({
-        gameData: game
-      });
-
-      console.log(this.game);
-    });
+    socket.on('initialGameData', this.onGameData);
+    socket.on('initialDarkChessGameData', this.onGameData);
 
     socket.on('startGame', (players) => {
       this.game!.players = players;
@@ -90,6 +80,31 @@ export default class Game extends React.Component<Props, State> {
   componentWillUnmount() {
     this.socket!.disconnect();
   }
+
+  getStartingIsBlackBase(): boolean {
+    return !!this.player && this.player.color === ColorEnum.BLACK;
+  }
+
+  onGameData = ({ timestamp, player, game }: GameInitialData | DarkChessGameInitialData) => {
+    this.player = player;
+    this.timeDiff = Date.now() - timestamp;
+    this.game = new GameHelper(game, this.socket!, player);
+
+    this.game.on('updateChat', () => {
+      this.forceUpdate();
+    });
+
+    this.game.on('updateGame', () => {
+      this.forceUpdate();
+    });
+
+    this.setState({
+      gameData: game,
+      isBlackBase: this.getStartingIsBlackBase()
+    });
+
+    console.log(this.game);
+  };
 
   moveBack = () => {
     this.game!.moveBack();
@@ -113,6 +128,10 @@ export default class Game extends React.Component<Props, State> {
 
   getAllowedMoves = (piece: RealPiece): Square[] => {
     return this.game!.getAllowedMoves(piece);
+  };
+
+  getVisibleSquares = (): Square[] => {
+    return this.game!.getVisibleSquares(this.game!.darkChessMode!);
   };
 
   getCenterSquareParams = (square: Square): CenterSquareParams => {
@@ -177,6 +196,29 @@ export default class Game extends React.Component<Props, State> {
     this.socket!.emit('declare50MoveDraw');
   };
 
+  flipBoard = () => {
+    this.setState(({ isBlackBase }) => ({
+      isBlackBase: !isBlackBase
+    }));
+  };
+
+  changeDarkChessMode = () => {
+    const darkChessMode = this.game!.darkChessMode;
+
+    this.setState({
+      isBlackBase: darkChessMode
+        ? darkChessMode === ColorEnum.WHITE
+          ? true
+          : this.getStartingIsBlackBase()
+        : false
+    });
+    this.game!.changeDarkChessMode();
+  };
+
+  toggleShowDarkChessHiddenPieces = () => {
+    this.game!.toggleShowDarkChessHiddenPieces();
+  };
+
   render() {
     let content: JSX.Element | string;
 
@@ -206,21 +248,27 @@ export default class Game extends React.Component<Props, State> {
         isAliceChess,
         isMonsterChess,
         isChessence,
+        isDarkChess,
         isThreefoldRepetitionDrawPossible,
         is50MoveDrawPossible,
+        isOngoingDarkChessGame,
         numberOfMovesBeforeStart,
         drawOffer,
         timeControl,
         moves,
+        colorMoves,
         result,
         variants,
+        darkChessMode,
+        showDarkChessHiddenPieces,
         currentMoveIndex
       } = this.game!;
       const {
+        isBlackBase,
         selectedPiece
       } = this.state;
+      const usedMoves = darkChessMode && !showDarkChessHiddenPieces ? colorMoves[darkChessMode] : moves;
       const player = this.player;
-      const isBlackBase = !!player && player.color === ColorEnum.BLACK;
       const isBoardAtTop = isAliceChess && !isChessence;
 
       content = (
@@ -233,7 +281,12 @@ export default class Game extends React.Component<Props, State> {
             isThreefoldRepetitionDrawPossible={isThreefoldRepetitionDrawPossible}
             is50MoveDrawPossible={is50MoveDrawPossible}
             isAliceChess={isAliceChess}
+            isDarkChess={isDarkChess}
+            isBlackBase={isBlackBase}
+            isOngoingDarkChessGame={isOngoingDarkChessGame}
             drawOffer={drawOffer}
+            darkChessMode={darkChessMode}
+            showDarkChessHiddenPieces={showDarkChessHiddenPieces}
             player={player}
             offerDraw={this.offerDraw}
             acceptDraw={this.acceptDraw}
@@ -242,6 +295,9 @@ export default class Game extends React.Component<Props, State> {
             resign={this.resign}
             declareThreefoldRepetitionDraw={this.declareThreefoldRepetitionDraw}
             declare50MoveDraw={this.declare50MoveDraw}
+            flipBoard={this.flipBoard}
+            changeDarkChessMode={this.changeDarkChessMode}
+            toggleShowDarkChessHiddenPieces={this.toggleShowDarkChessHiddenPieces}
           />
 
           <Chat
@@ -263,6 +319,7 @@ export default class Game extends React.Component<Props, State> {
             selectPiece={this.selectPiece}
             getPrevBoard={this.getPrevBoard}
             getAllowedMoves={this.getAllowedMoves}
+            getVisibleSquares={this.getVisibleSquares}
             getBoardPiece={this.getBoardPiece}
             isAttackedByOpponentPiece={this.isAttackedByOpponentPiece}
             isPawnPromotion={this.isPawnPromotion}
@@ -273,15 +330,17 @@ export default class Game extends React.Component<Props, State> {
               !player
               || player.color !== turn
               || status !== GameStatusEnum.ONGOING
-              || currentMoveIndex + 1 !== moves.length
+              || currentMoveIndex + 1 !== usedMoves.length
             )}
             withLiterals
             isKingOfTheHill={isKingOfTheHill}
             isAliceChess={isAliceChess}
+            isDarkChess={isDarkChess}
             isBoardAtTop={isBoardAtTop}
             isChessence={isChessence}
             isBlackBase={isBlackBase}
-            currentMove={moves[currentMoveIndex]}
+            darkChessMode={darkChessMode}
+            currentMove={usedMoves[currentMoveIndex]}
           />
 
           <RightPanel
@@ -294,7 +353,7 @@ export default class Game extends React.Component<Props, State> {
             currentMoveIndex={currentMoveIndex}
             timeControl={timeControl}
             numberOfMovesBeforeStart={numberOfMovesBeforeStart}
-            moves={moves}
+            moves={usedMoves}
             isBlackBase={isBlackBase}
             status={status}
             timeDiff={this.timeDiff!}

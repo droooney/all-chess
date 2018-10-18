@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import * as React from 'react';
 import { connect, DispatchProps } from 'react-redux';
 import classNames = require('classnames');
@@ -10,6 +11,7 @@ import {
   GamePlayers,
   GameResult,
   GameVariantEnum,
+  PieceTypeEnum,
   Player
 } from '../../../types';
 import {
@@ -19,6 +21,7 @@ import {
 } from '../../../shared/constants';
 import { ReduxState } from '../../store';
 
+import Piece from '../Piece';
 import Dialog from '../Dialog';
 
 export interface OwnProps {
@@ -28,7 +31,12 @@ export interface OwnProps {
   isThreefoldRepetitionDrawPossible: boolean;
   is50MoveDrawPossible: boolean;
   isAliceChess: boolean;
+  isDarkChess: boolean;
+  isBlackBase: boolean;
+  isOngoingDarkChessGame: boolean;
   drawOffer: ColorEnum | null;
+  darkChessMode: ColorEnum | null;
+  showDarkChessHiddenPieces: boolean;
   player: Player | null;
   offerDraw(): void;
   acceptDraw(): void;
@@ -37,6 +45,9 @@ export interface OwnProps {
   resign(): void;
   declareThreefoldRepetitionDraw(): void;
   declare50MoveDraw(): void;
+  flipBoard(): void;
+  changeDarkChessMode(): void;
+  toggleShowDarkChessHiddenPieces(): void;
 }
 
 interface State {
@@ -113,13 +124,32 @@ class InfoActionsPanel extends React.Component<Props, State> {
     }
   };
 
-  toggleFantomPieces = () => {
+  flipBoard = () => {
+    this.props.flipBoard();
+  };
+
+  toggleShowFantomPieces = () => {
     const {
       dispatch,
       showFantomPieces
     } = this.props;
 
     dispatch(changeSettings('showFantomPieces', !showFantomPieces));
+  };
+
+  changeDarkChessMode = () => {
+    this.props.changeDarkChessMode();
+  };
+
+  toggleShowDarkChessHiddenPieces = () => {
+    const {
+      darkChessMode,
+      toggleShowDarkChessHiddenPieces
+    } = this.props;
+
+    if (darkChessMode) {
+      toggleShowDarkChessHiddenPieces();
+    }
   };
 
   render() {
@@ -129,8 +159,13 @@ class InfoActionsPanel extends React.Component<Props, State> {
       isThreefoldRepetitionDrawPossible,
       is50MoveDrawPossible,
       isAliceChess,
+      isDarkChess,
+      isBlackBase,
+      isOngoingDarkChessGame,
       drawOffer,
+      darkChessMode,
       player,
+      showDarkChessHiddenPieces,
       showFantomPieces
     } = this.props;
     const buttons: JSX.Element[] = [];
@@ -152,24 +187,50 @@ class InfoActionsPanel extends React.Component<Props, State> {
           onClick={this.offerDraw}
         >
           <i className="fa fa-handshake-o" />
-        </div>,
-        <div
-          key="threefold-draw"
-          className={classNames('button', { disabled: !isThreefoldRepetitionDrawPossible })}
-          title="Declare threefold repetition draw"
-          onClick={this.declareThreefoldRepetitionDraw}>
-          3
-        </div>,
-        <div
-          key="50-move-draw"
-          className={classNames('button', { disabled: !is50MoveDrawPossible })}
-          title="Declare 50-move draw"
-          onClick={this.declare50MoveDraw}
-        >
-          50
         </div>
       );
+
+      if (!isDarkChess) {
+        buttons.push(
+          <div
+            key="threefold-draw"
+            className={classNames('button', { disabled: !isThreefoldRepetitionDrawPossible })}
+            title="Declare threefold repetition draw"
+            onClick={this.declareThreefoldRepetitionDraw}
+          >
+            3
+          </div>,
+          <div
+            key="50-move-draw"
+            className={classNames('button', { disabled: !is50MoveDrawPossible })}
+            title="Declare 50-move draw"
+            onClick={this.declare50MoveDraw}
+          >
+            50
+          </div>
+        );
+      }
     }
+
+    buttons.push(
+      <div
+        key="flip-board"
+        className="button"
+        title="Flip the board"
+        onClick={this.flipBoard}
+      >
+        <i className="fa fa-refresh" />
+        <div className="piece-container">
+          <Piece
+            piece={{
+              color: isBlackBase ? ColorEnum.BLACK : ColorEnum.WHITE,
+              type: PieceTypeEnum.KING,
+              location: null!
+            }}
+          />
+        </div>
+      </div>
+    );
 
     if (isAliceChess) {
       buttons.push(
@@ -177,9 +238,59 @@ class InfoActionsPanel extends React.Component<Props, State> {
           key="show-fantom-pieces"
           className={classNames('button', { enabled: showFantomPieces })}
           title={showFantomPieces ? 'Hide fantom pieces' : 'Show fantom pieces'}
-          onClick={this.toggleFantomPieces}
+          onClick={this.toggleShowFantomPieces}
         >
-          <i className={showFantomPieces ? 'fa fa-eye-slash' : 'fa fa-eye'} />
+          <i className={showFantomPieces ? 'fa fa-eye' : 'fa fa-eye-slash'} />
+          {showFantomPieces && (
+            <div className="piece-container">
+              <Piece
+                piece={{
+                  color: player ? player.color : ColorEnum.WHITE,
+                  type: PieceTypeEnum.KING,
+                  location: null!
+                }}
+                className="fantom"
+              />
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (isDarkChess && !isOngoingDarkChessGame) {
+      buttons.push(
+        <div
+          key="change-dark-chess-mode"
+          className="button"
+          title={
+            darkChessMode
+              ? darkChessMode === ColorEnum.WHITE
+                ? `Change perspective to ${COLOR_NAMES[ColorEnum.BLACK]}`
+                : 'Remove perspective'
+              : `Change perspective to ${COLOR_NAMES[ColorEnum.WHITE]}`
+          }
+          onClick={this.changeDarkChessMode}
+        >
+          <i className="fa fa-eye" />
+          {darkChessMode && (
+            <div className="piece-container">
+              <Piece
+                piece={{
+                  color: darkChessMode,
+                  type: PieceTypeEnum.KING,
+                  location: null!
+                }}
+              />
+            </div>
+          )}
+        </div>,
+        <div
+          key="show-hidden-pieces"
+          className={classNames('button', { disabled: !darkChessMode, enabled: showDarkChessHiddenPieces })}
+          title={showDarkChessHiddenPieces ? 'Hide hidden pieces' : 'Show hidden pieces'}
+          onClick={this.toggleShowDarkChessHiddenPieces}
+        >
+          <i className={showDarkChessHiddenPieces ? 'fa fa-eye' : 'fa fa-eye-slash'} />
         </div>
       );
     }
@@ -214,11 +325,11 @@ class InfoActionsPanel extends React.Component<Props, State> {
           )}
 
           <div className="actions">
-            {!!buttons.length && (
-              <div className="buttons">
+            {_.chunk(buttons, 5).map((buttons, ix) => (
+              <div key={ix} className="buttons">
                 {buttons}
               </div>
-            )}
+            ))}
             {player && drawOffer && !result && (
               <div className="action">
                 {
