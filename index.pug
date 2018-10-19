@@ -3,9 +3,10 @@ html
   head
     meta(charset="UTF-8")
     title AllChess
+    link(rel="stylesheet", href=cssBundlePath)
     script.
       window.__ALL_CHESS_USER__ = !{ user };
   body
     div(id="app-root")
     div(id="modal-root")
-    script(src="/public/all.js")
+    script(type="text/javascript", src=jsBundlePath)

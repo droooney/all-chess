@@ -5,7 +5,17 @@ import * as path from 'path';
 import { Context } from 'koa';
 import * as pug from 'pug';
 
+import { getSortedFilesSync } from '../helpers';
+
 const html = pug.compile(fs.readFileSync(path.resolve('./index.pug'), 'utf8'));
+const JS_BUNDLE_NAME = path.basename(
+  getSortedFilesSync(path.resolve('./public'))
+    .filter((file) => path.extname(file) === '.js')[0] || 'all.js'
+);
+const CSS_BUNDLE_NAME = path.basename(
+  getSortedFilesSync(path.resolve('./public'))
+    .filter((file) => path.extname(file) === '.css')[0] || 'all.css'
+);
 
 export async function render(
   ctx: Context,
@@ -13,6 +23,8 @@ export async function render(
 ): Promise<void> {
   if (ctx.accepts('text/html')) {
     ctx.body = html({
+      jsBundlePath: `/public/${JS_BUNDLE_NAME}`,
+      cssBundlePath: `/public/${CSS_BUNDLE_NAME}`,
       user: JSON.stringify(ctx.session!.user || null).replace(/</g, '\\u003c')
     });
   } else {

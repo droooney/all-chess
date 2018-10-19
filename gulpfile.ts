@@ -16,7 +16,7 @@ export const lint: gulp.TaskFunction = (): Duplex => (
 
 export const runServer: gulp.TaskFunction = runServerTask;
 
-async function runServerTask(): Promise<void> {
+async function runServerTask() {
   const { listen } = await import('./app/server');
   const port = await listen();
 
@@ -25,11 +25,13 @@ async function runServerTask(): Promise<void> {
 
 export const watchClient: gulp.TaskFunction = watchClientTask;
 
-async function watchClientTask(): Promise<void> {
-  await new Promise((resolve) => {
-    const compiler = webpack(webpackConfig);
+export const buildProductionClientBundle: gulp.TaskFunction = buildProductionClientBundleTask;
 
-    compiler.watch({}, () => {});
+async function runWebpack(isProduction: boolean) {
+  await new Promise((resolve) => {
+    const compiler = webpack(webpackConfig(isProduction));
+    const watcher = compiler.watch({}, () => {});
+
     compiler.hooks.done.tap('gulp-hack', (stats: webpack.Stats) => {
       console.log(stats.toString({
         chunks: false,
@@ -37,8 +39,20 @@ async function watchClientTask(): Promise<void> {
       }));
 
       resolve(stats);
+
+      if (isProduction) {
+        watcher.close(() => {});
+      }
     });
   });
+}
+
+async function watchClientTask() {
+  await runWebpack(false);
+}
+
+async function buildProductionClientBundleTask() {
+  await runWebpack(true);
 }
 
 const execute = (command: string): Duplex => (
