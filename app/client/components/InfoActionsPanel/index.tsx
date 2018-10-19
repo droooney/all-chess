@@ -291,6 +291,17 @@ class InfoActionsPanel extends React.Component<Props, State> {
           onClick={this.toggleShowDarkChessHiddenPieces}
         >
           <i className={showDarkChessHiddenPieces ? 'fa fa-eye' : 'fa fa-eye-slash'} />
+          {showDarkChessHiddenPieces && (
+            <div className="piece-container">
+              <Piece
+                piece={{
+                  color: isBlackBase ? ColorEnum.WHITE : ColorEnum.BLACK,
+                  type: PieceTypeEnum.KING,
+                  location: null!
+                }}
+              />
+            </div>
+          )}
         </div>
       );
     }
@@ -325,11 +336,9 @@ class InfoActionsPanel extends React.Component<Props, State> {
           )}
 
           <div className="actions">
-            {_.chunk(buttons, 5).map((buttons, ix) => (
-              <div key={ix} className="buttons">
-                {buttons}
-              </div>
-            ))}
+            <div className="buttons">
+              {buttons}
+            </div>
             {player && drawOffer && !result && (
               <div className="action">
                 {

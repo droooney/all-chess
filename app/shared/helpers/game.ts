@@ -451,6 +451,41 @@ export class Game implements IGame {
         ...startingData.emptySquares,
         ...startingData.emptySquares.map((square) => ({ ...square, board: 1 }))
       ];
+
+      if (_.includes(settings.variants, GameVariantEnum.CHESSENCE)) {
+        startingData.pieces = [...startingData.pieces];
+
+        const pieceType = PieceTypeEnum.MAN;
+        let id = +_.last(startingData.pieces)!.id;
+
+        [ColorEnum.WHITE, ColorEnum.BLACK].forEach((color) => {
+          _.times(3, () => {
+            startingData.pieces.push({
+              id: `${++id}`,
+              type: pieceType,
+              originalType: pieceType,
+              color,
+              moved: false,
+              location: {
+                type: PieceLocationEnum.POCKET,
+                pieceType
+              }
+            });
+          });
+        });
+
+        startingData.pieces.forEach((piece, ix) => {
+          if (piece.color === ColorEnum.BLACK && piece.location.type === PieceLocationEnum.BOARD) {
+            startingData.pieces[ix] = {
+              ...piece,
+              location: {
+                ...piece.location,
+                board: 1
+              }
+            };
+          }
+        });
+      }
     }
 
     return startingData;
@@ -727,11 +762,12 @@ export class Game implements IGame {
     ))!;
 
     _.forEach(ColorEnum, (color) => {
-      const ownMove = color === piece.color;
+      const isOwnMove = color === piece.color;
       const oldVisiblePieces = this.visiblePieces[color];
       const newVisiblePieces = this.getVisiblePieces(color);
       const visibleSquares = this.getVisibleSquares(color);
       const newPieces = newVisiblePieces.map((piece) => {
+        const isOwnPiece = piece.color === color;
         const oldPiece = _.find(oldVisiblePieces, { realId: piece.id });
         const prevPieceLocation = prevPieceLocations[_.findIndex(this.pieces, { id: piece.id })];
         const oldLocationVisible = (
@@ -744,13 +780,13 @@ export class Game implements IGame {
           && piece.location.type === PieceLocationEnum.BOARD
           && visibleSquares.some((square) => Game.areSquaresEqual(square, piece.location as PieceBoardLocation))
         );
-        const newId = oldPiece && (ownMove || (oldLocationVisible && newLocationVisible))
+        const newId = oldPiece && (isOwnPiece || (oldLocationVisible && newLocationVisible))
           ? oldPiece.id
           : Game.generateUid(idMap);
 
         return {
           ...piece,
-          moved: ownMove && piece.moved,
+          moved: isOwnPiece && piece.moved,
           id: newId,
           realId: piece.id
         };
@@ -763,7 +799,7 @@ export class Game implements IGame {
       let algebraic = '';
       let figurine = '';
 
-      if (ownMove) {
+      if (isOwnMove) {
         algebraic = registeredMove.algebraic;
         figurine = registeredMove.figurine;
       } else if (fromLocationVisible || toLocationVisible || isCapture) {

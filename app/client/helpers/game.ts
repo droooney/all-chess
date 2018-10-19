@@ -49,7 +49,7 @@ export class Game extends GameHelper {
     this.socket = socket;
     this.isOngoingDarkChessGame = this.isDarkChess && this.status !== GameStatusEnum.FINISHED;
     this.showDarkChessHiddenPieces = !this.isOngoingDarkChessGame;
-    this.darkChessMode = player ? player.color : null;
+    this.darkChessMode = this.isDarkChess && player ? player.color : null;
 
     const moves: (Move | DarkChessMove)[] = game.moves;
 
