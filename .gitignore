@@ -3,6 +3,8 @@
 node_modules
 public
 
+.env
+
 app/server/cert
 app/server/config/index.ts
 app/server/db/config.ts
