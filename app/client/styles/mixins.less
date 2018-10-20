@@ -1,13 +1,13 @@
-.flex(@justify-content: center) {
+.flex(@justify-content: center, @align-items: center) {
   display: flex;
-  align-items: center;
+  align-items: @align-items;
   justify-content: @justify-content;
 }
 
-.flex-col(@justify-content: center) {
-  .flex(@justify-content);
+.flex-col(@justify-content: center, @align-items: center, @flex-direction: column) {
+  .flex(@justify-content, @align-items);
 
-  flex-direction: column;
+  flex-direction: @flex-direction;
 }
 
 .flex-stretch(@justify-content: center) {

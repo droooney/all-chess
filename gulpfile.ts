@@ -1,10 +1,13 @@
+import * as path from 'path';
 import { Duplex } from 'stream';
 import * as gulp from 'gulp';
 import { argv } from 'yargs';
 import run = require('gulp-run');
 import * as webpack from 'webpack';
+import Bundler = require('parcel-bundler');
 
 import webpackConfig from './webpack.config';
+import parcelConfig from './parcel.config';
 
 const defaultTask = gulp.parallel(runServerTask, watchClientTask);
 
@@ -27,6 +30,13 @@ export const watchClient: gulp.TaskFunction = watchClientTask;
 
 export const buildProductionClientBundle: gulp.TaskFunction = buildProductionClientBundleTask;
 
+async function runParcel(isProduction: boolean) {
+  const bundler = new Bundler(path.resolve('./parcel-entry.html'), parcelConfig(isProduction));
+
+  await bundler.bundle();
+}
+
+// @ts-ignore
 async function runWebpack(isProduction: boolean) {
   await new Promise((resolve) => {
     const compiler = webpack(webpackConfig(isProduction));
@@ -48,11 +58,11 @@ async function runWebpack(isProduction: boolean) {
 }
 
 async function watchClientTask() {
-  await runWebpack(false);
+  await runParcel(false);
 }
 
 async function buildProductionClientBundleTask() {
-  await runWebpack(true);
+  await runParcel(true);
 }
 
 const execute = (command: string): Duplex => (

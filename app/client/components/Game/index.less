@@ -91,10 +91,9 @@
       }
 
       .board {
-       .flex-col();
+       .flex-col(@flex-direction: column-reverse);
 
         position: relative;
-        flex-direction: column-reverse;
 
         .rank {
           .flex();
@@ -367,14 +366,10 @@
       grid-area: right-panel;
       justify-self: center;
 
-      .flex-col();
-
-      align-items: flex-start;
+      .flex-col(@align-items: flex-start);
 
       .player {
-        .flex-col();
-
-        align-items: flex-start;
+        .flex-col(@align-items: flex-start);
 
         &.bottom {
           flex-direction: column-reverse;
