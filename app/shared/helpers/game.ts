@@ -41,7 +41,15 @@ interface PerformMoveReturnValue {
   allowed: boolean;
   algebraic: string;
   figurine: string;
+  movedPiece: RealPiece;
   revertMove(): void;
+}
+
+interface PossibleMovesOptions {
+  onlyAttacked?: true;
+  onlyControlled?: true;
+  onlyVisible?: true;
+  onlyPossible?: true;
 }
 
 const ATOMIC_SQUARE_INCREMENTS: [number, number][] = [
@@ -140,8 +148,7 @@ export class Game implements IGame {
     ) && (
       !_.includes(variants, GameVariantEnum.DARK_CHESS)
       || (
-        !_.includes(variants, GameVariantEnum.MADRASI)
-        && !_.includes(variants, GameVariantEnum.ALICE_CHESS)
+        !_.includes(variants, GameVariantEnum.KING_OF_THE_HILL)
         && !_.includes(variants, GameVariantEnum.ATOMIC)
       )
     ));
@@ -709,10 +716,11 @@ export class Game implements IGame {
     }
   }
 
-  registerMove(move: Move) {
+  registerMove(move: Move): { movedPiece: RealPiece } {
     const {
       algebraic,
       figurine,
+      movedPiece,
       revertMove
     } = this.performMove(move, true, false);
 
@@ -739,6 +747,8 @@ export class Game implements IGame {
         this.end(null, drawReason);
       }
     }
+
+    return { movedPiece };
   }
 
   registerDarkChessMove(move: Move) {
@@ -749,17 +759,12 @@ export class Game implements IGame {
       return map;
     }, {} as { [pieceId: string]: true; });
 
-    this.registerMove(move);
+    const { movedPiece: piece } = this.registerMove(move);
 
     const registeredMove = _.last(this.moves)!;
     const isCapture = _.includes(registeredMove.algebraic, 'x');
     const isWin = _.includes(registeredMove.algebraic, '#');
     const isPromotion = !!move.promotion;
-    const piece = _.find(this.pieces, ({ location }) => (
-      !!location
-      && location.type === PieceLocationEnum.BOARD
-      && Game.areSquaresEqual(location, move.to)
-    ))!;
 
     _.forEach(ColorEnum, (color) => {
       const isOwnMove = color === piece.color;
@@ -1380,6 +1385,7 @@ export class Game implements IGame {
       allowed: isAllowed,
       algebraic,
       figurine,
+      movedPiece: piece,
       revertMove: () => {
         this.turn = prevTurn;
         this.isCheck = prevIsCheck;
@@ -1564,8 +1570,14 @@ export class Game implements IGame {
     });
   }
 
-  getPossibleMoves(piece: RealPiece, onlyAttacked: boolean, onlyControlled: boolean, onlyVisible: boolean): Square[] {
-    const forMove = !onlyControlled && !onlyAttacked && !onlyVisible;
+  getPossibleMoves(piece: RealPiece, options: PossibleMovesOptions = {}): Square[] {
+    const {
+      onlyAttacked = false,
+      onlyControlled = false,
+      onlyVisible = false,
+      onlyPossible = false
+    } = options;
+    const forMove = !onlyControlled && !onlyAttacked && !onlyVisible && !onlyPossible;
     const getSquaresForDrop = (pieceType: PieceTypeEnum): Square[] => {
       return _.times(this.boardCount).reduce((possibleSquares, board) => (
         _.times(this.boardHeight).reduce((possibleSquares, rankY) => {
@@ -1837,13 +1849,14 @@ export class Game implements IGame {
       const kingSideKing = _.last(this.kings[pieceColor])!;
 
       this.getCastlingRooks(pieceColor)
-        .filter((_rook, ix) => (
-          // queen-side king and queen-side rook
-          (piece.id === queenSideKing.id && ix === 0)
-          // king-side king and king-side rook
-          || (piece.id === kingSideKing.id && ix === 1)
+        .filter((rook, ix) => (
+          (
+            // queen-side king and queen-side rook
+            (piece.id === queenSideKing.id && ix === 0)
+            // king-side king and king-side rook
+            || (piece.id === kingSideKing.id && ix === 1)
+          ) && rook && !this.isParalysed(rook)
         ))
-        .filter(Boolean)
         .filter((rook) => {
           const { location } = rook!;
           const isKingSideRook = location.x - pieceX > 0;
@@ -1923,16 +1936,9 @@ export class Game implements IGame {
     }
 
     if (
-      this.isMadrasi
-      && possibleSquares.some((square) => {
-        const pieceInSquare = this.getBoardPiece(square);
-
-        return (
-          !!pieceInSquare
-          && pieceInSquare.color !== pieceColor
-          && pieceInSquare.type === pieceType
-        );
-      })
+      forMove
+      && this.isMadrasi
+      && this.isParalysed(piece as BoardPiece, possibleSquares)
     ) {
       return [];
     }
@@ -1979,7 +1985,7 @@ export class Game implements IGame {
   }
 
   getAllowedMoves(piece: RealPiece): Square[] {
-    const possibleMoves = this.getPossibleMoves(piece, false, false, false);
+    const possibleMoves = this.getPossibleMoves(piece);
 
     if (this.isLeftInCheckAllowed && !this.isAtomic) {
       return possibleMoves;
@@ -2011,10 +2017,36 @@ export class Game implements IGame {
 
     return this.getPieces(forColor)
       .filter(Game.isBoardPiece)
-      .reduce((squares, piece) => [
-        ...squares,
-        ...this.getPossibleMoves(piece, false, false, true)
-      ], visibleSquares);
+      .reduce((squares, piece) => {
+        let newSquares = this.getPossibleMoves(piece, { onlyVisible: true });
+
+        if (this.boardCount > 1) {
+          const nextBoardSquares = newSquares.map((square) => ({
+            ...square,
+            board: this.getNextBoard(square.board)
+          }));
+
+          newSquares = [
+            ...newSquares,
+            ...nextBoardSquares
+          ];
+
+          if (this.boardCount > 2) {
+            newSquares = [
+              ...newSquares,
+              ...nextBoardSquares.map((square) => ({
+                ...square,
+                board: this.getNextBoard(square.board)
+              }))
+            ];
+          }
+        }
+
+        return [
+          ...squares,
+          ...newSquares
+        ];
+      }, visibleSquares);
   }
 
   getVisiblePieces(forColor: ColorEnum): Piece[] {
@@ -2027,6 +2059,18 @@ export class Game implements IGame {
         && visibleSquares.some((square) => Game.areSquaresEqual(square, piece.location as PieceBoardLocation))
       )
     ));
+  }
+
+  isParalysed(piece: BoardPiece, possibleSquares?: Square[]): boolean {
+    return this.isMadrasi && (possibleSquares || this.getPossibleMoves(piece, { onlyPossible: true })).some((square) => {
+      const pieceInSquare = this.getBoardPiece(square);
+
+      return (
+        !!pieceInSquare
+        && pieceInSquare.color !== piece.color
+        && pieceInSquare.type === piece.type
+      );
+    });
   }
 
   isNullSquare(square: Square): boolean {
@@ -2086,7 +2130,7 @@ export class Game implements IGame {
   isAttackedByOpponentPiece(square: Square, opponentColor: ColorEnum): boolean {
     return this.getPieces(opponentColor).some((piece) => (
       Game.isBoardPiece(piece)
-      && this.getPossibleMoves(piece, true, false, false).some((possibleSquare) => (
+      && this.getPossibleMoves(piece, { onlyAttacked: true }).some((possibleSquare) => (
         Game.areSquaresEqual(possibleSquare, square)
       ))
     ));
@@ -2097,7 +2141,7 @@ export class Game implements IGame {
 
     return this.getPieces(piece.color).some((piece) => (
       Game.isBoardPiece(piece)
-      && this.getPossibleMoves(piece, false, true, false).some((square) => (
+      && this.getPossibleMoves(piece, { onlyControlled: true }).some((square) => (
         Game.areSquaresEqual(square, pieceLocation)
       ))
     ));
@@ -2177,7 +2221,12 @@ export class Game implements IGame {
   }
 
   isInsufficientMaterial(): boolean {
-    if (this.isKingOfTheHill || this.isMonsterChess || this.isHorde) {
+    if (
+      this.isKingOfTheHill
+      || this.isMonsterChess
+      || this.isHorde
+      || this.isDarkChess
+    ) {
       return false;
     }
 

@@ -251,7 +251,6 @@ export default class Game extends React.Component<Props, State> {
         isDarkChess,
         isThreefoldRepetitionDrawPossible,
         is50MoveDrawPossible,
-        isOngoingDarkChessGame,
         numberOfMovesBeforeStart,
         drawOffer,
         timeControl,
@@ -283,7 +282,6 @@ export default class Game extends React.Component<Props, State> {
             isAliceChess={isAliceChess}
             isDarkChess={isDarkChess}
             isBlackBase={isBlackBase}
-            isOngoingDarkChessGame={isOngoingDarkChessGame}
             drawOffer={drawOffer}
             darkChessMode={darkChessMode}
             showDarkChessHiddenPieces={showDarkChessHiddenPieces}

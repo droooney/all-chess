@@ -33,7 +33,6 @@ export interface OwnProps {
   isAliceChess: boolean;
   isDarkChess: boolean;
   isBlackBase: boolean;
-  isOngoingDarkChessGame: boolean;
   drawOffer: ColorEnum | null;
   darkChessMode: ColorEnum | null;
   showDarkChessHiddenPieces: boolean;
@@ -161,7 +160,6 @@ class InfoActionsPanel extends React.Component<Props, State> {
       isAliceChess,
       isDarkChess,
       isBlackBase,
-      isOngoingDarkChessGame,
       drawOffer,
       darkChessMode,
       player,
@@ -257,7 +255,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
       );
     }
 
-    if (isDarkChess && !isOngoingDarkChessGame) {
+    if (isDarkChess && result) {
       buttons.push(
         <div
           key="change-dark-chess-mode"
