@@ -1,0 +1,174 @@
+@import (reference) '../../styles/mixins';
+
+@border: 3px solid black;
+
+.boards {
+  grid-area: boards;
+  justify-self: center;
+
+  .flex();
+
+  &.opposite {
+    .board {
+      flex-direction: column;
+
+      .rank {
+        flex-direction: row-reverse;
+
+        .square {
+          &.border-top {
+            border-top: @border;
+          }
+
+          &.border-bottom {
+            border-bottom: @border;
+          }
+
+          &.border-left {
+            border-right: @border;
+          }
+
+          &.border-right {
+            border-left: @border;
+          }
+        }
+      }
+    }
+  }
+
+  &:not(.opposite) {
+    .board {
+      .rank {
+        .square {
+          &.border-top {
+            border-bottom: @border;
+          }
+
+          &.border-bottom {
+            border-top: @border;
+          }
+
+          &.border-left {
+            border-left: @border;
+          }
+
+          &.border-right {
+            border-right: @border;
+          }
+        }
+      }
+    }
+  }
+
+  .board {
+    .flex-col(@flex-direction: column-reverse);
+
+    position: relative;
+
+    .rank {
+      .flex();
+
+      .rank-literal,
+      .file-literal {
+        .flex();
+
+        user-select: none;
+      }
+
+      .square {
+        .flex();
+
+        position: relative;
+
+        &.white {
+          background-color: beige;
+        }
+
+        &.black {
+          background-color: silver;
+        }
+
+        .selected-square,
+        .current-move-square,
+        .allowed-square,
+        .check-square,
+        .void-square,
+        .hidden-square {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          top: 0;
+          left: 0;
+        }
+
+        .selected-square {
+          background-color: rgba(115,125,105,0.5);
+          z-index: 1;
+        }
+
+        .current-move-square {
+          background-color: rgba(0,255,0,0.5);
+          z-index: 2;
+        }
+
+        .allowed-square {
+          background: radial-gradient(rgba(0,255,255,0.5), rgba(0,0,0,0));
+          cursor: pointer;
+          z-index: 3;
+        }
+
+        .check-square {
+          background: radial-gradient(red, rgba(0,0,0,0));
+          z-index: 4;
+        }
+
+        .hidden-square {
+          background-color: rgba(0,0,0,0.7);
+          z-index: 6;
+        }
+
+        .void-square {
+          background-color: black;
+          z-index: 7;
+        }
+      }
+    }
+  }
+
+  .piece-container {
+    position: absolute;
+    transition-property: left, top;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-out;
+    cursor: pointer;
+    z-index: 5;
+
+    .piece {
+      width: 100%;
+      height: 100%;
+      opacity: 1;
+      transition: opacity 0.2s ease-in;
+
+      &.fantom {
+        opacity: 0.2;
+      }
+    }
+
+    .original-piece {
+      position: absolute;
+      top: initial;
+      left: initial;
+      bottom: 0;
+      right: 0;
+      width: 20px;
+      height: 20px;
+      background-color: #aaa;
+    }
+  }
+
+  &.no-transition {
+    .piece-container {
+      transition: none;
+    }
+  }
+}

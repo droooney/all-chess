@@ -9,7 +9,7 @@ import {
   GameStatusEnum,
   GameVariantEnum,
   Move,
-  PieceTypeEnum,
+  PGNTags,
   PieceLocationEnum,
   Player,
   ResultReasonEnum,
@@ -41,12 +41,8 @@ export default class Game extends GameHelper {
   }
 
   static validateTimeControl(timeControl: any): boolean {
-    if (timeControl === null) {
-      return true;
-    }
-
     if (!timeControl) {
-      return false;
+      return timeControl === null;
     }
 
     if (timeControl.type === TimeControlEnum.TIMER) {
@@ -82,7 +78,7 @@ export default class Game extends GameHelper {
   timerTimeout?: number;
   io: Namespace;
 
-  constructor(io: Namespace, settings: GameCreateSettings & { id: string; }) {
+  constructor(io: Namespace, settings: GameCreateSettings & { pgnTags?: PGNTags; id: string; }) {
     super(settings);
 
     this.io = io;
@@ -286,10 +282,6 @@ export default class Game extends GameHelper {
     const {
       from: fromLocation,
       to: toLocation,
-      to: {
-        x: toX,
-        y: toY
-      },
       promotion
     } = moveForServer;
     const piece = fromLocation.type === PieceLocationEnum.BOARD
@@ -302,16 +294,9 @@ export default class Game extends GameHelper {
       return;
     }
 
-    const isSquareAllowed = this.getAllowedMoves(piece).some(({ x, y }) => (
-      toX === x && toY === y
-    ));
+    const isSquareAllowed = this.getAllowedMoves(piece).some((square) => Game.areSquaresEqual(square, toLocation));
     const isPawnPromotion = this.isPawnPromotion(moveForServer);
-    const isValidPromotion =  (
-      promotion === PieceTypeEnum.QUEEN
-      || promotion === PieceTypeEnum.ROOK
-      || promotion === PieceTypeEnum.BISHOP
-      || promotion === PieceTypeEnum.KNIGHT
-    );
+    const isValidPromotion = _.includes(this.validPromotions, promotion);
     const isMoveAllowed = isSquareAllowed && (!isPawnPromotion || isValidPromotion);
 
     if (!isMoveAllowed) {
@@ -336,7 +321,7 @@ export default class Game extends GameHelper {
 
     if (
       this.status === GameStatusEnum.ONGOING
-      && this.moves.length > this.numberOfMovesBeforeStart
+      && this.moves.length > this.pliesPerMove
       && this.timeControl
       && prevTurn !== this.turn
     ) {
@@ -361,7 +346,7 @@ export default class Game extends GameHelper {
 
     if (
       this.status === GameStatusEnum.ONGOING
-      && this.moves.length >= this.numberOfMovesBeforeStart
+      && this.moves.length >= this.pliesPerMove
       && this.timeControl
       && prevTurn !== this.turn
     ) {
@@ -388,11 +373,7 @@ export default class Game extends GameHelper {
     super.end(winner, reason);
 
     // anything that client can't recognize
-    if (this.isDarkChess) {
-      setTimeout(() => {
-        this.io.emit('darkChessMoves', this.moves);
-      }, 0);
-    } else if (
+    if (
       reason === ResultReasonEnum.RESIGN
       || reason === ResultReasonEnum.AGREED_TO_DRAW
       || reason === ResultReasonEnum.TIME_RAN_OUT
@@ -400,6 +381,10 @@ export default class Game extends GameHelper {
       || reason === ResultReasonEnum.FIFTY_MOVE_RULE
     ) {
       this.io.emit('gameOver', this.result!);
+    }
+
+    if (this.isDarkChess) {
+      this.io.emit('darkChessMoves', this.moves);
     }
 
     this.clearTimeout();
@@ -414,6 +399,7 @@ export default class Game extends GameHelper {
       'players',
       'result',
       'timeControl',
+      'pgnTags',
       'drawOffer',
       'moves',
       'chat'

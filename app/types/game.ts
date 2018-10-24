@@ -38,10 +38,32 @@ export enum ColorEnum {
   BLACK = 'BLACK'
 }
 
-export interface StartingData {
+export enum CastlingTypeEnum {
+  KING_SIDE = 'KING_SIDE',
+  QUEEN_SIDE = 'QUEEN_SIDE'
+}
+
+export type PossibleCastling = {
+  [color in ColorEnum]: {
+    [castling in CastlingTypeEnum]: boolean;
+  };
+};
+
+export interface BoardDimensions {
   boardCount: number;
   boardWidth: number;
   boardHeight: number;
+}
+
+export interface StartingData {
+  turn: ColorEnum;
+  startingMoveIndex: number;
+  pliesWithoutCaptureOrPawnMove: number;
+  possibleCastling: PossibleCastling;
+  possibleEnPassant: null | {
+    enPassantSquare: Square;
+    pieceLocation: Square;
+  };
   pieces: RealPiece[];
   voidSquares: Square[];
   emptySquares: Square[];
@@ -105,10 +127,11 @@ export interface CommonGameData extends GameMinimalData {
   result: GameResult | null;
   chat: ChatMessage[];
   drawOffer: ColorEnum | null;
+  pgnTags: PGNTags;
 }
 
 export interface Game extends CommonGameData {
-  moves: ExtendedMove[];
+  moves: Move[];
 }
 
 export interface DarkChessGame extends CommonGameData {
@@ -126,6 +149,10 @@ export interface DarkChessGameInitialData {
   player: Player | null;
   game: DarkChessGame;
 }
+
+export type PGNTags = {
+  [tag: string]: string;
+};
 
 export interface GameCreateSettings {
   timeControl: TimeControl;

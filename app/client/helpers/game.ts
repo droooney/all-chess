@@ -2,6 +2,8 @@ import * as _ from 'lodash';
 import { Socket } from 'socket.io-client';
 
 import {
+  AnyMove,
+  BaseMove,
   ColorEnum,
   DarkChessGame,
   DarkChessMove,
@@ -16,11 +18,17 @@ import { Game as GameHelper } from '../../shared/helpers';
 type GameEvent = 'updateChat' | 'updateGame';
 
 export class Game extends GameHelper {
+  static getGameFromPgn(pgn: string): Game {
+    const game = super.getGameFromPgn(pgn);
+
+    return new Game(game);
+  }
+
   static isLightColor(color: ColorEnum): boolean {
     return color === ColorEnum.WHITE;
   }
 
-  socket: Socket;
+  socket?: Socket;
   currentMoveIndex: number;
   isOngoingDarkChessGame: boolean;
   darkChessMode: ColorEnum | null;
@@ -32,9 +40,10 @@ export class Game extends GameHelper {
     updateGame: []
   };
 
-  constructor(game: IGame | DarkChessGame, socket: Socket, player: Player | null) {
+  constructor(game: IGame | DarkChessGame, socket?: Socket, player?: Player | null) {
     super({
       id: game.id,
+      pgnTags: game.pgnTags,
       startingData: game.startingData,
       timeControl: game.timeControl,
       variants: game.variants
@@ -65,59 +74,61 @@ export class Game extends GameHelper {
       });
     }
 
-    socket.on('moveMade', (move) => {
-      this.onMoveMade(move, false);
-    });
+    if (socket) {
+      socket.on('moveMade', (move) => {
+        this.onMoveMade(move, false);
+      });
 
-    socket.on('darkChessMoveMade', (move) => {
-      this.onMoveMade(move, true);
-    });
+      socket.on('darkChessMoveMade', (move) => {
+        this.onMoveMade(move, true);
+      });
 
-    socket.on('updatePlayers', (players) => {
-      this.players = players;
+      socket.on('updatePlayers', (players) => {
+        this.players = players;
 
-      this.updateGame();
-    });
+        this.updateGame();
+      });
 
-    socket.on('gameOver', (result) => {
-      this.end(result.winner, result.reason);
-      this.updateGame();
-    });
+      socket.on('gameOver', (result) => {
+        this.end(result.winner, result.reason);
+        this.updateGame();
+      });
 
-    socket.on('darkChessMoves', (moves) => {
-      this.isOngoingDarkChessGame = false;
-      this.showDarkChessHiddenPieces = true;
+      socket.on('darkChessMoves', (moves) => {
+        this.isOngoingDarkChessGame = false;
+        this.showDarkChessHiddenPieces = true;
 
-      this.onDarkChessMoves(moves);
-      this.updateGame();
-    });
+        this.onDarkChessMoves(moves);
+        this.updateGame();
+      });
 
-    socket.on('newChatMessage', (chatMessage) => {
-      this.chat = [
-        ...this.chat,
-        chatMessage
-      ];
+      socket.on('newChatMessage', (chatMessage) => {
+        this.chat = [
+          ...this.chat,
+          chatMessage
+        ];
 
-      this.emit('updateChat');
-    });
+        this.emit('updateChat');
+      });
 
-    socket.on('drawOffered', (color) => {
-      this.drawOffer = color;
+      socket.on('drawOffered', (color) => {
+        this.drawOffer = color;
 
-      this.updateGame();
-    });
+        this.updateGame();
+      });
 
-    socket.on('drawDeclined', () => {
-      this.drawOffer = null;
+      socket.on('drawDeclined', () => {
+        this.drawOffer = null;
 
-      this.updateGame();
-    });
+        this.updateGame();
+      });
 
-    socket.on('drawCanceled', () => {
-      this.drawOffer = null;
+      socket.on('drawCanceled', () => {
+        this.drawOffer = null;
 
-      this.updateGame();
-    });
+        this.updateGame();
+      });
+    }
   }
 
   changeDarkChessMode() {
@@ -148,11 +159,25 @@ export class Game extends GameHelper {
   }
 
   destroy() {
-    this.socket.disconnect();
+    if (this.socket) {
+      this.socket.disconnect();
+    }
   }
 
   emit(event: GameEvent) {
     this.listeners[event].forEach((listener) => listener());
+  }
+
+  getUsedMoves(): AnyMove[] {
+    return this.darkChessMode && !this.showDarkChessHiddenPieces
+      ? this.colorMoves[this.darkChessMode]
+      : this.moves;
+  }
+
+  move(move: BaseMove) {
+    if (this.socket) {
+      this.socket.emit('makeMove', move);
+    }
   }
 
   moveBack(updateGame: boolean = true) {
@@ -167,11 +192,7 @@ export class Game extends GameHelper {
   }
 
   moveForward(updateGame: boolean = true) {
-    const moves = this.darkChessMode
-      ? this.colorMoves[this.darkChessMode]
-      : this.moves;
-
-    if (this.currentMoveIndex + 1 < moves.length) {
+    if (this.currentMoveIndex < this.getUsedMoves().length - 1) {
       this.currentMoveIndex++;
       this.performAnyMove();
 
@@ -267,11 +288,13 @@ export class Game extends GameHelper {
     const oldPieces = this.pieces;
     const oldTurn = this.turn;
 
+    this.movesCount++;
     this.turn = this.getNextTurn();
     this.pieces = move.pieces;
     this.visiblePieces[this.darkChessMode!] = move.pieces as any;
 
     return () => {
+      this.movesCount--;
       this.turn = oldTurn;
       this.pieces = oldPieces;
       this.visiblePieces[this.darkChessMode!] = oldPieces as any;

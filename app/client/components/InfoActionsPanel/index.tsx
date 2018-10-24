@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import * as React from 'react';
 import { connect, DispatchProps } from 'react-redux';
 import classNames = require('classnames');
@@ -16,11 +15,11 @@ import {
 } from '../../../types';
 import {
   COLOR_NAMES,
-  RESULT_REASON_NAMES,
-  GAME_VARIANT_NAMES
+  RESULT_REASON_NAMES
 } from '../../../shared/constants';
 import { ReduxState } from '../../store';
 
+import GameVariantLink from '../GameVariantLink';
 import Piece from '../Piece';
 import Dialog from '../Dialog';
 
@@ -317,9 +316,10 @@ class InfoActionsPanel extends React.Component<Props, State> {
               {variants.map((variant, ix) => (
                 <React.Fragment key={variant}>
                   {' '}
-                  <span className="variant">
-                    {GAME_VARIANT_NAMES[variant]}
-                  </span>
+                  <GameVariantLink
+                    variant={variant}
+                    className="variant"
+                  />
                   {ix === variants.length - 1 ? '' : ','}
                 </React.Fragment>
               ))}

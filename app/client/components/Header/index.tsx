@@ -1,10 +1,12 @@
 import * as React from 'react';
 import { connect, DispatchProps } from 'react-redux';
-import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
 
 import { ReduxState } from '../../store';
 import { setUserData } from '../../actions';
 import { fetch } from '../../helpers';
+
+import Link from '../Link';
 
 import './index.less';
 
@@ -39,6 +41,9 @@ class Header extends React.Component<Props> {
           AllChess
         </Link>
         <div className="right-header-block">
+          <Link to="/rules" style={{ marginRight: 20 }}>
+            Rules
+          </Link>
           {user ? (
             <React.Fragment>
               Logged in as <b>{user.login}</b> (

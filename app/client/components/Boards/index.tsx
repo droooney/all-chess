@@ -7,7 +7,6 @@ import {
   AnyMove,
   BaseMove,
   BoardPiece as IBoardPiece,
-  CenterSquareParams,
   ColorEnum,
   Piece as IPiece,
   PieceTypeEnum,
@@ -24,33 +23,22 @@ import BoardPiece from '../BoardPiece';
 import Piece from '../Piece';
 import Modal from '../Modal';
 
+import './index.less';
+
 export interface OwnProps {
-  pieces: IPiece[];
-  boardCount: number;
-  boardWidth: number;
-  boardHeight: number;
+  game: Game;
   player: Player | null;
   selectedPiece: RealPiece | null;
   selectPiece(piece: IPiece | null): void;
-  getPrevBoard(board: number): number;
-  getAllowedMoves(piece: RealPiece): Square[];
-  getVisibleSquares(): Square[];
-  getBoardPiece(square: Square): IBoardPiece | null;
-  isAttackedByOpponentPiece(square: Square, opponentColor: ColorEnum): boolean;
-  isPawnPromotion(move: BaseMove): boolean;
-  isVoidSquare(square: Square): boolean;
-  getCenterSquareParams(square: Square): CenterSquareParams;
-  sendMove(move: BaseMove): void;
   readOnly: boolean;
-  withLiterals: boolean;
-  isKingOfTheHill: boolean;
-  isAliceChess: boolean;
-  isDarkChess: boolean;
-  isBoardAtTop: boolean;
-  isChessence: boolean;
   isBlackBase: boolean;
   darkChessMode: ColorEnum | null;
   currentMove: AnyMove | undefined;
+
+  pieces?: IPiece[];
+  withLiterals?: boolean;
+  showFantomPieces?: boolean;
+  squareSize?: number;
 }
 
 interface State {
@@ -87,26 +75,25 @@ class Boards extends React.Component<Props, State> {
 
   getAllowedMoves(): Square[] {
     const {
-      selectedPiece,
-      getAllowedMoves
+      game,
+      selectedPiece
     } = this.props;
 
     return selectedPiece
-      ? getAllowedMoves(selectedPiece)
+      ? game.getAllowedMoves(selectedPiece)
       : [] as Square[];
   }
 
   getSquareClasses(square: Square): string[] {
     const {
-      isKingOfTheHill,
-      getCenterSquareParams
+      game
     } = this.props;
 
-    if (!isKingOfTheHill) {
+    if (!game.isKingOfTheHill) {
       return [];
     }
 
-    const params = getCenterSquareParams(square);
+    const params = game.getCenterSquareParams(square);
 
     if (!params) {
       return [];
@@ -117,10 +104,9 @@ class Boards extends React.Component<Props, State> {
 
   isInCheck(square: Square): boolean {
     const {
-      getBoardPiece,
-      isAttackedByOpponentPiece
+      game
     } = this.props;
-    const pieceInSquare = getBoardPiece(square);
+    const pieceInSquare = game.getBoardPiece(square);
 
     if (!pieceInSquare) {
       return false;
@@ -128,22 +114,20 @@ class Boards extends React.Component<Props, State> {
 
     return (
       pieceInSquare.type === PieceTypeEnum.KING
-      && isAttackedByOpponentPiece(pieceInSquare.location, Game.getOppositeColor(pieceInSquare.color))
+      && game.isAttackedByOpponentPiece(pieceInSquare.location, Game.getOppositeColor(pieceInSquare.color))
     );
   }
 
   onSquareClick = (square: Square) => {
     const {
+      game,
       player,
       selectedPiece,
-      getBoardPiece,
-      isPawnPromotion,
-      selectPiece,
-      sendMove
+      selectPiece
     } = this.props;
 
     if (!selectedPiece) {
-      const pieceInSquare = getBoardPiece(square);
+      const pieceInSquare = game.getBoardPiece(square);
 
       if (!pieceInSquare || player!.color !== pieceInSquare.color) {
         return;
@@ -160,7 +144,7 @@ class Boards extends React.Component<Props, State> {
     }
 
     if (!this.isAllowed(square, this.getAllowedMoves())) {
-      const pieceInSquare = getBoardPiece(square);
+      const pieceInSquare = game.getBoardPiece(square);
 
       if (!pieceInSquare || player!.color !== pieceInSquare.color) {
         return;
@@ -175,13 +159,13 @@ class Boards extends React.Component<Props, State> {
       promotion: PieceTypeEnum.QUEEN
     };
 
-    if (isPawnPromotion(move)) {
+    if (game.isPawnPromotion(move)) {
       this.setState({
         promotionModalVisible: true,
         promotionMove: move
       });
     } else {
-      sendMove(move);
+      game.move(move);
     }
 
     selectPiece(null);
@@ -196,10 +180,10 @@ class Boards extends React.Component<Props, State> {
 
   promoteToPiece = (location: PiecePocketLocation) => {
     const {
-      sendMove
+      game
     } = this.props;
 
-    sendMove({
+    game.move({
       ...this.state.promotionMove!,
       promotion: location.pieceType
     });
@@ -208,41 +192,33 @@ class Boards extends React.Component<Props, State> {
 
   render() {
     const {
+      game,
       player,
       selectedPiece,
       readOnly,
-      boardCount,
-      boardWidth,
-      boardHeight,
       pieces,
       withLiterals,
       currentMove,
-      isBoardAtTop,
-      isAliceChess,
-      isChessence,
-      isDarkChess,
       isBlackBase,
       darkChessMode,
       showFantomPieces,
-      getVisibleSquares,
-      isVoidSquare,
-      getPrevBoard
+      squareSize: propsSquareSize
     } = this.props;
-    const squareSize = isChessence ? 60 : isAliceChess ? 45 : 70;
-    const literalSize = isBoardAtTop ? 13 : 20;
-    const literalFontSize = isBoardAtTop ? 10 : 16;
+    const squareSize = propsSquareSize || (game.isChessence ? 60 : game.isAliceChess ? 45 : 70);
+    const literalSize = withLiterals ? Math.ceil(squareSize * 0.3) : 0;
+    const literalFontSize = Math.ceil(literalSize * 0.85);
     const allowedMoves = this.getAllowedMoves();
-    const visibleSquares = isDarkChess && darkChessMode ? getVisibleSquares() : [];
-    const boardPieces = pieces.filter(Game.isBoardPiece);
+    const visibleSquares = game.isDarkChess && darkChessMode ? game.getVisibleSquares(darkChessMode) : [];
+    const boardPieces = (pieces || game.pieces).filter(Game.isBoardPiece);
     const isHiddenSquare = (square: Square): boolean => (
       !!darkChessMode
-      && isDarkChess
+      && game.isDarkChess
       && visibleSquares.every((visibleSquare) => !Game.areSquaresEqual(square, visibleSquare))
     );
 
     return (
       <div ref={this.boardsRef} className={classNames('boards', { opposite: isBlackBase })}>
-        {_.times(boardCount, (board) => {
+        {_.times(game.boardCount, (board) => {
           const emptyCorner = (
             <div
               className="empty-corner"
@@ -252,7 +228,7 @@ class Boards extends React.Component<Props, State> {
           const filesElement = (
             <div className="rank">
               {(board === 0 || isBlackBase) && emptyCorner}
-              {_.times(boardWidth, (file) => (
+              {_.times(game.boardWidth, (file) => (
                 <div
                   key={file}
                   className="file-literal"
@@ -273,8 +249,8 @@ class Boards extends React.Component<Props, State> {
             .map((piece) => ({ ...piece, isFantom: false }));
           let fantomPieces: (IBoardPiece & { isFantom: boolean; })[] = [];
 
-          if (isAliceChess && showFantomPieces) {
-            const prevBoard = getPrevBoard(board);
+          if (game.isAliceChess && showFantomPieces) {
+            const prevBoard = game.getPrevBoard(board);
 
             fantomPieces = boardPieces
               .filter(({ location }) => location.board === prevBoard)
@@ -289,7 +265,7 @@ class Boards extends React.Component<Props, State> {
           return (
             <div key={board} className="board">
               {withLiterals && filesElement}
-              {_.times(boardHeight, (rankY) => {
+              {_.times(game.boardHeight, (rankY) => {
                 const rankLiteral = (
                   <div
                     className="rank-literal"
@@ -309,7 +285,7 @@ class Boards extends React.Component<Props, State> {
                     className="rank"
                   >
                     {withLiterals && (board === 0 || isBlackBase) && rankLiteral}
-                    {_.times(boardWidth, (fileX) => {
+                    {_.times(game.boardWidth, (fileX) => {
                       const square = {
                         board,
                         x: fileX,
@@ -355,7 +331,7 @@ class Boards extends React.Component<Props, State> {
                           {this.isInCheck(square) && (
                             <div className="check-square" />
                           )}
-                          {isVoidSquare(square) && (
+                          {game.isVoidSquare(square) && (
                             <div className="void-square" />
                           )}
                           {isHiddenSquare(square) && (
@@ -375,8 +351,8 @@ class Boards extends React.Component<Props, State> {
                   piece={piece}
                   isBlackBase={isBlackBase}
                   isFantom={piece.isFantom}
-                  boardWidth={boardWidth}
-                  boardHeight={boardHeight}
+                  boardWidth={game.boardWidth}
+                  boardHeight={game.boardHeight}
                   squareSize={squareSize}
                   literalSize={literalSize}
                   onClick={readOnly ? undefined : this.onSquareClick}
@@ -412,9 +388,11 @@ class Boards extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state: ReduxState) {
+function mapStateToProps(state: ReduxState, ownProps: OwnProps) {
   return {
-    showFantomPieces: state.gameSettings.showFantomPieces
+    showFantomPieces: 'showFantomPieces' in ownProps
+      ? ownProps.showFantomPieces
+      : state.gameSettings.showFantomPieces
   };
 }
 

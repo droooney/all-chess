@@ -4,9 +4,6 @@ import io = require('socket.io-client');
 import classNames = require('classnames');
 
 import {
-  BaseMove,
-  BoardPiece,
-  CenterSquareParams,
   ColorEnum,
   DarkChessGame,
   DarkChessGameInitialData,
@@ -17,11 +14,14 @@ import {
   PieceTypeEnum,
   Player,
   PocketPiece,
-  RealPiece,
-  Square
+  RealPiece
 } from '../../../types';
+import {
+  GAME_VARIANT_NAMES
+} from '../../../shared/constants';
 import { Game as GameHelper } from '../../helpers';
 
+import DocumentTitle from '../DocumentTitle';
 import RightPanel from '../RightPanel';
 import InfoActionsPanel from '../InfoActionsPanel';
 import Chat from '../Chat';
@@ -118,48 +118,12 @@ export default class Game extends React.Component<Props, State> {
     this.game!.navigateToMove(moveIndex);
   };
 
-  sendMove = (move: BaseMove) => {
-    this.socket!.emit('makeMove', move);
-  };
-
   sendMessage = (message: string) => {
     this.socket!.emit('addChatMessage', message);
   };
 
-  getAllowedMoves = (piece: RealPiece): Square[] => {
-    return this.game!.getAllowedMoves(piece);
-  };
-
-  getVisibleSquares = (): Square[] => {
-    return this.game!.getVisibleSquares(this.game!.darkChessMode!);
-  };
-
-  getCenterSquareParams = (square: Square): CenterSquareParams => {
-    return this.game!.getCenterSquareParams(square);
-  };
-
-  getPrevBoard = (board: number): number => {
-    return this.game!.getPrevBoard(board);
-  };
-
-  getBoardPiece = (square: Square): BoardPiece | null => {
-    return this.game!.getBoardPiece(square);
-  };
-
   getPocketPiece = (type: PieceTypeEnum, color: ColorEnum): PocketPiece | null => {
     return this.game!.getPocketPiece(type, color);
-  };
-
-  isAttackedByOpponentPiece = (square: Square, opponentColor: ColorEnum): boolean => {
-    return this.game!.isAttackedByOpponentPiece(square, opponentColor);
-  };
-
-  isPawnPromotion = (move: BaseMove): boolean => {
-    return this.game!.isPawnPromotion(move);
-  };
-
-  isVoidSquare = (square: Square): boolean => {
-    return this.game!.isVoidSquare(square);
   };
 
   selectPiece = (selectedPiece: RealPiece | null) => {
@@ -221,158 +185,147 @@ export default class Game extends React.Component<Props, State> {
 
   render() {
     let content: JSX.Element | string;
+    let title: string | null;
 
-    if (!this.state.gameData) {
+    if (this.state.gameData) {
+      const {
+        status,
+        variants
+      } = this.state.gameData;
+
+      title = `AllChess - ${variants.length > 1 ? 'Mixed' : variants.length ? GAME_VARIANT_NAMES[variants[0]] : 'Standard'} Game`;
+
+      if (status === GameStatusEnum.BEFORE_START) {
+        content = this.player
+          ? 'Waiting for the opponent...'
+          : 'Waiting for the players...';
+      } else {
+        const {
+          startingData,
+          status,
+          pieces,
+          chat,
+          turn,
+          players,
+          pocketPiecesUsed,
+          isPocketUsed,
+          isAliceChess,
+          isChessence,
+          isDarkChess,
+          isThreefoldRepetitionDrawPossible,
+          is50MoveDrawPossible,
+          pliesPerMove,
+          drawOffer,
+          timeControl,
+          result,
+          variants,
+          darkChessMode,
+          showDarkChessHiddenPieces,
+          currentMoveIndex
+        } = this.game!;
+        const {
+          isBlackBase,
+          selectedPiece
+        } = this.state;
+        const usedMoves = this.game!.getUsedMoves();
+        const player = this.player;
+        const isBoardAtTop = isAliceChess && !isChessence;
+
+        content = (
+          <div className={classNames('game', { 'top-boards-grid': isBoardAtTop })}>
+
+            <InfoActionsPanel
+              result={result}
+              variants={variants}
+              players={players}
+              isThreefoldRepetitionDrawPossible={isThreefoldRepetitionDrawPossible}
+              is50MoveDrawPossible={is50MoveDrawPossible}
+              isAliceChess={isAliceChess}
+              isDarkChess={isDarkChess}
+              isBlackBase={isBlackBase}
+              drawOffer={drawOffer}
+              darkChessMode={darkChessMode}
+              showDarkChessHiddenPieces={showDarkChessHiddenPieces}
+              player={player}
+              offerDraw={this.offerDraw}
+              acceptDraw={this.acceptDraw}
+              cancelDraw={this.cancelDraw}
+              declineDraw={this.declineDraw}
+              resign={this.resign}
+              declareThreefoldRepetitionDraw={this.declareThreefoldRepetitionDraw}
+              declare50MoveDraw={this.declare50MoveDraw}
+              flipBoard={this.flipBoard}
+              changeDarkChessMode={this.changeDarkChessMode}
+              toggleShowDarkChessHiddenPieces={this.toggleShowDarkChessHiddenPieces}
+            />
+
+            <Chat
+              chat={chat}
+              sendMessage={this.sendMessage}
+            />
+
+            <Boards
+              game={this.game!}
+              pieces={pieces}
+              player={player}
+              selectedPiece={
+                selectedPiece
+                  ? selectedPiece
+                  : null
+              }
+              selectPiece={this.selectPiece}
+              readOnly={(
+                !player
+                || player.color !== turn
+                || status !== GameStatusEnum.ONGOING
+                || currentMoveIndex + 1 !== usedMoves.length
+              )}
+              isBlackBase={isBlackBase}
+              darkChessMode={darkChessMode}
+              currentMove={usedMoves[currentMoveIndex]}
+            />
+
+            <RightPanel
+              players={players}
+              player={player}
+              pieces={pieces}
+              startingData={startingData}
+              pocketPiecesUsed={pocketPiecesUsed}
+              isPocketUsed={isPocketUsed}
+              currentMoveIndex={currentMoveIndex}
+              timeControl={timeControl}
+              pliesPerMove={pliesPerMove}
+              moves={usedMoves}
+              isBlackBase={isBlackBase}
+              status={status}
+              timeDiff={this.timeDiff!}
+              selectedPiece={
+                selectedPiece && selectedPiece.location.type === PieceLocationEnum.POCKET
+                  ? selectedPiece as PocketPiece
+                  : null
+              }
+              getPocketPiece={this.getPocketPiece}
+              selectPiece={this.selectPiece}
+              moveBack={this.moveBack}
+              moveForward={this.moveForward}
+              navigateToMove={this.navigateToMove}
+            />
+
+          </div>
+        );
+      }
+    } else {
       content = (
         <div className="spinner">
           Loading game...
         </div>
       );
-    } else if (this.state.gameData.status === GameStatusEnum.BEFORE_START) {
-      content = this.player
-        ? 'Waiting for the opponent...'
-        : 'Waiting for the players...';
-    } else {
-      const {
-        status,
-        boardCount,
-        boardWidth,
-        boardHeight,
-        pieces,
-        chat,
-        turn,
-        players,
-        pocketPiecesUsed,
-        isPocketUsed,
-        isKingOfTheHill,
-        isAliceChess,
-        isMonsterChess,
-        isChessence,
-        isDarkChess,
-        isThreefoldRepetitionDrawPossible,
-        is50MoveDrawPossible,
-        numberOfMovesBeforeStart,
-        drawOffer,
-        timeControl,
-        moves,
-        colorMoves,
-        result,
-        variants,
-        darkChessMode,
-        showDarkChessHiddenPieces,
-        currentMoveIndex
-      } = this.game!;
-      const {
-        isBlackBase,
-        selectedPiece
-      } = this.state;
-      const usedMoves = darkChessMode && !showDarkChessHiddenPieces ? colorMoves[darkChessMode] : moves;
-      const player = this.player;
-      const isBoardAtTop = isAliceChess && !isChessence;
-
-      content = (
-        <div className={classNames('game', { 'top-boards-grid': isBoardAtTop })}>
-
-          <InfoActionsPanel
-            result={result}
-            variants={variants}
-            players={players}
-            isThreefoldRepetitionDrawPossible={isThreefoldRepetitionDrawPossible}
-            is50MoveDrawPossible={is50MoveDrawPossible}
-            isAliceChess={isAliceChess}
-            isDarkChess={isDarkChess}
-            isBlackBase={isBlackBase}
-            drawOffer={drawOffer}
-            darkChessMode={darkChessMode}
-            showDarkChessHiddenPieces={showDarkChessHiddenPieces}
-            player={player}
-            offerDraw={this.offerDraw}
-            acceptDraw={this.acceptDraw}
-            cancelDraw={this.cancelDraw}
-            declineDraw={this.declineDraw}
-            resign={this.resign}
-            declareThreefoldRepetitionDraw={this.declareThreefoldRepetitionDraw}
-            declare50MoveDraw={this.declare50MoveDraw}
-            flipBoard={this.flipBoard}
-            changeDarkChessMode={this.changeDarkChessMode}
-            toggleShowDarkChessHiddenPieces={this.toggleShowDarkChessHiddenPieces}
-          />
-
-          <Chat
-            chat={chat}
-            sendMessage={this.sendMessage}
-          />
-
-          <Boards
-            pieces={pieces}
-            boardCount={boardCount}
-            boardWidth={boardWidth}
-            boardHeight={boardHeight}
-            player={player}
-            selectedPiece={
-              selectedPiece
-                ? selectedPiece
-                : null
-            }
-            selectPiece={this.selectPiece}
-            getPrevBoard={this.getPrevBoard}
-            getAllowedMoves={this.getAllowedMoves}
-            getVisibleSquares={this.getVisibleSquares}
-            getBoardPiece={this.getBoardPiece}
-            isAttackedByOpponentPiece={this.isAttackedByOpponentPiece}
-            isPawnPromotion={this.isPawnPromotion}
-            isVoidSquare={this.isVoidSquare}
-            getCenterSquareParams={this.getCenterSquareParams}
-            sendMove={this.sendMove}
-            readOnly={(
-              !player
-              || player.color !== turn
-              || status !== GameStatusEnum.ONGOING
-              || currentMoveIndex + 1 !== usedMoves.length
-            )}
-            withLiterals
-            isKingOfTheHill={isKingOfTheHill}
-            isAliceChess={isAliceChess}
-            isDarkChess={isDarkChess}
-            isBoardAtTop={isBoardAtTop}
-            isChessence={isChessence}
-            isBlackBase={isBlackBase}
-            darkChessMode={darkChessMode}
-            currentMove={usedMoves[currentMoveIndex]}
-          />
-
-          <RightPanel
-            players={players}
-            player={player}
-            pieces={pieces}
-            pocketPiecesUsed={pocketPiecesUsed}
-            isPocketUsed={isPocketUsed}
-            isMonsterChess={isMonsterChess}
-            currentMoveIndex={currentMoveIndex}
-            timeControl={timeControl}
-            numberOfMovesBeforeStart={numberOfMovesBeforeStart}
-            moves={usedMoves}
-            isBlackBase={isBlackBase}
-            status={status}
-            timeDiff={this.timeDiff!}
-            selectedPiece={
-              selectedPiece && selectedPiece.location.type === PieceLocationEnum.POCKET
-                ? selectedPiece as PocketPiece
-                : null
-            }
-            getPocketPiece={this.getPocketPiece}
-            selectPiece={this.selectPiece}
-            moveBack={this.moveBack}
-            moveForward={this.moveForward}
-            navigateToMove={this.navigateToMove}
-          />
-
-        </div>
-      );
+      title = null;
     }
 
     return (
       <div className="route game-route">
+        <DocumentTitle value={title} />
         {content}
       </div>
     );

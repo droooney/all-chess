@@ -9,12 +9,20 @@ import Bundler = require('parcel-bundler');
 import webpackConfig from './webpack.config';
 import parcelConfig from './parcel.config';
 
+const execute = (command: string): Duplex => (
+  run(command, { verbosity: 3 }).exec()
+);
+
 const defaultTask = gulp.parallel(runServerTask, watchClientTask);
 
 export default defaultTask;
 
-export const lint: gulp.TaskFunction = (): Duplex => (
-  run('eslint . --ext .js --ext .ts --ext .tsx', { verbosity: 3 }).exec()
+export const checkTypes: gulp.TaskFunction = () => (
+  execute('tsc --noEmit')
+);
+
+export const lint: gulp.TaskFunction = () => (
+  execute('eslint . --ext .ts --ext .tsx')
 );
 
 export const runServer: gulp.TaskFunction = runServerTask;
@@ -64,10 +72,6 @@ async function watchClientTask() {
 async function buildProductionClientBundleTask() {
   await runParcel(true);
 }
-
-const execute = (command: string): Duplex => (
-  run(command, { verbosity: 3 }).exec()
-);
 
 export function dbMigrationCreate() {
   const name = argv.name || 'new';

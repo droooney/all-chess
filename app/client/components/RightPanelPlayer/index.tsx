@@ -45,7 +45,8 @@ export default class RightPanelPlayer extends React.Component<Props> {
     const time = Math.max(
       player.color === realTurn
         ? player.time! - timePassedSinceLastMove
-        : player.time!
+        : player.time!,
+      0
     );
 
     if (time > ONE_DAY) {
@@ -100,66 +101,77 @@ export default class RightPanelPlayer extends React.Component<Props> {
       timeControl,
       isTop
     } = this.props;
+    const elements: JSX.Element[] = [];
+
+    if (isPocketUsed) {
+      elements.push(
+        <div key="pocket" className="pocket">
+          {pocketPiecesUsed.map((type) => {
+            const pieces = pocket.filter(({ type: pieceType }) => pieceType === type);
+
+            return (
+              <div
+                key={type}
+                className={classNames('piece-container', {
+                  disabled: !pieces.length
+                })}
+                onClick={pieces.length ? (() => this.onPocketPieceClick(pieces[0].location)) : undefined}
+              >
+                {
+                  selectedPiece
+                  && currentPlayer
+                  && selectedPiece.location.pieceType === type
+                  && player.color === currentPlayer.color
+                  && (
+                    <div className="selected-square" />
+                  )
+                }
+
+                <Piece
+                  key={type}
+                  piece={pieces.length ? pieces[0] : {
+                    color: player.color,
+                    type,
+                    location: {
+                      type: PieceLocationEnum.POCKET,
+                      pieceType: type
+                    }
+                  }}
+                />
+
+                {!!pieces.length && (
+                  <span className="count">
+                    {pieces.length}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (timeControl) {
+      elements.push(
+        <div key="timer" className="timer">
+          {this.getTimeString()}
+        </div>
+      );
+    }
+
+    elements.push(
+      <div key="login">
+        {player.login}
+      </div>
+    );
+
+    if (!isTop) {
+      elements.reverse();
+    }
 
     return (
-      <div className={`player ${isTop ? 'top' : 'bottom'}`}>
-
-        {isPocketUsed && (
-          <div className="pocket">
-            {pocketPiecesUsed.map((type) => {
-              const pieces = pocket.filter(({ type: pieceType }) => pieceType === type);
-
-              return (
-                <div
-                  key={type}
-                  className={classNames('piece-container', {
-                    disabled: !pieces.length
-                  })}
-                  onClick={pieces.length ? (() => this.onPocketPieceClick(pieces[0].location)) : undefined}
-                >
-                  {
-                    selectedPiece
-                    && currentPlayer
-                    && selectedPiece.location.pieceType === type
-                    && player.color === currentPlayer.color
-                    && (
-                      <div className="selected-square" />
-                    )
-                  }
-
-                  <Piece
-                    key={type}
-                    piece={pieces.length ? pieces[0] : {
-                      color: player.color,
-                      type,
-                      location: {
-                        type: PieceLocationEnum.POCKET,
-                        pieceType: type
-                      }
-                    }}
-                  />
-
-                  {!!pieces.length && (
-                    <span className="count">
-                      {pieces.length}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {timeControl && (
-          <div className="timer">
-            {this.getTimeString()}
-          </div>
-        )}
-
-        <div>
-          {player.login}
-        </div>
-
+      <div className="player">
+        {elements}
       </div>
     );
   }

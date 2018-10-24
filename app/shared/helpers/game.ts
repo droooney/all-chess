@@ -1,7 +1,9 @@
 import * as _ from 'lodash';
 import {
   BaseMove,
+  BoardDimensions,
   BoardPiece,
+  CastlingTypeEnum,
   CenterSquareParams,
   ChatMessage,
   ColorEnum,
@@ -14,6 +16,7 @@ import {
   GameStatusEnum,
   GameVariantEnum,
   Move,
+  PGNTags,
   Piece,
   PieceBoardLocation,
   PieceLocationEnum,
@@ -25,9 +28,11 @@ import {
   RevertableMove,
   Square,
   StartingData,
-  TimeControl
+  TimeControl,
+  TimeControlEnum
 } from '../../types';
 import {
+  GAME_VARIANT_PGN_NAMES,
   PIECE_LITERALS,
   SHORT_PIECE_NAMES
 } from '../constants';
@@ -42,7 +47,14 @@ interface PerformMoveReturnValue {
   algebraic: string;
   figurine: string;
   movedPiece: RealPiece;
+  isCapture: boolean;
   revertMove(): void;
+}
+
+interface RegisterMoveReturnValue {
+  movedPiece: RealPiece;
+  isWin: boolean;
+  isCapture: boolean;
 }
 
 interface PossibleMovesOptions {
@@ -51,6 +63,17 @@ interface PossibleMovesOptions {
   onlyVisible?: true;
   onlyPossible?: true;
 }
+
+interface ParseFenOptions {
+  boardCount?: number;
+  boardWidth?: number;
+  boardHeight?: number;
+  variants: GameVariantEnum[];
+}
+
+type CastlingRookCoordinates = {
+  [castling in CastlingTypeEnum]: Square | null;
+};
 
 const ATOMIC_SQUARE_INCREMENTS: [number, number][] = [
   [-1, -1],
@@ -100,12 +123,41 @@ const CLASSIC_PIECE_PLACEMENT = [
   PieceTypeEnum.ROOK
 ];
 
+const CLASSIC_VALID_PROMOTIONS = [
+  PieceTypeEnum.QUEEN,
+  PieceTypeEnum.ROOK,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.KNIGHT
+];
+
+const partialStandardStartingData = {
+  turn: ColorEnum.WHITE,
+  startingMoveIndex: 0,
+  pliesWithoutCaptureOrPawnMove: 0,
+  possibleEnPassant: null,
+  possibleCastling: {
+    [ColorEnum.WHITE]: {
+      [CastlingTypeEnum.KING_SIDE]: true,
+      [CastlingTypeEnum.QUEEN_SIDE]: true
+    },
+    [ColorEnum.BLACK]: {
+      [CastlingTypeEnum.KING_SIDE]: true,
+      [CastlingTypeEnum.QUEEN_SIDE]: true
+    }
+  }
+};
+
+const CASTLING_FEN_REGEX = /^[kq]+$/i;
+const DIGITS_REGEX = /^\d+$/;
+const PGN_TAG_REGEX = /^\[([a-z0-9]+) +"((?:[^"\\]|\\"|\\\\)+)"]$/i;
+const MOVE_REGEX = /^\S+(?=\s|$)/;
+const MOVE_SQUARES_MATCH = /^(?:([A-Z]?)(@?)([₀-₉]*)([a-w]*)(\d*)[x→]?([₀-₉]*)([a-w])(\d+))|O-O(-O)?/;
+const PROMOTION_REGEX = /^=([A-Z])/;
+const SQUARE_REGEX = /^[a-w]\d+$/;
+
 export class Game implements IGame {
   static validateVariants(variants: GameVariantEnum[]): boolean {
     return ((
-      !_.includes(variants, GameVariantEnum.CIRCE)
-      || !_.includes(variants, GameVariantEnum.CHESS_960)
-    ) && (
       !_.includes(variants, GameVariantEnum.KING_OF_THE_HILL)
       || !_.includes(variants, GameVariantEnum.LAST_CHANCE)
     ) && (
@@ -117,6 +169,7 @@ export class Game implements IGame {
         && !_.includes(variants, GameVariantEnum.CIRCE)
         && !_.includes(variants, GameVariantEnum.LAST_CHANCE)
         && !_.includes(variants, GameVariantEnum.PATROL)
+        && !_.includes(variants, GameVariantEnum.MADRASI)
         && !_.includes(variants, GameVariantEnum.ALICE_CHESS)
         && !_.includes(variants, GameVariantEnum.CHESSENCE)
         && !_.includes(variants, GameVariantEnum.HORDE)
@@ -140,10 +193,12 @@ export class Game implements IGame {
         !_.includes(variants, GameVariantEnum.KING_OF_THE_HILL)
         && !_.includes(variants, GameVariantEnum.CIRCE)
         && !_.includes(variants, GameVariantEnum.LAST_CHANCE)
-        && !_.includes(variants, GameVariantEnum.TWO_FAMILIES)
+        && !_.includes(variants, GameVariantEnum.PATROL)
+        && !_.includes(variants, GameVariantEnum.MADRASI)
         && !_.includes(variants, GameVariantEnum.ALICE_CHESS)
         && !_.includes(variants, GameVariantEnum.ATOMIC)
         && !_.includes(variants, GameVariantEnum.CRAZYHOUSE)
+        && !_.includes(variants, GameVariantEnum.DARK_CHESS)
       )
     ) && (
       !_.includes(variants, GameVariantEnum.DARK_CHESS)
@@ -222,9 +277,7 @@ export class Game implements IGame {
     });
 
     return {
-      boardCount: 1,
-      boardWidth,
-      boardHeight,
+      ...partialStandardStartingData,
       pieces,
       voidSquares,
       emptySquares: []
@@ -277,14 +330,26 @@ export class Game implements IGame {
     });
 
     return {
-      boardCount: 1,
-      boardWidth,
-      boardHeight,
+      ...partialStandardStartingData,
       pieces,
       voidSquares: [],
       emptySquares: []
     };
   })();
+
+  static getBoardDimensions(variants: GameVariantEnum[]): BoardDimensions {
+    const isChessence = _.includes(variants, GameVariantEnum.CHESSENCE);
+
+    return {
+      boardCount: _.includes(variants, GameVariantEnum.ALICE_CHESS) ? 2 : 1,
+      boardWidth: isChessence
+        ? 6
+        : _.includes(variants, GameVariantEnum.TWO_FAMILIES)
+          ? 10
+          : 8,
+      boardHeight: isChessence ? 9 : 8
+    };
+  }
 
   static generateClassicStartingData(boardWidth: number, boardHeight: number, isRandom: boolean): StartingData {
     let id = 0;
@@ -394,38 +459,35 @@ export class Game implements IGame {
     });
 
     return {
-      boardCount: 1,
-      boardWidth,
-      boardHeight,
+      ...partialStandardStartingData,
       pieces,
       voidSquares: [],
       emptySquares: []
     };
   }
 
-  static getStartingData(settings: GameCreateSettings): StartingData {
+  static getStartingData(variants: GameVariantEnum[]): StartingData {
+    const boardDimensions = Game.getBoardDimensions(variants);
     let startingData: StartingData;
 
-    if (_.includes(settings.variants, GameVariantEnum.CHESSENCE)) {
+    if (_.includes(variants, GameVariantEnum.CHESSENCE)) {
       startingData = this.chessenceStartingData;
-    } else if (_.includes(settings.variants, GameVariantEnum.HORDE)) {
+    } else if (_.includes(variants, GameVariantEnum.HORDE)) {
       startingData = this.hordeStartingData;
     } else {
       startingData = this.generateClassicStartingData(
-        _.includes(settings.variants, GameVariantEnum.TWO_FAMILIES)
-          ? 10
-          : 8,
-        8,
-        _.includes(settings.variants, GameVariantEnum.CHESS_960)
+        boardDimensions.boardWidth,
+        boardDimensions.boardHeight,
+        _.includes(variants, GameVariantEnum.CHESS_960)
       );
     }
 
     startingData = { ...startingData };
 
-    if (_.includes(settings.variants, GameVariantEnum.MONSTER_CHESS)) {
-      const halfWidth = Math.round(startingData.boardWidth / 2);
+    if (_.includes(variants, GameVariantEnum.MONSTER_CHESS)) {
+      const halfWidth = Math.round(boardDimensions.boardWidth / 2);
       const left = Math.ceil(halfWidth / 2);
-      const right = startingData.boardWidth - Math.floor(halfWidth / 2);
+      const right = boardDimensions.boardWidth - Math.floor(halfWidth / 2);
 
       startingData.pieces = [...startingData.pieces];
 
@@ -448,8 +510,7 @@ export class Game implements IGame {
       }
     }
 
-    if (_.includes(settings.variants, GameVariantEnum.ALICE_CHESS)) {
-      startingData.boardCount = 2;
+    if (_.includes(variants, GameVariantEnum.ALICE_CHESS)) {
       startingData.voidSquares = [
         ...startingData.voidSquares,
         ...startingData.voidSquares.map((square) => ({ ...square, board: 1 }))
@@ -459,7 +520,7 @@ export class Game implements IGame {
         ...startingData.emptySquares.map((square) => ({ ...square, board: 1 }))
       ];
 
-      if (_.includes(settings.variants, GameVariantEnum.CHESSENCE)) {
+      if (_.includes(variants, GameVariantEnum.CHESSENCE)) {
         startingData.pieces = [...startingData.pieces];
 
         const pieceType = PieceTypeEnum.MAN;
@@ -496,6 +557,581 @@ export class Game implements IGame {
     }
 
     return startingData;
+  }
+
+  static getStartingDataFromFen(fen: string, options: ParseFenOptions): StartingData {
+    const {
+      boardCount = 1,
+      boardWidth = 8,
+      boardHeight = 8
+    } = options;
+    const startingData: StartingData = {
+      possibleCastling: {
+        [ColorEnum.WHITE]: {
+          [CastlingTypeEnum.KING_SIDE]: false,
+          [CastlingTypeEnum.QUEEN_SIDE]: false
+        },
+        [ColorEnum.BLACK]: {
+          [CastlingTypeEnum.KING_SIDE]: false,
+          [CastlingTypeEnum.QUEEN_SIDE]: false
+        }
+      },
+      possibleEnPassant: null,
+      turn: ColorEnum.WHITE,
+      startingMoveIndex: 0,
+      pliesWithoutCaptureOrPawnMove: 0,
+      pieces: [],
+      voidSquares: [],
+      emptySquares: []
+    };
+    const isPocketUsed = Game.getIsPocketUsed(options.variants);
+    const isTwoFamilies = _.includes(options.variants, GameVariantEnum.TWO_FAMILIES);
+    const isMonsterChess = _.includes(options.variants, GameVariantEnum.MONSTER_CHESS);
+    const isAliceChess = _.includes(options.variants, GameVariantEnum.ALICE_CHESS);
+    const isHorde = _.includes(options.variants, GameVariantEnum.HORDE);
+    const fenData = fen.trim().split(/\s+/);
+    const boards = fenData.slice(0, boardCount);
+    const invalidFenError = new Error('Invalid FEN');
+
+    // 5 is turn, possible castling, possible en passant, pliesWithoutCaptureOrPawnMove, startingMoveIndex
+    if (fenData.length !== boardCount + 5) {
+      throw invalidFenError;
+    }
+
+    const [
+      turnString,
+      possibleCastlingString,
+      possibleEnPassantString,
+      pliesWithoutCaptureOrPawnMoveString,
+      startingMoveIndexString
+    ] = fenData.slice(boardCount);
+    const possibleTurnValues = isMonsterChess
+      ? ['w1', 'w2', 'b']
+      : ['w', 'b'];
+
+    if (!_.includes(possibleTurnValues, turnString)) {
+      throw invalidFenError;
+    }
+
+    startingData.turn = turnString === 'b' ? ColorEnum.BLACK : ColorEnum.WHITE;
+
+    if (possibleCastlingString !== '-' && !CASTLING_FEN_REGEX.test(possibleCastlingString)) {
+      throw invalidFenError;
+    }
+
+    if (possibleCastlingString !== '-') {
+      startingData.possibleCastling[ColorEnum.WHITE][CastlingTypeEnum.KING_SIDE] = _.includes(possibleCastlingString, 'K');
+      startingData.possibleCastling[ColorEnum.WHITE][CastlingTypeEnum.QUEEN_SIDE] = _.includes(possibleCastlingString, 'Q');
+      startingData.possibleCastling[ColorEnum.BLACK][CastlingTypeEnum.KING_SIDE] = _.includes(possibleCastlingString, 'k');
+      startingData.possibleCastling[ColorEnum.BLACK][CastlingTypeEnum.QUEEN_SIDE] = _.includes(possibleCastlingString, 'q');
+    }
+
+    if (possibleEnPassantString !== '-') {
+      if (
+        _.includes(options.variants, GameVariantEnum.CHESSENCE)
+        || (isMonsterChess && turnString === 'w2')
+      ) {
+        throw invalidFenError;
+      }
+
+      const enPassantSquareMatch = possibleEnPassantString.match(SQUARE_REGEX);
+
+      if (!enPassantSquareMatch) {
+        throw invalidFenError;
+      }
+
+      const file = Game.getFileNumber(enPassantSquareMatch[1]);
+      const rank = Game.getFileNumber(enPassantSquareMatch[2]);
+
+      if (
+        !(file >= 0)
+        || !(file < boardWidth)
+        || (
+          rank !== 2
+          && rank !== boardHeight - 3
+        )
+      ) {
+        throw invalidFenError;
+      }
+
+      startingData.possibleEnPassant = {
+        enPassantSquare: {
+          board: 0,
+          x: file,
+          y: rank
+        },
+        pieceLocation: {
+          board: 0,
+          x: file,
+          y: startingData.turn === ColorEnum.WHITE ? boardHeight - 4 : 3
+        }
+      };
+    }
+
+    if (!DIGITS_REGEX.test(pliesWithoutCaptureOrPawnMoveString)) {
+      throw invalidFenError;
+    }
+
+    startingData.pliesWithoutCaptureOrPawnMove = +pliesWithoutCaptureOrPawnMoveString;
+
+    if (startingMoveIndexString === '0' && !DIGITS_REGEX.test(startingMoveIndexString)) {
+      throw invalidFenError;
+    }
+
+    const startingMoveIndexNumber = +startingMoveIndexString - 1;
+
+    startingData.startingMoveIndex = isMonsterChess
+      ? 3 * startingMoveIndexNumber + (turnString === 'b' ? 2 : turnString === 'w2' ? 1 : 0)
+      : 2 * startingMoveIndexNumber + (turnString === 'b' ? 1 : 0);
+
+    let id = 0;
+    const getPiece = (color: ColorEnum, type: PieceTypeEnum, location: RealPieceLocation): RealPiece => ({
+      id: `${++id}`,
+      type,
+      originalType: type,
+      color,
+      moved: false,
+      location
+    } as RealPiece);
+
+    for (let board = 0; board < boards.length; board++) {
+      const ranks = boards[board].split('/').reverse();
+      const ranksCount = isPocketUsed && board === 0 ? boardHeight + 1 : boardHeight;
+
+      if (ranks.length !== ranksCount) {
+        throw invalidFenError;
+      }
+
+      for (let rank = ranksCount - boardHeight; rank < ranks.length; rank++) {
+        const fileData = ranks[rank];
+        let file = 0;
+        let string = fileData;
+
+        while (string) {
+          const emptySquaresMatch = string.match(/^\d+/);
+
+          if (emptySquaresMatch) {
+            file += +emptySquaresMatch[0];
+            string = string.slice(emptySquaresMatch[0].length);
+          } else {
+            const character = string[0];
+
+            if (character === '-') {
+              startingData.voidSquares.push({ board, x: file, y: rank });
+            } else {
+              const piece = Game.getPieceFromLiteral(character);
+
+              if (!piece) {
+                throw invalidFenError;
+              }
+
+              // not promoted pawns
+              if (piece.type === PieceTypeEnum.PAWN && rank === (piece.color === ColorEnum.WHITE ? boardHeight - 1 : 0)) {
+                throw invalidFenError;
+              }
+
+              startingData.pieces.push(getPiece(
+                piece.color,
+                piece.type,
+                {
+                  type: PieceLocationEnum.BOARD,
+                  board,
+                  x: file,
+                  y: rank
+                }
+              ));
+            }
+
+            file += 1;
+            string = string.slice(1);
+          }
+        }
+
+        if (file !== boardWidth) {
+          throw invalidFenError;
+        }
+      }
+
+      if (ranksCount !== boardHeight) {
+        const pocket = ranks[0];
+
+        for (let pieceIndex = 0; pieceIndex < pocket.length; pieceIndex++) {
+          const piece = Game.getPieceFromLiteral(pocket[pieceIndex]);
+
+          if (!piece) {
+            throw invalidFenError;
+          }
+
+          startingData.pieces.push(getPiece(
+            piece.color,
+            piece.type,
+            {
+              type: PieceLocationEnum.POCKET,
+              pieceType: piece.type
+            }
+          ));
+        }
+      }
+    }
+
+    if (
+      isAliceChess
+      && startingData.pieces.some(({ location }) => (
+        location.type === PieceLocationEnum.BOARD
+        && startingData.pieces.some(({ location: pieceLocation }) => (
+          pieceLocation.type === PieceLocationEnum.BOARD
+          && location.x === pieceLocation.x
+          && location.y === pieceLocation.y
+          && location.board !== pieceLocation.board
+        ))
+      ))
+    ) {
+      throw invalidFenError;
+    }
+
+    const whiteKingsCount = startingData.pieces.filter(({ color, type }) => (
+      color === ColorEnum.WHITE
+      && type === PieceTypeEnum.KING
+    )).length;
+    const blackKingsCount = startingData.pieces.filter(({ color, type }) => (
+      color === ColorEnum.WHITE
+      && type === PieceTypeEnum.KING
+    )).length;
+
+    if (
+      whiteKingsCount !== (isHorde ? 0 : isTwoFamilies ? 2 : 1)
+      || blackKingsCount !== (isTwoFamilies ? 2 : 1)
+    ) {
+      throw invalidFenError;
+    }
+
+    if (startingData.possibleEnPassant) {
+      const { x, y } = startingData.possibleEnPassant.pieceLocation;
+      const enPassantPiece = _.find(startingData.pieces, ({ type, location }) => (
+        type === PieceTypeEnum.PAWN
+        && location.type === PieceLocationEnum.BOARD
+        && location.x === x
+        && location.y === y
+      )) as BoardPiece | undefined;
+
+      if (!enPassantPiece) {
+        throw invalidFenError;
+      }
+
+      startingData.possibleEnPassant.enPassantSquare.board = (enPassantPiece.location.board + boardCount - 1) % boardCount;
+      startingData.possibleEnPassant.pieceLocation.board = enPassantPiece.location.board;
+    }
+
+    return startingData;
+  }
+
+  static getGameFromPgn(pgn: string): Game {
+    const pgnData = pgn
+      .split('\n')
+      .map((string) => string.trim())
+      .filter(Boolean);
+    const variants: GameVariantEnum[] = [];
+    const pgnTags: PGNTags = {};
+    const invalidPgnError = new Error('Invalid PGN');
+    let timeControl: TimeControl = null;
+    let startingData: StartingData;
+    let fen = '';
+    let i = 0;
+
+    for (; i < pgnData.length; i++) {
+      const tag = pgnData[i];
+      const match = tag.match(PGN_TAG_REGEX);
+
+      if (!match) {
+        break;
+      }
+
+      const [, tagName, tagValue] = match;
+      const trueTagValue = tagValue
+        .replace(/\\"/g, '"')
+        .replace(/\\\\/, '\\');
+
+      if (tagName === 'Variant') {
+        const variantStrings = trueTagValue.split(/\s+\+\s+/);
+
+        for (let i = 0; i < variantStrings.length; i++) {
+          const variant = _.findKey(GAME_VARIANT_PGN_NAMES, (name) => name === variantStrings[i]) as GameVariantEnum | undefined;
+
+          if (!variant) {
+            throw invalidPgnError;
+          }
+
+          variants.push(variant);
+        }
+      } else if (tagName === 'TimeControl') {
+        if (trueTagValue !== '-') {
+          const values = trueTagValue.split(/\s+\+\s+/);
+          const baseString = values[0];
+          const base = +(+baseString * 60 * 1000).toFixed(2);
+
+          if (
+            (
+              values.length !== 1
+              && values.length !== 2
+            )
+            || baseString === '0'
+            || !DIGITS_REGEX.test(baseString)
+          ) {
+            throw invalidPgnError;
+          }
+
+          if (values.length === 1) {
+            timeControl = {
+              type: TimeControlEnum.CORRESPONDENCE,
+              base
+            };
+          } else {
+            const incrementString = values[1];
+
+            if (!DIGITS_REGEX.test(incrementString)) {
+              throw invalidPgnError;
+            }
+
+            const increment = +(+incrementString * 1000).toFixed(2);
+
+            timeControl = {
+              type: TimeControlEnum.TIMER,
+              base,
+              increment
+            };
+          }
+        }
+      } else if (tagName === 'FEN') {
+        fen = trueTagValue;
+      } else {
+        pgnTags[tagName] = trueTagValue;
+      }
+    }
+
+    if (fen) {
+      startingData = Game.getStartingDataFromFen(fen, {
+        ...Game.getBoardDimensions(variants),
+        variants
+      });
+    } else {
+      startingData = Game.getStartingData(variants);
+    }
+
+    const game = new Game({
+      id: '',
+      startingData,
+      variants,
+      timeControl,
+      pgnTags
+    });
+
+    if (!game.isLeftInCheckAllowed && game.isInCheck(game.getPrevTurn())) {
+      throw new Error('Invalid FEN');
+    }
+
+    if (i < pgnData.length) {
+      let movesString = pgnData
+        .slice(i)
+        .map((string) => string.replace(/;[\s\S]*$/, ''))
+        .filter(Boolean)
+        .join(' ');
+      let shouldBeMoveIndex = true;
+      let wasMoveIndex = false;
+
+      while (movesString) {
+        const whitespace = movesString.match(/^\s+/);
+
+        // whitespace
+        if (whitespace) {
+          movesString = movesString.slice(whitespace.length);
+
+          continue;
+        }
+
+        const isComment = movesString.indexOf('{') === 0;
+
+        // comment
+        if (isComment) {
+          const commentEnd = movesString.indexOf('}');
+
+          if (commentEnd === -1) {
+            throw invalidPgnError;
+          }
+
+          movesString = movesString.slice(commentEnd + 1);
+
+          continue;
+        }
+
+        // game result
+        if (
+          (movesString === '*' && !game.result)
+          || (movesString === '1-0' && game.result && game.result.winner === ColorEnum.WHITE)
+          || (movesString === '0-1' && game.result && game.result.winner === ColorEnum.BLACK)
+          || (movesString === '1/2-1/2')
+        ) {
+          break;
+        }
+
+        // move index including dots
+        if (shouldBeMoveIndex) {
+          const moveIndex = Math.floor(game.movesCount / game.pliesPerMove) + 1;
+          const moveIndexString = startingData.startingMoveIndex && !wasMoveIndex
+            ? `${moveIndex}...`
+            : `${moveIndex}.`;
+
+          if (movesString.indexOf(moveIndexString) !== 0) {
+            throw invalidPgnError;
+          }
+
+          movesString = movesString.slice(moveIndexString.length);
+          shouldBeMoveIndex = false;
+          wasMoveIndex = true;
+
+          continue;
+        }
+
+        // move
+        const moveMatch = movesString.match(MOVE_REGEX);
+
+        if (!moveMatch) {
+          throw invalidPgnError;
+        }
+
+        const moveString = moveMatch[0];
+        const moveSquaresMatch = moveString.match(MOVE_SQUARES_MATCH);
+
+        if (!moveSquaresMatch) {
+          throw invalidPgnError;
+        }
+
+        const [
+          moveSquares,
+          pieceLiteral,
+          drop,
+          fromBoardLiteral = '',
+          fromFileLiteral = '',
+          fromRankLiteral = '',
+          toBoardLiteral,
+          toFileLiteral,
+          toRankLiteral,
+          queenSideCastling
+        ] = moveSquaresMatch;
+        const isDrop = !!drop;
+        const isCastling = _.includes(moveSquares, 'O-O');
+        const isQueenSideCastling = !!queenSideCastling;
+        const pieceFromLiteral = Game.getPieceFromLiteral(isCastling ? 'K' : pieceLiteral || 'P');
+
+        if (!pieceFromLiteral) {
+          throw invalidPgnError;
+        }
+
+        const pieceType = pieceFromLiteral.type;
+        const fromBoard = Game.getBoardNumber(fromBoardLiteral);
+        const fromFile = Game.getFileNumber(fromFileLiteral);
+        const fromRank = Game.getRankNumber(fromRankLiteral);
+        let toBoard: number;
+        let toFile: number;
+        let toRank: number;
+
+        if (isCastling) {
+          const kings = game.kings[game.turn];
+          const king = isQueenSideCastling ? kings[0] : _.last(kings);
+
+          if (!king || !king.location || king.location.type !== PieceLocationEnum.BOARD) {
+            throw invalidPgnError;
+          }
+
+          const castlingRooks = game.getCastlingRooks(game.turn);
+          const castlingRook = castlingRooks[isQueenSideCastling ? CastlingTypeEnum.QUEEN_SIDE : CastlingTypeEnum.KING_SIDE];
+
+          if (!castlingRook) {
+            throw invalidPgnError;
+          }
+
+          toBoard = king.location.board;
+          toFile = game.is960
+            ? castlingRook.location.x
+            : isQueenSideCastling
+              ? 2
+              : game.boardWidth - 2;
+          toRank = king.location.y;
+        } else {
+          toBoard = Game.getBoardNumber(toBoardLiteral);
+          toFile = Game.getFileNumber(toFileLiteral);
+          toRank = Game.getRankNumber(toRankLiteral);
+        }
+
+        const getToSquare = (piece: RealPiece): Square => ({
+          board: piece.location.type === PieceLocationEnum.POCKET
+            ? game.isAliceChess
+              ? toBoard
+              : 0
+            : piece.location.board,
+          x: toFile,
+          y: toRank
+        });
+        const pieces = game.getPieces(game.turn)
+          .filter(Game.isRealPiece)
+          .filter((piece) => {
+            const toSquare = getToSquare(piece);
+
+            return (
+              piece.type === pieceType
+              && ((
+                isDrop
+                && piece.location.type === PieceLocationEnum.POCKET
+              ) || (
+                piece.location.type === PieceLocationEnum.BOARD
+                && (!fromBoardLiteral || piece.location.board === fromBoard)
+                && (!fromFileLiteral || piece.location.x === fromFile)
+                && (!fromRankLiteral || piece.location.x === fromRank)
+              ))
+              && game.getAllowedMoves(piece).some((square) => this.areSquaresEqual(square, toSquare))
+            );
+          });
+
+        if (isDrop ? !pieces.length : pieces.length !== 1) {
+          throw invalidPgnError;
+        }
+
+        const piece = pieces[0];
+        const toSquare = getToSquare(piece);
+        const move: Move = {
+          from: piece.location,
+          to: toSquare,
+          timestamp: 0
+        };
+        const isPawnPromotion = game.isPawnPromotion(move);
+
+        if (isPawnPromotion) {
+          const promotionMatch = moveString.slice(moveSquares.length).match(PROMOTION_REGEX);
+
+          if (!promotionMatch) {
+            throw invalidPgnError;
+          }
+
+          const promotedPiece = Game.getPieceFromLiteral(promotionMatch[1]);
+
+          if (!promotedPiece || _.includes(game.validPromotions, promotedPiece.type)) {
+            throw invalidPgnError;
+          }
+
+          move.promotion = promotedPiece.type;
+        }
+
+        game.registerMove(move);
+
+        if (_.last(game.moves)!.algebraic !== moveString) {
+          throw invalidPgnError;
+        }
+
+        movesString = movesString.slice(moveString.length);
+        shouldBeMoveIndex = game.movesCount % game.pliesPerMove === 0;
+      }
+    }
+
+    return game;
   }
 
   static generateGameDataFromStartingData(startingData: StartingData): BoardData {
@@ -536,16 +1172,60 @@ export class Game implements IGame {
     return id;
   }
 
+  static getIsPocketUsed(variants: GameVariantEnum[]): boolean {
+    return (
+      _.includes(variants, GameVariantEnum.CRAZYHOUSE)
+      || _.includes(variants, GameVariantEnum.CHESSENCE)
+    );
+  }
+
   static getBoardLiteral(board: number): string {
-    return board === 0 ? '₁' : '₂';
+    return (board + 1)
+      .toString()
+      .split('')
+      .map((digit) => String.fromCharCode(+digit + 8320))
+      .join('');
+  }
+
+  static getBoardNumber(boardLiteral: string): number {
+    const digitCharCodes = boardLiteral
+      .split('')
+      .map((digit) => digit.charCodeAt(0) - 8320);
+
+    if (digitCharCodes.some((charCode) => charCode < 0 || charCode > 9)) {
+      return -1;
+    }
+
+    return +digitCharCodes.join('') - 1;
   }
 
   static getFileLiteral(file: number): string {
     return String.fromCharCode(file + 97);
   }
 
+  static getFileNumber(fileLiteral: string): number {
+    return fileLiteral.length
+      ? fileLiteral.charCodeAt(0) - 97
+      : -1;
+  }
+
   static getRankLiteral(rank: number): number {
     return rank + 1;
+  }
+
+  static getRankNumber(rankLiteral: string): number {
+    return (Number(rankLiteral) || 0) - 1;
+  }
+
+  static getPieceFromLiteral(pieceLiteral: string): { color: ColorEnum; type: PieceTypeEnum } | undefined {
+    const pieceName = pieceLiteral.toUpperCase();
+    const color = pieceName === pieceLiteral ? ColorEnum.WHITE : ColorEnum.BLACK;
+    const pieceType = _.findKey(SHORT_PIECE_NAMES, (shortPieceName) => shortPieceName === pieceName) as PieceTypeEnum | undefined;
+
+    return pieceType && {
+      color,
+      type: pieceType
+    };
   }
 
   static getOppositeColor(color: ColorEnum): ColorEnum {
@@ -583,20 +1263,23 @@ export class Game implements IGame {
   status: GameStatusEnum = GameStatusEnum.BEFORE_START;
   isCheck: boolean = false;
   result: GameResult | null = null;
-  turn: ColorEnum = ColorEnum.WHITE;
+  turn: ColorEnum;
   timeControl: TimeControl;
+  pgnTags: PGNTags;
   moves: RevertableMove[] = [];
   colorMoves: { [color in ColorEnum]: DarkChessMove[] } = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  movesCount = 0;
+  movesCount: number;
   chat: ChatMessage[] = [];
-  possibleEnPassant: Square | null = null;
-  possibleEnPassantPieceLocation: Square | null = null;
+  possibleEnPassant: Square | null;
+  possibleEnPassantPieceLocation: Square | null;
   positionsMap: { [position: string]: number; } = {};
-  positionString: string;
-  pliesWithoutCaptureOrPawnMove: number = 0;
+  positionString: string = '';
+  castlingRookCoordinates: { [color in ColorEnum]: CastlingRookCoordinates; };
+  startingMoveIndex: number;
+  pliesWithoutCaptureOrPawnMove: number;
   kings: GameKings = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
@@ -613,6 +1296,7 @@ export class Game implements IGame {
     PieceTypeEnum.KNIGHT,
     PieceTypeEnum.PAWN
   ];
+  validPromotions: PieceTypeEnum[] = CLASSIC_VALID_PROMOTIONS;
   teleportUsed: { [color in ColorEnum]: boolean } = {
     [ColorEnum.WHITE]: false,
     [ColorEnum.BLACK]: false
@@ -635,7 +1319,7 @@ export class Game implements IGame {
   isLeftInCheckAllowed: boolean;
   isThreefoldRepetitionDrawPossible: boolean = false;
   is50MoveDrawPossible: boolean = false;
-  numberOfMovesBeforeStart: number;
+  pliesPerMove: number;
   boardCount: number;
   boardWidth: number;
   boardHeight: number;
@@ -644,12 +1328,14 @@ export class Game implements IGame {
   variants: GameVariantEnum[];
   drawOffer: ColorEnum | null = null;
 
-  constructor(settings: GameCreateSettings & { id: string; startingData?: StartingData; }) {
+  constructor(settings: GameCreateSettings & { id: string; pgnTags?: PGNTags; startingData?: StartingData; }) {
     this.id = settings.id;
-    this.startingData = settings.startingData || Game.getStartingData(settings);
-    this.boardCount = this.startingData.boardCount;
-    this.boardWidth = this.startingData.boardWidth;
-    this.boardHeight = this.startingData.boardHeight;
+    this.startingData = settings.startingData || Game.getStartingData(settings.variants);
+    ({
+      boardCount: this.boardCount,
+      boardWidth: this.boardWidth,
+      boardHeight: this.boardHeight
+    } = Game.getBoardDimensions(settings.variants));
     this.nullSquares = [
       ...this.startingData.voidSquares,
       ...this.startingData.emptySquares
@@ -660,11 +1346,15 @@ export class Game implements IGame {
       kings: this.kings
     } = Game.generateGameDataFromStartingData(this.startingData));
 
+    this.pgnTags = settings.pgnTags || {};
     this.timeControl = settings.timeControl;
     this.variants = settings.variants;
 
-    this.positionString = this.generatePositionString();
-    this.positionsMap[this.positionString] = 1;
+    this.turn = this.startingData.turn;
+    this.movesCount = this.startingMoveIndex = this.startingData.startingMoveIndex;
+    this.pliesWithoutCaptureOrPawnMove = this.startingData.pliesWithoutCaptureOrPawnMove;
+    this.possibleEnPassant = this.startingData.possibleEnPassant && this.startingData.possibleEnPassant.enPassantSquare;
+    this.possibleEnPassantPieceLocation = this.startingData.possibleEnPassant && this.startingData.possibleEnPassant.pieceLocation;
 
     this.isCrazyhouse = _.includes(this.variants, GameVariantEnum.CRAZYHOUSE);
     this.is960 = _.includes(this.variants, GameVariantEnum.CHESS_960);
@@ -680,9 +1370,13 @@ export class Game implements IGame {
     this.isChessence = _.includes(this.variants, GameVariantEnum.CHESSENCE);
     this.isHorde = _.includes(this.variants, GameVariantEnum.HORDE);
     this.isDarkChess = _.includes(this.variants, GameVariantEnum.DARK_CHESS);
-    this.isPocketUsed = this.isCrazyhouse || this.isChessence;
+    this.isPocketUsed = Game.getIsPocketUsed(settings.variants);
     this.isLeftInCheckAllowed = this.isAtomic || this.isMonsterChess || this.isDarkChess;
-    this.numberOfMovesBeforeStart = this.isMonsterChess ? 3 : 2;
+    this.pliesPerMove = this.isMonsterChess ? 3 : 2;
+    this.castlingRookCoordinates = {
+      [ColorEnum.WHITE]: this.getCastlingRookCoordinates(ColorEnum.WHITE),
+      [ColorEnum.BLACK]: this.getCastlingRookCoordinates(ColorEnum.BLACK)
+    };
 
     if (this.isChessence) {
       this.pocketPiecesUsed = [PieceTypeEnum.MAN];
@@ -697,8 +1391,12 @@ export class Game implements IGame {
       kings: this.kings
     } = Game.generateGameDataFromStartingData(this.startingData));
 
-    this.turn = ColorEnum.WHITE;
-    this.positionString = this.generatePositionString();
+    this.turn = this.startingData.turn;
+    this.movesCount = this.startingMoveIndex = this.startingData.startingMoveIndex;
+    this.pliesWithoutCaptureOrPawnMove = this.startingData.pliesWithoutCaptureOrPawnMove;
+    this.possibleEnPassant = this.startingData.possibleEnPassant && this.startingData.possibleEnPassant.enPassantSquare;
+    this.possibleEnPassantPieceLocation = this.startingData.possibleEnPassant && this.startingData.possibleEnPassant.pieceLocation;
+    this.positionString = this.getShortFen();
     this.positionsMap = {};
     this.positionsMap[this.positionString] = 1;
     this.visiblePieces = {
@@ -716,11 +1414,12 @@ export class Game implements IGame {
     }
   }
 
-  registerMove(move: Move): { movedPiece: RealPiece } {
+  registerMove(move: Move): RegisterMoveReturnValue {
     const {
       algebraic,
       figurine,
       movedPiece,
+      isCapture,
       revertMove
     } = this.performMove(move, true, false);
 
@@ -731,7 +1430,7 @@ export class Game implements IGame {
       revertMove
     });
 
-    this.positionString = this.generatePositionString();
+    this.positionString = this.getShortFen();
     this.positionsMap[this.positionString] = (this.positionsMap[this.positionString] || 0) + 1;
     this.isThreefoldRepetitionDrawPossible = !this.isDarkChess && this.positionsMap[this.positionString] >= 3;
     this.is50MoveDrawPossible = !this.isDarkChess && this.pliesWithoutCaptureOrPawnMove >= 100;
@@ -748,7 +1447,11 @@ export class Game implements IGame {
       }
     }
 
-    return { movedPiece };
+    return {
+      movedPiece,
+      isWin: !!winReason,
+      isCapture
+    };
   }
 
   registerDarkChessMove(move: Move) {
@@ -758,12 +1461,18 @@ export class Game implements IGame {
 
       return map;
     }, {} as { [pieceId: string]: true; });
+    const prevVisibleSquares = {
+      [ColorEnum.WHITE]: this.getVisibleSquares(ColorEnum.WHITE),
+      [ColorEnum.BLACK]: this.getVisibleSquares(ColorEnum.BLACK)
+    };
 
-    const { movedPiece: piece } = this.registerMove(move);
+    const {
+      movedPiece: piece,
+      isWin,
+      isCapture
+    } = this.registerMove(move);
 
     const registeredMove = _.last(this.moves)!;
-    const isCapture = _.includes(registeredMove.algebraic, 'x');
-    const isWin = _.includes(registeredMove.algebraic, '#');
     const isPromotion = !!move.promotion;
 
     _.forEach(ColorEnum, (color) => {
@@ -771,6 +1480,7 @@ export class Game implements IGame {
       const oldVisiblePieces = this.visiblePieces[color];
       const newVisiblePieces = this.getVisiblePieces(color);
       const visibleSquares = this.getVisibleSquares(color);
+
       const newPieces = newVisiblePieces.map((piece) => {
         const isOwnPiece = piece.color === color;
         const oldPiece = _.find(oldVisiblePieces, { realId: piece.id });
@@ -778,6 +1488,7 @@ export class Game implements IGame {
         const oldLocationVisible = (
           !!prevPieceLocation
           && prevPieceLocation.type === PieceLocationEnum.BOARD
+          && prevVisibleSquares[color].some((square) => Game.areSquaresEqual(square, prevPieceLocation))
           && visibleSquares.some((square) => Game.areSquaresEqual(square, prevPieceLocation))
         );
         const newLocationVisible = (
@@ -798,6 +1509,7 @@ export class Game implements IGame {
       });
       const fromLocationVisible = (
         move.from.type === PieceLocationEnum.BOARD
+        && prevVisibleSquares[color].some((square) => Game.areSquaresEqual(square, move.from as PieceBoardLocation))
         && visibleSquares.some((square) => Game.areSquaresEqual(square, move.from as PieceBoardLocation))
       );
       const toLocationVisible = visibleSquares.some((square) => Game.areSquaresEqual(square, move.to));
@@ -1330,7 +2042,6 @@ export class Game implements IGame {
       }
 
       const nextBoard = this.getNextBoard(toBoard);
-      const boardAfterNext = this.getNextBoard(nextBoard);
 
       if (!isMainPieceMovedOrDisappeared && fromLocation.type === PieceLocationEnum.BOARD) {
         newLocation = {
@@ -1344,23 +2055,31 @@ export class Game implements IGame {
         const moved = !!disappearedOrMovedPiece.location && disappearedOrMovedPiece.location.type === PieceLocationEnum.BOARD;
 
         if (moved) {
-          const prevBoardSquare = disappearedOrMovedPiece.location as PieceBoardLocation;
-          const nextBoardSquare = {
-            ...prevBoardSquare,
-            board: nextBoard
+          const {
+            x: squareX,
+            y: squareY
+          } = disappearedOrMovedPiece.location as PieceBoardLocation;
+          const square = {
+            x: squareX,
+            y: squareY
           };
-          const nextAfterNextBoardSquare = {
-            ...prevBoardSquare,
-            board: boardAfterNext
-          };
-          const pieceOnTheNextBoard = this.getBoardPiece(nextBoardSquare);
-          const pieceOnTheNextAfterNextBoard = this.getBoardPiece(nextAfterNextBoardSquare);
 
-          // don't allow move to the next board if the square there or on the next board is occupied by another piece
-          if (pieceOnTheNextBoard || (pieceOnTheNextAfterNextBoard && pieceOnTheNextAfterNextBoard.id !== disappearedOrMovedPiece.id)) {
+          // don't allow move to the next board if the square is occupied by another piece on any other board
+          if (
+            _.times(this.boardCount - 1).some((board) => (
+              !!this.getBoardPiece({
+                ...square,
+                board: this.getNextBoard(toBoard + board)
+              })
+            ))
+          ) {
             removePieceOrMoveToOpponentPocket(disappearedOrMovedPiece);
           } else {
-            disappearedOrMovedPiece.location = nextBoardSquare;
+            disappearedOrMovedPiece.location = {
+              ...square,
+              board: nextBoard,
+              type: PieceLocationEnum.BOARD
+            };
           }
         }
       });
@@ -1387,6 +2106,7 @@ export class Game implements IGame {
       algebraic,
       figurine,
       movedPiece: piece,
+      isCapture,
       revertMove: () => {
         this.turn = prevTurn;
         this.isCheck = prevIsCheck;
@@ -1416,74 +2136,136 @@ export class Game implements IGame {
     };
   }
 
-  generatePositionString(): string {
+  getShortFen(): string {
+    const boardsString = _.times(this.boardCount, (board) => (
+      _.times(this.boardHeight, (y) => {
+        let rankString = '';
+        let emptySpaces = 0;
+        const putEmptySpacesIfNeeded = () => {
+          if (emptySpaces) {
+            rankString += emptySpaces;
+            emptySpaces = 0;
+          }
+        };
+
+        _.times(this.boardWidth, (x) => {
+          const square = { board, x, y };
+
+          if (this.isVoidSquare(square)) {
+            putEmptySpacesIfNeeded();
+
+            rankString += '-';
+          } else {
+            const pieceInSquare = this.getBoardPiece(square);
+
+            if (pieceInSquare) {
+              putEmptySpacesIfNeeded();
+
+              rankString += pieceInSquare.color === ColorEnum.WHITE
+                ? SHORT_PIECE_NAMES[pieceInSquare.type]
+                : SHORT_PIECE_NAMES[pieceInSquare.type].toLowerCase();
+            } else {
+              emptySpaces++;
+            }
+          }
+        });
+
+        putEmptySpacesIfNeeded();
+
+        return rankString;
+      })
+        .reverse()
+        .join('/')
+      + (
+        board === 0 && this.isPocketUsed ? (
+          this.pieces
+            .filter(({ location }) => !!location && location.type === PieceLocationEnum.POCKET)
+            .map(({ color, type }) => color === ColorEnum.WHITE ? SHORT_PIECE_NAMES[type] : SHORT_PIECE_NAMES[type].toLowerCase())
+            .join('')
+        ) : ''
+      )
+    )).join(' ');
     const whiteCastlingRooks = this.getCastlingRooks(ColorEnum.WHITE);
     const blackCastlingRooks = this.getCastlingRooks(ColorEnum.BLACK);
     const whiteQueenSideKing = this.kings[ColorEnum.WHITE][0];
     const whiteKingSideKing = _.last(this.kings[ColorEnum.WHITE]);
     const blackQueenSideKing = this.kings[ColorEnum.BLACK][0];
     const blackKingSideKing = _.last(this.kings[ColorEnum.BLACK]);
+    const whiteQueenSideCastlingPossible = (
+      this.startingData.possibleCastling[ColorEnum.WHITE][CastlingTypeEnum.QUEEN_SIDE]
+      && !!whiteQueenSideKing
+      && !whiteQueenSideKing.moved
+      && !!whiteCastlingRooks[CastlingTypeEnum.QUEEN_SIDE]
+      && !whiteCastlingRooks[CastlingTypeEnum.QUEEN_SIDE]!.moved
+    );
+    const whiteKingSideCastlingPossible = (
+      this.startingData.possibleCastling[ColorEnum.WHITE][CastlingTypeEnum.KING_SIDE]
+      && !!whiteKingSideKing
+      && !whiteKingSideKing.moved
+      && !!whiteCastlingRooks[CastlingTypeEnum.KING_SIDE]
+      && !whiteCastlingRooks[CastlingTypeEnum.KING_SIDE]!.moved
+    );
+    const blackQueenSideCastlingPossible = (
+      this.startingData.possibleCastling[ColorEnum.BLACK][CastlingTypeEnum.QUEEN_SIDE]
+      && !!blackQueenSideKing
+      && !blackQueenSideKing.moved
+      && !!blackCastlingRooks[CastlingTypeEnum.QUEEN_SIDE]
+      && !blackCastlingRooks[CastlingTypeEnum.QUEEN_SIDE]!.moved
+    );
+    const blackKingSideCastlingPossible = (
+      this.startingData.possibleCastling[ColorEnum.BLACK][CastlingTypeEnum.KING_SIDE]
+      && !!blackKingSideKing
+      && !blackKingSideKing.moved
+      && !!blackCastlingRooks[CastlingTypeEnum.KING_SIDE]
+      && !blackCastlingRooks[CastlingTypeEnum.KING_SIDE]!.moved
+    );
+    let castlingString = '';
 
-    return JSON.stringify([
-      this.turn,
-      // en passant square
-      this.possibleEnPassant,
-      // white queen-side castling is possible
-      (
-        !!whiteQueenSideKing
-        && !whiteQueenSideKing.moved
-        && !!whiteCastlingRooks[0]
-        && !whiteCastlingRooks[0]!.moved
-      ),
-      // white king-side castling is possible
-      (
-        !!whiteKingSideKing
-        && !whiteKingSideKing.moved
-        && !!whiteCastlingRooks[1]
-        && !whiteCastlingRooks[1]!.moved
-      ),
-      // black queen-side castling is possible
-      (
-        !!blackQueenSideKing
-        && !blackQueenSideKing.moved
-        && !!blackCastlingRooks[0]
-        && !blackCastlingRooks[0]!.moved
-      ),
-      (
-      // black king-side castling is possible
-        !!blackKingSideKing
-        && !blackKingSideKing.moved
-        && !!blackCastlingRooks[1]
-        && !blackCastlingRooks[1]!.moved
-      ),
-      _.times(this.boardCount, (board) => (
-        _.times(this.boardHeight, (y) => (
-          _.times(this.boardWidth, (x) => {
-            const pieceInSquare = this.getBoardPiece({ board, x, y });
+    if (whiteKingSideCastlingPossible) {
+      castlingString += 'K';
+    }
 
-            return pieceInSquare && [pieceInSquare.type, pieceInSquare.color];
-          })
-        ))
-      ))
-    ]);
+    if (whiteQueenSideCastlingPossible) {
+      castlingString += 'Q';
+    }
+
+    if (blackKingSideCastlingPossible) {
+      castlingString += 'k';
+    }
+
+    if (blackQueenSideCastlingPossible) {
+      castlingString += 'q';
+    }
+
+    if (!castlingString) {
+      castlingString = '-';
+    }
+
+    const pliesInMove = this.movesCount % this.pliesPerMove;
+    const turnString = this.isMonsterChess
+      ? pliesInMove === 0 ? 'w1' : pliesInMove === 1 ? 'w2' : 'b'
+      : this.turn === ColorEnum.WHITE ? 'w' : 'b';
+    const enPassantString = this.possibleEnPassant
+      ? Game.getFileLiteral(this.possibleEnPassant.x) + Game.getRankLiteral(this.possibleEnPassant.y)
+      : '-';
+
+    return `${boardsString} ${turnString} ${castlingString} ${enPassantString}`;
+  }
+
+  getFen(): string {
+    const moveIndexString = Math.floor(this.movesCount / this.pliesPerMove) + 1;
+
+    return `${this.getShortFen()} ${this.pliesWithoutCaptureOrPawnMove} ${moveIndexString}`;
   }
 
   getNextTurn(): ColorEnum {
-    if (!this.isMonsterChess) {
-      return this.getOpponentColor();
-    }
-
-    return this.movesCount % 3 === 2
+    return this.movesCount % this.pliesPerMove === this.pliesPerMove - 1
       ? ColorEnum.BLACK
       : ColorEnum.WHITE;
   }
 
   getPrevTurn(): ColorEnum {
-    if (!this.isMonsterChess) {
-      return this.getOpponentColor();
-    }
-
-    return this.movesCount % 3 === 0
+    return this.movesCount % this.pliesPerMove === 0
       ? ColorEnum.BLACK
       : ColorEnum.WHITE;
   }
@@ -1538,9 +2320,7 @@ export class Game implements IGame {
   getBoardPiece(square: Square): BoardPiece | null {
     return _.find(this.pieces, (piece) => (
       Game.isBoardPiece(piece)
-      && piece.location.board === square.board
-      && piece.location.y === square.y
-      && piece.location.x === square.x
+      && Game.areSquaresEqual(piece.location, square)
     )) as BoardPiece | undefined || null;
   }
 
@@ -1552,24 +2332,83 @@ export class Game implements IGame {
     )) as PocketPiece | undefined || null;
   }
 
-  getCastlingRooks(color: ColorEnum): (BoardPiece | null)[] {
-    const rookCoordinates = this.startingData.pieces
-      .map((startingPiece) => (
-        startingPiece.color === color
-        && startingPiece.type === PieceTypeEnum.ROOK
-        && startingPiece.location.type === PieceLocationEnum.BOARD
-          ? startingPiece.location
-          : null
-      ))
-      .filter((square) => square !== null) as PieceBoardLocation[];
+  getCastlingRookCoordinates(color: ColorEnum): CastlingRookCoordinates {
+    let rookCoordinates: CastlingRookCoordinates = {
+      [CastlingTypeEnum.QUEEN_SIDE]: null,
+      [CastlingTypeEnum.KING_SIDE]: null
+    };
+    const castlingRank = color === ColorEnum.WHITE
+      ? 0
+      : this.boardHeight - 1;
 
-    return rookCoordinates.map((square) => {
-      const pieceInSquare = this.getBoardPiece(square);
+    if (this.is960) {
+      const rooksOnTheCastlingRank = this.startingData.pieces.filter((piece) => (
+        piece.color === color
+        && piece.type === PieceTypeEnum.ROOK
+        && piece.location.type === PieceLocationEnum.BOARD
+        && piece.location.y === castlingRank
+      )) as BoardPiece[];
+
+      if (rooksOnTheCastlingRank.length > 1) {
+        rookCoordinates = {
+          [CastlingTypeEnum.QUEEN_SIDE]: rooksOnTheCastlingRank[0].location,
+          [CastlingTypeEnum.KING_SIDE]: _.last(rooksOnTheCastlingRank)!.location
+        };
+      } else if (rooksOnTheCastlingRank.length === 1) {
+        const kingOnTheCastlingRank = _.find(this.startingData.pieces, (piece) => (
+          piece.color === color
+          && piece.type === PieceTypeEnum.KING
+          && piece.location.type === PieceLocationEnum.BOARD
+          && piece.location.y === castlingRank
+        )) as BoardPiece | undefined;
+
+        if (kingOnTheCastlingRank) {
+          const castlingRook = rooksOnTheCastlingRank[0];
+
+          if (castlingRook.location.x > kingOnTheCastlingRank.location.x) {
+            rookCoordinates = {
+              [CastlingTypeEnum.QUEEN_SIDE]: null,
+              [CastlingTypeEnum.KING_SIDE]: castlingRook.location
+            };
+          } else {
+            rookCoordinates = {
+              [CastlingTypeEnum.QUEEN_SIDE]: castlingRook.location,
+              [CastlingTypeEnum.KING_SIDE]: null
+            };
+          }
+        }
+      }
+    } else {
+      rookCoordinates = {
+        [CastlingTypeEnum.QUEEN_SIDE]: {
+          board: 0,
+          x: 0,
+          y: castlingRank
+        },
+        [CastlingTypeEnum.KING_SIDE]: {
+          board: 0,
+          x: this.boardWidth - 1,
+          y: castlingRank
+        }
+      };
+    }
+
+    return rookCoordinates;
+  }
+
+  getCastlingRooks(color: ColorEnum): { [castling in CastlingTypeEnum]: BoardPiece | null; } {
+    const getRook = (square: Square | null): BoardPiece | null => {
+      const pieceInSquare = square && this.getBoardPiece(square);
 
       return pieceInSquare && !pieceInSquare.moved
         ? pieceInSquare
         : null;
-    });
+    };
+
+    return {
+      [CastlingTypeEnum.QUEEN_SIDE]: getRook(this.castlingRookCoordinates[color][CastlingTypeEnum.QUEEN_SIDE]),
+      [CastlingTypeEnum.KING_SIDE]: getRook(this.castlingRookCoordinates[color][CastlingTypeEnum.KING_SIDE])
+    };
   }
 
   getPossibleMoves(piece: RealPiece, options: PossibleMovesOptions = {}): Square[] {
@@ -1604,8 +2443,12 @@ export class Game implements IGame {
                   !this.isDarkChess
                   || this.getVisibleSquares(piece.color).some((visibleSquare) => Game.areSquaresEqual(square, visibleSquare))
                 )
-                && !this.getBoardPiece(square)
-                && !this.getBoardPiece({ ...square, board: this.getNextBoard(square.board) })
+                && _.times(this.boardCount).every((board) => (
+                  !this.getBoardPiece({
+                    ...square,
+                    board
+                  })
+                ))
               ));
           }
 
@@ -1662,7 +2505,7 @@ export class Game implements IGame {
         const pieceInSquare = this.getBoardPiece(square);
 
         if (pieceInSquare && pieceInSquare.color === pieceColor) {
-          if (!forMove) {
+          if (!forMove && !onlyPossible) {
             possibleSquares.push(square);
           }
 
@@ -1757,7 +2600,7 @@ export class Game implements IGame {
 
         const pieceInSquare = this.getBoardPiece(square);
 
-        if (!forMove || !pieceInSquare || pieceInSquare.color !== pieceColor) {
+        if ((!forMove && !onlyPossible) || !pieceInSquare || pieceInSquare.color !== pieceColor) {
           possibleSquares.push(square);
         }
       });
@@ -1772,7 +2615,7 @@ export class Game implements IGame {
         y: rankY
       };
 
-      if ((forMove || onlyVisible) && !this.isNullSquare(square)) {
+      if ((forMove || onlyPossible || onlyVisible) && !this.isNullSquare(square)) {
         // 1-forward move
         const pieceInSquare = this.getBoardPiece(square);
 
@@ -1813,7 +2656,7 @@ export class Game implements IGame {
           const pieceInSquare = this.getBoardPiece(square);
 
           if (
-            !forMove
+            (!forMove && !onlyPossible)
             || (pieceInSquare && pieceInSquare.color !== pieceColor)
             || (captureAllowed && this.possibleEnPassant && Game.areSquaresEqual(square, this.possibleEnPassant))
           ) {
@@ -1824,7 +2667,7 @@ export class Game implements IGame {
     }
 
     if (
-      forMove
+      (forMove || onlyPossible)
       && this.isLastChance
       && (
         this.isLeftInCheckAllowed
@@ -1839,9 +2682,10 @@ export class Game implements IGame {
     }
 
     if (
-      forMove
+      (forMove || onlyPossible)
       && pieceType === PieceTypeEnum.KING
       && !piece.moved
+      && piece.location.y === (pieceColor === ColorEnum.WHITE ? 0 : this.boardHeight - 1)
       && (
         this.isLeftInCheckAllowed
         || !this.isAttackedByOpponentPiece(piece.location, opponentColor)
@@ -1849,15 +2693,20 @@ export class Game implements IGame {
     ) {
       const queenSideKing = this.kings[pieceColor][0];
       const kingSideKing = _.last(this.kings[pieceColor])!;
+      const castlingRooks = this.getCastlingRooks(pieceColor);
 
-      this.getCastlingRooks(pieceColor)
+      [castlingRooks[CastlingTypeEnum.QUEEN_SIDE], castlingRooks[CastlingTypeEnum.KING_SIDE]]
         .filter((rook, ix) => (
           (
             // queen-side king and queen-side rook
             (piece.id === queenSideKing.id && ix === 0)
             // king-side king and king-side rook
             || (piece.id === kingSideKing.id && ix === 1)
-          ) && rook && !this.isParalysed(rook)
+          )
+          && this.startingData.possibleCastling[pieceColor][ix === 0 ? CastlingTypeEnum.QUEEN_SIDE : CastlingTypeEnum.KING_SIDE]
+          && rook
+          && rook.location.board === board
+          && !this.isParalysed(rook)
         ))
         .filter((rook) => {
           const { location } = rook!;
@@ -1903,20 +2752,14 @@ export class Game implements IGame {
           });
 
           if (this.boardCount > 1) {
-            // a piece cannot move to a square that is occupied on the next board
-            canRookMove = canRookMove && !this.getBoardPiece({
-              board: this.getNextBoard(location.board),
-              y: location.y,
-              x: location.x
-            });
-
-            if (this.boardCount > 2) {
-              canRookMove = canRookMove && !this.getBoardPiece({
-                board: this.getNextBoard(this.getNextBoard(location.board)),
+            // a piece cannot move to a square that is occupied on any other board
+            canRookMove = canRookMove && _.times(this.boardCount - 1).every((board) => (
+              !this.getBoardPiece({
+                board: this.getNextBoard(location.board + board),
                 y: location.y,
-                x: location.x
-              });
-            }
+                x: newRookX
+              })
+            ));
           }
 
           return canRookMove;
@@ -1938,38 +2781,23 @@ export class Game implements IGame {
     }
 
     if (
-      forMove
+      (forMove || onlyControlled)
       && this.isMadrasi
       && this.isParalysed(piece as BoardPiece, possibleSquares)
     ) {
       return [];
     }
 
-    if (this.boardCount > 1 && forMove) {
+    if (this.isAliceChess && (forMove || onlyPossible)) {
       // a piece cannot move to a square that is occupied on the next board
-      possibleSquares = possibleSquares.filter((square) => {
-        const pieceOnThisBoard = this.getBoardPiece(square);
-        const pieceOnTheNextBoard = this.getBoardPiece({
-          ...square,
-          board: this.getNextBoard(square.board)
-        });
-
-        return !pieceOnTheNextBoard || (
-          this.isAtomic
-          && pieceOnThisBoard
-          && pieceOnThisBoard.color !== pieceColor
-        );
-      });
-
-      if (this.boardCount > 2) {
-        // a piece cannot move to a square that is occupied on the next board after the next board
-        possibleSquares = possibleSquares.filter((square) => (
+      possibleSquares = possibleSquares.filter((square) => (
+        _.times(this.boardCount - 1).every((board) => (
           !this.getBoardPiece({
             ...square,
-            board: this.getNextBoard(this.getNextBoard(square.board))
+            board: this.getNextBoard(square.board + board)
           })
-        ));
-      }
+        ))
+      ));
     }
 
     if (!captureAllowed) {
@@ -2022,26 +2850,16 @@ export class Game implements IGame {
       .reduce((squares, piece) => {
         let newSquares = this.getPossibleMoves(piece, { onlyVisible: true });
 
-        if (this.boardCount > 1) {
-          const nextBoardSquares = newSquares.map((square) => ({
-            ...square,
-            board: this.getNextBoard(square.board)
-          }));
-
-          newSquares = [
-            ...newSquares,
-            ...nextBoardSquares
-          ];
-
-          if (this.boardCount > 2) {
+        if (this.isAliceChess) {
+          _.times(this.boardCount - 1, (board) => {
             newSquares = [
               ...newSquares,
-              ...nextBoardSquares.map((square) => ({
+              ...newSquares.map((square) => ({
                 ...square,
-                board: this.getNextBoard(square.board)
+                board: this.getNextBoard(square.board + board)
               }))
             ];
-          }
+          });
         }
 
         return [
@@ -2054,11 +2872,11 @@ export class Game implements IGame {
   getVisiblePieces(forColor: ColorEnum): Piece[] {
     const visibleSquares = this.getVisibleSquares(forColor);
 
-    return this.pieces.filter((piece) => (
-      piece.color === forColor || (
-        !!piece.location
-        && piece.location.type === PieceLocationEnum.BOARD
-        && visibleSquares.some((square) => Game.areSquaresEqual(square, piece.location as PieceBoardLocation))
+    return this.pieces.filter(({ color, location }) => (
+      color === forColor || (
+        !!location
+        && location.type === PieceLocationEnum.BOARD
+        && visibleSquares.some((square) => Game.areSquaresEqual(square, location))
       )
     ));
   }
@@ -2228,6 +3046,7 @@ export class Game implements IGame {
       || this.isMonsterChess
       || this.isHorde
       || this.isDarkChess
+      || this.isCrazyhouse
     ) {
       return false;
     }

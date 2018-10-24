@@ -1,0 +1,85 @@
+@import (reference) '../../styles/mixins';
+
+.moves-panel {
+  .flex-col-stretch();
+
+  width: 250px;
+  height: 250px;
+  padding: 0 0 10px;
+  margin: 10px 0;
+  border-top: 2px solid #888;
+  border-bottom: 2px solid #888;
+
+  .moves-icons {
+    .flex-child-fixed();
+    .flex();
+
+    border-bottom: 2px solid #888;
+
+    .move-icon {
+      .flex();
+
+      width: 25%;
+      height: 20px;
+      cursor: pointer;
+
+      &.disabled {
+        cursor: not-allowed;
+        opacity: 0.25;
+      }
+
+      &:not(.disabled) {
+        &:hover {
+          background-color: rgba(0,0,0,0.2);
+        }
+      }
+    }
+  }
+
+  .moves-container {
+    .flex-child();
+
+    overflow-y: auto;
+
+    .move-row {
+      .flex-stretch(flex-start);
+
+      width: 100%;
+
+      .move-index {
+        .flex(flex-start);
+      }
+
+      .move {
+        .flex(flex-start);
+
+        padding: 0 5px;
+        cursor: pointer;
+
+        &.current {
+          background-color: #ccc;
+        }
+      }
+
+      &.moves-2 {
+        .move-index {
+          .flex-child-fixed(10%);
+        }
+
+        .move {
+          .flex-child-fixed(45%);
+        }
+      }
+
+      &.moves-3 {
+        .move-index {
+          .flex-child-fixed(10%);
+        }
+
+        .move {
+          .flex-child-fixed(30%);
+        }
+      }
+    }
+  }
+}

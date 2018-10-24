@@ -48,10 +48,10 @@ export const POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS = POSSIBLE_CORRESPOND
 export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.CHESS_960]: 'Chess 960',
   [GameVariantEnum.CRAZYHOUSE]: 'Crazyhouse',
-  [GameVariantEnum.ATOMIC]: 'Atomic',
+  [GameVariantEnum.ATOMIC]: 'Atomic chess',
   [GameVariantEnum.KING_OF_THE_HILL]: 'King of the hill',
   [GameVariantEnum.CIRCE]: 'Circe',
-  [GameVariantEnum.PATROL]: 'Patrol',
+  [GameVariantEnum.PATROL]: 'Patrol chess',
   [GameVariantEnum.MADRASI]: 'Madrasi',
   [GameVariantEnum.LAST_CHANCE]: 'Last chance',
   [GameVariantEnum.MONSTER_CHESS]: 'Monster chess',
@@ -60,6 +60,40 @@ export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.CHESSENCE]: 'Chessence',
   [GameVariantEnum.HORDE]: 'Horde',
   [GameVariantEnum.DARK_CHESS]: 'Dark chess'
+};
+
+export const GAME_VARIANT_PGN_NAMES: { [variation in GameVariantEnum]: string; } = {
+  [GameVariantEnum.CHESS_960]: 'Chess960',
+  [GameVariantEnum.CRAZYHOUSE]: 'Crazyhouse',
+  [GameVariantEnum.ATOMIC]: 'Atomic',
+  [GameVariantEnum.KING_OF_THE_HILL]: 'King of the Hill',
+  [GameVariantEnum.CIRCE]: 'Circe',
+  [GameVariantEnum.PATROL]: 'Patrol',
+  [GameVariantEnum.MADRASI]: 'Madrasi',
+  [GameVariantEnum.LAST_CHANCE]: 'Last Chance',
+  [GameVariantEnum.MONSTER_CHESS]: 'Monster',
+  [GameVariantEnum.ALICE_CHESS]: 'Alice',
+  [GameVariantEnum.TWO_FAMILIES]: 'Two Families',
+  [GameVariantEnum.CHESSENCE]: 'Chessence',
+  [GameVariantEnum.HORDE]: 'Horde',
+  [GameVariantEnum.DARK_CHESS]: 'Dark'
+};
+
+export const GAME_VARIANT_LINKS: { [variation in GameVariantEnum]: string; } = {
+  [GameVariantEnum.CHESS_960]: 'chess-960',
+  [GameVariantEnum.CRAZYHOUSE]: 'crazyhouse',
+  [GameVariantEnum.ATOMIC]: 'atomic-chess',
+  [GameVariantEnum.KING_OF_THE_HILL]: 'king-of-the-hill',
+  [GameVariantEnum.CIRCE]: 'circe',
+  [GameVariantEnum.PATROL]: 'patrol',
+  [GameVariantEnum.MADRASI]: 'madrasi',
+  [GameVariantEnum.LAST_CHANCE]: 'last-chance',
+  [GameVariantEnum.MONSTER_CHESS]: 'monster-chess',
+  [GameVariantEnum.ALICE_CHESS]: 'alice-chess',
+  [GameVariantEnum.TWO_FAMILIES]: 'two-families',
+  [GameVariantEnum.CHESSENCE]: 'chessence',
+  [GameVariantEnum.HORDE]: 'horde',
+  [GameVariantEnum.DARK_CHESS]: 'dark-chess'
 };
 
 export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {

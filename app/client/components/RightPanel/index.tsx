@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
 import * as React from 'react';
-import classNames = require('classnames');
 
 import {
   AnyMove,
@@ -11,25 +10,27 @@ import {
   PieceTypeEnum,
   Player,
   PocketPiece,
+  StartingData,
   TimeControl,
   TimeControlEnum
 } from '../../../types';
 import { Game } from '../../helpers';
 
+import MovesPanel from '../MovesPanel';
 import RightPanelPlayer from '../RightPanelPlayer';
 
 interface OwnProps {
   players: GamePlayers;
   player: Player | null;
   pieces: Piece[];
+  startingData: StartingData;
   pocketPiecesUsed: PieceTypeEnum[];
   isPocketUsed: boolean;
   currentMoveIndex: number;
   timeControl: TimeControl;
   moves: AnyMove[];
   isBlackBase: boolean;
-  isMonsterChess: boolean;
-  numberOfMovesBeforeStart: number;
+  pliesPerMove: number;
   status: GameStatusEnum;
   timeDiff: number;
   selectedPiece: PocketPiece | null;
@@ -46,8 +47,9 @@ interface State {
 
 type Props = OwnProps;
 
+const INPUT_ELEMENTS = ['input', 'textarea'];
+
 export default class RightPanel extends React.Component<Props, State> {
-  movesRef = React.createRef<HTMLDivElement>();
   timeControlInterval?: number;
   state = {
     intervalActivated: false
@@ -56,14 +58,11 @@ export default class RightPanel extends React.Component<Props, State> {
   componentDidMount() {
     const {
       status,
-      numberOfMovesBeforeStart,
+      pliesPerMove,
       moves
     } = this.props;
-    const movesElem = this.movesRef.current!;
 
-    movesElem.scrollTop = movesElem.scrollHeight - movesElem.clientHeight;
-
-    if (moves.length >= numberOfMovesBeforeStart && status === GameStatusEnum.ONGOING) {
+    if (moves.length >= pliesPerMove && status === GameStatusEnum.ONGOING) {
       this.activateInterval();
     }
 
@@ -74,23 +73,13 @@ export default class RightPanel extends React.Component<Props, State> {
     const {
       status,
       moves,
-      numberOfMovesBeforeStart
+      pliesPerMove
     } = this.props;
 
     if (status !== GameStatusEnum.ONGOING) {
       clearInterval(this.timeControlInterval);
-    } else if (moves.length >= numberOfMovesBeforeStart && prevProps.moves.length < numberOfMovesBeforeStart) {
+    } else if (moves.length >= pliesPerMove && prevProps.moves.length < pliesPerMove) {
       this.activateInterval();
-    }
-
-    if (moves.length > prevProps.moves.length) {
-      const movesElem = this.movesRef.current!;
-      const lastMoveRow = _.last(movesElem.children)!;
-      const maxScroll = movesElem.scrollHeight - movesElem.clientHeight;
-
-      if (maxScroll - movesElem.scrollTop - 10 <= lastMoveRow.clientHeight) {
-        movesElem.scrollTop = maxScroll;
-      }
     }
   }
 
@@ -106,16 +95,14 @@ export default class RightPanel extends React.Component<Props, State> {
       moveForward
     } = this.props;
 
-    if (e.key === 'ArrowLeft') {
-      moveBack();
-    } else if (e.key === 'ArrowRight') {
-      moveForward();
+    if (!e.target || !_.includes(INPUT_ELEMENTS, (e.target as HTMLElement).tagName.toLowerCase())) {
+      if (e.key === 'ArrowLeft') {
+        moveBack();
+      } else if (e.key === 'ArrowRight') {
+        moveForward();
+      }
     }
   };
-
-  navigateToMove(moveIndex: number) {
-    this.props.navigateToMove(moveIndex);
-  }
 
   adjustServerTime(serverTime: number): number {
     return serverTime + this.props.timeDiff;
@@ -144,9 +131,10 @@ export default class RightPanel extends React.Component<Props, State> {
       players,
       player,
       pieces,
+      startingData,
       pocketPiecesUsed,
       isPocketUsed,
-      isMonsterChess,
+      pliesPerMove,
       currentMoveIndex,
       moves,
       timeControl,
@@ -154,10 +142,12 @@ export default class RightPanel extends React.Component<Props, State> {
       selectedPiece,
       getPocketPiece,
       selectPiece,
+      moveBack,
+      moveForward,
       navigateToMove
     } = this.props;
-    const movesChunkSize = isMonsterChess ? 3 : 2;
-    const realTurn = moves.length % movesChunkSize === movesChunkSize - 1
+    const startingMoveIndex = startingData.startingMoveIndex;
+    const realTurn = (moves.length + startingMoveIndex) % pliesPerMove === pliesPerMove - 1
       ? ColorEnum.BLACK
       : ColorEnum.WHITE;
     const topPlayer = isBlackBase
@@ -187,28 +177,15 @@ export default class RightPanel extends React.Component<Props, State> {
           getPocketPiece={getPocketPiece}
         />
 
-        <div className="moves" ref={this.movesRef}>
-          {_.chunk(moves, movesChunkSize).map((moves, index) => (
-            <div key={index} className={`move-row moves-${movesChunkSize}`}>
-              <div className="move-index">{index + 1}</div>
-              {moves.map((move, turn) => {
-                const moveIndex = index * movesChunkSize + turn;
-
-                return (
-                  <div
-                    key={turn}
-                    className={classNames('move', {
-                      current: moveIndex === currentMoveIndex
-                    })}
-                    onClick={() => navigateToMove(moveIndex)}
-                  >
-                    {move.figurine}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-        </div>
+        <MovesPanel
+          currentMoveIndex={currentMoveIndex}
+          pliesPerMove={pliesPerMove}
+          startingData={startingData}
+          moves={moves}
+          moveBack={moveBack}
+          moveForward={moveForward}
+          navigateToMove={navigateToMove}
+        />
 
         <RightPanelPlayer
           player={bottomPlayer}

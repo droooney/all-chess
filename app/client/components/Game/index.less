@@ -1,7 +1,5 @@
 @import (reference) '../../styles/mixins';
 
-@border: 3px solid black;
-
 .route.game-route {
   .flex-col(center);
 
@@ -29,177 +27,6 @@
       .chat {
         height: 200px;
         width: 500px;
-      }
-    }
-
-    .boards {
-      grid-area: boards;
-      justify-self: center;
-
-      .flex();
-
-      &.opposite {
-        .board {
-          flex-direction: column;
-
-          .rank {
-            flex-direction: row-reverse;
-
-            .square {
-              &.border-top {
-                border-top: @border;
-              }
-
-              &.border-bottom {
-                border-bottom: @border;
-              }
-
-              &.border-left {
-                border-right: @border;
-              }
-
-              &.border-right {
-                border-left: @border;
-              }
-            }
-          }
-        }
-      }
-
-      &:not(.opposite) {
-        .board {
-          .rank {
-            .square {
-              &.border-top {
-                border-bottom: @border;
-              }
-
-              &.border-bottom {
-                border-top: @border;
-              }
-
-              &.border-left {
-                border-left: @border;
-              }
-
-              &.border-right {
-                border-right: @border;
-              }
-            }
-          }
-        }
-      }
-
-      .board {
-       .flex-col(@flex-direction: column-reverse);
-
-        position: relative;
-
-        .rank {
-          .flex();
-
-          .rank-literal,
-          .file-literal {
-            .flex();
-
-            user-select: none;
-          }
-
-          .square {
-            .flex();
-
-            position: relative;
-
-            &.white {
-              background-color: beige;
-            }
-
-            &.black {
-              background-color: silver;
-            }
-
-            .selected-square,
-            .current-move-square,
-            .allowed-square,
-            .check-square,
-            .void-square,
-            .hidden-square {
-              position: absolute;
-              width: 100%;
-              height: 100%;
-              top: 0;
-              left: 0;
-            }
-
-            .selected-square {
-              background-color: rgba(115,125,105,0.5);
-              z-index: 1;
-            }
-
-            .current-move-square {
-              background-color: rgba(0,255,0,0.5);
-              z-index: 2;
-            }
-
-            .allowed-square {
-              background: radial-gradient(rgba(0,255,255,0.5), rgba(0,0,0,0));
-              cursor: pointer;
-              z-index: 3;
-            }
-
-            .check-square {
-              background: radial-gradient(red, rgba(0,0,0,0));
-              z-index: 4;
-            }
-
-            .hidden-square {
-              background-color: rgba(0,0,0,0.7);
-              z-index: 6;
-            }
-
-            .void-square {
-              background-color: black;
-              z-index: 7;
-            }
-          }
-        }
-      }
-
-      .piece-container {
-        position: absolute;
-        transition-property: left, top;
-        transition-duration: 0.2s;
-        transition-timing-function: ease-out;
-        cursor: pointer;
-        z-index: 5;
-
-        .piece {
-          width: 100%;
-          height: 100%;
-          opacity: 1;
-          transition: opacity 0.2s ease-in;
-
-          &.fantom {
-            opacity: 0.2;
-          }
-        }
-
-        .original-piece {
-          position: absolute;
-          top: initial;
-          left: initial;
-          bottom: 0;
-          right: 0;
-          width: 20px;
-          height: 20px;
-          background-color: #aaa;
-        }
-      }
-
-      &.no-transition {
-        .piece-container {
-          transition: none;
-        }
       }
     }
 
@@ -306,7 +133,6 @@
     .chat {
       grid-area: chat;
       min-height: 200px;
-      max-height: 500px;
 
       .flex-col-stretch();
 
@@ -371,10 +197,6 @@
       .player {
         .flex-col(@align-items: flex-start);
 
-        &.bottom {
-          flex-direction: column-reverse;
-        }
-
         .pocket {
           .flex();
 
@@ -428,56 +250,19 @@
         }
       }
 
-      .moves {
+      .moves-panel {
         width: 250px;
         height: 250px;
-        overflow-y: auto;
-        padding: 10px 0;
+        padding: 0 0 10px;
         margin: 10px 0;
-        border-top: 2px solid #888;
-        border-bottom: 2px solid #888;
 
-        .move-row {
-          .flex-stretch(flex-start);
+        .moves-icons {
+          margin-bottom: 10px;
+        }
 
-          width: 100%;
-          height: 25px;
-
-          .move-index {
-            .flex-child-fixed(10%);
-            .flex(flex-start);
-          }
-
-          .move {
-            .flex-child-fixed(45%);
-            .flex(flex-start);
-
-            padding: 0 5px;
-            cursor: pointer;
-
-            &.current {
-              background-color: #ccc;
-            }
-          }
-
-          &.moves-2 {
-            .move-index {
-              .flex-child-fixed(10%);
-            }
-
-            .move {
-              .flex-child-fixed(45%);
-            }
-          }
-
-          &.moves-3 {
-            .move-index {
-              .flex-child-fixed(10%);
-            }
-
-            .move {
-              .flex-child-fixed(30%);
-            }
+        .moves-container {
+          .move-row {
+            height: 25px;
           }
         }
       }

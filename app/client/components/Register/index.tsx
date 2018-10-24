@@ -2,6 +2,8 @@ import * as React from 'react';
 
 import { fetch } from '../../helpers';
 
+import DocumentTitle from '../DocumentTitle';
+
 import './index.less';
 
 interface State {
@@ -56,6 +58,8 @@ class Register extends React.Component<{}, State> {
   render() {
     return (
       <div className="route register-route">
+
+        <DocumentTitle value="AllChess - Register" />
 
         {this.state.error && (
           <div className="error">

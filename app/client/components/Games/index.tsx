@@ -18,7 +18,6 @@ import {
   changeSettings
 } from '../../actions';
 import {
-  GAME_VARIANT_NAMES,
   POSSIBLE_TIMER_BASES_IN_MINUTES,
   POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
   POSSIBLE_TIMER_INCREMENTS_IN_SECONDS,
@@ -27,6 +26,8 @@ import {
   POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS
 } from '../../../shared/constants';
 
+import DocumentTitle from '../DocumentTitle';
+import GameVariantLink from '../GameVariantLink';
 import Modal from '../Modal';
 
 import './index.less';
@@ -213,6 +214,8 @@ class Games extends React.Component<Props, State> {
     return (
       <div className="route games-route">
 
+        <DocumentTitle value="AllChess - Games" />
+
         <input
           type="submit"
           value="Create game"
@@ -318,7 +321,8 @@ class Games extends React.Component<Props, State> {
                     disabled={!allowed}
                     onChange={this.onVariationChange}
                   />
-                  {` ${GAME_VARIANT_NAMES[variant]}`}
+                  {' '}
+                  <GameVariantLink variant={variant} />
                 </div>
               ))}
             </div>

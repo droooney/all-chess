@@ -6,6 +6,8 @@ import { RouteComponentProps } from 'react-router-dom';
 import { setUserData } from '../../actions';
 import { fetch } from '../../helpers';
 
+import DocumentTitle from '../DocumentTitle';
+
 import './index.less';
 
 type Props = RouteComponentProps<any> & DispatchProps;
@@ -60,6 +62,8 @@ class Login extends React.Component<Props, State> {
   render() {
     return (
       <div className="route login-route">
+
+        <DocumentTitle value="AllChess - Login" />
 
         {this.state.error && (
           <div className="error">
