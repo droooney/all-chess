@@ -1016,10 +1016,11 @@ export class Game implements IGame {
       disappearedOrMovedPieces.push(castlingRook);
     }
 
-    const disappearedOrMovedPiecesData = disappearedOrMovedPieces.map(({ moved, color, type, location }) => ({
+    const disappearedOrMovedPiecesData = disappearedOrMovedPieces.map(({ moved, color, type, originalType, location }) => ({
       moved,
       color,
       type,
+      originalType,
       location: location as PieceBoardLocation
     }));
 
@@ -1214,7 +1215,7 @@ export class Game implements IGame {
       piece.type = isPawnPromotion
         ? promotion!
         : pieceType;
-      piece.originalType = isPawnPromotion && this.isCrazyhouse
+      piece.originalType = this.isCrazyhouse
         ? piece.originalType
         : piece.type;
       piece.location = newLocation;
@@ -1402,12 +1403,13 @@ export class Game implements IGame {
           piece.originalType = prevPieceOriginalType;
         }
 
-        disappearedOrMovedPiecesData.forEach(({ moved, color, type, location }, ix) => {
+        disappearedOrMovedPiecesData.forEach(({ moved, color, type, originalType, location }, ix) => {
           const disappearedOrMovedPiece = disappearedOrMovedPieces[ix];
 
           disappearedOrMovedPiece.moved = moved;
           disappearedOrMovedPiece.color = color;
           disappearedOrMovedPiece.type = type;
+          disappearedOrMovedPiece.originalType = originalType;
           disappearedOrMovedPiece.location = location;
         });
       }
