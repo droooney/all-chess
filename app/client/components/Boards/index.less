@@ -1,6 +1,6 @@
 @import (reference) '../../styles/mixins';
 
-@border: 3px solid black;
+@center-square-border: 3px solid black;
 
 .boards {
   grid-area: boards;
@@ -17,19 +17,19 @@
 
         .square {
           &.border-top {
-            border-top: @border;
+            border-top: @center-square-border;
           }
 
           &.border-bottom {
-            border-bottom: @border;
+            border-bottom: @center-square-border;
           }
 
           &.border-left {
-            border-right: @border;
+            border-right: @center-square-border;
           }
 
           &.border-right {
-            border-left: @border;
+            border-left: @center-square-border;
           }
         }
       }
@@ -41,19 +41,34 @@
       .rank {
         .square {
           &.border-top {
-            border-bottom: @border;
+            border-bottom: @center-square-border;
           }
 
           &.border-bottom {
-            border-top: @border;
+            border-top: @center-square-border;
           }
 
           &.border-left {
-            border-left: @border;
+            border-left: @center-square-border;
           }
 
           &.border-right {
-            border-right: @border;
+            border-right: @center-square-border;
+          }
+        }
+      }
+    }
+  }
+
+  &.antichess {
+    .board {
+      .rank {
+        .square {
+          &.border-top,
+          &.border-bottom,
+          &.border-left,
+          &.border-right {
+            border-color: red;
           }
         }
       }

@@ -59,7 +59,8 @@ export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.TWO_FAMILIES]: 'Two families',
   [GameVariantEnum.CHESSENCE]: 'Chessence',
   [GameVariantEnum.HORDE]: 'Horde',
-  [GameVariantEnum.DARK_CHESS]: 'Dark chess'
+  [GameVariantEnum.DARK_CHESS]: 'Dark chess',
+  [GameVariantEnum.ANTICHESS]: 'Antichess'
 };
 
 export const GAME_VARIANT_PGN_NAMES: { [variation in GameVariantEnum]: string; } = {
@@ -76,7 +77,8 @@ export const GAME_VARIANT_PGN_NAMES: { [variation in GameVariantEnum]: string; }
   [GameVariantEnum.TWO_FAMILIES]: 'Two Families',
   [GameVariantEnum.CHESSENCE]: 'Chessence',
   [GameVariantEnum.HORDE]: 'Horde',
-  [GameVariantEnum.DARK_CHESS]: 'Dark'
+  [GameVariantEnum.DARK_CHESS]: 'Dark',
+  [GameVariantEnum.ANTICHESS]: 'Antichess'
 };
 
 export const GAME_VARIANT_LINKS: { [variation in GameVariantEnum]: string; } = {
@@ -93,7 +95,8 @@ export const GAME_VARIANT_LINKS: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.TWO_FAMILIES]: 'two-families',
   [GameVariantEnum.CHESSENCE]: 'chessence',
   [GameVariantEnum.HORDE]: 'horde',
-  [GameVariantEnum.DARK_CHESS]: 'dark-chess'
+  [GameVariantEnum.DARK_CHESS]: 'dark-chess',
+  [GameVariantEnum.ANTICHESS]: 'antichess'
 };
 
 export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
@@ -102,6 +105,7 @@ export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
   [ResultReasonEnum.KING_EXPLODED]: 'king exploded',
   [ResultReasonEnum.KING_CAPTURED]: 'king captured',
   [ResultReasonEnum.HORDE_DESTROYED]: 'horde destroyed',
+  [ResultReasonEnum.NO_MORE_PIECES]: 'no more pieces',
   [ResultReasonEnum.STALEMATE]: 'stalemate',
   [ResultReasonEnum.TIME_RAN_OUT]: 'opponent\'s time ran out',
   [ResultReasonEnum.RESIGN]: 'opponent resigned',

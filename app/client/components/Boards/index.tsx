@@ -130,6 +130,11 @@ class Boards extends React.Component<Props, State> {
     const {
       game
     } = this.props;
+
+    if (game.isAntichess) {
+      return false;
+    }
+
     const pieceInSquare = game.getBoardPiece(square);
 
     if (!pieceInSquare) {
@@ -262,7 +267,13 @@ class Boards extends React.Component<Props, State> {
     );
 
     return (
-      <div ref={this.boardsRef} className={classNames('boards', { opposite: isBlackBase })}>
+      <div
+        ref={this.boardsRef}
+        className={classNames('boards', {
+          opposite: isBlackBase,
+          antichess: game.isAntichess
+        })}
+      >
         {_.times(game.boardCount, (board) => {
           const emptyCorner = (
             <div
@@ -412,7 +423,7 @@ class Boards extends React.Component<Props, State> {
           className="promotion-modal"
         >
           <div className="modal-content">
-            {[PieceTypeEnum.QUEEN, PieceTypeEnum.ROOK, PieceTypeEnum.BISHOP, PieceTypeEnum.KNIGHT].map((pieceType) => (
+            {game.validPromotions.map((pieceType) => (
               <Piece
                 key={pieceType}
                 piece={{
