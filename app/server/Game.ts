@@ -384,7 +384,9 @@ export default class Game extends GameHelper {
     }
 
     if (this.isDarkChess) {
-      this.io.emit('darkChessMoves', this.moves);
+      setTimeout(() => {
+        this.io.emit('darkChessMoves', this.moves);
+      }, 0);
     }
 
     this.clearTimeout();
