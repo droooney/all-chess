@@ -130,7 +130,8 @@ const CLASSIC_VALID_PROMOTIONS = [
   PieceTypeEnum.KNIGHT
 ];
 
-const partialStandardStartingData = {
+const PARTIAL_STANDARD_STARTING_DATA = {
+  result: null,
   turn: ColorEnum.WHITE,
   startingMoveIndex: 0,
   pliesWithoutCaptureOrPawnMove: 0,
@@ -147,13 +148,19 @@ const partialStandardStartingData = {
   }
 };
 
-const CASTLING_FEN_REGEX = /^[kq]+$/i;
 const DIGITS_REGEX = /^\d+$/;
+
+const FEN_CASTLING_REGEX = /^[kq]+$/i;
+
 const PGN_TAG_REGEX = /^\[([a-z0-9]+) +"((?:[^"\\]|\\"|\\\\)+)"]$/i;
-const MOVE_REGEX = /^\S+(?=\s|$)/;
-const MOVE_SQUARES_MATCH = /^(?:([A-Z]?)(@?)([₀-₉]*)([a-w]*)(\d*)[x→]?([₀-₉]*)([a-w])(\d+))|O-O(-O)?/;
-const PROMOTION_REGEX = /^=([A-Z])/;
-const SQUARE_REGEX = /^[a-w]\d+$/;
+const PGN_MOVE_REGEX = /^\S+(?=\s|$)/;
+const PGN_MOVE_SQUARES_MATCH = /^(?:([A-Z]?)(@?)([₀-₉]*)([a-w]*)(\d*)[x→]?([₀-₉]*)([a-w])(\d+))|O-O(-O)?/;
+const PGN_PROMOTION_REGEX = /^=([A-Z])/;
+const PGN_SQUARE_REGEX = /^[a-w]\d+$/;
+
+const RESULT_WIN_WHITE = '1-0';
+const RESULT_WIN_BLACK = '0-1';
+const RESULT_DRAW = '1/2-1/2';
 
 export class Game implements IGame {
   static validateVariants(variants: GameVariantEnum[]): boolean {
@@ -277,7 +284,7 @@ export class Game implements IGame {
     });
 
     return {
-      ...partialStandardStartingData,
+      ...PARTIAL_STANDARD_STARTING_DATA,
       pieces,
       voidSquares,
       emptySquares: []
@@ -330,7 +337,7 @@ export class Game implements IGame {
     });
 
     return {
-      ...partialStandardStartingData,
+      ...PARTIAL_STANDARD_STARTING_DATA,
       pieces,
       voidSquares: [],
       emptySquares: []
@@ -459,7 +466,7 @@ export class Game implements IGame {
     });
 
     return {
-      ...partialStandardStartingData,
+      ...PARTIAL_STANDARD_STARTING_DATA,
       pieces,
       voidSquares: [],
       emptySquares: []
@@ -577,6 +584,7 @@ export class Game implements IGame {
         }
       },
       possibleEnPassant: null,
+      result: null,
       turn: ColorEnum.WHITE,
       startingMoveIndex: 0,
       pliesWithoutCaptureOrPawnMove: 0,
@@ -615,7 +623,7 @@ export class Game implements IGame {
 
     startingData.turn = turnString === 'b' ? ColorEnum.BLACK : ColorEnum.WHITE;
 
-    if (possibleCastlingString !== '-' && !CASTLING_FEN_REGEX.test(possibleCastlingString)) {
+    if (possibleCastlingString !== '-' && !FEN_CASTLING_REGEX.test(possibleCastlingString)) {
       throw invalidFenError;
     }
 
@@ -634,7 +642,7 @@ export class Game implements IGame {
         throw invalidFenError;
       }
 
-      const enPassantSquareMatch = possibleEnPassantString.match(SQUARE_REGEX);
+      const enPassantSquareMatch = possibleEnPassantString.match(PGN_SQUARE_REGEX);
 
       if (!enPassantSquareMatch) {
         throw invalidFenError;
@@ -917,6 +925,37 @@ export class Game implements IGame {
       startingData = Game.getStartingData(variants);
     }
 
+    const resultString = 'Result' in pgnTags
+      ? pgnTags.Result
+      : null;
+    let result: GameResult | null = null;
+
+    if (
+      resultString === RESULT_WIN_WHITE
+      || resultString === RESULT_WIN_BLACK
+      || resultString === RESULT_DRAW
+    ) {
+      if (resultString === RESULT_WIN_WHITE || resultString === RESULT_WIN_BLACK) {
+        result = {
+          winner: resultString === RESULT_WIN_WHITE
+            ? ColorEnum.WHITE
+            : ColorEnum.BLACK,
+          reason: ResultReasonEnum.RESIGN
+        };
+      } else {
+        result = {
+          winner: null,
+          reason: ResultReasonEnum.AGREED_TO_DRAW
+        };
+      }
+
+      if ('Termination' in pgnTags && pgnTags.Termination !== 'Normal') {
+        result.reason = pgnTags.Termination as any;
+      }
+    }
+
+    startingData.result = result;
+
     const game = new Game({
       id: '',
       startingData,
@@ -964,12 +1003,7 @@ export class Game implements IGame {
         }
 
         // game result
-        if (
-          (movesString === '*' && !game.result)
-          || (movesString === '1-0' && game.result && game.result.winner === ColorEnum.WHITE)
-          || (movesString === '0-1' && game.result && game.result.winner === ColorEnum.BLACK)
-          || (movesString === '1/2-1/2')
-        ) {
+        if (movesString === resultString) {
           break;
         }
 
@@ -992,14 +1026,14 @@ export class Game implements IGame {
         }
 
         // move
-        const moveMatch = movesString.match(MOVE_REGEX);
+        const moveMatch = movesString.match(PGN_MOVE_REGEX);
 
         if (!moveMatch) {
           throw invalidPgnError;
         }
 
         const moveString = moveMatch[0];
-        const moveSquaresMatch = moveString.match(MOVE_SQUARES_MATCH);
+        const moveSquaresMatch = moveString.match(PGN_MOVE_SQUARES_MATCH);
 
         if (!moveSquaresMatch) {
           throw invalidPgnError;
@@ -1105,7 +1139,7 @@ export class Game implements IGame {
         const isPawnPromotion = game.isPawnPromotion(move);
 
         if (isPawnPromotion) {
-          const promotionMatch = moveString.slice(moveSquares.length).match(PROMOTION_REGEX);
+          const promotionMatch = moveString.slice(moveSquares.length).match(PGN_PROMOTION_REGEX);
 
           if (!promotionMatch) {
             throw invalidPgnError;
@@ -1121,10 +1155,6 @@ export class Game implements IGame {
         }
 
         game.registerMove(move);
-
-        if (_.last(game.moves)!.algebraic !== moveString) {
-          throw invalidPgnError;
-        }
 
         movesString = movesString.slice(moveString.length);
         shouldBeMoveIndex = game.movesCount % game.pliesPerMove === 0;

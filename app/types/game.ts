@@ -56,6 +56,7 @@ export interface BoardDimensions {
 }
 
 export interface StartingData {
+  result: GameResult | null;
   turn: ColorEnum;
   startingMoveIndex: number;
   pliesWithoutCaptureOrPawnMove: number;
