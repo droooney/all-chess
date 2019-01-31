@@ -23,6 +23,7 @@ type Props = OwnProps;
 
 export default class MovesPanel extends React.Component<Props> {
   movesRef = React.createRef<HTMLDivElement>();
+  currentMoveRef = React.createRef<HTMLDivElement>();
 
   componentDidMount() {
     const movesElem = this.movesRef.current!;
@@ -32,16 +33,21 @@ export default class MovesPanel extends React.Component<Props> {
 
   componentDidUpdate(prevProps: Props) {
     const {
-      moves
+      currentMoveIndex
     } = this.props;
 
-    if (moves.length > prevProps.moves.length) {
+    if (currentMoveIndex !== prevProps.currentMoveIndex) {
       const movesElem = this.movesRef.current!;
-      const lastMoveRow = _.last(movesElem.children)!;
-      const maxScroll = movesElem.scrollHeight - movesElem.clientHeight;
+      const currentMoveElem = this.currentMoveRef.current;
 
-      if (maxScroll - movesElem.scrollTop - 10 <= lastMoveRow.clientHeight) {
-        movesElem.scrollTop = maxScroll;
+      if (currentMoveElem) {
+        const moveRow = [...movesElem.children].indexOf(currentMoveElem.parentElement!);
+        const moveHeight = currentMoveElem.clientHeight;
+        const newScrollTop = moveRow * moveHeight - (movesElem.clientHeight - moveHeight) / 2;
+
+        movesElem.scrollTop = Math.max(0, Math.min(newScrollTop, movesElem.scrollHeight - movesElem.clientHeight));
+      } else {
+        movesElem.scrollTop = 0;
       }
     }
   }
@@ -101,12 +107,14 @@ export default class MovesPanel extends React.Component<Props> {
               <div className="move-index">{startingMove + moveRow + 1}</div>
               {moves.map((move, turn) => {
                 const moveIndex = moveRow * pliesPerMove + turn - (startingMoveOffset && moveRow ? startingMoveOffset : 0);
+                const isCurrent = moveIndex === currentMoveIndex;
 
                 return (
                   <div
                     key={turn}
+                    ref={isCurrent ? this.currentMoveRef : undefined}
                     className={classNames('move', {
-                      current: moveIndex === currentMoveIndex
+                      current: isCurrent
                     })}
                     style={!moveRow && !turn && startingMoveIndex ? {
                       position: 'relative',

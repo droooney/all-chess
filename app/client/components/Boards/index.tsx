@@ -9,6 +9,7 @@ import {
   BoardPiece as IBoardPiece,
   ColorEnum,
   Piece as IPiece,
+  PieceBoardLocation,
   PieceTypeEnum,
   PieceLocationEnum,
   PiecePocketLocation,
@@ -79,9 +80,32 @@ class Boards extends React.Component<Props, State> {
       selectedPiece
     } = this.props;
 
-    return selectedPiece
-      ? game.getAllowedMoves(selectedPiece)
-      : [] as Square[];
+    if (!selectedPiece) {
+      return [];
+    }
+
+    const allowedMoves = game.getAllowedMoves(selectedPiece);
+
+    // add own rooks as castling move targets
+    if (!game.is960) {
+      [...allowedMoves].forEach((square) => {
+        if (
+          game.isCastling({
+            from: selectedPiece.location,
+            to: square
+          })
+        ) {
+          const isKingSideCastling = square.x - (selectedPiece.location as PieceBoardLocation).x > 0;
+
+          allowedMoves.push({
+            ...square,
+            x: isKingSideCastling ? game.boardWidth - 1 : 0
+          });
+        }
+      });
+    }
+
+    return allowedMoves;
   }
 
   getSquareClasses(square: Square): string[] {
@@ -125,11 +149,12 @@ class Boards extends React.Component<Props, State> {
       selectedPiece,
       selectPiece
     } = this.props;
+    const playerColor = player!.color;
 
     if (!selectedPiece) {
       const pieceInSquare = game.getBoardPiece(square);
 
-      if (!pieceInSquare || player!.color !== pieceInSquare.color) {
+      if (!pieceInSquare || playerColor !== pieceInSquare.color) {
         return;
       }
 
@@ -146,16 +171,36 @@ class Boards extends React.Component<Props, State> {
     if (!this.isAllowed(square, this.getAllowedMoves())) {
       const pieceInSquare = game.getBoardPiece(square);
 
-      if (!pieceInSquare || player!.color !== pieceInSquare.color) {
+      if (!pieceInSquare || playerColor !== pieceInSquare.color) {
         return;
       }
 
       return selectPiece(pieceInSquare);
     }
 
+    let toSquare = square;
+    const pieceInSquare = game.getBoardPiece(square);
+
+    // if clicked on own rook for castling
+    if (
+      !game.is960
+      && selectedPiece.type === PieceTypeEnum.KING
+      && selectedPiece.location.type === PieceLocationEnum.BOARD
+      && pieceInSquare
+      && pieceInSquare.type === PieceTypeEnum.ROOK
+      && pieceInSquare.color === playerColor
+    ) {
+      toSquare = {
+        ...square,
+        x: pieceInSquare.location.x - selectedPiece.location.x > 0
+          ? game.boardWidth - 2
+          : 2
+      };
+    }
+
     const move = {
       from: selectedPiece.location,
-      to: square,
+      to: toSquare,
       promotion: PieceTypeEnum.QUEEN
     };
 

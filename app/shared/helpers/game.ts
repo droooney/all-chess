@@ -1675,20 +1675,8 @@ export class Game implements IGame {
     const disappearedOrMovedPieces: Piece[] = [];
     const isPawnPromotion = this.isPawnPromotion(move);
     const isMainPieceMovedOrDisappeared = this.isAtomic && isCapture;
-    let isTeleportMove = false;
+    const isTeleportMove = this.isTeleportMove(move);
     let isAllowed = true;
-
-    if (
-      this.isLastChance
-      && piece.type === PieceTypeEnum.KING
-      && !this.teleportUsed[piece.color]
-    ) {
-      this.teleportUsed[piece.color] = true;
-
-      isTeleportMove = this.getAllowedMoves(piece).every((square) => !Game.areSquaresEqual(square, toLocation));
-
-      this.teleportUsed[piece.color] = false;
-    }
 
     const isCastling = (
       fromLocation.type === PieceLocationEnum.BOARD
@@ -2739,8 +2727,8 @@ export class Game implements IGame {
           && !this.isParalysed(rook)
         ))
         .filter((rook) => {
-          const { location } = rook!;
-          const isKingSideRook = location.x - pieceX > 0;
+          const { location: rookLocation } = rook!;
+          const isKingSideRook = rookLocation.x - pieceX > 0;
           const newKingX = isKingSideRook ? this.boardWidth - 2 : 2;
           const newRookX = isKingSideRook ? this.boardWidth - 3 : 3;
           let canKingMove = true;
@@ -2768,8 +2756,8 @@ export class Game implements IGame {
 
           let canRookMove = true;
 
-          _.times(Math.abs(location.x - newRookX), (x) => {
-            const fileX = newRookX + (location.x > newRookX ? +x : -x);
+          _.times(Math.abs(rookLocation.x - newRookX), (x) => {
+            const fileX = newRookX + (rookLocation.x > newRookX ? +x : -x);
             const pieceInSquare = this.getBoardPiece({ board, y: pieceY, x: fileX });
 
             // square is occupied by a piece that is not the king
@@ -2785,8 +2773,8 @@ export class Game implements IGame {
             // a piece cannot move to a square that is occupied on any other board
             canRookMove = canRookMove && _.times(this.boardCount - 1).every((board) => (
               !this.getBoardPiece({
-                board: this.getNextBoard(location.board + board),
-                y: location.y,
+                board: this.getNextBoard(rookLocation.board + board),
+                y: rookLocation.y,
                 x: newRookX
               })
             ));
@@ -2795,13 +2783,13 @@ export class Game implements IGame {
           return canRookMove;
         })
         .forEach((rook) => {
-          const { location } = rook!;
-          const isKingSideRook = location.x - pieceX > 0;
+          const { location: rookLocation } = rook!;
+          const isKingSideRook = rookLocation.x - pieceX > 0;
 
           possibleSquares.push({
             board,
             x: this.is960
-              ? location.x
+              ? rookLocation.x
               : isKingSideRook
                 ? this.boardWidth - 2
                 : 2,
@@ -2963,6 +2951,62 @@ export class Game implements IGame {
         piece.color === ColorEnum.BLACK && toY === 0
       ))
     );
+  }
+
+  isTeleportMove(move: BaseMove): boolean {
+    if (!this.isLastChance) {
+      return false;
+    }
+
+    const {
+      from: fromLocation,
+      to: toLocation
+    } = move;
+    const piece = fromLocation.type === PieceLocationEnum.BOARD
+      ? this.getBoardPiece(fromLocation)
+      : null;
+
+    if (!piece || piece.type !== PieceTypeEnum.KING || this.teleportUsed[piece.color]) {
+      return false;
+    }
+
+    this.teleportUsed[piece.color] = true;
+
+    const isTeleportMove = this.getAllowedMoves(piece).every((square) => !Game.areSquaresEqual(square, toLocation));
+
+    this.teleportUsed[piece.color] = false;
+
+    return isTeleportMove;
+  }
+
+  isCastling(move: BaseMove): boolean {
+    if (this.isTeleportMove(move)) {
+      return false;
+    }
+
+    const {
+      from: fromLocation,
+      to: toLocation
+    } = move;
+    const piece = fromLocation.type === PieceLocationEnum.BOARD
+      ? this.getBoardPiece(fromLocation)
+      : null;
+
+    if (!piece || piece.type !== PieceTypeEnum.KING || fromLocation.type !== PieceLocationEnum.BOARD) {
+      return false;
+    }
+
+    const toPiece = this.getBoardPiece(toLocation);
+
+    if (this.is960) {
+      return (
+        !!toPiece
+        && toPiece.color === piece.color
+        && toPiece.type === PieceTypeEnum.ROOK
+      );
+    }
+
+    return Math.abs(toLocation.x - fromLocation.x) > 1;
   }
 
   isInCheck(color: ColorEnum): boolean {
