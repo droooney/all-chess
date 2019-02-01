@@ -182,7 +182,11 @@ export class Game implements IGame {
 
     return ((
       !isKingOfTheHill
-      || !isLastChance
+      || isAntichess
+      || (
+        !isLastChance
+        && !isDarkChess
+      )
     ) && (
       !isMonsterChess
       || (
@@ -228,10 +232,7 @@ export class Game implements IGame {
       )
     ) && (
       !isDarkChess
-      || (
-        !isKingOfTheHill
-        && !isAtomic
-      )
+      || !isAtomic
     ) && (
       !isAntichess
       || (
@@ -2112,7 +2113,7 @@ export class Game implements IGame {
     const setMoveIsAllowed = () => {
       if (checkIfAllowed) {
         isAllowed = isAllowed && (
-          this.isAtomic
+          this.isAtomic && !this.isAntichess
             ? this.areKingsOnTheBoard(prevTurn)
             : !this.isInCheck(prevTurn)
         );
@@ -2911,19 +2912,25 @@ export class Game implements IGame {
     if (this.isAntichess) {
       const allPossibleMoves = this.getPieces(piece.color).reduce((squares, piece) => [
         ...squares,
-        ...this.getPossibleMoves(piece)
-      ], [] as Square[]);
-      const isCaptureMove = (square: Square): boolean => {
-        const pieceInSquare = this.getBoardPiece(square);
+        { piece, squares: this.getPossibleMoves(piece) }
+      ], [] as { piece: RealPiece; squares: Square[]; }[]);
+      const isCaptureMove = (piece: RealPiece): (square: Square) => boolean => {
+        return (square) => {
+          const pieceInSquare = this.getBoardPiece(square);
 
-        return (
-          !!pieceInSquare
-          && pieceInSquare.color !== piece.color
-        );
+          return (
+            !!pieceInSquare
+            && pieceInSquare.color !== piece.color
+          ) || (
+            !!this.possibleEnPassant
+            && piece.type === PieceTypeEnum.PAWN
+            && Game.areSquaresEqual(square, this.possibleEnPassant)
+          );
+        };
       };
 
-      return allPossibleMoves.some(isCaptureMove)
-        ? possibleMoves.filter(isCaptureMove)
+      return allPossibleMoves.some(({ piece, squares }) => squares.some(isCaptureMove(piece)))
+        ? possibleMoves.filter(isCaptureMove(piece))
         : possibleMoves;
     }
 
@@ -3195,6 +3202,30 @@ export class Game implements IGame {
         reason: this.isNoPieces(currentTurn)
           ? ResultReasonEnum.NO_MORE_PIECES
           : ResultReasonEnum.STALEMATE
+      };
+    }
+
+    if (
+      this.isAntichess
+      && this.getPieces(currentTurn).every((piece) => (
+        this.getAllowedMoves(piece).every((square) => {
+          const { revertMove } = this.performMove({
+            from: piece.location,
+            to: square,
+            timestamp: 0,
+            promotion: PieceTypeEnum.QUEEN
+          }, false, false);
+          const isStalemate = this.isStalemate();
+
+          revertMove();
+
+          return isStalemate;
+        })
+      ))
+    ) {
+      return {
+        winner: prevTurn,
+        reason: ResultReasonEnum.STALEMATE
       };
     }
 
