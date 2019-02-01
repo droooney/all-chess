@@ -3207,6 +3207,7 @@ export class Game implements IGame {
 
     if (
       this.isAntichess
+      && !this.isNoPieces(prevTurn)
       && this.getPieces(currentTurn).every((piece) => (
         this.getAllowedMoves(piece).every((square) => {
           const { revertMove } = this.performMove({
