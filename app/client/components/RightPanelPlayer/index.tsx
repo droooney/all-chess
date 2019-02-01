@@ -7,27 +7,25 @@ import {
   Piece as IPiece,
   PieceLocationEnum,
   PiecePocketLocation,
-  PieceTypeEnum,
   Player,
   PocketPiece,
   TimeControl
 } from '../../../types';
+import { Game } from '../../helpers';
 
 import Piece from '../Piece';
 
 interface OwnProps {
+  game: Game;
   currentPlayer: Player | null;
   player: Player;
   pocket: PocketPiece[];
-  pocketPiecesUsed: PieceTypeEnum[];
   timePassedSinceLastMove: number;
   timeControl: TimeControl;
   realTurn: ColorEnum;
   isTop: boolean;
-  isPocketUsed: boolean;
   selectedPiece: PocketPiece | null;
   selectPiece(piece: IPiece | null): void;
-  getPocketPiece(type: PieceTypeEnum, color: ColorEnum): PocketPiece | null;
 }
 
 type Props = OwnProps;
@@ -64,10 +62,10 @@ export default class RightPanelPlayer extends React.Component<Props> {
 
   onPocketPieceClick(location: PiecePocketLocation) {
     const {
+      game,
       currentPlayer,
       player,
       realTurn,
-      getPocketPiece,
       selectPiece,
       selectedPiece
     } = this.props;
@@ -86,27 +84,26 @@ export default class RightPanelPlayer extends React.Component<Props> {
     ) {
       selectPiece(null);
     } else {
-      selectPiece(getPocketPiece(location.pieceType, player.color));
+      selectPiece(game.getPocketPiece(location.pieceType, player.color));
     }
   }
 
   render() {
     const {
+      game,
       player,
       currentPlayer,
-      isPocketUsed,
       pocket,
-      pocketPiecesUsed,
       selectedPiece,
       timeControl,
       isTop
     } = this.props;
     const elements: JSX.Element[] = [];
 
-    if (isPocketUsed) {
+    if (game.isPocketUsed) {
       elements.push(
         <div key="pocket" className="pocket">
-          {pocketPiecesUsed.map((type) => {
+          {game.pocketPiecesUsed.map((type) => {
             const pieces = pocket.filter(({ type: pieceType }) => pieceType === type);
 
             return (

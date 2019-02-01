@@ -54,18 +54,6 @@ export default class GameRulesExample extends React.Component<Props> {
     });
   }
 
-  moveBack = () => {
-    this.game.moveBack();
-  };
-
-  moveForward = () => {
-    this.game.moveForward();
-  };
-
-  navigateToMove = (moveIndex: number) => {
-    this.game.navigateToMove(moveIndex);
-  };
-
   render() {
     const {
       id,
@@ -93,13 +81,9 @@ export default class GameRulesExample extends React.Component<Props> {
         </div>
         {moves && (
           <MovesPanel
+            game={this.game}
             currentMoveIndex={this.game.currentMoveIndex}
-            pliesPerMove={this.game.pliesPerMove}
-            startingData={this.game.startingData}
             moves={this.game.getUsedMoves()}
-            moveBack={this.moveBack}
-            moveForward={this.moveForward}
-            navigateToMove={this.navigateToMove}
           />
         )}
       </div>

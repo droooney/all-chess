@@ -7,10 +7,8 @@ import {
   GamePlayers,
   GameStatusEnum,
   Piece,
-  PieceTypeEnum,
   Player,
   PocketPiece,
-  StartingData,
   TimeControl,
   TimeControlEnum
 } from '../../../types';
@@ -20,25 +18,18 @@ import MovesPanel from '../MovesPanel';
 import RightPanelPlayer from '../RightPanelPlayer';
 
 interface OwnProps {
+  game: Game;
   players: GamePlayers;
   player: Player | null;
   pieces: Piece[];
-  startingData: StartingData;
-  pocketPiecesUsed: PieceTypeEnum[];
-  isPocketUsed: boolean;
   currentMoveIndex: number;
   timeControl: TimeControl;
   moves: AnyMove[];
   isBlackBase: boolean;
-  pliesPerMove: number;
   status: GameStatusEnum;
   timeDiff: number;
   selectedPiece: PocketPiece | null;
   selectPiece(piece: Piece | null): void;
-  moveBack(): void;
-  moveForward(): void;
-  navigateToMove(moveIndex: number): void;
-  getPocketPiece(type: PieceTypeEnum, color: ColorEnum): PocketPiece | null;
 }
 
 interface State {
@@ -57,12 +48,12 @@ export default class RightPanel extends React.Component<Props, State> {
 
   componentDidMount() {
     const {
+      game,
       status,
-      pliesPerMove,
       moves
     } = this.props;
 
-    if (moves.length >= pliesPerMove && status === GameStatusEnum.ONGOING) {
+    if (moves.length >= game.pliesPerMove && status === GameStatusEnum.ONGOING) {
       this.activateInterval();
     }
 
@@ -71,14 +62,14 @@ export default class RightPanel extends React.Component<Props, State> {
 
   componentDidUpdate(prevProps: Props) {
     const {
+      game,
       status,
-      moves,
-      pliesPerMove
+      moves
     } = this.props;
 
     if (status !== GameStatusEnum.ONGOING) {
       clearInterval(this.timeControlInterval);
-    } else if (moves.length >= pliesPerMove && prevProps.moves.length < pliesPerMove) {
+    } else if (moves.length >= game.pliesPerMove && prevProps.moves.length < game.pliesPerMove) {
       this.activateInterval();
     }
   }
@@ -91,15 +82,14 @@ export default class RightPanel extends React.Component<Props, State> {
 
   onKeyDown = (e: KeyboardEvent) => {
     const {
-      moveBack,
-      moveForward
+      game
     } = this.props;
 
     if (!e.target || !_.includes(INPUT_ELEMENTS, (e.target as HTMLElement).tagName.toLowerCase())) {
       if (e.key === 'ArrowLeft') {
-        moveBack();
+        game.moveBack();
       } else if (e.key === 'ArrowRight') {
-        moveForward();
+        game.moveForward();
       }
     }
   };
@@ -128,26 +118,19 @@ export default class RightPanel extends React.Component<Props, State> {
 
   render() {
     const {
+      game,
       players,
       player,
       pieces,
-      startingData,
-      pocketPiecesUsed,
-      isPocketUsed,
-      pliesPerMove,
       currentMoveIndex,
       moves,
       timeControl,
       isBlackBase,
       selectedPiece,
-      getPocketPiece,
-      selectPiece,
-      moveBack,
-      moveForward,
-      navigateToMove
+      selectPiece
     } = this.props;
-    const startingMoveIndex = startingData.startingMoveIndex;
-    const realTurn = (moves.length + startingMoveIndex) % pliesPerMove === pliesPerMove - 1
+    const startingMoveIndex = game.startingData.startingMoveIndex;
+    const realTurn = (moves.length + startingMoveIndex) % game.pliesPerMove === game.pliesPerMove - 1
       ? ColorEnum.BLACK
       : ColorEnum.WHITE;
     const topPlayer = isBlackBase
@@ -163,43 +146,35 @@ export default class RightPanel extends React.Component<Props, State> {
       <div className="right-panel">
 
         <RightPanelPlayer
+          game={game}
           player={topPlayer}
           currentPlayer={player}
           timePassedSinceLastMove={timePassedSinceLastMove}
           timeControl={timeControl}
           realTurn={realTurn}
           isTop
-          isPocketUsed={isPocketUsed}
-          pocketPiecesUsed={pocketPiecesUsed}
           pocket={pieces.filter((piece) => Game.isPocketPiece(piece) && piece.color === topPlayer.color) as PocketPiece[]}
           selectedPiece={selectedPiece}
           selectPiece={selectPiece}
-          getPocketPiece={getPocketPiece}
         />
 
         <MovesPanel
+          game={game}
           currentMoveIndex={currentMoveIndex}
-          pliesPerMove={pliesPerMove}
-          startingData={startingData}
           moves={moves}
-          moveBack={moveBack}
-          moveForward={moveForward}
-          navigateToMove={navigateToMove}
         />
 
         <RightPanelPlayer
+          game={game}
           player={bottomPlayer}
           currentPlayer={player}
           timePassedSinceLastMove={timePassedSinceLastMove}
           timeControl={timeControl}
           realTurn={realTurn}
           isTop={false}
-          isPocketUsed={isPocketUsed}
-          pocketPiecesUsed={pocketPiecesUsed}
           pocket={pieces.filter((piece) => Game.isPocketPiece(piece) && piece.color === bottomPlayer.color) as PocketPiece[]}
           selectedPiece={selectedPiece}
           selectPiece={selectPiece}
-          getPocketPiece={getPocketPiece}
         />
 
       </div>

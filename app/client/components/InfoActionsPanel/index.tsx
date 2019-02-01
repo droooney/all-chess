@@ -9,7 +9,6 @@ import {
   ColorEnum,
   GamePlayers,
   GameResult,
-  GameVariantEnum,
   PieceTypeEnum,
   Player
 } from '../../../types';
@@ -17,6 +16,7 @@ import {
   COLOR_NAMES,
   RESULT_REASON_NAMES
 } from '../../../shared/constants';
+import { Game } from '../../helpers';
 import { ReduxState } from '../../store';
 
 import GameVariantLink from '../GameVariantLink';
@@ -24,25 +24,16 @@ import Piece from '../Piece';
 import Dialog from '../Dialog';
 
 export interface OwnProps {
+  game: Game;
   result: GameResult | null;
-  variants: GameVariantEnum[];
   players: GamePlayers;
   isThreefoldRepetitionDrawPossible: boolean;
   is50MoveDrawPossible: boolean;
-  isAliceChess: boolean;
-  isDarkChess: boolean;
   isBlackBase: boolean;
   drawOffer: ColorEnum | null;
   darkChessMode: ColorEnum | null;
   showDarkChessHiddenPieces: boolean;
   player: Player | null;
-  offerDraw(): void;
-  acceptDraw(): void;
-  cancelDraw(): void;
-  declineDraw(): void;
-  resign(): void;
-  declareThreefoldRepetitionDraw(): void;
-  declare50MoveDraw(): void;
   flipBoard(): void;
   changeDarkChessMode(): void;
   toggleShowDarkChessHiddenPieces(): void;
@@ -61,25 +52,25 @@ class InfoActionsPanel extends React.Component<Props, State> {
 
   offerDraw = () => {
     const {
-      drawOffer,
-      offerDraw
+      game,
+      drawOffer
     } = this.props;
 
     if (!drawOffer) {
-      offerDraw();
+      game.offerDraw();
     }
   };
 
   acceptDraw = () => {
-    this.props.acceptDraw();
+    this.props.game.acceptDraw();
   };
 
   cancelDraw = () => {
-    this.props.cancelDraw();
+    this.props.game.cancelDraw();
   };
 
   declineDraw = () => {
-    this.props.declineDraw();
+    this.props.game.declineDraw();
   };
 
   openResignModal = () => {
@@ -96,29 +87,29 @@ class InfoActionsPanel extends React.Component<Props, State> {
 
   resign = (choice: string) => {
     if (choice === 'yes') {
-      this.props.resign();
+      this.props.game.resign();
     }
   };
 
   declareThreefoldRepetitionDraw = () => {
     const {
-      isThreefoldRepetitionDrawPossible,
-      declareThreefoldRepetitionDraw
+      game,
+      isThreefoldRepetitionDrawPossible
     } = this.props;
 
     if (isThreefoldRepetitionDrawPossible) {
-      declareThreefoldRepetitionDraw();
+      game.declareThreefoldRepetitionDraw();
     }
   };
 
   declare50MoveDraw = () => {
     const {
-      is50MoveDrawPossible,
-      declare50MoveDraw
+      game,
+      is50MoveDrawPossible
     } = this.props;
 
     if (is50MoveDrawPossible) {
-      declare50MoveDraw();
+      game.declare50MoveDraw();
     }
   };
 
@@ -152,12 +143,10 @@ class InfoActionsPanel extends React.Component<Props, State> {
 
   render() {
     const {
-      variants,
+      game,
       result,
       isThreefoldRepetitionDrawPossible,
       is50MoveDrawPossible,
-      isAliceChess,
-      isDarkChess,
       isBlackBase,
       drawOffer,
       darkChessMode,
@@ -187,7 +176,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
         </div>
       );
 
-      if (!isDarkChess) {
+      if (!game.isDarkChess) {
         buttons.push(
           <div
             key="threefold-draw"
@@ -229,7 +218,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
       </div>
     );
 
-    if (isAliceChess) {
+    if (game.isAliceChess) {
       buttons.push(
         <div
           key="show-fantom-pieces"
@@ -254,7 +243,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
       );
     }
 
-    if (isDarkChess && result) {
+    if (game.isDarkChess && result) {
       buttons.push(
         <div
           key="change-dark-chess-mode"
@@ -308,19 +297,19 @@ class InfoActionsPanel extends React.Component<Props, State> {
 
         <div className="info-actions-panel">
 
-          {!!variants.length && (
+          {!!game.variants.length && (
             <div className="variants">
               <span className="variants-header">
                 Variants include:
               </span>
-              {variants.map((variant, ix) => (
+              {game.variants.map((variant, ix) => (
                 <React.Fragment key={variant}>
                   {' '}
                   <GameVariantLink
                     variant={variant}
                     className="variant"
                   />
-                  {ix === variants.length - 1 ? '' : ','}
+                  {ix === game.variants.length - 1 ? '' : ','}
                 </React.Fragment>
               ))}
             </div>

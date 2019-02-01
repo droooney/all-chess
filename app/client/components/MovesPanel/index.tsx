@@ -3,20 +3,16 @@ import * as React from 'react';
 import classNames = require('classnames');
 
 import {
-  AnyMove,
-  StartingData
+  AnyMove
 } from '../../../types';
+import { Game } from '../../helpers';
 
 import './index.less';
 
 interface OwnProps {
+  game: Game;
   currentMoveIndex: number;
-  pliesPerMove: number;
-  startingData: StartingData;
   moves: AnyMove[];
-  moveBack(): void;
-  moveForward(): void;
-  navigateToMove(moveIndex: number): void;
 }
 
 type Props = OwnProps;
@@ -54,46 +50,42 @@ export default class MovesPanel extends React.Component<Props> {
 
   render() {
     const {
+      game,
       currentMoveIndex,
-      pliesPerMove,
-      startingData,
-      moves,
-      moveBack,
-      moveForward,
-      navigateToMove
+      moves
     } = this.props;
     const isBeforeFirstMove = currentMoveIndex === -1;
     const isAfterLastMove = currentMoveIndex === moves.length - 1;
-    const startingMoveIndex = startingData.startingMoveIndex;
-    const startingMove = Math.floor(startingMoveIndex / pliesPerMove);
-    const startingMoveOffset = startingMoveIndex % pliesPerMove;
-    const firstMoveLeftOffset = 90 / pliesPerMove * startingMoveOffset;
-    const restMoves = _.chunk(moves.slice(startingMoveOffset), pliesPerMove);
+    const startingMoveIndex = game.startingData.startingMoveIndex;
+    const startingMove = Math.floor(startingMoveIndex / game.pliesPerMove);
+    const startingMoveOffset = startingMoveIndex % game.pliesPerMove;
+    const firstMoveLeftOffset = 90 / game.pliesPerMove * startingMoveOffset;
+    const restMoves = _.chunk(moves.slice(startingMoveOffset), game.pliesPerMove);
 
     return (
       <div className="moves-panel">
         <div className="moves-icons">
           <div
             className={classNames('move-icon', { disabled: isBeforeFirstMove })}
-            onClick={() => navigateToMove(-1)}
+            onClick={() => game.navigateToMove(-1)}
           >
             <i className="fa fa-fast-backward" />
           </div>
           <div
             className={classNames('move-icon', { disabled: isBeforeFirstMove })}
-            onClick={moveBack}
+            onClick={() => game.moveBack()}
           >
             <i className="fa fa-backward" />
           </div>
           <div
             className={classNames('move-icon', { disabled: isAfterLastMove })}
-            onClick={moveForward}
+            onClick={() => game.moveForward()}
           >
             <i className="fa fa-forward" />
           </div>
           <div
             className={classNames('move-icon', { disabled: isAfterLastMove })}
-            onClick={() => navigateToMove(moves.length - 1)}
+            onClick={() => game.navigateToMove(moves.length - 1)}
           >
             <i className="fa fa-fast-forward" />
           </div>
@@ -103,10 +95,10 @@ export default class MovesPanel extends React.Component<Props> {
             ...[moves.slice(0, startingMoveOffset)],
             ...restMoves
           ] : restMoves).map((moves, moveRow) => (
-            <div key={moveRow} className={`move-row moves-${pliesPerMove}`}>
+            <div key={moveRow} className={`move-row moves-${game.pliesPerMove}`}>
               <div className="move-index">{startingMove + moveRow + 1}</div>
               {moves.map((move, turn) => {
-                const moveIndex = moveRow * pliesPerMove + turn - (startingMoveOffset && moveRow ? startingMoveOffset : 0);
+                const moveIndex = moveRow * game.pliesPerMove + turn - (startingMoveOffset && moveRow ? startingMoveOffset : 0);
                 const isCurrent = moveIndex === currentMoveIndex;
 
                 return (
@@ -120,7 +112,7 @@ export default class MovesPanel extends React.Component<Props> {
                       position: 'relative',
                       left: `${firstMoveLeftOffset}%`
                     } : {}}
-                    onClick={() => navigateToMove(moveIndex)}
+                    onClick={() => game.navigateToMove(moveIndex)}
                   >
                     {move.figurine}
                   </div>

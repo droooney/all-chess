@@ -131,6 +131,18 @@ export class Game extends GameHelper {
     }
   }
 
+  acceptDraw() {
+    if (this.socket) {
+      this.socket.emit('drawAccepted');
+    }
+  }
+
+  cancelDraw() {
+    if (this.socket) {
+      this.socket.emit('drawCanceled');
+    }
+  }
+
   changeDarkChessMode() {
     if (this.darkChessMode === ColorEnum.BLACK) {
       this.darkChessMode = null;
@@ -156,6 +168,24 @@ export class Game extends GameHelper {
     }
 
     this.updateGame();
+  }
+
+  declare50MoveDraw() {
+    if (this.socket) {
+      this.socket.emit('declare50MoveDraw');
+    }
+  }
+
+  declareThreefoldRepetitionDraw() {
+    if (this.socket) {
+      this.socket.emit('declareThreefoldRepetitionDraw');
+    }
+  }
+
+  declineDraw() {
+    if (this.socket) {
+      this.socket.emit('drawDeclined');
+    }
   }
 
   destroy() {
@@ -219,6 +249,12 @@ export class Game extends GameHelper {
 
     if (updateGame) {
       this.updateGame();
+    }
+  }
+
+  offerDraw() {
+    if (this.socket) {
+      this.socket.emit('offerDraw');
     }
   }
 
@@ -308,6 +344,12 @@ export class Game extends GameHelper {
       ...move,
       revertMove
     });
+  }
+
+  resign() {
+    if (this.socket) {
+      this.socket.emit('resign');
+    }
   }
 
   revertAnyMove() {

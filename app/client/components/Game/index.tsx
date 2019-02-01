@@ -11,7 +11,6 @@ import {
   GameInitialData,
   GameStatusEnum,
   PieceLocationEnum,
-  PieceTypeEnum,
   Player,
   PocketPiece,
   RealPiece
@@ -106,58 +105,14 @@ export default class Game extends React.Component<Props, State> {
     console.log(this.game);
   };
 
-  moveBack = () => {
-    this.game!.moveBack();
-  };
-
-  moveForward = () => {
-    this.game!.moveForward();
-  };
-
-  navigateToMove = (moveIndex: number) => {
-    this.game!.navigateToMove(moveIndex);
-  };
-
   sendMessage = (message: string) => {
     this.socket!.emit('addChatMessage', message);
-  };
-
-  getPocketPiece = (type: PieceTypeEnum, color: ColorEnum): PocketPiece | null => {
-    return this.game!.getPocketPiece(type, color);
   };
 
   selectPiece = (selectedPiece: RealPiece | null) => {
     this.setState({
       selectedPiece
     });
-  };
-
-  offerDraw = () => {
-    this.socket!.emit('offerDraw');
-  };
-
-  acceptDraw = () => {
-    this.socket!.emit('drawAccepted');
-  };
-
-  cancelDraw = () => {
-    this.socket!.emit('drawCanceled');
-  };
-
-  declineDraw = () => {
-    this.socket!.emit('drawDeclined');
-  };
-
-  resign = () => {
-    this.socket!.emit('resign');
-  };
-
-  declareThreefoldRepetitionDraw = () => {
-    this.socket!.emit('declareThreefoldRepetitionDraw');
-  };
-
-  declare50MoveDraw = () => {
-    this.socket!.emit('declare50MoveDraw');
   };
 
   flipBoard = () => {
@@ -201,24 +156,18 @@ export default class Game extends React.Component<Props, State> {
           : 'Waiting for the players...';
       } else {
         const {
-          startingData,
           status,
           pieces,
           chat,
           turn,
           players,
-          pocketPiecesUsed,
-          isPocketUsed,
           isAliceChess,
           isChessence,
-          isDarkChess,
           isThreefoldRepetitionDrawPossible,
           is50MoveDrawPossible,
-          pliesPerMove,
           drawOffer,
           timeControl,
           result,
-          variants,
           darkChessMode,
           showDarkChessHiddenPieces,
           currentMoveIndex
@@ -235,25 +184,16 @@ export default class Game extends React.Component<Props, State> {
           <div className={classNames('game', { 'top-boards-grid': isBoardAtTop })}>
 
             <InfoActionsPanel
+              game={this.game!}
               result={result}
-              variants={variants}
               players={players}
               isThreefoldRepetitionDrawPossible={isThreefoldRepetitionDrawPossible}
               is50MoveDrawPossible={is50MoveDrawPossible}
-              isAliceChess={isAliceChess}
-              isDarkChess={isDarkChess}
               isBlackBase={isBlackBase}
               drawOffer={drawOffer}
               darkChessMode={darkChessMode}
               showDarkChessHiddenPieces={showDarkChessHiddenPieces}
               player={player}
-              offerDraw={this.offerDraw}
-              acceptDraw={this.acceptDraw}
-              cancelDraw={this.cancelDraw}
-              declineDraw={this.declineDraw}
-              resign={this.resign}
-              declareThreefoldRepetitionDraw={this.declareThreefoldRepetitionDraw}
-              declare50MoveDraw={this.declare50MoveDraw}
               flipBoard={this.flipBoard}
               changeDarkChessMode={this.changeDarkChessMode}
               toggleShowDarkChessHiddenPieces={this.toggleShowDarkChessHiddenPieces}
@@ -286,15 +226,12 @@ export default class Game extends React.Component<Props, State> {
             />
 
             <RightPanel
+              game={this.game!}
               players={players}
               player={player}
               pieces={pieces}
-              startingData={startingData}
-              pocketPiecesUsed={pocketPiecesUsed}
-              isPocketUsed={isPocketUsed}
               currentMoveIndex={currentMoveIndex}
               timeControl={timeControl}
-              pliesPerMove={pliesPerMove}
               moves={usedMoves}
               isBlackBase={isBlackBase}
               status={status}
@@ -304,11 +241,7 @@ export default class Game extends React.Component<Props, State> {
                   ? selectedPiece as PocketPiece
                   : null
               }
-              getPocketPiece={this.getPocketPiece}
               selectPiece={this.selectPiece}
-              moveBack={this.moveBack}
-              moveForward={this.moveForward}
-              navigateToMove={this.navigateToMove}
             />
 
           </div>
