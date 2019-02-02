@@ -240,6 +240,34 @@ class Boards extends React.Component<Props, State> {
     this.closePromotionPopup();
   };
 
+  getSquareSize() {
+    const {
+      game,
+      withLiterals
+    } = this.props;
+
+    const squaresWithLiteralsWidthCount = game.boardWidth * (game.isAliceChess ? 2 : 1) +
+      (withLiterals ?
+        game.isAliceChess ?
+          4 :
+          2 :
+        0
+      ) * 0.3;
+
+    const squaresWithLiteralsHeightCount = game.boardHeight + (withLiterals ? 2 : 0) * 0.3;
+
+    const horPadding = 20;
+    const otherColumns = window.innerWidth > 1170 ? 530 : 0;
+    const headerHeight = 30;
+
+    return Math.floor(
+      Math.min(
+        (window.innerWidth - horPadding * 2 - otherColumns) / squaresWithLiteralsWidthCount,
+        (window.innerHeight - headerHeight) / squaresWithLiteralsHeightCount
+      )
+    );
+  }
+
   render() {
     const {
       game,
@@ -254,7 +282,8 @@ class Boards extends React.Component<Props, State> {
       showFantomPieces,
       squareSize: propsSquareSize
     } = this.props;
-    const squareSize = propsSquareSize || (game.isChessence ? 60 : game.isAliceChess ? 45 : 70);
+
+    const squareSize = propsSquareSize || this.getSquareSize();
     const literalSize = withLiterals ? Math.ceil(squareSize * 0.3) : 0;
     const literalFontSize = Math.ceil(literalSize * 0.85);
     const allowedMoves = this.getAllowedMoves();

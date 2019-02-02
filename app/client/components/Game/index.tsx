@@ -181,28 +181,30 @@ export default class Game extends React.Component<Props, State> {
         const isBoardAtTop = isAliceChess && !isChessence;
 
         content = (
-          <div className={classNames('game', { 'top-boards-grid': isBoardAtTop })}>
+          <div className={classNames('game', { 'top-boards': isBoardAtTop })}>
 
-            <InfoActionsPanel
-              game={this.game!}
-              result={result}
-              players={players}
-              isThreefoldRepetitionDrawPossible={isThreefoldRepetitionDrawPossible}
-              is50MoveDrawPossible={is50MoveDrawPossible}
-              isBlackBase={isBlackBase}
-              drawOffer={drawOffer}
-              darkChessMode={darkChessMode}
-              showDarkChessHiddenPieces={showDarkChessHiddenPieces}
-              player={player}
-              flipBoard={this.flipBoard}
-              changeDarkChessMode={this.changeDarkChessMode}
-              toggleShowDarkChessHiddenPieces={this.toggleShowDarkChessHiddenPieces}
-            />
+            <div className="game-left-column">
+              <InfoActionsPanel
+                game={this.game!}
+                result={result}
+                players={players}
+                isThreefoldRepetitionDrawPossible={isThreefoldRepetitionDrawPossible}
+                is50MoveDrawPossible={is50MoveDrawPossible}
+                isBlackBase={isBlackBase}
+                drawOffer={drawOffer}
+                darkChessMode={darkChessMode}
+                showDarkChessHiddenPieces={showDarkChessHiddenPieces}
+                player={player}
+                flipBoard={this.flipBoard}
+                changeDarkChessMode={this.changeDarkChessMode}
+                toggleShowDarkChessHiddenPieces={this.toggleShowDarkChessHiddenPieces}
+              />
 
-            <Chat
-              chat={chat}
-              sendMessage={this.sendMessage}
-            />
+              <Chat
+                chat={chat}
+                sendMessage={this.sendMessage}
+              />
+            </div>
 
             <Boards
               game={this.game!}

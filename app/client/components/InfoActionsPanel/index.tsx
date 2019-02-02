@@ -294,9 +294,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
 
     return (
       <React.Fragment>
-
         <div className="info-actions-panel">
-
           {!!game.variants.length && (
             <div className="variants">
               <span className="variants-header">
@@ -357,7 +355,6 @@ class InfoActionsPanel extends React.Component<Props, State> {
               </div>
             )}
           </div>
-
         </div>
 
         <Dialog
@@ -370,7 +367,6 @@ class InfoActionsPanel extends React.Component<Props, State> {
           ]}
           onChoose={this.resign}
         />
-
       </React.Fragment>
     );
   }

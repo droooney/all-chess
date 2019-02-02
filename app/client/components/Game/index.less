@@ -8,33 +8,25 @@
   }
 
   .game {
-    display: grid;
-    grid-column-gap: 20px;
-    grid-template-columns: 300px auto 250px;
-    grid-template-rows: 180px auto;
-    grid-template-areas:
-      "info-actions boards right-panel"
-      "chat boards right-panel";
+    .flex(@align-items: stretch);
 
-    &.top-boards-grid {
-      grid-row-gap: 15px;
-      grid-template-columns: 1fr 2fr 250px;
-      grid-template-rows: auto;
-      grid-template-areas:
-        "boards boards right-panel"
-        "info-actions chat .";
+    width: 100%;
+    overflow: hidden;
+    padding: 0 20px;
 
+    &.top-boards {
       .chat {
         height: 200px;
         width: 500px;
       }
     }
 
-    .info-actions-panel {
-      grid-area: info-actions;
-      justify-self: center;
-      width: 250px;
+    .game-left-column {
+      .flex-child-fixed(250px);
+      .flex-col(@justify-content: flex-start);
+    }
 
+    .info-actions-panel {
       .variants {
         .variants-header {
           margin-left: 10px;
@@ -131,12 +123,13 @@
     }
 
     .chat {
-      grid-area: chat;
-      min-height: 200px;
-
+      .flex-child();
       .flex-col-stretch();
 
+      width: 100%;
+      min-height: 200px;
       border: 1px solid black;
+      margin-top: auto;
 
       .header {
         .flex-child-fixed();
@@ -187,11 +180,15 @@
       }
     }
 
-    .right-panel {
-      grid-area: right-panel;
-      justify-self: center;
+    .boards {
+      margin-left: 20px;
+    }
 
+    .right-panel {
+      .flex-child-fixed(250px);
       .flex-col(@align-items: flex-start);
+
+      margin-left: 10px;
 
       .player {
         .flex-col(@align-items: flex-start);
@@ -250,8 +247,7 @@
       }
 
       .moves-panel {
-        width: 250px;
-        height: 250px;
+        width: 100%;
         padding: 0 0 10px;
         margin: 10px 0;
 
@@ -264,6 +260,25 @@
             height: 25px;
           }
         }
+      }
+    }
+  }
+
+  @media (max-width: 1170px) {
+    .game {
+      flex-direction: column;
+
+      .boards {
+        order: 1;
+        margin-left: 0;
+      }
+
+      .right-panel {
+        order: 2;
+      }
+
+      .game-left-column {
+        order: 3;
       }
     }
   }
@@ -283,3 +298,4 @@
 .resign-modal .modal-content {
 
 }
+
