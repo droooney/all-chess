@@ -261,6 +261,7 @@ export default class Game extends React.Component<Props, State> {
     return (
       <div className="route game-route">
         <DocumentTitle value={title} />
+
         {content}
       </div>
     );

@@ -43,6 +43,7 @@ export interface OwnProps {
 }
 
 interface State {
+  isRendered: boolean,
   promotionModalVisible: boolean;
   promotionMove: BaseMove | null;
 }
@@ -56,9 +57,14 @@ class Boards extends React.Component<Props, State> {
 
   boardsRef = React.createRef<HTMLDivElement>();
   state: State = {
+    isRendered: false,
     promotionModalVisible: false,
     promotionMove: null
   };
+
+  componentDidMount() {
+    this.setState({ isRendered: true });
+  }
 
   componentDidUpdate(prevProps: Props) {
     if (prevProps.isBlackBase !== this.props.isBlackBase) {
@@ -241,10 +247,20 @@ class Boards extends React.Component<Props, State> {
   };
 
   getSquareSize() {
+    const { isRendered } = this.state;
     const {
       game,
       withLiterals
     } = this.props;
+
+    if (!isRendered) {
+      return 0;
+    }
+
+    const {
+      clientWidth: boardWrapperWidth,
+      clientHeight: boardWrapperHeight
+    } = this.boardsRef.current!;
 
     const squaresWithLiteralsWidthCount = game.boardWidth * (game.isAliceChess ? 2 : 1) +
       (withLiterals ?
@@ -256,14 +272,10 @@ class Boards extends React.Component<Props, State> {
 
     const squaresWithLiteralsHeightCount = game.boardHeight + (withLiterals ? 2 : 0) * 0.3;
 
-    const horPadding = 20;
-    const otherColumns = window.innerWidth > 1170 ? 530 : 0;
-    const headerHeight = 30;
-
     return Math.floor(
       Math.min(
-        (window.innerWidth - horPadding * 2 - otherColumns) / squaresWithLiteralsWidthCount,
-        (window.innerHeight - headerHeight) / squaresWithLiteralsHeightCount
+        boardWrapperWidth / squaresWithLiteralsWidthCount,
+        boardWrapperHeight / squaresWithLiteralsHeightCount
       )
     );
   }

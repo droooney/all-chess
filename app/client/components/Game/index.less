@@ -8,6 +8,7 @@
   }
 
   .game {
+    .flex-child();
     .flex(@align-items: stretch);
 
     width: 100%;
@@ -181,6 +182,8 @@
     }
 
     .boards {
+      .flex-child();
+
       margin-left: 20px;
     }
 
@@ -269,16 +272,15 @@
       flex-direction: column;
 
       .boards {
-        order: 1;
         margin-left: 0;
       }
 
       .right-panel {
-        order: 2;
+        display: none;
       }
 
       .game-left-column {
-        order: 3;
+        display: none;
       }
     }
   }
