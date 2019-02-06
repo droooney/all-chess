@@ -26,7 +26,7 @@ import {
   POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS
 } from '../shared/constants';
 
-const VARIATIONS = _.keys(GameVariantEnum);
+const VARIANTS = _.keys(GameVariantEnum);
 
 export default class Game extends GameHelper {
   static validateSettings(settings: any): boolean {
@@ -68,7 +68,7 @@ export default class Game extends GameHelper {
       return false;
     }
 
-    if (variants.some((variation) => !VARIATIONS.includes(variation))) {
+    if (variants.some((variation) => !VARIANTS.includes(variation))) {
       return false;
     }
 

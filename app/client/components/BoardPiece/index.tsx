@@ -16,21 +16,13 @@ interface OwnProps {
   boardHeight: number;
   literalSize: number;
   squareSize: number;
+
   onClick?(location: PieceBoardLocation): void;
 }
 
 type Props = OwnProps;
 
 export default class BoardPiece extends React.Component<Props> {
-  onClick = () => {
-    const {
-      piece,
-      onClick
-    } = this.props;
-
-    onClick!(piece.location);
-  };
-
   render() {
     const {
       piece,
@@ -67,17 +59,22 @@ export default class BoardPiece extends React.Component<Props> {
         }}
       >
         <Piece
-          piece={piece}
+          piece={{
+            ...piece,
+            type: piece.abilities || piece.type
+          }}
           onClick={onClick}
           className={classNames({ fantom: isFantom })}
         />
 
-        {piece.type !== piece.originalType && (
+        {(piece.abilities || piece.type !== piece.originalType) && (
           <Piece
             className="original-piece"
             piece={{
               ...piece,
-              type: piece.originalType
+              type: piece.abilities
+                ? piece.type
+                : piece.originalType
             }}
             onClick={onClick}
           />

@@ -3,12 +3,16 @@ import {
   GameSettings,
   GameVariantEnum,
   PieceTypeEnum,
-  ResultReasonEnum
+  ResultReasonEnum,
+  StandardPiece
 } from '../../types';
 
 export const SHORT_PIECE_NAMES: { [piece in PieceTypeEnum]: string } = {
   [PieceTypeEnum.KING]: 'K',
+  [PieceTypeEnum.AMAZON]: 'A',
   [PieceTypeEnum.QUEEN]: 'Q',
+  [PieceTypeEnum.EMPRESS]: 'E',
+  [PieceTypeEnum.CARDINAL]: 'C',
   [PieceTypeEnum.ROOK]: 'R',
   [PieceTypeEnum.BISHOP]: 'B',
   [PieceTypeEnum.KNIGHT]: 'N',
@@ -16,15 +20,14 @@ export const SHORT_PIECE_NAMES: { [piece in PieceTypeEnum]: string } = {
   [PieceTypeEnum.MAN]: 'M'
 };
 
-export const PIECE_LITERALS: { [color in ColorEnum]: { [piece in PieceTypeEnum]: string; }; } = {
+export const PIECE_LITERALS: { [color in ColorEnum]: { [piece in StandardPiece]: string; }; } = {
   [ColorEnum.WHITE]: {
     [PieceTypeEnum.KING]: '♔',
     [PieceTypeEnum.QUEEN]: '♕',
     [PieceTypeEnum.ROOK]: '♖',
     [PieceTypeEnum.BISHOP]: '♗',
     [PieceTypeEnum.KNIGHT]: '♘',
-    [PieceTypeEnum.PAWN]: '♙',
-    [PieceTypeEnum.MAN]: '♙'
+    [PieceTypeEnum.PAWN]: '♙'
   },
   [ColorEnum.BLACK]: {
     [PieceTypeEnum.KING]: '♚',
@@ -32,8 +35,7 @@ export const PIECE_LITERALS: { [color in ColorEnum]: { [piece in PieceTypeEnum]:
     [PieceTypeEnum.ROOK]: '♜',
     [PieceTypeEnum.BISHOP]: '♝',
     [PieceTypeEnum.KNIGHT]: '♞',
-    [PieceTypeEnum.PAWN]: '♟',
-    [PieceTypeEnum.MAN]: '♟'
+    [PieceTypeEnum.PAWN]: '♟'
   }
 };
 
@@ -60,7 +62,12 @@ export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.CHESSENCE]: 'Chessence',
   [GameVariantEnum.HORDE]: 'Horde',
   [GameVariantEnum.DARK_CHESS]: 'Dark chess',
-  [GameVariantEnum.ANTICHESS]: 'Antichess'
+  [GameVariantEnum.ANTICHESS]: 'Antichess',
+  [GameVariantEnum.ABSORPTION]: 'Absorption chess',
+  [GameVariantEnum.FRANKFURT]: 'Frankfurt chess',
+  [GameVariantEnum.CAPABLANCA]: 'Capablanca chess',
+  [GameVariantEnum.AMAZONS]: 'Amazons',
+  [GameVariantEnum.THREE_CHECK]: 'Three-check'
 };
 
 export const GAME_VARIANT_PGN_NAMES: { [variation in GameVariantEnum]: string; } = {
@@ -78,7 +85,12 @@ export const GAME_VARIANT_PGN_NAMES: { [variation in GameVariantEnum]: string; }
   [GameVariantEnum.CHESSENCE]: 'Chessence',
   [GameVariantEnum.HORDE]: 'Horde',
   [GameVariantEnum.DARK_CHESS]: 'Dark',
-  [GameVariantEnum.ANTICHESS]: 'Antichess'
+  [GameVariantEnum.ANTICHESS]: 'Antichess',
+  [GameVariantEnum.ABSORPTION]: 'Absorption',
+  [GameVariantEnum.FRANKFURT]: 'Frankfurt',
+  [GameVariantEnum.CAPABLANCA]: 'Capablanca',
+  [GameVariantEnum.AMAZONS]: 'Amazons',
+  [GameVariantEnum.THREE_CHECK]: 'Three-check'
 };
 
 export const GAME_VARIANT_LINKS: { [variation in GameVariantEnum]: string; } = {
@@ -96,7 +108,12 @@ export const GAME_VARIANT_LINKS: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.CHESSENCE]: 'chessence',
   [GameVariantEnum.HORDE]: 'horde',
   [GameVariantEnum.DARK_CHESS]: 'dark-chess',
-  [GameVariantEnum.ANTICHESS]: 'antichess'
+  [GameVariantEnum.ANTICHESS]: 'antichess',
+  [GameVariantEnum.ABSORPTION]: 'absorption',
+  [GameVariantEnum.FRANKFURT]: 'frankfurt',
+  [GameVariantEnum.CAPABLANCA]: 'capablanca',
+  [GameVariantEnum.AMAZONS]: 'amazons',
+  [GameVariantEnum.THREE_CHECK]: 'three-check'
 };
 
 export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
@@ -105,7 +122,9 @@ export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
   [ResultReasonEnum.KING_EXPLODED]: 'king exploded',
   [ResultReasonEnum.KING_CAPTURED]: 'king captured',
   [ResultReasonEnum.HORDE_DESTROYED]: 'horde destroyed',
+  [ResultReasonEnum.AMAZONS_DESTROYED]: 'amazons destroyed',
   [ResultReasonEnum.NO_MORE_PIECES]: 'no more pieces',
+  [ResultReasonEnum.THREE_CHECKS]: 'three checks',
   [ResultReasonEnum.STALEMATE]: 'stalemate',
   [ResultReasonEnum.TIME_RAN_OUT]: 'opponent\'s time ran out',
   [ResultReasonEnum.RESIGN]: 'opponent resigned',

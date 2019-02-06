@@ -27,6 +27,7 @@ import {
   ResultReasonEnum,
   RevertableMove,
   Square,
+  StandardPiece,
   StartingData,
   TimeControl,
   TimeControlEnum
@@ -112,6 +113,15 @@ const ROOK_NEIGHBOR_INCREMENTS: [number, number][] = [
   [+1, 0]
 ];
 
+const STANDARD_PIECES = [
+  PieceTypeEnum.KING,
+  PieceTypeEnum.QUEEN,
+  PieceTypeEnum.ROOK,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.PAWN
+];
+
 const STANDARD_PIECE_PLACEMENT = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.KNIGHT,
@@ -123,11 +133,75 @@ const STANDARD_PIECE_PLACEMENT = [
   PieceTypeEnum.ROOK
 ];
 
+const TWO_FAMILIES_PIECE_PLACEMENT = [
+  PieceTypeEnum.ROOK,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.QUEEN,
+  PieceTypeEnum.KING,
+  PieceTypeEnum.QUEEN,
+  PieceTypeEnum.KING,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.ROOK
+];
+
+const CAPABLANCA_PIECE_PLACEMENT = [
+  PieceTypeEnum.ROOK,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.EMPRESS,
+  PieceTypeEnum.QUEEN,
+  PieceTypeEnum.KING,
+  PieceTypeEnum.CARDINAL,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.ROOK
+];
+
 const STANDARD_VALID_PROMOTIONS = [
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.ROOK,
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.KNIGHT
+];
+
+const CAPABLANCA_VALID_PROMOTIONS = [
+  PieceTypeEnum.QUEEN,
+  PieceTypeEnum.EMPRESS,
+  PieceTypeEnum.CARDINAL,
+  PieceTypeEnum.ROOK,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.KNIGHT
+];
+
+const STANDARD_POCKET = [
+  PieceTypeEnum.QUEEN,
+  PieceTypeEnum.ROOK,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.PAWN
+];
+
+const CAPABLANCA_POCKET = [
+  PieceTypeEnum.QUEEN,
+  PieceTypeEnum.EMPRESS,
+  PieceTypeEnum.CARDINAL,
+  PieceTypeEnum.ROOK,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.PAWN
+];
+
+const PIECES_SORTING = [
+  PieceTypeEnum.AMAZON,
+  PieceTypeEnum.QUEEN,
+  PieceTypeEnum.EMPRESS,
+  PieceTypeEnum.CARDINAL,
+  PieceTypeEnum.ROOK,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.PAWN
 ];
 
 const PARTIAL_STANDARD_STARTING_DATA = {
@@ -179,6 +253,11 @@ export class Game implements IGame {
     const isHorde = _.includes(variants, GameVariantEnum.HORDE);
     const isDarkChess = _.includes(variants, GameVariantEnum.DARK_CHESS);
     const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
+    const isAbsorption = _.includes(variants, GameVariantEnum.ABSORPTION);
+    const isFrankfurt = _.includes(variants, GameVariantEnum.FRANKFURT);
+    const isCapablanca = _.includes(variants, GameVariantEnum.CAPABLANCA);
+    const isAmazons = _.includes(variants, GameVariantEnum.AMAZONS);
+    const isThreeCheck = _.includes(variants, GameVariantEnum.THREE_CHECK);
 
     return ((
       !isKingOfTheHill
@@ -202,6 +281,11 @@ export class Game implements IGame {
         && !isHorde
         && !isDarkChess
         && !isAntichess
+        && !isAbsorption
+        && !isFrankfurt
+        && !isCapablanca
+        && !isAmazons
+        && !isThreeCheck
       )
     ) && (
       !isChessence
@@ -215,6 +299,10 @@ export class Game implements IGame {
         && !isTwoFamilies
         && !isHorde
         && !isAntichess
+        && !isAbsorption
+        && !isFrankfurt
+        && !isCapablanca
+        && !isAmazons
       )
     ) && (
       !isHorde
@@ -229,10 +317,17 @@ export class Game implements IGame {
         && !isCrazyhouse
         && !isDarkChess
         && !isAntichess
+        && !isAbsorption
+        && !isFrankfurt
+        && !isAmazons
       )
     ) && (
-      !isDarkChess
-      || !isAtomic
+      !isAtomic
+      || (
+        !isAliceChess
+        && !isDarkChess
+        && !isAmazons
+      )
     ) && (
       !isAntichess
       || (
@@ -240,6 +335,43 @@ export class Game implements IGame {
         && !isCirce
         && !isPatrol
         && !isMadrasi
+        && !isAmazons
+        && !isThreeCheck
+      )
+    ) && (
+      !isAbsorption
+      || (
+        !isCrazyhouse
+        && !isAtomic
+        && !isCirce
+        && !isMadrasi
+        && !isFrankfurt
+      )
+    ) && (
+      !isFrankfurt
+      || (
+        // TODO: add support for frankfurt + crazyhouse
+        !isCrazyhouse
+        && !isAtomic
+        && !isAmazons
+      )
+    ) && (
+      !isTwoFamilies
+      || (
+        !isCapablanca
+        && !isAmazons
+      )
+    ) && (
+      !isAmazons
+      || (
+        !isCapablanca
+        && !isKingOfTheHill
+        && !isThreeCheck
+      )
+    ) && (
+      !isThreeCheck
+      || (
+        !isDarkChess
       )
     ));
   }
@@ -284,6 +416,7 @@ export class Game implements IGame {
         originalType: type,
         color,
         moved: false,
+        abilities: null,
         location
       } as RealPiece);
 
@@ -319,81 +452,38 @@ export class Game implements IGame {
     };
   })();
 
-  static hordeStartingData: StartingData = (() => {
-    let id = 0;
-    const boardWidth = 8;
-    const boardHeight = 8;
-    const pieces: RealPiece[] = [];
-
-    [ColorEnum.WHITE, ColorEnum.BLACK].forEach((color) => {
-      const getPiece = (type: PieceTypeEnum, x: number, y: number): BoardPiece => ({
-        id: `${++id}`,
-        type,
-        originalType: type,
-        color,
-        moved: false,
-        location: {
-          type: PieceLocationEnum.BOARD,
-          board: 0,
-          x,
-          y
-        }
-      });
-
-      if (color === ColorEnum.BLACK) {
-        STANDARD_PIECE_PLACEMENT.forEach((type, x) => {
-          pieces.push(getPiece(type, x, boardHeight - 1));
-        });
-
-        _.times(boardWidth, (x) => {
-          pieces.push(getPiece(PieceTypeEnum.PAWN, x, boardHeight - 2));
-        });
-      } else {
-        const lastPawnRank = 4;
-
-        _.times(lastPawnRank, (y) => {
-          _.times(boardWidth, (x) => {
-            pieces.push(getPiece(PieceTypeEnum.PAWN, x, y));
-          });
-        });
-
-        pieces.push(getPiece(PieceTypeEnum.PAWN, 1, lastPawnRank));
-        pieces.push(getPiece(PieceTypeEnum.PAWN, 2, lastPawnRank));
-        pieces.push(getPiece(PieceTypeEnum.PAWN, boardWidth - 2, lastPawnRank));
-        pieces.push(getPiece(PieceTypeEnum.PAWN, boardWidth - 3, lastPawnRank));
-      }
-    });
-
-    return {
-      ...PARTIAL_STANDARD_STARTING_DATA,
-      pieces,
-      voidSquares: [],
-      emptySquares: []
-    };
-  })();
-
   static getBoardDimensions(variants: GameVariantEnum[]): BoardDimensions {
     const isChessence = _.includes(variants, GameVariantEnum.CHESSENCE);
+    const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
+    const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
+    const isCapablanca = _.includes(variants, GameVariantEnum.CAPABLANCA);
 
     return {
-      boardCount: _.includes(variants, GameVariantEnum.ALICE_CHESS) ? 2 : 1,
+      boardCount: isAliceChess ? 2 : 1,
       boardWidth: isChessence
         ? 6
-        : _.includes(variants, GameVariantEnum.TWO_FAMILIES)
+        : isTwoFamilies || isCapablanca
           ? 10
           : 8,
       boardHeight: isChessence ? 9 : 8
     };
   }
 
-  static generateClassicStartingData(boardWidth: number, boardHeight: number, isRandom: boolean): StartingData {
+  static generateClassicStartingData(boardDimensions: BoardDimensions, variants: GameVariantEnum[]): StartingData {
+    const {
+      boardWidth,
+      boardHeight
+    } = boardDimensions;
+    const isHorde = _.includes(variants, GameVariantEnum.HORDE);
+    const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
+    const isCapablanca = _.includes(variants, GameVariantEnum.CAPABLANCA);
+    const halfBoard = Math.round(boardWidth / 2);
     let id = 0;
     let pieceTypes: PieceTypeEnum[];
 
-    if (isRandom) {
+    if (_.includes(variants, GameVariantEnum.CHESS_960)) {
       pieceTypes = _.times(boardWidth, () => null!);
 
-      const halfBoard = Math.round(boardWidth / 2);
       const darkColoredBishopPosition = 2 * Math.floor(halfBoard * Math.random());
       const lightColoredBishopPosition = 2 * Math.floor(halfBoard * Math.random()) + 1;
 
@@ -418,13 +508,16 @@ export class Game implements IGame {
       placePiece(PieceTypeEnum.KNIGHT, Math.floor((boardWidth - 3) * Math.random()));
       placePiece(PieceTypeEnum.KNIGHT, Math.floor((boardWidth - 4) * Math.random()));
 
-      if (boardWidth === 10) {
+      if (isTwoFamilies) {
         placePiece(PieceTypeEnum.QUEEN, Math.floor((boardWidth - 5) * Math.random()));
+      } else if (isCapablanca) {
+        placePiece(PieceTypeEnum.EMPRESS, Math.floor((boardWidth - 5) * Math.random()));
+        placePiece(PieceTypeEnum.CARDINAL, Math.floor((boardWidth - 6) * Math.random()));
       }
 
       const restPieces = [PieceTypeEnum.ROOK, PieceTypeEnum.KING, PieceTypeEnum.ROOK];
 
-      if (boardWidth === 10) {
+      if (isTwoFamilies) {
         restPieces.splice(1, 0, PieceTypeEnum.KING);
       }
 
@@ -441,13 +534,10 @@ export class Game implements IGame {
 
         return false;
       });
-    } else if (boardWidth === 10) {
-      pieceTypes = [
-        ...STANDARD_PIECE_PLACEMENT.slice(0, 4),
-        PieceTypeEnum.KING,
-        PieceTypeEnum.QUEEN,
-        ...STANDARD_PIECE_PLACEMENT.slice(4)
-      ];
+    } else if (isTwoFamilies) {
+      pieceTypes = TWO_FAMILIES_PIECE_PLACEMENT;
+    } else if (isCapablanca) {
+      pieceTypes = CAPABLANCA_PIECE_PLACEMENT;
     } else {
       pieceTypes = STANDARD_PIECE_PLACEMENT;
     }
@@ -468,14 +558,13 @@ export class Game implements IGame {
     const pieces: RealPiece[] = [];
 
     [ColorEnum.WHITE, ColorEnum.BLACK].forEach((color) => {
-      const pieceRankY = color === ColorEnum.WHITE ? 0 : boardHeight - 1;
-      const pawnRankY = color === ColorEnum.WHITE ? 1 : boardHeight - 2;
       const getPiece = (type: PieceTypeEnum, x: number, y: number): BoardPiece => ({
         id: `${++id}`,
         type,
         originalType: type,
         color,
         moved: false,
+        abilities: null,
         location: {
           type: PieceLocationEnum.BOARD,
           board: 0,
@@ -484,13 +573,37 @@ export class Game implements IGame {
         }
       });
 
-      pieceTypes.forEach((type, x) => {
-        pieces.push(getPiece(type, x, pieceRankY));
-      });
+      if (isHorde && color === ColorEnum.WHITE) {
+        const lastPawnRank = 4;
 
-      _.times(boardWidth, (x) => {
-        pieces.push(getPiece(PieceTypeEnum.PAWN, x, pawnRankY));
-      });
+        _.times(lastPawnRank, (y) => {
+          _.times(boardWidth, (x) => {
+            pieces.push(getPiece(PieceTypeEnum.PAWN, x, y));
+          });
+        });
+
+        pieces.push(getPiece(PieceTypeEnum.PAWN, 1, lastPawnRank));
+        pieces.push(getPiece(PieceTypeEnum.PAWN, 2, lastPawnRank));
+
+        if (isCapablanca) {
+          pieces.push(getPiece(PieceTypeEnum.PAWN, halfBoard - 1, lastPawnRank));
+          pieces.push(getPiece(PieceTypeEnum.PAWN, halfBoard, lastPawnRank));
+        }
+
+        pieces.push(getPiece(PieceTypeEnum.PAWN, boardWidth - 2, lastPawnRank));
+        pieces.push(getPiece(PieceTypeEnum.PAWN, boardWidth - 3, lastPawnRank));
+      } else {
+        const pieceRankY = color === ColorEnum.WHITE ? 0 : boardHeight - 1;
+        const pawnRankY = color === ColorEnum.WHITE ? 1 : boardHeight - 2;
+
+        pieceTypes.forEach((type, x) => {
+          pieces.push(getPiece(type, x, pieceRankY));
+        });
+
+        _.times(boardWidth, (x) => {
+          pieces.push(getPiece(PieceTypeEnum.PAWN, x, pawnRankY));
+        });
+      }
     });
 
     return {
@@ -502,25 +615,17 @@ export class Game implements IGame {
   }
 
   static getStartingData(variants: GameVariantEnum[]): StartingData {
-    const is960 = _.includes(variants, GameVariantEnum.CHESS_960);
     const isMonsterChess = _.includes(variants, GameVariantEnum.MONSTER_CHESS);
     const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
     const isChessence = _.includes(variants, GameVariantEnum.CHESSENCE);
-    const isHorde = _.includes(variants, GameVariantEnum.HORDE);
     const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
     const boardDimensions = Game.getBoardDimensions(variants);
     let startingData: StartingData;
 
     if (isChessence) {
       startingData = this.chessenceStartingData;
-    } else if (isHorde) {
-      startingData = this.hordeStartingData;
     } else {
-      startingData = this.generateClassicStartingData(
-        boardDimensions.boardWidth,
-        boardDimensions.boardHeight,
-        is960
-      );
+      startingData = this.generateClassicStartingData(boardDimensions, variants);
     }
 
     startingData = { ...startingData };
@@ -539,9 +644,9 @@ export class Game implements IGame {
           piece
           && piece.color === ColorEnum.WHITE
           && piece.location.type === PieceLocationEnum.BOARD
-          && piece.type !== PieceTypeEnum.KING
+          && !Game.isKing(piece)
           && (
-            piece!.type !== PieceTypeEnum.PAWN
+            !Game.isPawn(piece)
             || piece.location.x < left
             || piece.location.x >= right
           )
@@ -575,6 +680,7 @@ export class Game implements IGame {
               originalType: pieceType,
               color,
               moved: false,
+              abilities: null,
               location: {
                 type: PieceLocationEnum.POCKET,
                 pieceType
@@ -647,11 +753,10 @@ export class Game implements IGame {
     const isAntichess = _.includes(options.variants, GameVariantEnum.ANTICHESS);
     const fenData = fen.trim().split(/\s+/);
     const boards = fenData.slice(0, boardCount);
-    const invalidFenError = new Error('Invalid FEN');
 
     // 5 is turn, possible castling, possible en passant, pliesWithoutCaptureOrPawnMove, startingMoveIndex
     if (fenData.length !== boardCount + 5) {
-      throw invalidFenError;
+      throw new Error('Invalid FEN: wrong text blocks count');
     }
 
     const [
@@ -666,13 +771,13 @@ export class Game implements IGame {
       : ['w', 'b'];
 
     if (!_.includes(possibleTurnValues, turnString)) {
-      throw invalidFenError;
+      throw new Error('Invalid FEN: wrong turn');
     }
 
     startingData.turn = turnString === 'b' ? ColorEnum.BLACK : ColorEnum.WHITE;
 
     if (possibleCastlingString !== '-' && !FEN_CASTLING_REGEX.test(possibleCastlingString)) {
-      throw invalidFenError;
+      throw new Error('Invalid FEN: wrong castling block');
     }
 
     if (possibleCastlingString !== '-' && !isAntichess) {
@@ -687,13 +792,13 @@ export class Game implements IGame {
         _.includes(options.variants, GameVariantEnum.CHESSENCE)
         || (isMonsterChess && turnString === 'w2')
       ) {
-        throw invalidFenError;
+        throw new Error('Invalid FEN: wrong en passant');
       }
 
       const enPassantSquareMatch = possibleEnPassantString.match(PGN_SQUARE_REGEX);
 
       if (!enPassantSquareMatch) {
-        throw invalidFenError;
+        throw new Error('Invalid FEN: wrong en passant');
       }
 
       const file = Game.getFileNumber(enPassantSquareMatch[1]);
@@ -707,7 +812,7 @@ export class Game implements IGame {
           && rank !== boardHeight - 3
         )
       ) {
-        throw invalidFenError;
+        throw new Error('Invalid FEN: wrong en passant');
       }
 
       startingData.possibleEnPassant = {
@@ -725,13 +830,13 @@ export class Game implements IGame {
     }
 
     if (!DIGITS_REGEX.test(pliesWithoutCaptureOrPawnMoveString)) {
-      throw invalidFenError;
+      throw new Error('Invalid FEN: wrong plies without capture or pawn move count');
     }
 
     startingData.pliesWithoutCaptureOrPawnMove = +pliesWithoutCaptureOrPawnMoveString;
 
-    if (startingMoveIndexString === '0' && !DIGITS_REGEX.test(startingMoveIndexString)) {
-      throw invalidFenError;
+    if (startingMoveIndexString === '0' || !DIGITS_REGEX.test(startingMoveIndexString)) {
+      throw new Error('Invalid FEN: wrong starting move index');
     }
 
     const startingMoveIndexNumber = +startingMoveIndexString - 1;
@@ -747,6 +852,7 @@ export class Game implements IGame {
       originalType: type,
       color,
       moved: false,
+      abilities: null,
       location
     } as RealPiece);
 
@@ -755,13 +861,15 @@ export class Game implements IGame {
       const ranksCount = isPocketUsed && board === 0 ? boardHeight + 1 : boardHeight;
 
       if (ranks.length !== ranksCount) {
-        throw invalidFenError;
+        throw new Error('Invalid FEN: wrong ranks blocks count');
       }
 
       for (let rank = ranksCount - boardHeight; rank < ranks.length; rank++) {
         const fileData = ranks[rank];
         let file = 0;
         let string = fileData;
+
+        // TODO: fix piece parsing for absorption
 
         while (string) {
           const emptySquaresMatch = string.match(/^\d+/);
@@ -778,12 +886,12 @@ export class Game implements IGame {
               const piece = Game.getPieceFromLiteral(character);
 
               if (!piece) {
-                throw invalidFenError;
+                throw new Error(`Invalid FEN: wrong piece literal (${character})`);
               }
 
               // not promoted pawns
               if (piece.type === PieceTypeEnum.PAWN && rank === (piece.color === ColorEnum.WHITE ? boardHeight - 1 : 0)) {
-                throw invalidFenError;
+                throw new Error('Invalid FEN: not promoted pawn');
               }
 
               startingData.pieces.push(getPiece(
@@ -804,7 +912,7 @@ export class Game implements IGame {
         }
 
         if (file !== boardWidth) {
-          throw invalidFenError;
+          throw new Error('Invalid FEN: wrong files count in a rank');
         }
       }
 
@@ -815,7 +923,7 @@ export class Game implements IGame {
           const piece = Game.getPieceFromLiteral(pocket[pieceIndex]);
 
           if (!piece) {
-            throw invalidFenError;
+            throw new Error(`Invalid FEN: wrong pocket piece literal (${pocket[pieceIndex]})`);
           }
 
           startingData.pieces.push(getPiece(
@@ -842,36 +950,36 @@ export class Game implements IGame {
         ))
       ))
     ) {
-      throw invalidFenError;
+      throw new Error('Invalid FEN: multiple pieces on the same square');
     }
 
-    const whiteKingsCount = startingData.pieces.filter(({ color, type }) => (
-      color === ColorEnum.WHITE
-      && type === PieceTypeEnum.KING
+    const whiteKingsCount = startingData.pieces.filter((piece) => (
+      piece.color === ColorEnum.WHITE
+      && Game.isKing(piece)
     )).length;
-    const blackKingsCount = startingData.pieces.filter(({ color, type }) => (
-      color === ColorEnum.WHITE
-      && type === PieceTypeEnum.KING
+    const blackKingsCount = startingData.pieces.filter((piece) => (
+      piece.color === ColorEnum.BLACK
+      && Game.isKing(piece)
     )).length;
 
     if (
       whiteKingsCount !== (isHorde ? 0 : isTwoFamilies ? 2 : 1)
       || blackKingsCount !== (isTwoFamilies ? 2 : 1)
     ) {
-      throw invalidFenError;
+      throw new Error('Invalid FEN: wrong kings count');
     }
 
     if (startingData.possibleEnPassant) {
       const { x, y } = startingData.possibleEnPassant.pieceLocation;
-      const enPassantPiece = _.find(startingData.pieces, ({ type, location }) => (
-        type === PieceTypeEnum.PAWN
-        && location.type === PieceLocationEnum.BOARD
-        && location.x === x
-        && location.y === y
+      const enPassantPiece = _.find(startingData.pieces, (piece) => (
+        Game.isPawn(piece)
+        && piece.location.type === PieceLocationEnum.BOARD
+        && piece.location.x === x
+        && piece.location.y === y
       )) as BoardPiece | undefined;
 
       if (!enPassantPiece) {
-        throw invalidFenError;
+        throw new Error('Invalid FEN: wrong en passant');
       }
 
       startingData.possibleEnPassant.enPassantSquare.board = (enPassantPiece.location.board + boardCount - 1) % boardCount;
@@ -888,7 +996,6 @@ export class Game implements IGame {
       .filter(Boolean);
     const variants: GameVariantEnum[] = [];
     const pgnTags: PGNTags = {};
-    const invalidPgnError = new Error('Invalid PGN');
     let timeControl: TimeControl = null;
     let startingData: StartingData;
     let fen = '';
@@ -914,7 +1021,7 @@ export class Game implements IGame {
           const variant = _.findKey(GAME_VARIANT_PGN_NAMES, (name) => name === variantStrings[i]) as GameVariantEnum | undefined;
 
           if (!variant) {
-            throw invalidPgnError;
+            throw new Error('Invalid PGN');
           }
 
           variants.push(variant);
@@ -933,7 +1040,7 @@ export class Game implements IGame {
             || baseString === '0'
             || !DIGITS_REGEX.test(baseString)
           ) {
-            throw invalidPgnError;
+            throw new Error('Invalid PGN');
           }
 
           if (values.length === 1) {
@@ -945,7 +1052,7 @@ export class Game implements IGame {
             const incrementString = values[1];
 
             if (!DIGITS_REGEX.test(incrementString)) {
-              throw invalidPgnError;
+              throw new Error('Invalid PGN');
             }
 
             const increment = +(+incrementString * 1000).toFixed(2);
@@ -1013,7 +1120,7 @@ export class Game implements IGame {
     });
 
     if (!game.isLeftInCheckAllowed && game.isInCheck(game.getPrevTurn())) {
-      throw new Error('Invalid FEN');
+      throw new Error('Invalid FEN: the king is in check');
     }
 
     if (i < pgnData.length) {
@@ -1042,7 +1149,7 @@ export class Game implements IGame {
           const commentEnd = movesString.indexOf('}');
 
           if (commentEnd === -1) {
-            throw invalidPgnError;
+            throw new Error('Invalid PGN');
           }
 
           movesString = movesString.slice(commentEnd + 1);
@@ -1063,7 +1170,7 @@ export class Game implements IGame {
             : `${moveIndex}.`;
 
           if (movesString.indexOf(moveIndexString) !== 0) {
-            throw invalidPgnError;
+            throw new Error('Invalid PGN');
           }
 
           movesString = movesString.slice(moveIndexString.length);
@@ -1077,14 +1184,14 @@ export class Game implements IGame {
         const moveMatch = movesString.match(PGN_MOVE_REGEX);
 
         if (!moveMatch) {
-          throw invalidPgnError;
+          throw new Error('Invalid PGN');
         }
 
         const moveString = moveMatch[0];
         const moveSquaresMatch = moveString.match(PGN_MOVE_SQUARES_REGEX);
 
         if (!moveSquaresMatch) {
-          throw invalidPgnError;
+          throw new Error('Invalid PGN');
         }
 
         const [
@@ -1105,7 +1212,7 @@ export class Game implements IGame {
         const pieceFromLiteral = Game.getPieceFromLiteral(isCastling ? 'K' : pieceLiteral || 'P');
 
         if (!pieceFromLiteral) {
-          throw invalidPgnError;
+          throw new Error('Invalid PGN');
         }
 
         const pieceType = pieceFromLiteral.type;
@@ -1121,14 +1228,14 @@ export class Game implements IGame {
           const king = isQueenSideCastling ? kings[0] : _.last(kings);
 
           if (!king || !king.location || king.location.type !== PieceLocationEnum.BOARD) {
-            throw invalidPgnError;
+            throw new Error('Invalid PGN');
           }
 
           const castlingRooks = game.getCastlingRooks(game.turn);
           const castlingRook = castlingRooks[isQueenSideCastling ? CastlingTypeEnum.QUEEN_SIDE : CastlingTypeEnum.KING_SIDE];
 
           if (!castlingRook) {
-            throw invalidPgnError;
+            throw new Error('Invalid PGN');
           }
 
           toBoard = king.location.board;
@@ -1174,7 +1281,7 @@ export class Game implements IGame {
           });
 
         if (isDrop ? !pieces.length : pieces.length !== 1) {
-          throw invalidPgnError;
+          throw new Error('Invalid PGN');
         }
 
         const piece = pieces[0];
@@ -1190,13 +1297,13 @@ export class Game implements IGame {
           const promotionMatch = moveString.slice(moveSquares.length).match(PGN_PROMOTION_REGEX);
 
           if (!promotionMatch) {
-            throw invalidPgnError;
+            throw new Error('Invalid PGN');
           }
 
           const promotedPiece = Game.getPieceFromLiteral(promotionMatch[1]);
 
-          if (!promotedPiece || _.includes(game.validPromotions, promotedPiece.type)) {
-            throw invalidPgnError;
+          if (!promotedPiece || !_.includes(game.validPromotions, promotedPiece.type)) {
+            throw new Error('Invalid PGN');
           }
 
           move.promotion = promotedPiece.type;
@@ -1220,7 +1327,7 @@ export class Game implements IGame {
     const pieces: Piece[] = startingData.pieces.map((piece) => {
       piece = { ...piece };
 
-      if (piece.type === PieceTypeEnum.KING) {
+      if (Game.isKing(piece)) {
         kings[piece.color].push(piece);
       }
 
@@ -1306,10 +1413,147 @@ export class Game implements IGame {
     };
   }
 
+  static getPieceFigurineLiteral(pieceType: PieceTypeEnum, color: ColorEnum): string {
+    const pieceLiterals = PIECE_LITERALS[color];
+
+    if (_.includes(STANDARD_PIECES, pieceType)) {
+      return pieceLiterals[pieceType as StandardPiece];
+    }
+
+    if (pieceType === PieceTypeEnum.MAN) {
+      return pieceLiterals[PieceTypeEnum.PAWN];
+    }
+
+    if (pieceType === PieceTypeEnum.AMAZON) {
+      return pieceLiterals[PieceTypeEnum.QUEEN] + pieceLiterals[PieceTypeEnum.KNIGHT];
+    }
+
+    if (pieceType === PieceTypeEnum.EMPRESS) {
+      return pieceLiterals[PieceTypeEnum.ROOK] + pieceLiterals[PieceTypeEnum.KNIGHT];
+    }
+
+    if (pieceType === PieceTypeEnum.CARDINAL) {
+      return pieceLiterals[PieceTypeEnum.BISHOP] + pieceLiterals[PieceTypeEnum.KNIGHT];
+    }
+
+    return '';
+  }
+
+  static getPieceFullFigurineLiteral(piece: Piece): string {
+    const pieceLiteral = Game.getPieceFigurineLiteral(piece.type, piece.color);
+
+    return piece.abilities
+      ? pieceLiteral + Game.getPieceFigurineLiteral(piece.abilities, piece.color)
+      : pieceLiteral;
+  }
+
+  static getPieceAlgebraicLiteral(pieceType: PieceTypeEnum): string {
+    return SHORT_PIECE_NAMES[pieceType];
+  }
+
+  static getPieceFullAlgebraicLiteral(piece: Piece): string {
+    const pieceLiteral = Game.getPieceAlgebraicLiteral(piece.type);
+
+    return piece.abilities
+      ? `${pieceLiteral}(${Game.getPieceAlgebraicLiteral(piece.abilities)})`
+      : pieceLiteral;
+  }
+
   static getOppositeColor(color: ColorEnum): ColorEnum {
     return color === ColorEnum.WHITE
       ? ColorEnum.BLACK
       : ColorEnum.WHITE;
+  }
+
+  static getPieceTypeAfterAbsorption(originalPiece: Piece, absorbedPiece: Piece): Pick<Piece, 'type' | 'abilities'> {
+    if (Game.isKing(originalPiece)) {
+      if (Game.isKing(absorbedPiece)) {
+        if (originalPiece.abilities && absorbedPiece.abilities) {
+          return Game.getPieceTypeAfterAbsorption(originalPiece, {
+            ...absorbedPiece,
+            type: absorbedPiece.abilities
+          });
+        }
+
+        return {
+          type: PieceTypeEnum.KING,
+          abilities: originalPiece.abilities || absorbedPiece.abilities
+        };
+      }
+
+      if (originalPiece.abilities) {
+        return {
+          type: PieceTypeEnum.KING,
+          abilities: Game.getPieceTypeAfterAbsorption({
+            ...originalPiece,
+            type: originalPiece.abilities
+          }, absorbedPiece).abilities
+        };
+      }
+
+      return {
+        type: PieceTypeEnum.KING,
+        abilities: absorbedPiece.type
+      };
+    }
+
+    if (Game.isKing(absorbedPiece)) {
+      return Game.getPieceTypeAfterAbsorption(absorbedPiece, originalPiece);
+    }
+
+    const originalIndex = PIECES_SORTING.indexOf(originalPiece.type);
+    const absorbedIndex = PIECES_SORTING.indexOf(absorbedPiece.type);
+    const majorPiece = originalIndex > absorbedIndex
+      ? absorbedPiece
+      : originalPiece;
+    const minorPiece = originalIndex > absorbedIndex
+      ? originalPiece
+      : absorbedPiece;
+    let newPieceType = majorPiece.type;
+
+    if (
+      Game.isKnight(minorPiece)
+      && (
+        Game.isQueen(majorPiece)
+        || Game.isRook(majorPiece)
+        || Game.isBishop(majorPiece)
+      )
+    ) {
+      newPieceType = Game.isQueen(majorPiece)
+        ? PieceTypeEnum.AMAZON
+        : Game.isRook(majorPiece)
+          ? PieceTypeEnum.EMPRESS
+          : PieceTypeEnum.CARDINAL;
+    } else if (
+      Game.isBishop(minorPiece)
+      && (
+        Game.isEmpress(majorPiece)
+        || Game.isRook(majorPiece)
+      )
+    ) {
+      newPieceType = Game.isEmpress(majorPiece)
+        ? PieceTypeEnum.AMAZON
+        : PieceTypeEnum.QUEEN;
+    } else if ((
+      Game.isRook(minorPiece)
+      && Game.isCardinal(majorPiece)
+    ) || (
+      Game.isCardinal(minorPiece)
+      && (
+        Game.isQueen(majorPiece)
+        || Game.isEmpress(majorPiece)
+      )
+    ) || (
+      Game.isEmpress(minorPiece)
+      && Game.isQueen(majorPiece)
+    )) {
+      newPieceType = PieceTypeEnum.AMAZON;
+    }
+
+    return {
+      type: newPieceType,
+      abilities: null
+    };
   }
 
   static isBoardPiece(piece: Piece): piece is BoardPiece {
@@ -1332,6 +1576,24 @@ export class Game implements IGame {
     );
   }
 
+  static isPiece(piece: Piece, type: PieceTypeEnum): boolean {
+    return (
+      piece.type === type
+      || piece.abilities === type
+    );
+  }
+
+  static isKing = (piece: Piece): boolean => Game.isPiece(piece, PieceTypeEnum.KING);
+  static isAmazon = (piece: Piece): boolean => Game.isPiece(piece, PieceTypeEnum.AMAZON);
+  static isQueen = (piece: Piece): boolean => Game.isPiece(piece, PieceTypeEnum.QUEEN);
+  static isEmpress = (piece: Piece): boolean => Game.isPiece(piece, PieceTypeEnum.EMPRESS);
+  static isCardinal = (piece: Piece): boolean => Game.isPiece(piece, PieceTypeEnum.CARDINAL);
+  static isRook = (piece: Piece): boolean => Game.isPiece(piece, PieceTypeEnum.ROOK);
+  static isBishop = (piece: Piece): boolean => Game.isPiece(piece, PieceTypeEnum.BISHOP);
+  static isKnight = (piece: Piece): boolean => Game.isPiece(piece, PieceTypeEnum.KNIGHT);
+  static isPawn = (piece: Piece): boolean => Game.isPiece(piece, PieceTypeEnum.PAWN);
+  static isMan = (piece: Piece): boolean => Game.isPiece(piece, PieceTypeEnum.MAN);
+
   id: string;
   startingData: StartingData;
   players: GamePlayers = {
@@ -1341,7 +1603,7 @@ export class Game implements IGame {
   status: GameStatusEnum = GameStatusEnum.BEFORE_START;
   isCheck: boolean = false;
   result: GameResult | null = null;
-  turn: ColorEnum;
+  turn: ColorEnum = ColorEnum.WHITE;
   timeControl: TimeControl;
   pgnTags: PGNTags;
   moves: RevertableMove[] = [];
@@ -1349,15 +1611,15 @@ export class Game implements IGame {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  movesCount: number;
+  movesCount: number = 0;
   chat: ChatMessage[] = [];
-  possibleEnPassant: Square | null;
-  possibleEnPassantPieceLocation: Square | null;
+  possibleEnPassant: Square | null = null;
+  possibleEnPassantPieceLocation: Square | null = null;
   positionsMap: { [position: string]: number; } = {};
   positionString: string = '';
   castlingRookCoordinates: { [color in ColorEnum]: CastlingRookCoordinates; };
-  startingMoveIndex: number;
-  pliesWithoutCaptureOrPawnMove: number;
+  startingMoveIndex: number = 0;
+  pliesWithoutCaptureOrPawnMove: number = 0;
   kings: GameKings = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
@@ -1367,17 +1629,15 @@ export class Game implements IGame {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  pocketPiecesUsed: PieceTypeEnum[] = [
-    PieceTypeEnum.QUEEN,
-    PieceTypeEnum.ROOK,
-    PieceTypeEnum.BISHOP,
-    PieceTypeEnum.KNIGHT,
-    PieceTypeEnum.PAWN
-  ];
+  pocketPiecesUsed: PieceTypeEnum[] = STANDARD_POCKET;
   validPromotions: PieceTypeEnum[] = STANDARD_VALID_PROMOTIONS;
   teleportUsed: { [color in ColorEnum]: boolean } = {
     [ColorEnum.WHITE]: false,
     [ColorEnum.BLACK]: false
+  };
+  checksCount: { [color in ColorEnum]: number } = {
+    [ColorEnum.WHITE]: 0,
+    [ColorEnum.BLACK]: 0
   };
   isPocketUsed: boolean;
   isCrazyhouse: boolean;
@@ -1395,6 +1655,11 @@ export class Game implements IGame {
   isHorde: boolean;
   isDarkChess: boolean;
   isAntichess: boolean;
+  isAbsorption: boolean;
+  isFrankfurt: boolean;
+  isCapablanca: boolean;
+  isAmazons: boolean;
+  isThreeCheck: boolean;
   isLeftInCheckAllowed: boolean;
   isThreefoldRepetitionDrawPossible: boolean = false;
   is50MoveDrawPossible: boolean = false;
@@ -1420,20 +1685,10 @@ export class Game implements IGame {
       ...this.startingData.emptySquares
     ];
     this.voidSquares = this.startingData.voidSquares;
-    ({
-      pieces: this.pieces,
-      kings: this.kings
-    } = Game.generateGameDataFromStartingData(this.startingData));
 
     this.pgnTags = settings.pgnTags || {};
     this.timeControl = settings.timeControl;
     this.variants = settings.variants;
-
-    this.turn = this.startingData.turn;
-    this.movesCount = this.startingMoveIndex = this.startingData.startingMoveIndex;
-    this.pliesWithoutCaptureOrPawnMove = this.startingData.pliesWithoutCaptureOrPawnMove;
-    this.possibleEnPassant = this.startingData.possibleEnPassant && this.startingData.possibleEnPassant.enPassantSquare;
-    this.possibleEnPassantPieceLocation = this.startingData.possibleEnPassant && this.startingData.possibleEnPassant.pieceLocation;
 
     this.isCrazyhouse = _.includes(this.variants, GameVariantEnum.CRAZYHOUSE);
     this.is960 = _.includes(this.variants, GameVariantEnum.CHESS_960);
@@ -1450,6 +1705,12 @@ export class Game implements IGame {
     this.isHorde = _.includes(this.variants, GameVariantEnum.HORDE);
     this.isDarkChess = _.includes(this.variants, GameVariantEnum.DARK_CHESS);
     this.isAntichess = _.includes(this.variants, GameVariantEnum.ANTICHESS);
+    this.isAbsorption = _.includes(this.variants, GameVariantEnum.ABSORPTION);
+    this.isFrankfurt = _.includes(this.variants, GameVariantEnum.FRANKFURT);
+    this.isCapablanca = _.includes(this.variants, GameVariantEnum.CAPABLANCA);
+    this.isAmazons = _.includes(this.variants, GameVariantEnum.AMAZONS);
+    this.isThreeCheck = _.includes(this.variants, GameVariantEnum.THREE_CHECK);
+
     this.isPocketUsed = Game.getIsPocketUsed(settings.variants);
     this.isLeftInCheckAllowed = (
       this.isAtomic
@@ -1467,10 +1728,15 @@ export class Game implements IGame {
       this.pocketPiecesUsed = [PieceTypeEnum.MAN];
     }
 
+    if (this.isCapablanca) {
+      this.validPromotions = CAPABLANCA_VALID_PROMOTIONS;
+      this.pocketPiecesUsed = CAPABLANCA_POCKET;
+    }
+
     if (this.isAntichess) {
       this.validPromotions = [
         PieceTypeEnum.KING,
-        ...STANDARD_VALID_PROMOTIONS
+        ...this.validPromotions
       ];
     }
 
@@ -1488,12 +1754,20 @@ export class Game implements IGame {
     this.pliesWithoutCaptureOrPawnMove = this.startingData.pliesWithoutCaptureOrPawnMove;
     this.possibleEnPassant = this.startingData.possibleEnPassant && this.startingData.possibleEnPassant.enPassantSquare;
     this.possibleEnPassantPieceLocation = this.startingData.possibleEnPassant && this.startingData.possibleEnPassant.pieceLocation;
-    this.positionString = this.getShortFen();
+    this.positionString = this.getPositionFen();
     this.positionsMap = {};
     this.positionsMap[this.positionString] = 1;
     this.visiblePieces = {
       [ColorEnum.WHITE]: [],
       [ColorEnum.BLACK]: []
+    };
+    this.teleportUsed = {
+      [ColorEnum.WHITE]: false,
+      [ColorEnum.BLACK]: false
+    };
+    this.checksCount = {
+      [ColorEnum.WHITE]: 0,
+      [ColorEnum.BLACK]: 0
     };
 
     if (this.isDarkChess) {
@@ -1504,6 +1778,8 @@ export class Game implements IGame {
         });
       });
     }
+
+    this.isCheck = this.isInCheck(this.turn);
   }
 
   registerMove(move: Move): RegisterMoveReturnValue {
@@ -1522,7 +1798,7 @@ export class Game implements IGame {
       revertMove
     });
 
-    this.positionString = this.getShortFen();
+    this.positionString = this.getPositionFen();
     this.positionsMap[this.positionString] = (this.positionsMap[this.positionString] || 0) + 1;
     this.isThreefoldRepetitionDrawPossible = !this.isDarkChess && this.positionsMap[this.positionString] >= 3;
     this.is50MoveDrawPossible = !this.isDarkChess && this.pliesWithoutCaptureOrPawnMove >= 100;
@@ -1613,10 +1889,8 @@ export class Game implements IGame {
         figurine = registeredMove.figurine;
       } else if (fromLocationVisible || toLocationVisible || isCapture) {
         if (fromLocationVisible || toLocationVisible) {
-          const pieceType = piece.type;
-
-          algebraic += SHORT_PIECE_NAMES[pieceType];
-          figurine += PIECE_LITERALS[piece.color][pieceType];
+          algebraic += Game.getPieceFullAlgebraicLiteral(piece);
+          figurine += Game.getPieceFullFigurineLiteral(piece);
         }
 
         if (fromLocationVisible) {
@@ -1659,8 +1933,8 @@ export class Game implements IGame {
         const promotionVisible = isPromotion && fromLocationVisible;
 
         if (promotionVisible) {
-          algebraic += `=${toLocationVisible ? SHORT_PIECE_NAMES[move.promotion!] : '?'}`;
-          figurine += `=${toLocationVisible ? PIECE_LITERALS[piece.color][move.promotion!] : '?'}`;
+          algebraic += `=${toLocationVisible ? Game.getPieceAlgebraicLiteral(move.promotion!) : '?'}`;
+          figurine += `=${toLocationVisible ? Game.getPieceFigurineLiteral(move.promotion!, piece.color) : '?'}`;
         }
 
         if (isWin) {
@@ -1705,6 +1979,8 @@ export class Game implements IGame {
   }
 
   performMove(move: Move, constructMoveLiterals: boolean, checkIfAllowed: boolean): PerformMoveReturnValue {
+    this.movesCount++;
+
     const {
       from: fromLocation,
       to: toLocation,
@@ -1718,11 +1994,10 @@ export class Game implements IGame {
     const piece = fromLocation.type === PieceLocationEnum.BOARD
       ? this.getBoardPiece(fromLocation)!
       : this.getPocketPiece(fromLocation.pieceType, this.turn)!;
-    const pieceType = piece.type;
     const toPiece = this.getBoardPiece(toLocation);
     const isEnPassant = (
       fromLocation.type === PieceLocationEnum.BOARD
-      && pieceType === PieceTypeEnum.PAWN
+      && Game.isPawn(piece)
       && Math.abs(fromLocation.x - toX) !== 0
       && !toPiece
       && !!this.possibleEnPassant
@@ -1734,26 +2009,12 @@ export class Game implements IGame {
         ? toPiece
         : null;
     const isCapture = !!opponentPiece;
-    const disappearedOrMovedPieces: Piece[] = [];
+    const disappearedOrMovedPieces: BoardPiece[] = [];
     const isPawnPromotion = this.isPawnPromotion(move);
-    const isPromotedKing = (
-      isPawnPromotion
-      && promotion === PieceTypeEnum.KING
-    );
+    const wasKing = Game.isKing(piece);
     const isMainPieceMovedOrDisappeared = this.isAtomic && isCapture;
     const isTeleportMove = this.isTeleportMove(move);
-    let isAllowed = true;
-
-    const isCastling = (
-      fromLocation.type === PieceLocationEnum.BOARD
-      && pieceType === PieceTypeEnum.KING
-      && !isTeleportMove
-      && (
-        this.is960
-          ? !!toPiece && toPiece.color === this.turn && toPiece.type === PieceTypeEnum.ROOK
-          : Math.abs(toX - fromLocation.x) > 1
-      )
-    );
+    const isCastling = this.isCastling(move);
     const isKingSideCastling = isCastling && toX - (fromLocation as PieceBoardLocation).x > 0;
     const castlingRook = isCastling
       ? this.is960
@@ -1762,15 +2023,19 @@ export class Game implements IGame {
       : null;
 
     const prevTurn = this.turn;
+    const nextTurn = this.getNextTurn();
     const prevIsCheck = this.isCheck;
     const prevPliesWithoutCaptureOrPawnMove = this.pliesWithoutCaptureOrPawnMove;
     const prevPossibleEnPassant = this.possibleEnPassant;
     const prevPossibleEnPassantPieceLocation = this.possibleEnPassantPieceLocation;
     const prevTeleportUsed = this.teleportUsed[this.turn];
+    const prevChecksCount = this.checksCount[nextTurn];
+    const prevPieceColor = piece.color;
     const prevPieceMoved = piece.moved;
-    const prevPieceType = pieceType;
+    const prevPieceType = piece.type;
     const prevPieceLocation = piece.location;
     const prevPieceOriginalType = piece.originalType;
+    const prevPieceAbilities = piece.abilities;
     const playerPieces = this.getPieces(this.turn);
     let newLocation: PieceBoardLocation = {
       ...(
@@ -1793,7 +2058,7 @@ export class Game implements IGame {
           x: toX + incrementX
         });
 
-        if (pieceInSquare && pieceInSquare.type !== PieceTypeEnum.PAWN) {
+        if (pieceInSquare && !Game.isPawn(pieceInSquare)) {
           disappearedOrMovedPieces.push(pieceInSquare);
         }
       });
@@ -1812,21 +2077,17 @@ export class Game implements IGame {
       disappearedOrMovedPieces.push(castlingRook);
     }
 
-    const disappearedOrMovedPiecesData = disappearedOrMovedPieces.map(({ moved, color, type, originalType, location }) => ({
-      moved,
-      color,
-      type,
-      originalType,
-      location: location as PieceBoardLocation
-    }));
+    const disappearedOrMovedPiecesData = disappearedOrMovedPieces.map((piece) => (
+      _.pick(piece, ['moved', 'color', 'type', 'originalType', 'location', 'abilities'])
+    ));
 
     let algebraic = '';
     let figurine = '';
 
     if (constructMoveLiterals) {
       if (fromLocation.type === PieceLocationEnum.POCKET) {
-        algebraic += SHORT_PIECE_NAMES[pieceType];
-        figurine += PIECE_LITERALS[piece.color][pieceType];
+        algebraic += Game.getPieceFullAlgebraicLiteral(piece);
+        figurine += Game.getPieceFullFigurineLiteral(piece);
 
         const otherBoardsToDropPiece = this.getAllowedMoves(piece).some(({ board, x, y }) => (
           board !== toBoard
@@ -1857,11 +2118,11 @@ export class Game implements IGame {
           y: fromY
         } = fromLocation;
 
-        if (pieceType === PieceTypeEnum.PAWN) {
+        if (Game.isPawn(piece)) {
           const otherPawnsOnOtherBoardsAbleToMakeMove = playerPieces
             .filter(Game.isBoardPiece)
             .filter((otherPawn) => (
-              otherPawn.type === pieceType
+              Game.isPawn(otherPawn)
               && otherPawn.id !== piece.id
               && otherPawn.location.board !== fromBoard
               && this.getAllowedMoves(otherPawn).some(({ x, y }) => x === toX && y === toY)
@@ -1881,13 +2142,14 @@ export class Game implements IGame {
             figurine += fileLiteral;
           }
         } else {
-          algebraic += SHORT_PIECE_NAMES[pieceType];
-          figurine += PIECE_LITERALS[piece.color][pieceType];
+          algebraic += Game.getPieceFullAlgebraicLiteral(piece);
+          figurine += Game.getPieceFullFigurineLiteral(piece);
 
           const otherPiecesAbleToMakeMove = playerPieces
             .filter(Game.isBoardPiece)
             .filter((otherPiece) => (
-              otherPiece.type === pieceType
+              otherPiece.type === piece.type
+              && otherPiece.abilities === piece.abilities
               && otherPiece.id !== piece.id
               && this.getAllowedMoves(otherPiece).some(({ x, y }) => x === toX && y === toY)
             ));
@@ -1953,19 +2215,17 @@ export class Game implements IGame {
         figurine += destination;
 
         if (isPawnPromotion) {
-          algebraic += `=${SHORT_PIECE_NAMES[promotion!]}`;
-          figurine += `=${PIECE_LITERALS[piece.color][promotion!]}`;
+          algebraic += `=${Game.getPieceAlgebraicLiteral(promotion!)}`;
+          figurine += `=${Game.getPieceFigurineLiteral(promotion!, piece.color)}`;
         }
       }
     }
 
     disappearedOrMovedPieces.forEach((disappearedOrMovedPiece) => {
-      disappearedOrMovedPiece.location = null;
+      disappearedOrMovedPiece.location = null!;
     });
 
-    this.movesCount++;
-
-    if (pieceType === PieceTypeEnum.PAWN || isCapture) {
+    if (Game.isPawn(piece) || isCapture) {
       this.pliesWithoutCaptureOrPawnMove = 0;
     } else {
       this.pliesWithoutCaptureOrPawnMove++;
@@ -1978,7 +2238,7 @@ export class Game implements IGame {
     if (
       !this.isDarkChess
       && fromLocation.type === PieceLocationEnum.BOARD
-      && pieceType === PieceTypeEnum.PAWN
+      && Game.isPawn(piece)
       && Math.abs(toY - fromLocation.y) > 1
       && fromLocation.board === toBoard
       && fromLocation.y === (this.turn === ColorEnum.WHITE ? 1 : this.boardHeight - 2)
@@ -2010,11 +2270,39 @@ export class Game implements IGame {
       piece.moved = fromLocation.type === PieceLocationEnum.BOARD;
       piece.type = isPawnPromotion
         ? promotion!
-        : pieceType;
+        : piece.type;
       piece.originalType = this.isCrazyhouse
         ? piece.originalType
         : piece.type;
       piece.location = newLocation;
+
+      if (this.isAbsorption && isCapture) {
+        const {
+          type,
+          abilities
+        } = Game.getPieceTypeAfterAbsorption(piece, opponentPiece!);
+
+        piece.type = type;
+        piece.originalType = type;
+        piece.abilities = abilities;
+      } else if (this.isFrankfurt && isCapture) {
+        const isRoyalKing = Game.isKing(piece) && !this.isAntichess;
+        const isOpponentPieceKing = Game.isKing(opponentPiece!);
+        const newPieceType = isPawnPromotion
+          ? piece.type
+          : isRoyalKing || isOpponentPieceKing
+            ? PieceTypeEnum.KING
+            : opponentPiece!.type;
+        const newAbilities = isRoyalKing
+          ? isOpponentPieceKing
+            ? opponentPiece!.abilities
+            : opponentPiece!.type
+          : null;
+
+        piece.type = newPieceType;
+        piece.originalType = newPieceType;
+        piece.abilities = newAbilities;
+      }
     }
 
     const removePieceOrMoveToOpponentPocket = (piece: Piece) => {
@@ -2037,7 +2325,6 @@ export class Game implements IGame {
     disappearedOrMovedPieces.forEach((disappearedOrMovedPiece, ix) => {
       const {
         id,
-        type,
         color
       } = disappearedOrMovedPiece;
       const location = disappearedOrMovedPiecesData[ix].location;
@@ -2057,7 +2344,7 @@ export class Game implements IGame {
           ? 0
           : this.boardHeight - 1;
 
-        if (type === PieceTypeEnum.QUEEN) {
+        if (Game.isQueen(disappearedOrMovedPiece)) {
           newSquare = {
             board: location.board,
             x: !this.isTwoFamilies || oldSquare.x < this.boardWidth / 2
@@ -2065,7 +2352,7 @@ export class Game implements IGame {
               : 5,
             y: pieceRankY
           };
-        } else if (type === PieceTypeEnum.PAWN) {
+        } else if (Game.isPawn(disappearedOrMovedPiece)) {
           newSquare = {
             board: location.board,
             x: oldSquare.x,
@@ -2073,11 +2360,11 @@ export class Game implements IGame {
               ? 1
               : this.boardHeight - 2
           };
-        } else if (type !== PieceTypeEnum.KING) {
+        } else if (!Game.isKing(disappearedOrMovedPiece)) {
           const squareColor = (oldSquare.x + oldSquare.y) % 2;
-          const choicesX = type === PieceTypeEnum.ROOK
+          const choicesX = Game.isRook(disappearedOrMovedPiece)
             ? [0, this.boardWidth - 1]
-            : type === PieceTypeEnum.KNIGHT
+            : Game.isKnight(disappearedOrMovedPiece)
               ? [1, this.boardWidth - 2]
               : [2, this.boardWidth - 3];
           const fileX = _.find(choicesX, (fileX) => (fileX + pieceRankY) % 2 === squareColor)!;
@@ -2110,6 +2397,8 @@ export class Game implements IGame {
       }
     });
 
+    let isAllowed = true;
+    const isTurnedKing = Game.isKing(piece) && !wasKing;
     const setMoveIsAllowed = () => {
       if (checkIfAllowed) {
         isAllowed = isAllowed && (
@@ -2120,8 +2409,12 @@ export class Game implements IGame {
       }
     };
 
+    if (isTurnedKing) {
+      this.kings[this.turn].push(piece);
+    }
+
     if (this.isAliceChess) {
-      if (piece.type === PieceTypeEnum.KING) {
+      if (Game.isKing(piece)) {
         setMoveIsAllowed();
       }
 
@@ -2169,12 +2462,12 @@ export class Game implements IGame {
       });
     }
 
-    if (isPromotedKing) {
-      this.kings[this.turn].push(piece);
-    }
+    this.turn = nextTurn;
+    this.isCheck = this.isInCheck(nextTurn);
 
-    this.turn = this.getNextTurn();
-    this.isCheck = this.isInCheck(this.turn);
+    if (this.isCheck) {
+      this.checksCount[nextTurn]++;
+    }
 
     setMoveIsAllowed();
 
@@ -2202,34 +2495,35 @@ export class Game implements IGame {
         this.possibleEnPassant = prevPossibleEnPassant;
         this.possibleEnPassantPieceLocation = prevPossibleEnPassantPieceLocation;
         this.teleportUsed[this.turn] = prevTeleportUsed;
+        this.checksCount[nextTurn] = prevChecksCount;
         this.movesCount--;
 
-        if (isPromotedKing) {
+        if (isTurnedKing) {
           this.kings[prevTurn].pop();
         }
 
         if (!isMainPieceMovedOrDisappeared) {
+          piece.color = prevPieceColor;
           piece.location = prevPieceLocation;
           piece.moved = prevPieceMoved;
           piece.type = prevPieceType;
           piece.originalType = prevPieceOriginalType;
+          piece.abilities = prevPieceAbilities;
         }
 
-        disappearedOrMovedPiecesData.forEach(({ moved, color, type, originalType, location }, ix) => {
+        disappearedOrMovedPiecesData.forEach((pieceData, ix) => {
           const disappearedOrMovedPiece = disappearedOrMovedPieces[ix];
 
-          disappearedOrMovedPiece.moved = moved;
-          disappearedOrMovedPiece.color = color;
-          disappearedOrMovedPiece.type = type;
-          disappearedOrMovedPiece.originalType = originalType;
-          disappearedOrMovedPiece.location = location;
+          _.forEach(pieceData, (value, key) => {
+            disappearedOrMovedPiece[key as keyof BoardPiece] = value;
+          });
         });
       }
     };
   }
 
-  getShortFen(): string {
-    const boardsString = _.times(this.boardCount, (board) => (
+  getFenPieces(): string {
+    return _.times(this.boardCount, (board) => (
       _.times(this.boardHeight, (y) => {
         let rankString = '';
         let emptySpaces = 0;
@@ -2253,9 +2547,11 @@ export class Game implements IGame {
             if (pieceInSquare) {
               putEmptySpacesIfNeeded();
 
+              const pieceLiteral = Game.getPieceFullAlgebraicLiteral(pieceInSquare);
+
               rankString += pieceInSquare.color === ColorEnum.WHITE
-                ? SHORT_PIECE_NAMES[pieceInSquare.type]
-                : SHORT_PIECE_NAMES[pieceInSquare.type].toLowerCase();
+                ? pieceLiteral
+                : pieceLiteral.toLowerCase();
             } else {
               emptySpaces++;
             }
@@ -2272,11 +2568,20 @@ export class Game implements IGame {
         board === 0 && this.isPocketUsed ? (
           this.pieces
             .filter(({ location }) => !!location && location.type === PieceLocationEnum.POCKET)
-            .map(({ color, type }) => color === ColorEnum.WHITE ? SHORT_PIECE_NAMES[type] : SHORT_PIECE_NAMES[type].toLowerCase())
+            .map((piece) => {
+              const pieceLiteral = Game.getPieceFullAlgebraicLiteral(piece);
+
+              return piece.color === ColorEnum.WHITE
+                ? pieceLiteral
+                : pieceLiteral.toLowerCase();
+            })
             .join('')
         ) : ''
       )
     )).join(' ');
+  }
+
+  getFenPossibleCastling(): string {
     const whiteCastlingRooks = this.getCastlingRooks(ColorEnum.WHITE);
     const blackCastlingRooks = this.getCastlingRooks(ColorEnum.BLACK);
     const whiteQueenSideKing = this.kings[ColorEnum.WHITE][0];
@@ -2333,21 +2638,45 @@ export class Game implements IGame {
       castlingString = '-';
     }
 
+    return castlingString;
+  }
+
+  getFenTurn(): string {
     const pliesInMove = this.movesCount % this.pliesPerMove;
-    const turnString = this.isMonsterChess
+
+    return this.isMonsterChess
       ? pliesInMove === 0 ? 'w1' : pliesInMove === 1 ? 'w2' : 'b'
       : this.turn === ColorEnum.WHITE ? 'w' : 'b';
-    const enPassantString = this.possibleEnPassant
+  }
+
+  getFenEnPassant(): string {
+    return this.possibleEnPassant
       ? Game.getFileLiteral(this.possibleEnPassant.x) + Game.getRankLiteral(this.possibleEnPassant.y)
       : '-';
+  }
 
-    return `${boardsString} ${turnString} ${castlingString} ${enPassantString}`;
+  getPositionFen(): string {
+    const piecesFen = this.getFenPieces();
+    const castlingFen = this.getFenPossibleCastling();
+    const turnFen = this.getFenTurn();
+    const enPassantFen = this.getFenEnPassant();
+
+    // TODO: add teleport used and checks count
+
+    return `${piecesFen} ${turnFen} ${castlingFen} ${enPassantFen}`;
   }
 
   getFen(): string {
-    const moveIndexString = Math.floor(this.movesCount / this.pliesPerMove) + 1;
+    const piecesFen = this.getFenPieces();
+    const castlingFen = this.getFenPossibleCastling();
+    const turnFen = this.getFenTurn();
+    const enPassantFen = this.getFenEnPassant();
+    const pliesCountFen = this.pliesWithoutCaptureOrPawnMove;
+    const moveIndexFen = Math.floor(this.movesCount / this.pliesPerMove) + 1;
 
-    return `${this.getShortFen()} ${this.pliesWithoutCaptureOrPawnMove} ${moveIndexString}`;
+    // TODO: add teleport used and checks count
+
+    return `${piecesFen} ${turnFen} ${castlingFen} ${enPassantFen} ${pliesCountFen} ${moveIndexFen}`;
   }
 
   getNextTurn(): ColorEnum {
@@ -2436,7 +2765,7 @@ export class Game implements IGame {
     if (this.is960) {
       const rooksOnTheCastlingRank = this.startingData.pieces.filter((piece) => (
         piece.color === color
-        && piece.type === PieceTypeEnum.ROOK
+        && Game.isRook(piece)
         && piece.location.type === PieceLocationEnum.BOARD
         && piece.location.y === castlingRank
       )) as BoardPiece[];
@@ -2449,7 +2778,7 @@ export class Game implements IGame {
       } else if (rooksOnTheCastlingRank.length === 1) {
         const kingOnTheCastlingRank = _.find(this.startingData.pieces, (piece) => (
           piece.color === color
-          && piece.type === PieceTypeEnum.KING
+          && Game.isKing(piece)
           && piece.location.type === PieceLocationEnum.BOARD
           && piece.location.y === castlingRank
         )) as BoardPiece | undefined;
@@ -2576,9 +2905,10 @@ export class Game implements IGame {
       || this.isPatrolledByFriendlyPiece(piece as BoardPiece)
     );
     let possibleSquares: Square[] = [];
-    const traverseDirection = (incrementY: 0 | 1 | -1, incrementX: 0 | 1 | -1) => {
+    const traverseDirection = (incrementY: 0 | 1 | -1, incrementX: 0 | 1 | -1, stopAfter: number) => {
       let rankY = pieceY;
       let fileX = pieceX;
+      let iterations = 0;
 
       while (true) {
         rankY += incrementY;
@@ -2604,13 +2934,17 @@ export class Game implements IGame {
           break;
         }
 
+        if (isKing && forMove && !this.isLeftInCheckAllowed && this.isAttackedByOpponentPiece(square, opponentColor)) {
+          break;
+        }
+
         possibleSquares.push(square);
 
         if (pieceInSquare) {
           break;
         }
 
-        if (pieceType === PieceTypeEnum.KING) {
+        if (++iterations === stopAfter) {
           break;
         }
       }
@@ -2620,7 +2954,7 @@ export class Game implements IGame {
       possibleSquares.push({ board, x: pieceX, y: pieceY });
     }
 
-    if (pieceType === PieceTypeEnum.KING && this.isChessence) {
+    if (Game.isKing(piece) && this.isChessence) {
       if (onlyVisible) {
         possibleSquares.push(
           ...Game.chessenceStartingMenSquares[pieceColor].map(({ x, y }) => ({ board, x, y }))
@@ -2630,11 +2964,19 @@ export class Game implements IGame {
       return possibleSquares;
     }
 
-    let isBishop = pieceType === PieceTypeEnum.BISHOP;
-    let isRook = pieceType === PieceTypeEnum.ROOK;
-    let isKnight = pieceType === PieceTypeEnum.KNIGHT;
+    const isKing = Game.isKing(piece);
+    const isKingMove = isKing && (!this.isFrankfurt || !piece.abilities);
+    const isAmazon = Game.isAmazon(piece);
+    const isQueen = Game.isQueen(piece);
+    const isEmpress = Game.isEmpress(piece);
+    const isCardinal = Game.isCardinal(piece);
+    const isPawn = Game.isPawn(piece);
+    const isMan = Game.isMan(piece);
+    let isBishop = Game.isBishop(piece);
+    let isRook = Game.isRook(piece);
+    let isKnight = Game.isKnight(piece);
 
-    if (pieceType === PieceTypeEnum.MAN) {
+    if (isMan) {
       const isFriendlyMan = ([incrementY, incrementX]: [number, number]): boolean => {
         const pieceInSquare = this.getBoardPiece({
           board,
@@ -2654,29 +2996,29 @@ export class Game implements IGame {
       isKnight = KNIGHT_MOVE_INCREMENTS.some(isFriendlyMan);
     }
 
-    if (
-      pieceType === PieceTypeEnum.KING
-      || pieceType === PieceTypeEnum.QUEEN
-      || isRook
-    ) {
-      traverseDirection(+1, 0);
-      traverseDirection(-1, 0);
-      traverseDirection(0, +1);
-      traverseDirection(0, -1);
+    if (isKingMove || isAmazon || isQueen || isEmpress || isRook) {
+      const stopAfter = isKingMove && !isAmazon && !isQueen && !isEmpress && !isRook
+        ? 1
+        : Infinity;
+
+      traverseDirection(+1, 0, stopAfter);
+      traverseDirection(-1, 0, stopAfter);
+      traverseDirection(0, +1, stopAfter);
+      traverseDirection(0, -1, stopAfter);
     }
 
-    if (
-      pieceType === PieceTypeEnum.KING
-      || pieceType === PieceTypeEnum.QUEEN
-      || isBishop
-    ) {
-      traverseDirection(+1, +1);
-      traverseDirection(+1, -1);
-      traverseDirection(-1, +1);
-      traverseDirection(-1, -1);
+    if (isKingMove || isAmazon || isQueen || isCardinal || isBishop) {
+      const stopAfter = isKingMove && !isAmazon && !isQueen && !isCardinal && !isBishop
+        ? 1
+        : Infinity;
+
+      traverseDirection(+1, +1, stopAfter);
+      traverseDirection(+1, -1, stopAfter);
+      traverseDirection(-1, +1, stopAfter);
+      traverseDirection(-1, -1, stopAfter);
     }
 
-    if (isKnight) {
+    if (isAmazon || isEmpress || isCardinal || isKnight) {
       KNIGHT_MOVE_INCREMENTS.forEach(([incrementY, incrementX]) => {
         const rankY = pieceY + incrementY;
         const fileX = pieceX + incrementX;
@@ -2698,7 +3040,7 @@ export class Game implements IGame {
       });
     }
 
-    if (pieceType === PieceTypeEnum.PAWN) {
+    if (isPawn) {
       const direction = pieceColor === ColorEnum.WHITE ? 1 : -1;
       const rankY = pieceY + direction;
       const square = {
@@ -2760,12 +3102,12 @@ export class Game implements IGame {
 
     if (
       (forMove || onlyPossible)
+      && isKing
       && this.isLastChance
       && (
         this.isLeftInCheckAllowed
         || !this.isAttackedByOpponentPiece(piece.location, opponentColor)
       )
-      && pieceType === PieceTypeEnum.KING
       && !this.teleportUsed[pieceColor]
     ) {
       possibleSquares.push(
@@ -2775,7 +3117,7 @@ export class Game implements IGame {
 
     if (
       (forMove || onlyPossible)
-      && pieceType === PieceTypeEnum.KING
+      && isKing
       && !piece.moved
       && piece.location.y === (pieceColor === ColorEnum.WHITE ? 0 : this.boardHeight - 1)
       && (
@@ -2798,7 +3140,7 @@ export class Game implements IGame {
           && this.startingData.possibleCastling[pieceColor][ix === 0 ? CastlingTypeEnum.QUEEN_SIDE : CastlingTypeEnum.KING_SIDE]
           && rook
           && rook.location.board === board
-          && !this.isParalysed(rook)
+          && (!this.isMadrasi || !this.isParalysed(rook))
         ))
         .filter((rook) => {
           const { location: rookLocation } = rook!;
@@ -2875,7 +3217,7 @@ export class Game implements IGame {
     if (
       (forMove || onlyControlled)
       && this.isMadrasi
-      && this.isParalysed(piece as BoardPiece, possibleSquares)
+      && this.isParalysed(piece, possibleSquares)
     ) {
       return [];
     }
@@ -2910,27 +3252,8 @@ export class Game implements IGame {
     const possibleMoves = this.getPossibleMoves(piece);
 
     if (this.isAntichess) {
-      const allPossibleMoves = this.getPieces(piece.color).reduce((squares, piece) => [
-        ...squares,
-        { piece, squares: this.getPossibleMoves(piece) }
-      ], [] as { piece: RealPiece; squares: Square[]; }[]);
-      const isCaptureMove = (piece: RealPiece): (square: Square) => boolean => {
-        return (square) => {
-          const pieceInSquare = this.getBoardPiece(square);
-
-          return (
-            !!pieceInSquare
-            && pieceInSquare.color !== piece.color
-          ) || (
-            !!this.possibleEnPassant
-            && piece.type === PieceTypeEnum.PAWN
-            && Game.areSquaresEqual(square, this.possibleEnPassant)
-          );
-        };
-      };
-
-      return allPossibleMoves.some(({ piece, squares }) => squares.some(isCaptureMove(piece)))
-        ? possibleMoves.filter(isCaptureMove(piece))
+      return this.hasCapturePieces(piece.color)
+        ? possibleMoves.filter(this.isCaptureMove(piece))
         : possibleMoves;
     }
 
@@ -2998,16 +3321,20 @@ export class Game implements IGame {
     ));
   }
 
-  isParalysed(piece: BoardPiece, possibleSquares?: Square[]): boolean {
-    return this.isMadrasi && (possibleSquares || this.getPossibleMoves(piece, { onlyPossible: true })).some((square) => {
-      const pieceInSquare = this.getBoardPiece(square);
+  isParalysed(piece: RealPiece, possibleSquares?: Square[]): boolean {
+    return (
+      piece.location.type === PieceLocationEnum.BOARD
+      && (possibleSquares || this.getPossibleMoves(piece, { onlyPossible: true })).some((square) => {
+        const pieceInSquare = this.getBoardPiece(square);
 
-      return (
-        !!pieceInSquare
-        && pieceInSquare.color !== piece.color
-        && pieceInSquare.type === piece.type
-      );
-    });
+        return (
+          !!pieceInSquare
+          && pieceInSquare.color !== piece.color
+          && pieceInSquare.type === piece.type
+          && pieceInSquare.abilities === piece.abilities
+        );
+      })
+    );
   }
 
   isNullSquare(square: Square): boolean {
@@ -3043,7 +3370,7 @@ export class Game implements IGame {
 
     return (
       !!piece
-      && piece.type === PieceTypeEnum.PAWN
+      && Game.isPawn(piece)
       && ((
         piece.color === ColorEnum.WHITE && toY === this.boardHeight - 1
       ) || (
@@ -3065,7 +3392,7 @@ export class Game implements IGame {
       ? this.getBoardPiece(fromLocation)
       : null;
 
-    if (!piece || piece.type !== PieceTypeEnum.KING || this.teleportUsed[piece.color]) {
+    if (!piece || !Game.isKing(piece) || this.teleportUsed[piece.color]) {
       return false;
     }
 
@@ -3091,7 +3418,7 @@ export class Game implements IGame {
       ? this.getBoardPiece(fromLocation)
       : null;
 
-    if (!piece || piece.type !== PieceTypeEnum.KING || fromLocation.type !== PieceLocationEnum.BOARD) {
+    if (!piece || !Game.isKing(piece) || fromLocation.type !== PieceLocationEnum.BOARD || piece.moved) {
       return false;
     }
 
@@ -3101,11 +3428,35 @@ export class Game implements IGame {
       return (
         !!toPiece
         && toPiece.color === piece.color
-        && toPiece.type === PieceTypeEnum.ROOK
+        && Game.isRook(toPiece)
       );
     }
 
     return Math.abs(toLocation.x - fromLocation.x) > 1;
+  }
+
+  isCaptureMove(piece: RealPiece): (square: Square) => boolean {
+    return (square) => {
+      const pieceInSquare = this.getBoardPiece(square);
+
+      return (
+        !!pieceInSquare
+        && pieceInSquare.color !== piece.color
+      ) || (
+        !!this.possibleEnPassant
+        && Game.isPawn(piece)
+        && Game.areSquaresEqual(square, this.possibleEnPassant)
+      );
+    };
+  }
+
+  hasCapturePieces(color: ColorEnum): boolean {
+    const allPossibleMoves = this.getPieces(color).reduce((squares, piece) => [
+      ...squares,
+      { piece, squares: this.getPossibleMoves(piece) }
+    ], [] as { piece: RealPiece; squares: Square[]; }[]);
+
+    return allPossibleMoves.some(({ piece, squares }) => squares.some(this.isCaptureMove(piece)));
   }
 
   isInCheck(color: ColorEnum): boolean {
@@ -3182,10 +3533,19 @@ export class Game implements IGame {
       };
     }
 
-    if (this.isHorde && this.turn === ColorEnum.WHITE && this.isNoPieces(ColorEnum.WHITE)) {
+    if ((this.isHorde || this.isAmazons) && this.turn === ColorEnum.WHITE && this.isNoPieces(ColorEnum.WHITE)) {
       return {
         winner: prevTurn,
-        reason: ResultReasonEnum.HORDE_DESTROYED
+        reason: this.isHorde
+          ? ResultReasonEnum.HORDE_DESTROYED
+          : ResultReasonEnum.AMAZONS_DESTROYED
+      };
+    }
+
+    if (this.isThreeCheck && this.checksCount[this.turn] === 3) {
+      return {
+        winner: prevTurn,
+        reason: ResultReasonEnum.THREE_CHECKS
       };
     }
 
@@ -3210,13 +3570,13 @@ export class Game implements IGame {
       && !this.isNoPieces(prevTurn)
       && this.getPieces(currentTurn).every((piece) => (
         this.getAllowedMoves(piece).every((square) => {
-          const { revertMove } = this.performMove({
+          const { isCapture, revertMove } = this.performMove({
             from: piece.location,
             to: square,
             timestamp: 0,
             promotion: PieceTypeEnum.QUEEN
           }, false, false);
-          const isStalemate = this.isStalemate();
+          const isStalemate = !isCapture && this.isStalemate();
 
           revertMove();
 
@@ -3296,6 +3656,8 @@ export class Game implements IGame {
       return false;
     }
 
+    // TODO: add support for absorption/frankfurt
+
     const whitePieces = this.getPieces(ColorEnum.WHITE);
     const blackPieces = this.getPieces(ColorEnum.BLACK);
     const pieces = _
@@ -3317,9 +3679,9 @@ export class Game implements IGame {
       return (
         possibleBishopColors[0] !== possibleBishopColors[1]
         && pieces.every((pieces, index) => (
-          pieces.every(({ type, location }) => (
-            type === PieceTypeEnum.BISHOP
-            && location.x % 2 + location.y % 2 === possibleBishopColors[index]
+          pieces.every((piece) => (
+            Game.isBishop(piece)
+            && piece.location.x % 2 + piece.location.y % 2 === possibleBishopColors[index]
           ))
         ))
       );
@@ -3339,13 +3701,13 @@ export class Game implements IGame {
 
     if (
       // kings vs kings
-      pieces[0].every(({ type }) => type === PieceTypeEnum.KING)
-      && pieces[1].every(({ type }) => type === PieceTypeEnum.KING)
+      pieces[0].every(Game.isKing)
+      && pieces[1].every(Game.isKing)
     ) {
       return true;
     }
 
-    if (this.isAtomic || this.isMadrasi) {
+    if (this.isAtomic || this.isMadrasi || this.isThreeCheck) {
       return false;
     }
 
@@ -3353,7 +3715,7 @@ export class Game implements IGame {
       // king vs king & knight
       pieces[0].length === 1
       && pieces[1].length === 2
-      && pieces[1][1].type === PieceTypeEnum.KNIGHT
+      && Game.isKnight(pieces[1][1])
     ) {
       return true;
     }
@@ -3361,9 +3723,9 @@ export class Game implements IGame {
     const possibleBishopColor = pieces[1][1].location.x % 2 + pieces[1][1].location.y % 2;
 
     return pieces.every((pieces) => (
-      pieces.slice(1).every(({ type, location }) => (
-        type === PieceTypeEnum.BISHOP
-        && location.x % 2 + location.y % 2 === possibleBishopColor
+      pieces.slice(1).every((piece) => (
+        Game.isBishop(piece)
+        && piece.location.x % 2 + piece.location.y % 2 === possibleBishopColor
       ))
     ));
   }

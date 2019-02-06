@@ -25,6 +25,9 @@ export type GamePlayers = {
 
 export enum PieceTypeEnum {
   KING = 'KING',
+  AMAZON = 'AMAZON',
+  EMPRESS = 'EMPRESS',
+  CARDINAL = 'CARDINAL',
   QUEEN = 'QUEEN',
   ROOK = 'ROOK',
   BISHOP = 'BISHOP',
@@ -32,6 +35,15 @@ export enum PieceTypeEnum {
   PAWN = 'PAWN',
   MAN = 'MAN'
 }
+
+export type StandardPiece = (
+  PieceTypeEnum.KING
+  | PieceTypeEnum.QUEEN
+  | PieceTypeEnum.ROOK
+  | PieceTypeEnum.BISHOP
+  | PieceTypeEnum.KNIGHT
+  | PieceTypeEnum.PAWN
+);
 
 export enum ColorEnum {
   WHITE = 'WHITE',
@@ -55,6 +67,7 @@ export interface BoardDimensions {
   boardHeight: number;
 }
 
+// TODO: add checks count and teleport used in starting data
 export interface StartingData {
   result: GameResult | null;
   turn: ColorEnum;
@@ -77,6 +90,7 @@ export interface Piece {
   location: PieceLocation;
   moved: boolean;
   originalType: PieceTypeEnum;
+  abilities: PieceTypeEnum | null;
 }
 
 export interface BoardPiece extends Piece {
@@ -175,7 +189,12 @@ export enum GameVariantEnum {
   CHESSENCE = 'CHESSENCE',
   HORDE = 'HORDE',
   DARK_CHESS = 'DARK_CHESS',
-  ANTICHESS = 'ANTICHESS'
+  ANTICHESS = 'ANTICHESS',
+  ABSORPTION = 'ABSORPTION',
+  FRANKFURT = 'FRANKFURT',
+  CAPABLANCA = 'CAPABLANCA',
+  AMAZONS = 'AMAZONS',
+  THREE_CHECK = 'THREE_CHECK'
 }
 
 export interface BaseMove {
@@ -222,7 +241,9 @@ export enum ResultReasonEnum {
   KING_EXPLODED = 'KING_EXPLODED',
   KING_CAPTURED = 'KING_CAPTURED',
   HORDE_DESTROYED = 'HORDE_DESTROYED',
+  AMAZONS_DESTROYED = 'AMAZONS_DESTROYED',
   NO_MORE_PIECES = 'NO_MORE_PIECES',
+  THREE_CHECKS = 'THREE_CHECKS',
   STALEMATE = 'STALEMATE',
   TIME_RAN_OUT = 'TIME_RAN_OUT',
   RESIGN = 'RESIGN',

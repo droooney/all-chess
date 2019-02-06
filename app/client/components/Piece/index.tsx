@@ -8,7 +8,10 @@ import {
 } from '../../../types';
 
 import King from './King';
+import Amazon from './Amazon';
 import Queen from './Queen';
+import Empress from './Empress';
+import Cardinal from './Cardinal';
 import Rook from './Rook';
 import Bishop from './Bishop';
 import Knight from './Knight';
@@ -16,6 +19,7 @@ import Pawn from './Pawn';
 
 interface OwnProps {
   piece: Partial<RealPiece> & Pick<RealPiece, 'color' | 'type' | 'location'>;
+
   className?: string;
   style?: React.CSSProperties;
   onClick?(location: RealPieceLocation): void;
@@ -60,8 +64,14 @@ export default class Piece extends React.Component<Props> {
       >
         {piece.type === PieceTypeEnum.KING ? (
           <King color={piece.color} />
+        ) : piece.type === PieceTypeEnum.AMAZON ? (
+          <Amazon color={piece.color} />
         ) : piece.type === PieceTypeEnum.QUEEN ? (
           <Queen color={piece.color} />
+        ) : piece.type === PieceTypeEnum.EMPRESS ? (
+          <Empress color={piece.color} />
+        ) : piece.type === PieceTypeEnum.CARDINAL ? (
+          <Cardinal color={piece.color} />
         ) : piece.type === PieceTypeEnum.ROOK ? (
           <Rook color={piece.color} />
         ) : piece.type === PieceTypeEnum.BISHOP ? (
