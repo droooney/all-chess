@@ -410,37 +410,39 @@ export class Game implements IGame {
 
     [ColorEnum.WHITE, ColorEnum.BLACK].forEach((color) => {
       const startingMenCoordinates = Game.chessenceStartingMenSquares[color];
-      const getPiece = (type: PieceTypeEnum, location: RealPieceLocation): RealPiece => ({
-        id: `${++id}`,
-        type,
-        originalType: type,
-        color,
-        moved: false,
-        abilities: null,
-        location
-      } as RealPiece);
+      const addPiece = (type: PieceTypeEnum, location: RealPieceLocation) => {
+        pieces.push({
+          id: `${++id}`,
+          type,
+          originalType: type,
+          color,
+          moved: false,
+          abilities: null,
+          location
+        } as RealPiece);
+      };
 
-      pieces.push(getPiece(PieceTypeEnum.KING, {
+      addPiece(PieceTypeEnum.KING, {
         type: PieceLocationEnum.BOARD,
         board: 0,
         x: color === ColorEnum.WHITE ? 5 : 0,
         y: color === ColorEnum.WHITE ? 0 : 8
-      }));
+      });
 
       startingMenCoordinates.forEach(({ x, y }) => {
-        pieces.push(getPiece(PieceTypeEnum.MAN, {
+        addPiece(PieceTypeEnum.MAN, {
           type: PieceLocationEnum.BOARD,
           board: 0,
           x,
           y
-        }));
+        });
       });
 
       _.times(3, () => {
-        pieces.push(getPiece(PieceTypeEnum.MAN, {
+        addPiece(PieceTypeEnum.MAN, {
           type: PieceLocationEnum.POCKET,
           pieceType: PieceTypeEnum.MAN
-        }));
+        });
       });
     });
 
@@ -457,12 +459,13 @@ export class Game implements IGame {
     const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
     const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
     const isCapablanca = _.includes(variants, GameVariantEnum.CAPABLANCA);
+    const isAmazons = _.includes(variants, GameVariantEnum.AMAZONS);
 
     return {
       boardCount: isAliceChess ? 2 : 1,
       boardWidth: isChessence
         ? 6
-        : isTwoFamilies || isCapablanca
+        : isTwoFamilies || isCapablanca || isAmazons
           ? 10
           : 8,
       boardHeight: isChessence ? 9 : 8
@@ -477,6 +480,7 @@ export class Game implements IGame {
     const isHorde = _.includes(variants, GameVariantEnum.HORDE);
     const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
     const isCapablanca = _.includes(variants, GameVariantEnum.CAPABLANCA);
+    const isAmazons = _.includes(variants, GameVariantEnum.AMAZONS);
     const halfBoard = Math.round(boardWidth / 2);
     let id = 0;
     let pieceTypes: PieceTypeEnum[];
@@ -510,7 +514,7 @@ export class Game implements IGame {
 
       if (isTwoFamilies) {
         placePiece(PieceTypeEnum.QUEEN, Math.floor((boardWidth - 5) * Math.random()));
-      } else if (isCapablanca) {
+      } else if (isCapablanca || isAmazons) {
         placePiece(PieceTypeEnum.EMPRESS, Math.floor((boardWidth - 5) * Math.random()));
         placePiece(PieceTypeEnum.CARDINAL, Math.floor((boardWidth - 6) * Math.random()));
       }
@@ -536,7 +540,7 @@ export class Game implements IGame {
       });
     } else if (isTwoFamilies) {
       pieceTypes = TWO_FAMILIES_PIECE_PLACEMENT;
-    } else if (isCapablanca) {
+    } else if (isCapablanca || isAmazons) {
       pieceTypes = CAPABLANCA_PIECE_PLACEMENT;
     } else {
       pieceTypes = STANDARD_PIECE_PLACEMENT;
@@ -558,50 +562,57 @@ export class Game implements IGame {
     const pieces: RealPiece[] = [];
 
     [ColorEnum.WHITE, ColorEnum.BLACK].forEach((color) => {
-      const getPiece = (type: PieceTypeEnum, x: number, y: number): BoardPiece => ({
-        id: `${++id}`,
-        type,
-        originalType: type,
-        color,
-        moved: false,
-        abilities: null,
-        location: {
-          type: PieceLocationEnum.BOARD,
-          board: 0,
-          x,
-          y
-        }
-      });
+      const addPiece = (type: PieceTypeEnum, x: number, y: number) => {
+        pieces.push({
+          id: `${++id}`,
+          type,
+          originalType: type,
+          color,
+          moved: false,
+          abilities: null,
+          location: {
+            type: PieceLocationEnum.BOARD,
+            board: 0,
+            x,
+            y
+          }
+        });
+      };
 
       if (isHorde && color === ColorEnum.WHITE) {
         const lastPawnRank = 4;
 
         _.times(lastPawnRank, (y) => {
           _.times(boardWidth, (x) => {
-            pieces.push(getPiece(PieceTypeEnum.PAWN, x, y));
+            addPiece(PieceTypeEnum.PAWN, x, y);
           });
         });
 
-        pieces.push(getPiece(PieceTypeEnum.PAWN, 1, lastPawnRank));
-        pieces.push(getPiece(PieceTypeEnum.PAWN, 2, lastPawnRank));
+        addPiece(PieceTypeEnum.PAWN, 1, lastPawnRank);
+        addPiece(PieceTypeEnum.PAWN, 2, lastPawnRank);
 
         if (isCapablanca) {
-          pieces.push(getPiece(PieceTypeEnum.PAWN, halfBoard - 1, lastPawnRank));
-          pieces.push(getPiece(PieceTypeEnum.PAWN, halfBoard, lastPawnRank));
+          addPiece(PieceTypeEnum.PAWN, halfBoard - 1, lastPawnRank);
+          addPiece(PieceTypeEnum.PAWN, halfBoard, lastPawnRank);
         }
 
-        pieces.push(getPiece(PieceTypeEnum.PAWN, boardWidth - 2, lastPawnRank));
-        pieces.push(getPiece(PieceTypeEnum.PAWN, boardWidth - 3, lastPawnRank));
+        addPiece(PieceTypeEnum.PAWN, boardWidth - 2, lastPawnRank);
+        addPiece(PieceTypeEnum.PAWN, boardWidth - 3, lastPawnRank);
+      } else if (isAmazons && color === ColorEnum.WHITE) {
+        addPiece(PieceTypeEnum.AMAZON, halfBoard - 2, 0);
+        addPiece(PieceTypeEnum.AMAZON, halfBoard - 1, 0);
+        addPiece(PieceTypeEnum.AMAZON, halfBoard, 0);
+        addPiece(PieceTypeEnum.AMAZON, halfBoard + 1, 0);
       } else {
         const pieceRankY = color === ColorEnum.WHITE ? 0 : boardHeight - 1;
         const pawnRankY = color === ColorEnum.WHITE ? 1 : boardHeight - 2;
 
         pieceTypes.forEach((type, x) => {
-          pieces.push(getPiece(type, x, pieceRankY));
+          addPiece(type, x, pieceRankY);
         });
 
         _.times(boardWidth, (x) => {
-          pieces.push(getPiece(PieceTypeEnum.PAWN, x, pawnRankY));
+          addPiece(PieceTypeEnum.PAWN, x, pawnRankY);
         });
       }
     });
@@ -846,15 +857,17 @@ export class Game implements IGame {
       : 2 * startingMoveIndexNumber + (turnString === 'b' ? 1 : 0);
 
     let id = 0;
-    const getPiece = (color: ColorEnum, type: PieceTypeEnum, location: RealPieceLocation): RealPiece => ({
-      id: `${++id}`,
-      type,
-      originalType: type,
-      color,
-      moved: false,
-      abilities: null,
-      location
-    } as RealPiece);
+    const addPiece = (color: ColorEnum, type: PieceTypeEnum, location: RealPieceLocation) => {
+      startingData.pieces.push({
+        id: `${++id}`,
+        type,
+        originalType: type,
+        color,
+        moved: false,
+        abilities: null,
+        location
+      } as RealPiece);
+    };
 
     for (let board = 0; board < boards.length; board++) {
       const ranks = boards[board].split('/').reverse();
@@ -894,7 +907,7 @@ export class Game implements IGame {
                 throw new Error('Invalid FEN: not promoted pawn');
               }
 
-              startingData.pieces.push(getPiece(
+              addPiece(
                 piece.color,
                 piece.type,
                 {
@@ -903,7 +916,7 @@ export class Game implements IGame {
                   x: file,
                   y: rank
                 }
-              ));
+              );
             }
 
             file += 1;
@@ -926,14 +939,14 @@ export class Game implements IGame {
             throw new Error(`Invalid FEN: wrong pocket piece literal (${pocket[pieceIndex]})`);
           }
 
-          startingData.pieces.push(getPiece(
+          addPiece(
             piece.color,
             piece.type,
             {
               type: PieceLocationEnum.POCKET,
               pieceType: piece.type
             }
-          ));
+          );
         }
       }
     }
