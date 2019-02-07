@@ -367,6 +367,7 @@ export class Game implements IGame {
         !isCapablanca
         && !isKingOfTheHill
         && !isThreeCheck
+        && !isCirce
       )
     ) && (
       !isThreeCheck
@@ -2071,7 +2072,7 @@ export class Game implements IGame {
           x: toX + incrementX
         });
 
-        if (pieceInSquare && !Game.isPawn(pieceInSquare)) {
+        if (pieceInSquare && (!Game.isPawn(pieceInSquare) || pieceInSquare.abilities)) {
           disappearedOrMovedPieces.push(pieceInSquare);
         }
       });
@@ -2337,20 +2338,18 @@ export class Game implements IGame {
 
     disappearedOrMovedPieces.forEach((disappearedOrMovedPiece, ix) => {
       const {
-        id,
         color
       } = disappearedOrMovedPiece;
       const location = disappearedOrMovedPiecesData[ix].location;
-      let newSquare: Square | null = null;
+      let newSquare = null;
 
       if (disappearedOrMovedPiece === castlingRook) {
         newSquare = {
-          board: location.board,
           x: isKingSideCastling ? this.boardWidth - 3 : 3,
           y: toY
         };
       } else if (this.isCirce) {
-        const oldSquare = piece.id === id
+        const oldSquare = disappearedOrMovedPiece === piece
           ? toLocation
           : location;
         const pieceRankY = color === ColorEnum.WHITE
@@ -2359,21 +2358,35 @@ export class Game implements IGame {
 
         if (Game.isQueen(disappearedOrMovedPiece)) {
           newSquare = {
-            board: location.board,
-            x: !this.isTwoFamilies || oldSquare.x < this.boardWidth / 2
-              ? 3
-              : 5,
+            x: this.isCapablanca
+              ? 4
+              : !this.isTwoFamilies || oldSquare.x < this.boardWidth / 2
+                ? 3
+                : 5,
+            y: pieceRankY
+          };
+        } else if (Game.isEmpress(disappearedOrMovedPiece)) {
+          newSquare = {
+            x: 3,
+            y: pieceRankY
+          };
+        } else if (Game.isCardinal(disappearedOrMovedPiece)) {
+          newSquare = {
+            x: 6,
             y: pieceRankY
           };
         } else if (Game.isPawn(disappearedOrMovedPiece)) {
           newSquare = {
-            board: location.board,
             x: oldSquare.x,
             y: color === ColorEnum.WHITE
               ? 1
               : this.boardHeight - 2
           };
-        } else if (!Game.isKing(disappearedOrMovedPiece)) {
+        } else if (
+          Game.isRook(disappearedOrMovedPiece)
+          || Game.isBishop(disappearedOrMovedPiece)
+          || Game.isKnight(disappearedOrMovedPiece)
+        ) {
           const squareColor = (oldSquare.x + oldSquare.y) % 2;
           const choicesX = Game.isRook(disappearedOrMovedPiece)
             ? [0, this.boardWidth - 1]
@@ -2383,14 +2396,16 @@ export class Game implements IGame {
           const fileX = _.find(choicesX, (fileX) => (fileX + pieceRankY) % 2 === squareColor)!;
 
           newSquare = {
-            board: location.board,
             x: fileX,
             y: pieceRankY
           };
         }
 
         if (newSquare) {
-          const pieceInSquare = this.getBoardPiece(newSquare);
+          const pieceInSquare = this.getBoardPiece({
+            ...newSquare,
+            board: location.board
+          });
 
           // don't allow rebirth if it takes place on the square with another piece
           if (pieceInSquare) {
@@ -2403,6 +2418,7 @@ export class Game implements IGame {
         disappearedOrMovedPiece.moved = disappearedOrMovedPiece === castlingRook;
         disappearedOrMovedPiece.location = {
           ...newSquare,
+          board: location.board,
           type: PieceLocationEnum.BOARD
         };
       } else {
@@ -2434,11 +2450,10 @@ export class Game implements IGame {
       const nextBoard = this.getNextBoard(toBoard);
 
       if (!isMainPieceMovedOrDisappeared && fromLocation.type === PieceLocationEnum.BOARD) {
-        newLocation = {
+        piece.location = {
           ...newLocation,
           board: nextBoard
         };
-        piece.location = newLocation;
       }
 
       disappearedOrMovedPieces.forEach((disappearedOrMovedPiece) => {
@@ -2525,11 +2540,7 @@ export class Game implements IGame {
         }
 
         disappearedOrMovedPiecesData.forEach((pieceData, ix) => {
-          const disappearedOrMovedPiece = disappearedOrMovedPieces[ix];
-
-          _.forEach(pieceData, (value, key) => {
-            disappearedOrMovedPiece[key as keyof BoardPiece] = value;
-          });
+          _.assign(disappearedOrMovedPieces[ix], pieceData);
         });
       }
     };

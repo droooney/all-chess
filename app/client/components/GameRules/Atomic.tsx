@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { GameVariantEnum } from '../../../types';
+import { GAME_VARIANT_NAMES } from '../../../shared/constants';
 
 import GameRulesExample from '../GameRulesExample';
 import GameVariantLink from '../GameVariantLink';
@@ -32,7 +33,7 @@ export default class AtomicGameRules extends React.Component {
           <br />
           - the capturing piece
           <br />
-          - any other piece (not pawns) that is located on a neighbor square to the captured pieces square (exception is en passant, see below)
+          - any other piece (not pawns) that is located on a neighbor square to the captured piece square (exception is en passant, see below)
         </p>
 
         <GameRulesExample
@@ -77,7 +78,7 @@ export default class AtomicGameRules extends React.Component {
           <br />
           <br />
 
-          Also because king may move into check there is only one insufficient material condition: king vs king.
+          Also because king may move into check there is only one insufficient material draw condition: king(s) vs king(s).
         </p>
 
         <h2 id="combinations">
@@ -85,9 +86,20 @@ export default class AtomicGameRules extends React.Component {
         </h2>
 
         <p>
-          Though White has more advantage over Black than in standard chess, atomic chess combines well with many variants. Exceptions are:
-          {' '}<GameVariantLink variant={GameVariantEnum.MONSTER_CHESS} />, <GameVariantLink variant={GameVariantEnum.HORDE} />,
-          {' '}<GameVariantLink variant={GameVariantEnum.DARK_CHESS} />.
+          Though White has more advantage over Black than in standard chess, Atomic chess combines well with many variants. Exceptions are:
+          {' '}<GameVariantLink variant={GameVariantEnum.MONSTER_CHESS} />, <GameVariantLink variant={GameVariantEnum.ALICE_CHESS} />,
+          {' '}<GameVariantLink variant={GameVariantEnum.HORDE} />, <GameVariantLink variant={GameVariantEnum.DARK_CHESS} />,
+          {' '}<GameVariantLink variant={GameVariantEnum.ABSORPTION} />, <GameVariantLink variant={GameVariantEnum.FRANKFURT} />,
+          {' '}<GameVariantLink variant={GameVariantEnum.AMAZONS} />.
+        </p>
+
+        <h3 id="combinations-antichess">
+          {GAME_VARIANT_NAMES[GameVariantEnum.ANTICHESS]}
+        </h3>
+
+        <p>
+          In Atomic + Antichess combination the Antichess insufficient material draw rules are used.
+          Also there can be a draw if there are no pieces on the board.
         </p>
 
       </React.Fragment>

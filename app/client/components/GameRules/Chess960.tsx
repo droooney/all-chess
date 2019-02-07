@@ -1,8 +1,6 @@
 import * as React from 'react';
 
-import {
-  GameVariantEnum
-} from '../../../types';
+import { GameVariantEnum } from '../../../types';
 import { GAME_VARIANT_NAMES } from '../../../shared/constants';
 
 import GameRulesExample from '../GameRulesExample';
@@ -56,7 +54,7 @@ export default class Chess960GameRules extends React.Component {
           <br />
           <br />
 
-          - after king-side castling the king ends up on the g-file and the rook on the f-file
+          - after king-side castling the king ends up on the g-file and the rook on the f-file (on a 10x8 board i-file and h-file respectively)
           <br />
           - after queen-side castling the king ends up on the c-file and the rook on the d-file
           <br />
@@ -163,7 +161,7 @@ export default class Chess960GameRules extends React.Component {
         </h3>
 
         <p>
-          When played in combination with <GameVariantLink variant={GameVariantEnum.CIRCE} />, there are is an exception to the usual circe game:
+          When played in combination with <GameVariantLink variant={GameVariantEnum.CIRCE} />, there is an exception to the usual Circe game:
           when captured, the pieces don&apos;t return to their initial squares, but rather to the starting squares of the same game but without Chess 960.
         </p>
 
