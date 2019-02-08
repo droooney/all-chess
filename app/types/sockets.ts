@@ -9,7 +9,8 @@ import {
   GameMinimalData,
   GamePlayers,
   GameResult,
-  Move
+  Move,
+  TakebackRequest
 } from './game';
 
 declare global {
@@ -29,6 +30,8 @@ declare global {
     gameCreated: GameMinimalData;
     addChatMessage: string;
     newChatMessage: ChatMessage;
+    requestTakeback: number;
+    takebackRequested: TakebackRequest;
   }
 
   type SocketIOEventWithoutDataList = (
@@ -37,10 +40,8 @@ declare global {
     | 'drawCanceled'
     | 'offerDraw'
     | 'resign'
-    | 'takebackRequested'
     | 'takebackAccepted'
     | 'takebackDeclined'
-    | 'declareThreefoldRepetitionDraw'
-    | 'declare50MoveDraw'
+    | 'takebackCanceled'
   );
 }

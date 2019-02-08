@@ -36,7 +36,7 @@ export interface OwnProps {
   darkChessMode: ColorEnum | null;
   currentMove: AnyMove | undefined;
 
-  pieces?: IPiece[];
+  pieces?: ReadonlyArray<IPiece>;
   withLiterals?: boolean;
   showFantomPieces?: boolean;
   squareSize?: number;

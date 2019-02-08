@@ -163,8 +163,6 @@ export default class Game extends React.Component<Props, State> {
           players,
           isAliceChess,
           isChessence,
-          isThreefoldRepetitionDrawPossible,
-          is50MoveDrawPossible,
           drawOffer,
           timeControl,
           result,
@@ -187,8 +185,6 @@ export default class Game extends React.Component<Props, State> {
               game={this.game!}
               result={result}
               players={players}
-              isThreefoldRepetitionDrawPossible={isThreefoldRepetitionDrawPossible}
-              is50MoveDrawPossible={is50MoveDrawPossible}
               isBlackBase={isBlackBase}
               drawOffer={drawOffer}
               darkChessMode={darkChessMode}

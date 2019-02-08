@@ -131,9 +131,7 @@ export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
   [ResultReasonEnum.AGREED_TO_DRAW]: 'players agreed to a draw',
   [ResultReasonEnum.INSUFFICIENT_MATERIAL]: 'insufficient material',
   [ResultReasonEnum.THREEFOLD_REPETITION]: 'threefold repetition',
-  [ResultReasonEnum.FIVEFOLD_REPETITION]: 'fivefold repetition',
-  [ResultReasonEnum.FIFTY_MOVE_RULE]: '50 moves without pawn moves or captures',
-  [ResultReasonEnum.SEVENTY_FIVE_MOVE_RULE]: '75 moves without pawn moves or captures'
+  [ResultReasonEnum.FIFTY_MOVE_RULE]: '50 moves without pawn moves or captures'
 };
 
 export const COLOR_NAMES: { [color in ColorEnum]: string } = {

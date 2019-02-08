@@ -128,6 +128,32 @@ export class Game extends GameHelper {
 
         this.updateGame();
       });
+
+      socket.on('takebackRequested', (takebackRequest) => {
+        this.takebackRequest = takebackRequest;
+
+        this.updateGame();
+      });
+
+      socket.on('takebackAccepted', () => {
+        if (this.takebackRequest) {
+          this.takebackRequest = null;
+
+          this.updateGame();
+        }
+      });
+
+      socket.on('takebackDeclined', () => {
+        this.takebackRequest = null;
+
+        this.updateGame();
+      });
+
+      socket.on('takebackCanceled', () => {
+        this.takebackRequest = null;
+
+        this.updateGame();
+      });
     }
   }
 
@@ -168,18 +194,6 @@ export class Game extends GameHelper {
     }
 
     this.updateGame();
-  }
-
-  declare50MoveDraw() {
-    if (this.socket) {
-      this.socket.emit('declare50MoveDraw');
-    }
-  }
-
-  declareThreefoldRepetitionDraw() {
-    if (this.socket) {
-      this.socket.emit('declareThreefoldRepetitionDraw');
-    }
   }
 
   declineDraw() {
@@ -316,7 +330,7 @@ export class Game extends GameHelper {
     if (this.darkChessMode && !this.showDarkChessHiddenPieces) {
       this.performDarkChessMove(this.colorMoves[this.darkChessMode][this.currentMoveIndex]);
     } else {
-      this.performMove(this.moves[this.currentMoveIndex], false, false);
+      this.performMove(this.moves[this.currentMoveIndex]);
     }
   }
 
@@ -344,6 +358,26 @@ export class Game extends GameHelper {
       ...move,
       revertMove
     });
+  }
+
+  unregisterLastMove() {
+    if (this.isOngoingDarkChessGame && this.darkChessMode) {
+      const move = _.last(this.colorMoves[this.darkChessMode]);
+
+      if (move) {
+        move.revertMove();
+
+        this.colorMoves[this.darkChessMode].pop();
+      }
+    } else {
+      const move = _.last(this.moves);
+
+      if (move) {
+        move.revertMove();
+
+        this.moves.pop();
+      }
+    }
   }
 
   resign() {

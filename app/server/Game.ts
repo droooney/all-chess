@@ -187,15 +187,55 @@ export default class Game extends GameHelper {
             }
           });
 
-          socket.on('declareThreefoldRepetitionDraw', () => {
-            if (this.isThreefoldRepetitionDrawPossible) {
-              this.end(null, ResultReasonEnum.THREEFOLD_REPETITION);
+          socket.on('requestTakeback', (moveIndex) => {
+            if (!this.takebackRequest && this.validateTakebackRequest(moveIndex)) {
+              this.takebackRequest = {
+                player: playerColor,
+                moveIndex
+              };
+
+              const move = this.moves[moveIndex];
+              const moveString = this.isDarkChess
+                ? '?'
+                : move
+                  ? `move ${move.figurine}`
+                  : 'the start of the game';
+
+              this.addChatMessage({
+                login: null,
+                message: `${COLOR_NAMES[playerColor]} requested a takeback up to ${moveString}`
+              });
+              this.io.emit('takebackRequested', this.takebackRequest);
             }
           });
 
-          socket.on('declare50MoveDraw', () => {
-            if (this.is50MoveDrawPossible) {
-              this.end(null, ResultReasonEnum.FIFTY_MOVE_RULE);
+          socket.on('takebackAccepted', () => {
+            if (this.takebackRequest && this.takebackRequest.player !== playerColor) {
+              this.takebackRequest = null;
+            }
+          });
+
+          socket.on('takebackDeclined', () => {
+            if (this.takebackRequest && this.takebackRequest.player !== playerColor) {
+              this.takebackRequest = null;
+
+              this.addChatMessage({
+                login: null,
+                message: 'Takeback request declined'
+              });
+              this.io.emit('takebackDeclined');
+            }
+          });
+
+          socket.on('takebackCanceled', () => {
+            if (this.takebackRequest && this.takebackRequest.player === playerColor) {
+              this.takebackRequest = null;
+
+              this.addChatMessage({
+                login: null,
+                message: 'Takeback request canceled'
+              });
+              this.io.emit('takebackCanceled');
             }
           });
 
@@ -271,6 +311,14 @@ export default class Game extends GameHelper {
         && typeof move.from.x === 'number'
         && !this.isNullSquare(move.from)
       ))
+    );
+  }
+
+  validateTakebackRequest(moveIndex: any): boolean {
+    return (
+      typeof moveIndex === 'number'
+      && moveIndex < this.moves.length - 1
+      && (!!this.moves[moveIndex] || moveIndex === -1)
     );
   }
 
@@ -354,6 +402,28 @@ export default class Game extends GameHelper {
     }
   }
 
+  unregisterLastMove() {
+    const move = _.last(this.moves);
+
+    if (move) {
+      move.revertMove();
+
+      this.moves.pop();
+
+      if (this.isDarkChess) {
+        _.forEach(ColorEnum, (color) => {
+          const move = _.last(this.colorMoves[color]);
+
+          if (move) {
+            move.revertMove();
+
+            this.colorMoves[color].pop();
+          }
+        });
+      }
+    }
+  }
+
   clearTimeout() {
     clearTimeout(this.timerTimeout);
   }
@@ -403,6 +473,7 @@ export default class Game extends GameHelper {
       'timeControl',
       'pgnTags',
       'drawOffer',
+      'takebackRequest',
       'moves',
       'chat'
     ]);

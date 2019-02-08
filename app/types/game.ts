@@ -78,9 +78,9 @@ export interface StartingData {
     enPassantSquare: Square;
     pieceLocation: Square;
   };
-  pieces: RealPiece[];
-  voidSquares: Square[];
-  emptySquares: Square[];
+  pieces: ReadonlyArray<RealPiece>;
+  voidSquares: ReadonlyArray<Square>;
+  emptySquares: ReadonlyArray<Square>;
 }
 
 export interface Piece {
@@ -128,19 +128,25 @@ export type GameKings = {
   [color in ColorEnum]: Piece[];
 };
 
+export interface TakebackRequest {
+  player: ColorEnum;
+  moveIndex: number;
+}
+
 export interface GameMinimalData {
   id: string;
   status: GameStatusEnum;
   players: GamePlayers;
   result: GameResult | null;
   timeControl: TimeControl;
-  variants: GameVariantEnum[];
+  variants: ReadonlyArray<GameVariantEnum>;
 }
 
 export interface CommonGameData extends GameMinimalData {
   startingData: StartingData;
   result: GameResult | null;
   chat: ChatMessage[];
+  takebackRequest: TakebackRequest | null;
   drawOffer: ColorEnum | null;
   pgnTags: PGNTags;
 }
@@ -171,7 +177,7 @@ export type PGNTags = {
 
 export interface GameCreateSettings {
   timeControl: TimeControl;
-  variants: GameVariantEnum[];
+  variants: ReadonlyArray<GameVariantEnum>;
 }
 
 export enum GameVariantEnum {
@@ -250,9 +256,7 @@ export enum ResultReasonEnum {
   AGREED_TO_DRAW = 'AGREED_TO_DRAW',
   INSUFFICIENT_MATERIAL = 'INSUFFICIENT_MATERIAL',
   THREEFOLD_REPETITION = 'THREEFOLD_REPETITION',
-  FIVEFOLD_REPETITION = 'FIVEFOLD_REPETITION',
-  FIFTY_MOVE_RULE = 'FIFTY_MOVE_RULE',
-  SEVENTY_FIVE_MOVE_RULE = 'SEVENTY_FIVE_MOVE_RULE'
+  FIFTY_MOVE_RULE = 'FIFTY_MOVE_RULE'
 }
 
 export interface GameResult {

@@ -21,7 +21,7 @@ interface OwnProps {
   game: Game;
   players: GamePlayers;
   player: Player | null;
-  pieces: Piece[];
+  pieces: ReadonlyArray<Piece>;
   currentMoveIndex: number;
   timeControl: TimeControl;
   moves: AnyMove[];
@@ -67,8 +67,11 @@ export default class RightPanel extends React.Component<Props, State> {
       moves
     } = this.props;
 
-    if (status !== GameStatusEnum.ONGOING) {
+    if (status !== GameStatusEnum.ONGOING && prevProps.status === GameStatusEnum.ONGOING) {
       clearInterval(this.timeControlInterval);
+      this.setState({
+        intervalActivated: false
+      });
     } else if (moves.length >= game.pliesPerMove && prevProps.moves.length < game.pliesPerMove) {
       this.activateInterval();
     }

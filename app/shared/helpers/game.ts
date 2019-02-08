@@ -29,6 +29,7 @@ import {
   Square,
   StandardPiece,
   StartingData,
+  TakebackRequest,
   TimeControl,
   TimeControlEnum
 } from '../../types';
@@ -65,18 +66,17 @@ interface PossibleMovesOptions {
   onlyPossible?: true;
 }
 
-interface ParseFenOptions {
-  boardCount?: number;
-  boardWidth?: number;
-  boardHeight?: number;
-  variants: GameVariantEnum[];
+interface PerformMoveOptions {
+  constructMoveLiterals?: boolean;
+  constructPositionString?: boolean;
+  checkIfAllowed?: boolean;
 }
 
 type CastlingRookCoordinates = {
   [castling in CastlingTypeEnum]: Square | null;
 };
 
-const ATOMIC_SQUARE_INCREMENTS: [number, number][] = [
+const ATOMIC_SQUARE_INCREMENTS: ReadonlyArray<[number, number]> = [
   [-1, -1],
   [-1, 0],
   [-1, 1],
@@ -88,7 +88,7 @@ const ATOMIC_SQUARE_INCREMENTS: [number, number][] = [
   [1, 1]
 ];
 
-const KNIGHT_MOVE_INCREMENTS: [number, number][] = [
+const KNIGHT_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
   [-2, -1],
   [-2, +1],
   [-1, -2],
@@ -99,21 +99,21 @@ const KNIGHT_MOVE_INCREMENTS: [number, number][] = [
   [+2, +1]
 ];
 
-const BISHOP_NEIGHBOR_INCREMENTS: [number, number][] = [
+const BISHOP_NEIGHBOR_INCREMENTS: ReadonlyArray<[number, number]> = [
   [-1, -1],
   [-1, +1],
   [+1, -1],
   [+1, +1]
 ];
 
-const ROOK_NEIGHBOR_INCREMENTS: [number, number][] = [
+const ROOK_NEIGHBOR_INCREMENTS: ReadonlyArray<[number, number]> = [
   [-1, 0],
   [0, -1],
   [0, +1],
   [+1, 0]
 ];
 
-const STANDARD_PIECES = [
+const STANDARD_PIECES: PieceTypeEnum[] = [
   PieceTypeEnum.KING,
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.ROOK,
@@ -122,7 +122,7 @@ const STANDARD_PIECES = [
   PieceTypeEnum.PAWN
 ];
 
-const STANDARD_PIECE_PLACEMENT = [
+const STANDARD_PIECE_PLACEMENT: PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.KNIGHT,
   PieceTypeEnum.BISHOP,
@@ -133,7 +133,7 @@ const STANDARD_PIECE_PLACEMENT = [
   PieceTypeEnum.ROOK
 ];
 
-const TWO_FAMILIES_PIECE_PLACEMENT = [
+const TWO_FAMILIES_PIECE_PLACEMENT: PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.KNIGHT,
   PieceTypeEnum.BISHOP,
@@ -146,7 +146,7 @@ const TWO_FAMILIES_PIECE_PLACEMENT = [
   PieceTypeEnum.ROOK
 ];
 
-const CAPABLANCA_PIECE_PLACEMENT = [
+const CAPABLANCA_PIECE_PLACEMENT: PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.KNIGHT,
   PieceTypeEnum.BISHOP,
@@ -159,14 +159,14 @@ const CAPABLANCA_PIECE_PLACEMENT = [
   PieceTypeEnum.ROOK
 ];
 
-const STANDARD_VALID_PROMOTIONS = [
+const STANDARD_VALID_PROMOTIONS: PieceTypeEnum[] = [
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.ROOK,
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.KNIGHT
 ];
 
-const CAPABLANCA_VALID_PROMOTIONS = [
+const CAPABLANCA_VALID_PROMOTIONS: PieceTypeEnum[] = [
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.EMPRESS,
   PieceTypeEnum.CARDINAL,
@@ -175,7 +175,7 @@ const CAPABLANCA_VALID_PROMOTIONS = [
   PieceTypeEnum.KNIGHT
 ];
 
-const STANDARD_POCKET = [
+const STANDARD_POCKET: PieceTypeEnum[] = [
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.ROOK,
   PieceTypeEnum.BISHOP,
@@ -183,7 +183,7 @@ const STANDARD_POCKET = [
   PieceTypeEnum.PAWN
 ];
 
-const CAPABLANCA_POCKET = [
+const CAPABLANCA_POCKET: PieceTypeEnum[] = [
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.EMPRESS,
   PieceTypeEnum.CARDINAL,
@@ -193,7 +193,7 @@ const CAPABLANCA_POCKET = [
   PieceTypeEnum.PAWN
 ];
 
-const PIECES_SORTING = [
+const PIECES_SORTING: PieceTypeEnum[] = [
   PieceTypeEnum.AMAZON,
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.EMPRESS,
@@ -237,7 +237,7 @@ const RESULT_WIN_BLACK = '0-1';
 const RESULT_DRAW = '1/2-1/2';
 
 export class Game implements IGame {
-  static validateVariants(variants: GameVariantEnum[]): boolean {
+  static validateVariants(variants: ReadonlyArray<GameVariantEnum>): boolean {
     const isCrazyhouse = _.includes(variants, GameVariantEnum.CRAZYHOUSE);
     const is960 = _.includes(variants, GameVariantEnum.CHESS_960);
     const isKingOfTheHill = _.includes(variants, GameVariantEnum.KING_OF_THE_HILL);
@@ -455,7 +455,7 @@ export class Game implements IGame {
     };
   })();
 
-  static getBoardDimensions(variants: GameVariantEnum[]): BoardDimensions {
+  static getBoardDimensions(variants: ReadonlyArray<GameVariantEnum>): BoardDimensions {
     const isChessence = _.includes(variants, GameVariantEnum.CHESSENCE);
     const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
     const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
@@ -473,7 +473,7 @@ export class Game implements IGame {
     };
   }
 
-  static generateClassicStartingData(boardDimensions: BoardDimensions, variants: GameVariantEnum[]): StartingData {
+  static generateClassicStartingData(boardDimensions: BoardDimensions, variants: ReadonlyArray<GameVariantEnum>): StartingData {
     const {
       boardWidth,
       boardHeight
@@ -626,7 +626,7 @@ export class Game implements IGame {
     };
   }
 
-  static getStartingData(variants: GameVariantEnum[]): StartingData {
+  static getStartingData(variants: ReadonlyArray<GameVariantEnum>): StartingData {
     const isMonsterChess = _.includes(variants, GameVariantEnum.MONSTER_CHESS);
     const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
     const isChessence = _.includes(variants, GameVariantEnum.CHESSENCE);
@@ -642,15 +642,17 @@ export class Game implements IGame {
 
     startingData = { ...startingData };
 
+    let pieces = [...startingData.pieces];
+
     if (isMonsterChess) {
       const halfWidth = Math.round(boardDimensions.boardWidth / 2);
       const left = Math.ceil(halfWidth / 2);
       const right = boardDimensions.boardWidth - Math.floor(halfWidth / 2);
 
-      startingData.pieces = [...startingData.pieces];
+      pieces = [...pieces];
 
-      for (let i = startingData.pieces.length - 1; i >= 0; i--) {
-        const piece = startingData.pieces[i];
+      for (let i = pieces.length - 1; i >= 0; i--) {
+        const piece = pieces[i];
 
         if (
           piece
@@ -663,7 +665,7 @@ export class Game implements IGame {
             || piece.location.x >= right
           )
         ) {
-          startingData.pieces.splice(i, 1);
+          pieces.splice(i, 1);
         }
       }
     }
@@ -679,14 +681,14 @@ export class Game implements IGame {
       ];
 
       if (isChessence) {
-        startingData.pieces = [...startingData.pieces];
+        pieces = [...pieces];
 
         const pieceType = PieceTypeEnum.MAN;
         let id = +_.last(startingData.pieces)!.id;
 
         [ColorEnum.WHITE, ColorEnum.BLACK].forEach((color) => {
           _.times(3, () => {
-            startingData.pieces.push({
+            pieces.push({
               id: `${++id}`,
               type: pieceType,
               originalType: pieceType,
@@ -703,7 +705,7 @@ export class Game implements IGame {
 
         startingData.pieces.forEach((piece, ix) => {
           if (piece.color === ColorEnum.BLACK && piece.location.type === PieceLocationEnum.BOARD) {
-            startingData.pieces[ix] = {
+            pieces[ix] = {
               ...piece,
               location: {
                 ...piece.location,
@@ -728,15 +730,17 @@ export class Game implements IGame {
       };
     }
 
+    startingData.pieces = pieces;
+
     return startingData;
   }
 
-  static getStartingDataFromFen(fen: string, options: ParseFenOptions): StartingData {
+  static getStartingDataFromFen(fen: string, variants: ReadonlyArray<GameVariantEnum>): StartingData {
     const {
-      boardCount = 1,
-      boardWidth = 8,
-      boardHeight = 8
-    } = options;
+      boardCount,
+      boardWidth,
+      boardHeight
+    } = Game.getBoardDimensions(variants);
     const startingData: StartingData = {
       possibleCastling: {
         [ColorEnum.WHITE]: {
@@ -757,12 +761,13 @@ export class Game implements IGame {
       voidSquares: [],
       emptySquares: []
     };
-    const isPocketUsed = Game.getIsPocketUsed(options.variants);
-    const isTwoFamilies = _.includes(options.variants, GameVariantEnum.TWO_FAMILIES);
-    const isMonsterChess = _.includes(options.variants, GameVariantEnum.MONSTER_CHESS);
-    const isAliceChess = _.includes(options.variants, GameVariantEnum.ALICE_CHESS);
-    const isHorde = _.includes(options.variants, GameVariantEnum.HORDE);
-    const isAntichess = _.includes(options.variants, GameVariantEnum.ANTICHESS);
+    const isPocketUsed = Game.getIsPocketUsed(variants);
+    const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
+    const isMonsterChess = _.includes(variants, GameVariantEnum.MONSTER_CHESS);
+    const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
+    const isHorde = _.includes(variants, GameVariantEnum.HORDE);
+    const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
+    const isChessence = _.includes(variants, GameVariantEnum.CHESSENCE);
     const fenData = fen.trim().split(/\s+/);
     const boards = fenData.slice(0, boardCount);
 
@@ -801,7 +806,7 @@ export class Game implements IGame {
 
     if (possibleEnPassantString !== '-') {
       if (
-        _.includes(options.variants, GameVariantEnum.CHESSENCE)
+        isChessence
         || (isMonsterChess && turnString === 'w2')
       ) {
         throw new Error('Invalid FEN: wrong en passant');
@@ -858,8 +863,9 @@ export class Game implements IGame {
       : 2 * startingMoveIndexNumber + (turnString === 'b' ? 1 : 0);
 
     let id = 0;
+    const pieces: RealPiece[] = [];
     const addPiece = (color: ColorEnum, type: PieceTypeEnum, location: RealPieceLocation) => {
-      startingData.pieces.push({
+      pieces.push({
         id: `${++id}`,
         type,
         originalType: type,
@@ -893,32 +899,27 @@ export class Game implements IGame {
             string = string.slice(emptySquaresMatch[0].length);
           } else {
             const character = string[0];
+            const piece = Game.getPieceFromLiteral(character);
 
-            if (character === '-') {
-              startingData.voidSquares.push({ board, x: file, y: rank });
-            } else {
-              const piece = Game.getPieceFromLiteral(character);
-
-              if (!piece) {
-                throw new Error(`Invalid FEN: wrong piece literal (${character})`);
-              }
-
-              // not promoted pawns
-              if (piece.type === PieceTypeEnum.PAWN && rank === (piece.color === ColorEnum.WHITE ? boardHeight - 1 : 0)) {
-                throw new Error('Invalid FEN: not promoted pawn');
-              }
-
-              addPiece(
-                piece.color,
-                piece.type,
-                {
-                  type: PieceLocationEnum.BOARD,
-                  board,
-                  x: file,
-                  y: rank
-                }
-              );
+            if (!piece) {
+              throw new Error(`Invalid FEN: wrong piece literal (${character})`);
             }
+
+            // not promoted pawns
+            if (piece.type === PieceTypeEnum.PAWN && rank === (piece.color === ColorEnum.WHITE ? boardHeight - 1 : 0)) {
+              throw new Error('Invalid FEN: not promoted pawn');
+            }
+
+            addPiece(
+              piece.color,
+              piece.type,
+              {
+                type: PieceLocationEnum.BOARD,
+                board,
+                x: file,
+                y: rank
+              }
+            );
 
             file += 1;
             string = string.slice(1);
@@ -999,6 +1000,8 @@ export class Game implements IGame {
       startingData.possibleEnPassant.enPassantSquare.board = (enPassantPiece.location.board + boardCount - 1) % boardCount;
       startingData.possibleEnPassant.pieceLocation.board = enPassantPiece.location.board;
     }
+
+    startingData.pieces = pieces;
 
     return startingData;
   }
@@ -1086,10 +1089,7 @@ export class Game implements IGame {
     }
 
     if (fen) {
-      startingData = Game.getStartingDataFromFen(fen, {
-        ...Game.getBoardDimensions(variants),
-        variants
-      });
+      startingData = Game.getStartingDataFromFen(fen, variants);
     } else {
       startingData = Game.getStartingData(variants);
     }
@@ -1371,7 +1371,7 @@ export class Game implements IGame {
     return id;
   }
 
-  static getIsPocketUsed(variants: GameVariantEnum[]): boolean {
+  static getIsPocketUsed(variants: ReadonlyArray<GameVariantEnum>): boolean {
     return (
       _.includes(variants, GameVariantEnum.CRAZYHOUSE)
       || _.includes(variants, GameVariantEnum.CHESSENCE)
@@ -1638,13 +1638,13 @@ export class Game implements IGame {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  pieces: Piece[] = [];
+  pieces: ReadonlyArray<Piece> = [];
   visiblePieces: { [color in ColorEnum]: (Piece & { realId: number | string; })[]; } = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  pocketPiecesUsed: PieceTypeEnum[] = STANDARD_POCKET;
-  validPromotions: PieceTypeEnum[] = STANDARD_VALID_PROMOTIONS;
+  pocketPiecesUsed: ReadonlyArray<PieceTypeEnum> = STANDARD_POCKET;
+  validPromotions: ReadonlyArray<PieceTypeEnum> = STANDARD_VALID_PROMOTIONS;
   teleportUsed: { [color in ColorEnum]: boolean } = {
     [ColorEnum.WHITE]: false,
     [ColorEnum.BLACK]: false
@@ -1675,16 +1675,15 @@ export class Game implements IGame {
   isAmazons: boolean;
   isThreeCheck: boolean;
   isLeftInCheckAllowed: boolean;
-  isThreefoldRepetitionDrawPossible: boolean = false;
-  is50MoveDrawPossible: boolean = false;
   pliesPerMove: number;
   boardCount: number;
   boardWidth: number;
   boardHeight: number;
-  nullSquares: Square[];
-  voidSquares: Square[];
-  variants: GameVariantEnum[];
+  nullSquares: ReadonlyArray<Square>;
+  voidSquares: ReadonlyArray<Square>;
+  variants: ReadonlyArray<GameVariantEnum>;
   drawOffer: ColorEnum | null = null;
+  takebackRequest: TakebackRequest | null = null;
 
   constructor(settings: GameCreateSettings & { id: string; pgnTags?: PGNTags; startingData?: StartingData; }) {
     this.id = settings.id;
@@ -1803,7 +1802,10 @@ export class Game implements IGame {
       movedPiece,
       isCapture,
       revertMove
-    } = this.performMove(move, true, false);
+    } = this.performMove(move, {
+      constructMoveLiterals: true,
+      constructPositionString: true
+    });
 
     this.moves.push({
       ...move,
@@ -1811,11 +1813,6 @@ export class Game implements IGame {
       figurine,
       revertMove
     });
-
-    this.positionString = this.getPositionFen();
-    this.positionsMap[this.positionString] = (this.positionsMap[this.positionString] || 0) + 1;
-    this.isThreefoldRepetitionDrawPossible = !this.isDarkChess && this.positionsMap[this.positionString] >= 3;
-    this.is50MoveDrawPossible = !this.isDarkChess && this.pliesWithoutCaptureOrPawnMove >= 100;
 
     const winResult = this.isWin();
 
@@ -1992,9 +1989,14 @@ export class Game implements IGame {
     this.status = GameStatusEnum.FINISHED;
   }
 
-  performMove(move: Move, constructMoveLiterals: boolean, checkIfAllowed: boolean): PerformMoveReturnValue {
+  performMove(move: Move, options: PerformMoveOptions = {}): PerformMoveReturnValue {
     this.movesCount++;
 
+    const {
+      constructMoveLiterals = false,
+      constructPositionString = false,
+      checkIfAllowed = false
+    } = options;
     const {
       from: fromLocation,
       to: toLocation,
@@ -2040,6 +2042,7 @@ export class Game implements IGame {
     const nextTurn = this.getNextTurn();
     const prevIsCheck = this.isCheck;
     const prevPliesWithoutCaptureOrPawnMove = this.pliesWithoutCaptureOrPawnMove;
+    const prevPositionString = this.positionString;
     const prevPossibleEnPassant = this.possibleEnPassant;
     const prevPossibleEnPassantPieceLocation = this.possibleEnPassantPieceLocation;
     const prevTeleportUsed = this.teleportUsed[this.turn];
@@ -2051,7 +2054,7 @@ export class Game implements IGame {
     const prevPieceOriginalType = piece.originalType;
     const prevPieceAbilities = piece.abilities;
     const playerPieces = this.getPieces(this.turn);
-    let newLocation: PieceBoardLocation = {
+    const newLocation: PieceBoardLocation = {
       ...(
         isCastling
           ? isKingSideCastling
@@ -2509,7 +2512,14 @@ export class Game implements IGame {
       }
     }
 
-    // return revert-move function
+    let positionString = '';
+    let oldPositionRepetitions = 0;
+
+    if (constructPositionString) {
+      positionString = this.positionString = this.getPositionFen();
+      this.positionsMap[positionString] = (oldPositionRepetitions = this.positionsMap[positionString] || 0) + 1;
+    }
+
     return {
       allowed: isAllowed,
       algebraic,
@@ -2520,11 +2530,18 @@ export class Game implements IGame {
         this.turn = prevTurn;
         this.isCheck = prevIsCheck;
         this.pliesWithoutCaptureOrPawnMove = prevPliesWithoutCaptureOrPawnMove;
+        this.positionString = prevPositionString;
         this.possibleEnPassant = prevPossibleEnPassant;
         this.possibleEnPassantPieceLocation = prevPossibleEnPassantPieceLocation;
         this.teleportUsed[this.turn] = prevTeleportUsed;
         this.checksCount[nextTurn] = prevChecksCount;
         this.movesCount--;
+
+        if (oldPositionRepetitions) {
+          this.positionsMap[positionString] = oldPositionRepetitions;
+        } else {
+          delete this.positionsMap[positionString];
+        }
 
         if (isTurnedKing) {
           this.kings[prevTurn].pop();
@@ -3291,7 +3308,7 @@ export class Game implements IGame {
         to: square,
         timestamp: 0,
         promotion: PieceTypeEnum.QUEEN
-      }, false, true);
+      }, { checkIfAllowed: true });
 
       revertMove();
 
@@ -3599,7 +3616,7 @@ export class Game implements IGame {
             to: square,
             timestamp: 0,
             promotion: PieceTypeEnum.QUEEN
-          }, false, false);
+          });
           const isStalemate = !isCapture && this.isStalemate();
 
           revertMove();
@@ -3656,12 +3673,12 @@ export class Game implements IGame {
       return ResultReasonEnum.INSUFFICIENT_MATERIAL;
     }
 
-    if (this.pliesWithoutCaptureOrPawnMove >= 150) {
-      return ResultReasonEnum.SEVENTY_FIVE_MOVE_RULE;
+    if (this.pliesWithoutCaptureOrPawnMove >= 100) {
+      return ResultReasonEnum.FIFTY_MOVE_RULE;
     }
 
-    if (this.positionsMap[this.positionString] === 5) {
-      return ResultReasonEnum.FIVEFOLD_REPETITION;
+    if (this.positionsMap[this.positionString] === 3) {
+      return ResultReasonEnum.THREEFOLD_REPETITION;
     }
 
     return null;

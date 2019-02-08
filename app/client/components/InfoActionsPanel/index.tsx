@@ -27,8 +27,6 @@ export interface OwnProps {
   game: Game;
   result: GameResult | null;
   players: GamePlayers;
-  isThreefoldRepetitionDrawPossible: boolean;
-  is50MoveDrawPossible: boolean;
   isBlackBase: boolean;
   drawOffer: ColorEnum | null;
   darkChessMode: ColorEnum | null;
@@ -91,28 +89,6 @@ class InfoActionsPanel extends React.Component<Props, State> {
     }
   };
 
-  declareThreefoldRepetitionDraw = () => {
-    const {
-      game,
-      isThreefoldRepetitionDrawPossible
-    } = this.props;
-
-    if (isThreefoldRepetitionDrawPossible) {
-      game.declareThreefoldRepetitionDraw();
-    }
-  };
-
-  declare50MoveDraw = () => {
-    const {
-      game,
-      is50MoveDrawPossible
-    } = this.props;
-
-    if (is50MoveDrawPossible) {
-      game.declare50MoveDraw();
-    }
-  };
-
   flipBoard = () => {
     this.props.flipBoard();
   };
@@ -145,8 +121,6 @@ class InfoActionsPanel extends React.Component<Props, State> {
     const {
       game,
       result,
-      isThreefoldRepetitionDrawPossible,
-      is50MoveDrawPossible,
       isBlackBase,
       drawOffer,
       darkChessMode,
@@ -175,27 +149,6 @@ class InfoActionsPanel extends React.Component<Props, State> {
           <i className="fa fa-handshake-o" />
         </div>
       );
-
-      if (!game.isDarkChess) {
-        buttons.push(
-          <div
-            key="threefold-draw"
-            className={classNames('button', { disabled: !isThreefoldRepetitionDrawPossible })}
-            title="Declare threefold repetition draw"
-            onClick={this.declareThreefoldRepetitionDraw}
-          >
-            3
-          </div>,
-          <div
-            key="50-move-draw"
-            className={classNames('button', { disabled: !is50MoveDrawPossible })}
-            title="Declare 50-move draw"
-            onClick={this.declare50MoveDraw}
-          >
-            50
-          </div>
-        );
-      }
     }
 
     buttons.push(
