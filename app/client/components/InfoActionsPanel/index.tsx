@@ -10,7 +10,8 @@ import {
   GamePlayers,
   GameResult,
   PieceTypeEnum,
-  Player
+  Player,
+  TakebackRequest
 } from '../../../types';
 import {
   COLOR_NAMES,
@@ -28,7 +29,10 @@ export interface OwnProps {
   result: GameResult | null;
   players: GamePlayers;
   isBlackBase: boolean;
+  isNoMovesMade: boolean;
+  isCurrentMoveLast: boolean;
   drawOffer: ColorEnum | null;
+  takebackRequest: TakebackRequest | null;
   darkChessMode: ColorEnum | null;
   showDarkChessHiddenPieces: boolean;
   player: Player | null;
@@ -69,6 +73,54 @@ class InfoActionsPanel extends React.Component<Props, State> {
 
   declineDraw = () => {
     this.props.game.declineDraw();
+  };
+
+  navigateToTakebackRequestMove = () => {
+    const {
+      game,
+      takebackRequest
+    } = this.props;
+
+    if (takebackRequest) {
+      game.navigateToMove(takebackRequest.moveIndex);
+    }
+  };
+
+  requestTakeback = () => {
+    const {
+      game,
+      isNoMovesMade,
+      takebackRequest
+    } = this.props;
+
+    if (!isNoMovesMade && !takebackRequest) {
+      game.requestTakeback();
+    }
+  };
+
+  requestTakebackUpToCurrentMove = () => {
+    const {
+      game,
+      isNoMovesMade,
+      isCurrentMoveLast,
+      takebackRequest
+    } = this.props;
+
+    if (!isNoMovesMade && !isCurrentMoveLast && !takebackRequest) {
+      game.requestTakebackUpToCurrentMove();
+    }
+  };
+
+  acceptTakeback = () => {
+    this.props.game.acceptTakeback();
+  };
+
+  cancelTakeback = () => {
+    this.props.game.cancelTakeback();
+  };
+
+  declineTakeback = () => {
+    this.props.game.declineTakeback();
   };
 
   openResignModal = () => {
@@ -122,13 +174,27 @@ class InfoActionsPanel extends React.Component<Props, State> {
       game,
       result,
       isBlackBase,
+      isNoMovesMade,
+      isCurrentMoveLast,
       drawOffer,
+      takebackRequest,
       darkChessMode,
       player,
       showDarkChessHiddenPieces,
       showFantomPieces
     } = this.props;
     const buttons: JSX.Element[] = [];
+    const takebackMoveLink = !!takebackRequest && (
+      takebackRequest.moveIndex === -1
+        ? 'up to the start of the game'
+        : (
+          <React.Fragment>
+            up to move <a href="javascript:void(0)" onClick={this.navigateToTakebackRequestMove}>
+              {game.getUsedMoves()[takebackRequest.moveIndex].figurine}
+            </a>
+          </React.Fragment>
+        )
+    );
 
     if (!result && player) {
       buttons.push(
@@ -147,6 +213,22 @@ class InfoActionsPanel extends React.Component<Props, State> {
           onClick={this.offerDraw}
         >
           <i className="fa fa-handshake-o" />
+        </div>,
+        <div
+          key="request-takeback"
+          className={classNames('button', { disabled: isNoMovesMade || takebackRequest })}
+          title="Request a takeback"
+          onClick={this.requestTakeback}
+        >
+          <i className="fa fa-reply" />
+        </div>,
+        <div
+          key="request-takeback-up-to-move"
+          className={classNames('button', { disabled: isNoMovesMade || isCurrentMoveLast || takebackRequest })}
+          title="Request a takeback up to the current position"
+          onClick={this.requestTakebackUpToCurrentMove}
+        >
+          <i className="fa fa-reply-all" />
         </div>
       );
     }
@@ -279,6 +361,40 @@ class InfoActionsPanel extends React.Component<Props, State> {
             <div className="buttons">
               {buttons}
             </div>
+            {player && takebackRequest && !result && (
+              <div className="action">
+                {
+                  player.color === takebackRequest.player ? (
+                    <React.Fragment>
+                      <span>
+                        You requested a takeback {takebackMoveLink}
+                      </span>
+                      <i
+                        className="fa fa-times"
+                        title="Cancel"
+                        onClick={this.cancelTakeback}
+                      />
+                    </React.Fragment>
+                  ) : (
+                    <React.Fragment>
+                      <span>
+                        {COLOR_NAMES[takebackRequest.player]} requested a takeback {takebackMoveLink}
+                      </span>
+                      <i
+                        className="fa fa-check"
+                        title="Accept"
+                        onClick={this.acceptTakeback}
+                      />
+                      <i
+                        className="fa fa-times"
+                        title="Decline"
+                        onClick={this.declineTakeback}
+                      />
+                    </React.Fragment>
+                  )
+                }
+              </div>
+            )}
             {player && drawOffer && !result && (
               <div className="action">
                 {

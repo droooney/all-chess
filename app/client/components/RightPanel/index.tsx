@@ -28,6 +28,7 @@ interface OwnProps {
   isBlackBase: boolean;
   status: GameStatusEnum;
   timeDiff: number;
+  lastMoveTimestamp: number;
   selectedPiece: PocketPiece | null;
   selectPiece(piece: Piece | null): void;
 }
@@ -68,12 +69,11 @@ export default class RightPanel extends React.Component<Props, State> {
     } = this.props;
 
     if (status !== GameStatusEnum.ONGOING && prevProps.status === GameStatusEnum.ONGOING) {
-      clearInterval(this.timeControlInterval);
-      this.setState({
-        intervalActivated: false
-      });
+      this.stopInterval();
     } else if (moves.length >= game.pliesPerMove && prevProps.moves.length < game.pliesPerMove) {
       this.activateInterval();
+    } else if (moves.length < game.pliesPerMove && prevProps.moves.length >= game.pliesPerMove) {
+      this.stopInterval();
     }
   }
 
@@ -107,7 +107,7 @@ export default class RightPanel extends React.Component<Props, State> {
       timeControl
     } = this.props;
     const refreshInterval = timeControl && timeControl.type === TimeControlEnum.TIMER
-      ? 1000
+      ? 100
       : 60 * 1000;
 
     this.setState({
@@ -119,6 +119,13 @@ export default class RightPanel extends React.Component<Props, State> {
     }
   }
 
+  stopInterval() {
+    clearInterval(this.timeControlInterval);
+    this.setState({
+      intervalActivated: false
+    });
+  }
+
   render() {
     const {
       game,
@@ -126,6 +133,7 @@ export default class RightPanel extends React.Component<Props, State> {
       player,
       pieces,
       currentMoveIndex,
+      lastMoveTimestamp,
       moves,
       timeControl,
       isBlackBase,
@@ -142,8 +150,8 @@ export default class RightPanel extends React.Component<Props, State> {
     const bottomPlayer = isBlackBase
       ? players[ColorEnum.BLACK]
       : players[ColorEnum.WHITE];
-    const lastMoveTimestamp = this.adjustServerTime(moves.length ? _.last(moves)!.timestamp : 0);
-    const timePassedSinceLastMove = (this.state.intervalActivated ? Date.now() : lastMoveTimestamp) - lastMoveTimestamp;
+    const adjustedLastMoveTimestamp = this.adjustServerTime(lastMoveTimestamp);
+    const timePassedSinceLastMove = (this.state.intervalActivated ? Date.now() : adjustedLastMoveTimestamp) - adjustedLastMoveTimestamp;
 
     return (
       <div className="right-panel">

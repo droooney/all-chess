@@ -373,6 +373,7 @@ export class Game implements IGame {
       !isThreeCheck
       || (
         !isDarkChess
+        || !isAtomic
       )
     ));
   }
@@ -1303,7 +1304,7 @@ export class Game implements IGame {
         const move: Move = {
           from: piece.location,
           to: toSquare,
-          timestamp: 0
+          duration: 0
         };
         const isPawnPromotion = game.isPawnPromotion(move);
 
@@ -1501,7 +1502,7 @@ export class Game implements IGame {
           abilities: Game.getPieceTypeAfterAbsorption({
             ...originalPiece,
             type: originalPiece.abilities
-          }, absorbedPiece).abilities
+          }, absorbedPiece).type
         };
       }
 
@@ -1684,6 +1685,7 @@ export class Game implements IGame {
   variants: ReadonlyArray<GameVariantEnum>;
   drawOffer: ColorEnum | null = null;
   takebackRequest: TakebackRequest | null = null;
+  lastMoveTimestamp: number = 0;
 
   constructor(settings: GameCreateSettings & { id: string; pgnTags?: PGNTags; startingData?: StartingData; }) {
     this.id = settings.id;
@@ -2284,14 +2286,19 @@ export class Game implements IGame {
     }
 
     if (!isMainPieceMovedOrDisappeared) {
+      const isRoyalKing = wasKing && !this.isAntichess;
+
       piece.moved = fromLocation.type === PieceLocationEnum.BOARD;
-      piece.type = isPawnPromotion
+      piece.type = isPawnPromotion && (!this.isFrankfurt || !isRoyalKing)
         ? promotion!
         : piece.type;
       piece.originalType = this.isCrazyhouse
         ? piece.originalType
         : piece.type;
       piece.location = newLocation;
+      piece.abilities = this.isFrankfurt && isRoyalKing && isPawnPromotion
+        ? promotion!
+        : piece.abilities;
 
       if (this.isAbsorption && isCapture) {
         const {
@@ -2302,16 +2309,15 @@ export class Game implements IGame {
         piece.type = type;
         piece.originalType = type;
         piece.abilities = abilities;
-      } else if (this.isFrankfurt && isCapture) {
-        const isRoyalKing = Game.isKing(piece) && !this.isAntichess;
-        const isOpponentPieceKing = Game.isKing(opponentPiece!);
+      } else if (this.isFrankfurt && isCapture && (!isRoyalKing || !isPawnPromotion)) {
+        const isOpponentPieceRoyalKing = Game.isKing(opponentPiece!) && !this.isAntichess;
         const newPieceType = isPawnPromotion
           ? piece.type
-          : isRoyalKing || isOpponentPieceKing
+          : isRoyalKing || isOpponentPieceRoyalKing
             ? PieceTypeEnum.KING
             : opponentPiece!.type;
         const newAbilities = isRoyalKing
-          ? isOpponentPieceKing
+          ? isOpponentPieceRoyalKing
             ? opponentPiece!.abilities
             : opponentPiece!.type
           : null;
@@ -3306,7 +3312,7 @@ export class Game implements IGame {
       const { allowed, revertMove } = this.performMove({
         from: piece.location,
         to: square,
-        timestamp: 0,
+        duration: 0,
         promotion: PieceTypeEnum.QUEEN
       }, { checkIfAllowed: true });
 
@@ -3614,7 +3620,7 @@ export class Game implements IGame {
           const { isCapture, revertMove } = this.performMove({
             from: piece.location,
             to: square,
-            timestamp: 0,
+            duration: 0,
             promotion: PieceTypeEnum.QUEEN
           });
           const isStalemate = !isCapture && this.isStalemate();

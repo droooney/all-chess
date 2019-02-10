@@ -164,10 +164,12 @@ export default class Game extends React.Component<Props, State> {
           isAliceChess,
           isChessence,
           drawOffer,
+          takebackRequest,
           timeControl,
           result,
           darkChessMode,
           showDarkChessHiddenPieces,
+          lastMoveTimestamp,
           currentMoveIndex
         } = this.game!;
         const {
@@ -177,6 +179,7 @@ export default class Game extends React.Component<Props, State> {
         const usedMoves = this.game!.getUsedMoves();
         const player = this.player;
         const isBoardAtTop = isAliceChess && !isChessence;
+        const isCurrentMoveLast = currentMoveIndex === usedMoves.length - 1;
 
         content = (
           <div className={classNames('game', { 'top-boards-grid': isBoardAtTop })}>
@@ -186,7 +189,10 @@ export default class Game extends React.Component<Props, State> {
               result={result}
               players={players}
               isBlackBase={isBlackBase}
+              isNoMovesMade={usedMoves.length === 0}
+              isCurrentMoveLast={isCurrentMoveLast}
               drawOffer={drawOffer}
+              takebackRequest={takebackRequest}
               darkChessMode={darkChessMode}
               showDarkChessHiddenPieces={showDarkChessHiddenPieces}
               player={player}
@@ -214,7 +220,7 @@ export default class Game extends React.Component<Props, State> {
                 !player
                 || player.color !== turn
                 || status !== GameStatusEnum.ONGOING
-                || currentMoveIndex + 1 !== usedMoves.length
+                || !isCurrentMoveLast
               )}
               isBlackBase={isBlackBase}
               darkChessMode={darkChessMode}
@@ -232,6 +238,7 @@ export default class Game extends React.Component<Props, State> {
               isBlackBase={isBlackBase}
               status={status}
               timeDiff={this.timeDiff!}
+              lastMoveTimestamp={lastMoveTimestamp}
               selectedPiece={
                 selectedPiece && selectedPiece.location.type === PieceLocationEnum.POCKET
                   ? selectedPiece as PocketPiece

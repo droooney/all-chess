@@ -149,6 +149,7 @@ export interface CommonGameData extends GameMinimalData {
   takebackRequest: TakebackRequest | null;
   drawOffer: ColorEnum | null;
   pgnTags: PGNTags;
+  lastMoveTimestamp: number;
 }
 
 export interface Game extends CommonGameData {
@@ -210,7 +211,7 @@ export interface BaseMove {
 }
 
 export interface Move extends BaseMove {
-  timestamp: number;
+  duration: number;
 }
 
 export interface ExtendedMove extends Move {
@@ -226,7 +227,7 @@ export interface DarkChessMove {
   from: PieceLocation;
   to: Square | null;
   promotion?: PieceTypeEnum;
-  timestamp: number;
+  duration: number;
   algebraic: string;
   figurine: string;
   pieces: Piece[];

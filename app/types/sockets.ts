@@ -17,8 +17,14 @@ declare global {
   interface SocketIOEventWithDataMap {
     gameList: GameMinimalData[];
     makeMove: BaseMove;
-    moveMade: Move;
-    darkChessMoveMade: DarkChessMove;
+    moveMade: {
+      move: Move;
+      lastMoveTimestamp: number;
+    };
+    darkChessMoveMade: {
+      move: DarkChessMove;
+      lastMoveTimestamp: number;
+    };
     drawOffered: ColorEnum;
     gameOver: GameResult;
     darkChessMoves: Move[];
@@ -32,6 +38,7 @@ declare global {
     newChatMessage: ChatMessage;
     requestTakeback: number;
     takebackRequested: TakebackRequest;
+    takebackAccepted: number;
   }
 
   type SocketIOEventWithoutDataList = (
@@ -40,7 +47,6 @@ declare global {
     | 'drawCanceled'
     | 'offerDraw'
     | 'resign'
-    | 'takebackAccepted'
     | 'takebackDeclined'
     | 'takebackCanceled'
   );

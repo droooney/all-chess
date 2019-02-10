@@ -15,9 +15,7 @@ import {
   ResultReasonEnum,
   TimeControlEnum
 } from '../types';
-import {
-  sessionMiddleware
-} from './controllers/session';
+import { sessionMiddleware } from './controllers/session';
 import { Game as GameHelper } from '../shared/helpers';
 import {
   COLOR_NAMES,
@@ -77,6 +75,7 @@ export default class Game extends GameHelper {
 
   timerTimeout?: number;
   io: Namespace;
+  lastMoveTimestamp: number = Date.now();
 
   constructor(io: Namespace, settings: GameCreateSettings & { pgnTags?: PGNTags; id: string; }) {
     super(settings);
@@ -132,12 +131,16 @@ export default class Game extends GameHelper {
           } = player!;
 
           socket.on('resign', () => {
-            if (this.status === GameStatusEnum.ONGOING) {
+            if (this.isOngoing()) {
               this.end(Game.getOppositeColor(playerColor), ResultReasonEnum.RESIGN);
             }
           });
 
           socket.on('offerDraw', () => {
+            if (!this.isOngoing()) {
+              return;
+            }
+
             if (this.drawOffer) {
               if (this.drawOffer !== playerColor) {
                 this.drawOffer = null;
@@ -156,91 +159,147 @@ export default class Game extends GameHelper {
           });
 
           socket.on('drawAccepted', () => {
-            if (this.drawOffer && this.drawOffer !== playerColor) {
-              this.drawOffer = null;
-
-              this.end(null, ResultReasonEnum.AGREED_TO_DRAW);
+            if (
+              !this.isOngoing()
+              || !this.drawOffer
+              || this.drawOffer === playerColor
+            ) {
+              return;
             }
+
+            this.drawOffer = null;
+
+            this.end(null, ResultReasonEnum.AGREED_TO_DRAW);
           });
 
           socket.on('drawDeclined', () => {
-            if (this.drawOffer && this.drawOffer !== playerColor) {
-              this.drawOffer = null;
-
-              this.addChatMessage({
-                login: null,
-                message: 'Draw offer declined'
-              });
-              this.io.emit('drawDeclined');
+            if (
+              !this.isOngoing()
+              || !this.drawOffer
+              || this.drawOffer === playerColor
+            ) {
+              return;
             }
+
+            this.drawOffer = null;
+
+            this.addChatMessage({
+              login: null,
+              message: 'Draw offer declined'
+            });
+            this.io.emit('drawDeclined');
           });
 
           socket.on('drawCanceled', () => {
-            if (this.drawOffer === playerColor) {
-              this.drawOffer = null;
-
-              this.addChatMessage({
-                login: null,
-                message: 'Draw offer canceled'
-              });
-              this.io.emit('drawCanceled');
+            if (!this.isOngoing() || this.drawOffer !== playerColor) {
+              return;
             }
+
+            this.drawOffer = null;
+
+            this.addChatMessage({
+              login: null,
+              message: 'Draw offer canceled'
+            });
+            this.io.emit('drawCanceled');
           });
 
           socket.on('requestTakeback', (moveIndex) => {
-            if (!this.takebackRequest && this.validateTakebackRequest(moveIndex)) {
-              this.takebackRequest = {
-                player: playerColor,
-                moveIndex
-              };
-
-              const move = this.moves[moveIndex];
-              const moveString = this.isDarkChess
-                ? '?'
-                : move
-                  ? `move ${move.figurine}`
-                  : 'the start of the game';
-
-              this.addChatMessage({
-                login: null,
-                message: `${COLOR_NAMES[playerColor]} requested a takeback up to ${moveString}`
-              });
-              this.io.emit('takebackRequested', this.takebackRequest);
+            if (
+              !this.isOngoing()
+              || this.takebackRequest
+              || !this.validateTakebackRequest(moveIndex)
+            ) {
+              return;
             }
+
+            this.takebackRequest = {
+              player: playerColor,
+              moveIndex
+            };
+
+            const move = this.moves[moveIndex];
+            const moveString = moveIndex === this.moves.length - 2
+              ? ''
+              : this.isDarkChess
+                ? ' up to ?'
+                : move
+                  ? ` up to move ${move.figurine}`
+                  : ' up to the start of the game';
+
+            this.addChatMessage({
+              login: null,
+              message: `${COLOR_NAMES[playerColor]} requested a takeback${moveString}`
+            });
+            this.io.emit('takebackRequested', this.takebackRequest);
           });
 
           socket.on('takebackAccepted', () => {
-            if (this.takebackRequest && this.takebackRequest.player !== playerColor) {
-              this.takebackRequest = null;
+            if (
+              !this.isOngoing()
+              || !this.takebackRequest
+              || this.takebackRequest.player === playerColor
+            ) {
+              return;
             }
+
+            this.clearTimeout();
+
+            while (this.takebackRequest.moveIndex < this.moves.length - 1) {
+              this.unregisterLastMove();
+            }
+
+            this.takebackRequest = null;
+            this.lastMoveTimestamp = Date.now();
+
+            this.setTimeout();
+
+            this.addChatMessage({
+              login: null,
+              message: 'Takeback request accepted'
+            });
+            this.io.emit('takebackAccepted', this.lastMoveTimestamp);
+            this.updatePlayers();
           });
 
           socket.on('takebackDeclined', () => {
-            if (this.takebackRequest && this.takebackRequest.player !== playerColor) {
-              this.takebackRequest = null;
-
-              this.addChatMessage({
-                login: null,
-                message: 'Takeback request declined'
-              });
-              this.io.emit('takebackDeclined');
+            if (
+              !this.isOngoing()
+              || !this.takebackRequest
+              || this.takebackRequest.player === playerColor
+            ) {
+              return;
             }
+
+            this.takebackRequest = null;
+
+            this.addChatMessage({
+              login: null,
+              message: 'Takeback request declined'
+            });
+            this.io.emit('takebackDeclined');
           });
 
           socket.on('takebackCanceled', () => {
-            if (this.takebackRequest && this.takebackRequest.player === playerColor) {
-              this.takebackRequest = null;
-
-              this.addChatMessage({
-                login: null,
-                message: 'Takeback request canceled'
-              });
-              this.io.emit('takebackCanceled');
+            if (
+              !this.isOngoing()
+              || !this.takebackRequest
+              || this.takebackRequest.player !== playerColor
+            ) {
+              return;
             }
+
+            this.takebackRequest = null;
+
+            this.addChatMessage({
+              login: null,
+              message: 'Takeback request canceled'
+            });
+            this.io.emit('takebackCanceled');
           });
 
           socket.on('makeMove', (move) => {
-            if (this.turn === playerColor && this.status === GameStatusEnum.ONGOING) {
+            if (this.turn === playerColor && this.isOngoing()) {
               this.move(player!, move);
             }
           });
@@ -322,6 +381,10 @@ export default class Game extends GameHelper {
     );
   }
 
+  isOngoing(): boolean {
+    return this.status === GameStatusEnum.ONGOING;
+  }
+
   move(player: Player, moveForServer: BaseMove) {
     if (!this.validateMove(moveForServer)) {
       return;
@@ -336,16 +399,14 @@ export default class Game extends GameHelper {
       ? this.getBoardPiece(fromLocation)!
       : this.getPocketPiece(fromLocation.pieceType, this.turn)!;
 
+    // no piece or wrong color
     if (!piece || piece.color !== player.color) {
-      // no piece or wrong color
-
       return;
     }
 
     const isSquareAllowed = this.getAllowedMoves(piece).some((square) => Game.areSquaresEqual(square, toLocation));
     const isPawnPromotion = this.isPawnPromotion(moveForServer);
-    const isValidPromotion = _.includes(this.validPromotions, promotion);
-    const isMoveAllowed = isSquareAllowed && (!isPawnPromotion || isValidPromotion);
+    const isMoveAllowed = isSquareAllowed && (!isPawnPromotion || _.includes(this.validPromotions, promotion));
 
     if (!isMoveAllowed) {
       return;
@@ -355,72 +416,94 @@ export default class Game extends GameHelper {
     const move: Move = {
       from: fromLocation,
       to: toLocation,
-      timestamp: newTimestamp
+      duration: newTimestamp - this.lastMoveTimestamp
     };
 
     if (isPawnPromotion) {
       move.promotion = promotion;
     }
 
-    const prevMove = _.last(this.moves);
     const prevTurn = this.turn;
 
     this.registerAnyMove(move);
 
+    const isPlayerChanged = this.turn !== prevTurn;
+
     if (
-      this.status === GameStatusEnum.ONGOING
+      this.isOngoing()
       && this.moves.length > this.pliesPerMove
       && this.timeControl
-      && prevTurn !== this.turn
     ) {
       if (this.timeControl.type === TimeControlEnum.TIMER) {
-        player.time! += prevMove!.timestamp - newTimestamp + this.timeControl.increment;
-      } else {
+        player.time! -= move.duration - (isPlayerChanged ? this.timeControl.increment : 0);
+      } else if (isPlayerChanged) {
         player.time = this.timeControl.base;
+      } else {
+        player.time! -= move.duration;
       }
     }
+
+    this.lastMoveTimestamp = newTimestamp;
 
     if (this.isDarkChess) {
       _.forEach(this.io.sockets, (socket) => {
         const socketPlayer = socket.player!;
 
-        socket.emit('darkChessMoveMade', _.last(this.colorMoves[socketPlayer.color])!);
+        socket.emit('darkChessMoveMade', {
+          move: _.last(this.colorMoves[socketPlayer.color])!,
+          lastMoveTimestamp: this.lastMoveTimestamp
+        });
       });
     } else {
-      this.io.emit('moveMade', move);
+      this.io.emit('moveMade', {
+        move,
+        lastMoveTimestamp: this.lastMoveTimestamp
+      });
     }
 
-    this.io.emit('updatePlayers', this.players);
+    this.updatePlayers();
 
-    if (
-      this.status === GameStatusEnum.ONGOING
-      && this.moves.length >= this.pliesPerMove
-      && this.timeControl
-      && prevTurn !== this.turn
-    ) {
-      this.setTimeout(this.players[this.turn]);
+    if (isPlayerChanged) {
+      this.setTimeout();
     }
   }
 
+  updatePlayers() {
+    this.io.emit('updatePlayers', this.players);
+  }
+
   unregisterLastMove() {
-    const move = _.last(this.moves);
+    const move = _.last(this.moves)!;
+    const prevTurn = this.turn;
+    const needToUpdateTime = this.moves.length > this.pliesPerMove;
 
-    if (move) {
-      move.revertMove();
+    move.revertMove();
 
-      this.moves.pop();
+    this.moves.pop();
 
-      if (this.isDarkChess) {
-        _.forEach(ColorEnum, (color) => {
-          const move = _.last(this.colorMoves[color]);
+    const player = this.players[this.turn];
+    const isPlayerChanged = this.turn !== prevTurn;
 
-          if (move) {
-            move.revertMove();
-
-            this.colorMoves[color].pop();
-          }
-        });
+    if (this.timeControl && needToUpdateTime) {
+      if (this.timeControl.type === TimeControlEnum.TIMER) {
+        player.time! += move.duration - (isPlayerChanged ? this.timeControl.increment : 0);
+      } else if (isPlayerChanged) {
+        player.time = this.timeControl.base;
+      } else {
+        player.time! += move.duration;
       }
+    }
+
+    if (this.isDarkChess) {
+      _.forEach(ColorEnum, (color) => {
+        const move = _.last(this.colorMoves[color]);
+
+        if (move) {
+          move.revertMove();
+
+          this.colorMoves[color].pop();
+        }
+      });
     }
   }
 
@@ -428,15 +511,23 @@ export default class Game extends GameHelper {
     clearTimeout(this.timerTimeout);
   }
 
-  setTimeout(forPlayer: Player) {
-    this.clearTimeout();
+  setTimeout() {
+    if (
+      this.isOngoing()
+      && this.moves.length >= this.pliesPerMove
+      && this.timeControl
+    ) {
+      const player = this.players[this.turn];
 
-    this.timerTimeout = setTimeout(() => {
-      forPlayer.time = 0;
+      this.clearTimeout();
 
-      this.io.emit('updatePlayers', this.players);
-      this.end(this.getOpponentColor(), ResultReasonEnum.TIME_RAN_OUT);
-    }, forPlayer.time!) as any;
+      this.timerTimeout = setTimeout(() => {
+        player.time = 0;
+
+        this.updatePlayers();
+        this.end(this.getOpponentColor(), ResultReasonEnum.TIME_RAN_OUT);
+      }, player.time!) as any;
+    }
   }
 
   end(winner: ColorEnum | null, reason: ResultReasonEnum) {
@@ -474,6 +565,7 @@ export default class Game extends GameHelper {
       'pgnTags',
       'drawOffer',
       'takebackRequest',
+      'lastMoveTimestamp',
       'moves',
       'chat'
     ]);

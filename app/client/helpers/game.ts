@@ -50,6 +50,8 @@ export class Game extends GameHelper {
     });
 
     this.drawOffer = game.drawOffer;
+    this.takebackRequest = game.takebackRequest;
+    this.lastMoveTimestamp = game.lastMoveTimestamp;
     this.status = game.status;
     this.result = game.result;
     this.players = game.players;
@@ -75,11 +77,15 @@ export class Game extends GameHelper {
     }
 
     if (socket) {
-      socket.on('moveMade', (move) => {
+      socket.on('moveMade', ({ move, lastMoveTimestamp }) => {
+        this.lastMoveTimestamp = lastMoveTimestamp;
+
         this.onMoveMade(move, false);
       });
 
-      socket.on('darkChessMoveMade', (move) => {
+      socket.on('darkChessMoveMade', ({ move, lastMoveTimestamp }) => {
+        this.lastMoveTimestamp = lastMoveTimestamp;
+
         this.onMoveMade(move, true);
       });
 
@@ -135,10 +141,24 @@ export class Game extends GameHelper {
         this.updateGame();
       });
 
-      socket.on('takebackAccepted', () => {
+      socket.on('takebackAccepted', (lastMoveTimestamp) => {
         if (this.takebackRequest) {
-          this.takebackRequest = null;
+          const { currentMoveIndex } = this;
 
+          this.navigateToMove(this.getUsedMoves().length - 1, false);
+
+          while (this.takebackRequest.moveIndex < this.getUsedMoves().length - 1) {
+            this.unregisterLastMove();
+
+            if (this.currentMoveIndex === this.getUsedMoves().length) {
+              this.currentMoveIndex--;
+            }
+          }
+
+          this.takebackRequest = null;
+          this.lastMoveTimestamp = lastMoveTimestamp;
+
+          this.navigateToMove(Math.min(currentMoveIndex, this.getUsedMoves().length - 1), false);
           this.updateGame();
         }
       });
@@ -163,9 +183,22 @@ export class Game extends GameHelper {
     }
   }
 
+  acceptTakeback() {
+    if (this.socket) {
+      // FIXME: temp hack
+      this.socket.emit('takebackAccepted', 0);
+    }
+  }
+
   cancelDraw() {
     if (this.socket) {
       this.socket.emit('drawCanceled');
+    }
+  }
+
+  cancelTakeback() {
+    if (this.socket) {
+      this.socket.emit('takebackCanceled');
     }
   }
 
@@ -199,6 +232,12 @@ export class Game extends GameHelper {
   declineDraw() {
     if (this.socket) {
       this.socket.emit('drawDeclined');
+    }
+  }
+
+  declineTakeback() {
+    if (this.socket) {
+      this.socket.emit('takebackDeclined');
     }
   }
 
@@ -360,23 +399,15 @@ export class Game extends GameHelper {
     });
   }
 
-  unregisterLastMove() {
-    if (this.isOngoingDarkChessGame && this.darkChessMode) {
-      const move = _.last(this.colorMoves[this.darkChessMode]);
+  requestTakeback() {
+    if (this.socket) {
+      this.socket.emit('requestTakeback', this.getUsedMoves().length - 2);
+    }
+  }
 
-      if (move) {
-        move.revertMove();
-
-        this.colorMoves[this.darkChessMode].pop();
-      }
-    } else {
-      const move = _.last(this.moves);
-
-      if (move) {
-        move.revertMove();
-
-        this.moves.pop();
-      }
+  requestTakebackUpToCurrentMove() {
+    if (this.socket) {
+      this.socket.emit('requestTakeback', this.currentMoveIndex);
     }
   }
 
@@ -410,6 +441,19 @@ export class Game extends GameHelper {
     }
 
     this.updateGame();
+  }
+
+  unregisterLastMove() {
+    if (this.isOngoingDarkChessGame && this.darkChessMode) {
+      _.last(this.colorMoves[this.darkChessMode])!.revertMove();
+
+      this.colorMoves[this.darkChessMode] = this.colorMoves[this.darkChessMode].slice(0, -1);
+      this.pieces = this.visiblePieces[this.darkChessMode];
+    } else {
+      _.last(this.moves)!.revertMove();
+
+      this.moves = this.moves.slice(0, -1);
+    }
   }
 
   updateGame() {
