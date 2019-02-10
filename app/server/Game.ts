@@ -158,7 +158,7 @@ export default class Game extends GameHelper {
             }
           });
 
-          socket.on('drawAccepted', () => {
+          socket.on('acceptDraw', () => {
             if (
               !this.isOngoing()
               || !this.drawOffer
@@ -172,7 +172,7 @@ export default class Game extends GameHelper {
             this.end(null, ResultReasonEnum.AGREED_TO_DRAW);
           });
 
-          socket.on('drawDeclined', () => {
+          socket.on('declineDraw', () => {
             if (
               !this.isOngoing()
               || !this.drawOffer
@@ -190,7 +190,7 @@ export default class Game extends GameHelper {
             this.io.emit('drawDeclined');
           });
 
-          socket.on('drawCanceled', () => {
+          socket.on('cancelDraw', () => {
             if (!this.isOngoing() || this.drawOffer !== playerColor) {
               return;
             }
@@ -234,7 +234,7 @@ export default class Game extends GameHelper {
             this.io.emit('takebackRequested', this.takebackRequest);
           });
 
-          socket.on('takebackAccepted', () => {
+          socket.on('acceptTakeback', () => {
             if (
               !this.isOngoing()
               || !this.takebackRequest
@@ -262,7 +262,7 @@ export default class Game extends GameHelper {
             this.updatePlayers();
           });
 
-          socket.on('takebackDeclined', () => {
+          socket.on('declineTakeback', () => {
             if (
               !this.isOngoing()
               || !this.takebackRequest
@@ -280,7 +280,7 @@ export default class Game extends GameHelper {
             this.io.emit('takebackDeclined');
           });
 
-          socket.on('takebackCanceled', () => {
+          socket.on('cancelTakeback', () => {
             if (
               !this.isOngoing()
               || !this.takebackRequest

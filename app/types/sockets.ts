@@ -14,9 +14,8 @@ import {
 } from './game';
 
 declare global {
-  interface SocketIOEventWithDataMap {
+  interface SocketIOServerEventWithDataMap {
     gameList: GameMinimalData[];
-    makeMove: BaseMove;
     moveMade: {
       move: Move;
       lastMoveTimestamp: number;
@@ -32,22 +31,34 @@ declare global {
     updatePlayers: GamePlayers;
     initialGameData: GameInitialData;
     initialDarkChessGameData: DarkChessGameInitialData;
-    createGame: GameCreateSettings;
     gameCreated: GameMinimalData;
-    addChatMessage: string;
     newChatMessage: ChatMessage;
-    requestTakeback: number;
     takebackRequested: TakebackRequest;
     takebackAccepted: number;
   }
 
-  type SocketIOEventWithoutDataList = (
-    'drawAccepted'
-    | 'drawDeclined'
+  type SocketIOServerEventWithoutDataList = (
+    'drawDeclined'
     | 'drawCanceled'
-    | 'offerDraw'
-    | 'resign'
     | 'takebackDeclined'
     | 'takebackCanceled'
+  );
+
+  interface SocketIOClientEventWithDataMap {
+    makeMove: BaseMove;
+    createGame: GameCreateSettings;
+    addChatMessage: string;
+    requestTakeback: number;
+  }
+
+  type SocketIOClientEventWithoutDataList = (
+    'acceptDraw'
+    | 'declineDraw'
+    | 'cancelDraw'
+    | 'offerDraw'
+    | 'resign'
+    | 'acceptTakeback'
+    | 'declineTakeback'
+    | 'cancelTakeback'
   );
 }

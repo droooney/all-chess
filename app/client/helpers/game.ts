@@ -179,26 +179,25 @@ export class Game extends GameHelper {
 
   acceptDraw() {
     if (this.socket) {
-      this.socket.emit('drawAccepted');
+      this.socket.emit('acceptDraw');
     }
   }
 
   acceptTakeback() {
     if (this.socket) {
-      // FIXME: temp hack
-      this.socket.emit('takebackAccepted', 0);
+      this.socket.emit('acceptTakeback');
     }
   }
 
   cancelDraw() {
     if (this.socket) {
-      this.socket.emit('drawCanceled');
+      this.socket.emit('cancelDraw');
     }
   }
 
   cancelTakeback() {
     if (this.socket) {
-      this.socket.emit('takebackCanceled');
+      this.socket.emit('cancelTakeback');
     }
   }
 
@@ -231,13 +230,13 @@ export class Game extends GameHelper {
 
   declineDraw() {
     if (this.socket) {
-      this.socket.emit('drawDeclined');
+      this.socket.emit('declineDraw');
     }
   }
 
   declineTakeback() {
     if (this.socket) {
-      this.socket.emit('takebackDeclined');
+      this.socket.emit('declineTakeback');
     }
   }
 
