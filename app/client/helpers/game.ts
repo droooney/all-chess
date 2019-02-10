@@ -7,6 +7,7 @@ import {
   ColorEnum,
   DarkChessGame,
   DarkChessMove,
+  DarkChessRevertableMove,
   Game as IGame,
   GameStatusEnum,
   Move,
@@ -349,7 +350,7 @@ export class Game extends GameHelper {
     this.navigateToMove(moves.length - 1, false);
 
     if (isDarkChessMove) {
-      this.colorMoves[this.darkChessMode!] = [...(moves as DarkChessMove[])];
+      this.colorMoves[this.darkChessMode!] = [...(moves as DarkChessRevertableMove[])];
 
       this.registerLocalDarkChessMove(move as DarkChessMove);
     } else {

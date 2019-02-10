@@ -7,7 +7,7 @@ import {
   CenterSquareParams,
   ChatMessage,
   ColorEnum,
-  DarkChessMove,
+  DarkChessRevertableMove,
   Game as IGame,
   GameCreateSettings,
   GameKings,
@@ -1622,7 +1622,7 @@ export class Game implements IGame {
   timeControl: TimeControl;
   pgnTags: PGNTags;
   moves: RevertableMove[] = [];
-  colorMoves: { [color in ColorEnum]: DarkChessMove[] } = {
+  colorMoves: { [color in ColorEnum]: DarkChessRevertableMove[] } = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };

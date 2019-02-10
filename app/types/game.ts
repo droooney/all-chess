@@ -231,6 +231,9 @@ export interface DarkChessMove {
   algebraic: string;
   figurine: string;
   pieces: Piece[];
+}
+
+export interface DarkChessRevertableMove extends DarkChessMove {
   revertMove(): void;
 }
 
