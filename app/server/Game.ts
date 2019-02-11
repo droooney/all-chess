@@ -404,11 +404,15 @@ export default class Game extends GameHelper {
       return;
     }
 
-    const isSquareAllowed = this.getAllowedMoves(piece).some((square) => Game.areSquaresEqual(square, toLocation));
-    const isPawnPromotion = this.isPawnPromotion(moveForServer);
-    const isMoveAllowed = isSquareAllowed && (!isPawnPromotion || _.includes(this.validPromotions, promotion));
+    const allowedMoves = this.getAllowedMoves(piece).filter(({ square }) => Game.areSquaresEqual(square, toLocation));
 
-    if (!isMoveAllowed) {
+    if (!allowedMoves.length) {
+      return;
+    }
+
+    const isPawnPromotion = allowedMoves.some(({ isPawnPromotion }) => isPawnPromotion);
+
+    if (isPawnPromotion && !_.includes(this.validPromotions, promotion)) {
       return;
     }
 

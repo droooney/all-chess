@@ -9,11 +9,11 @@ import {
   BoardPiece as IBoardPiece,
   ColorEnum,
   Piece as IPiece,
-  PieceBoardLocation,
   PieceTypeEnum,
   PieceLocationEnum,
   PiecePocketLocation,
   Player,
+  PossibleMove,
   RealPiece,
   Square
 } from '../../../types';
@@ -70,11 +70,7 @@ class Boards extends React.Component<Props, State> {
     }
   }
 
-  isAllowed(square: Square, allowedMoves: Square[]): boolean {
-    return allowedMoves.some((allowedSquare) => Game.areSquaresEqual(square, allowedSquare));
-  }
-
-  getAllowedMoves(): Square[] {
+  getAllowedMoves(): (PossibleMove & { realSquare: Square; })[] {
     const {
       game,
       selectedPiece
@@ -84,22 +80,21 @@ class Boards extends React.Component<Props, State> {
       return [];
     }
 
-    const allowedMoves = game.getAllowedMoves(selectedPiece);
+    const allowedMoves = game.getAllowedMoves(selectedPiece).map((move) => ({
+      ...move,
+      realSquare: move.square
+    }));
 
     // add own rooks as castling move targets
     if (!game.is960) {
-      [...allowedMoves].forEach((square) => {
-        if (
-          game.isCastling({
-            from: selectedPiece.location,
-            to: square
-          })
-        ) {
-          const isKingSideCastling = square.x - (selectedPiece.location as PieceBoardLocation).x > 0;
-
+      [...allowedMoves].forEach(({ square, castling }) => {
+        if (castling) {
           allowedMoves.push({
-            ...square,
-            x: isKingSideCastling ? game.boardWidth - 1 : 0
+            square: castling.rook.location,
+            realSquare: square,
+            capture: null,
+            castling,
+            isPawnPromotion: false
           });
         }
       });
@@ -173,7 +168,9 @@ class Boards extends React.Component<Props, State> {
       return selectPiece(null);
     }
 
-    if (!this.isAllowed(square, this.getAllowedMoves())) {
+    const allowedMoves = this.getAllowedMoves().filter(({ square: allowedSquare }) => Game.areSquaresEqual(square, allowedSquare));
+
+    if (!allowedMoves.length) {
       const pieceInSquare = game.getBoardPiece(square);
 
       if (!pieceInSquare || playerColor !== pieceInSquare.color) {
@@ -183,33 +180,12 @@ class Boards extends React.Component<Props, State> {
       return selectPiece(pieceInSquare);
     }
 
-    let toSquare = square;
-    const pieceInSquare = game.getBoardPiece(square);
-
-    // if clicked on own rook for castling
-    if (
-      !game.is960
-      && selectedPiece.type === PieceTypeEnum.KING
-      && selectedPiece.location.type === PieceLocationEnum.BOARD
-      && pieceInSquare
-      && pieceInSquare.type === PieceTypeEnum.ROOK
-      && pieceInSquare.color === playerColor
-    ) {
-      toSquare = {
-        ...square,
-        x: pieceInSquare.location.x - selectedPiece.location.x > 0
-          ? game.boardWidth - 2
-          : 2
-      };
-    }
-
-    const move = {
+    const move: BaseMove = {
       from: selectedPiece.location,
-      to: toSquare,
-      promotion: PieceTypeEnum.QUEEN
+      to: allowedMoves[0].realSquare
     };
 
-    if (game.isPawnPromotion(move)) {
+    if (allowedMoves.some(({ isPawnPromotion }) => isPawnPromotion)) {
       this.setState({
         promotionModalVisible: true,
         promotionMove: move
@@ -264,6 +240,9 @@ class Boards extends React.Component<Props, State> {
       !!darkChessMode
       && game.isDarkChess
       && visibleSquares.every((visibleSquare) => !Game.areSquaresEqual(square, visibleSquare))
+    );
+    const isAllowed = (square: Square) => (
+      allowedMoves.some(({ square: allowedSquare }) => Game.areSquaresEqual(square, allowedSquare))
     );
 
     return (
@@ -381,7 +360,7 @@ class Boards extends React.Component<Props, State> {
                           ) && (
                             <div className="current-move-square" />
                           )}
-                          {this.isAllowed(square, allowedMoves) && (
+                          {isAllowed(square) && (
                             <div className="allowed-square" />
                           )}
                           {this.isInCheck(square) && (

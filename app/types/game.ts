@@ -61,26 +61,35 @@ export type PossibleCastling = {
   };
 };
 
+export type ChecksCount = {
+  [color in ColorEnum]: number;
+};
+
 export interface BoardDimensions {
   boardCount: number;
   boardWidth: number;
   boardHeight: number;
 }
 
-// TODO: add checks count and teleport used in starting data
+export interface PossibleEnPassant {
+  enPassantSquare: Square;
+  pieceLocation: Square;
+}
+
 export interface StartingData {
   result: GameResult | null;
   turn: ColorEnum;
   startingMoveIndex: number;
   pliesWithoutCaptureOrPawnMove: number;
   possibleCastling: PossibleCastling;
-  possibleEnPassant: null | {
-    enPassantSquare: Square;
-    pieceLocation: Square;
-  };
+  possibleEnPassant: PossibleEnPassant | null;
+  checksCount: ChecksCount;
   pieces: ReadonlyArray<RealPiece>;
   voidSquares: ReadonlyArray<Square>;
   emptySquares: ReadonlyArray<Square>;
+  visiblePieces?: {
+    [color in ColorEnum]: Piece[];
+  };
 }
 
 export interface Piece {
@@ -189,7 +198,6 @@ export enum GameVariantEnum {
   CIRCE = 'CIRCE',
   PATROL = 'PATROL',
   MADRASI = 'MADRASI',
-  LAST_CHANCE = 'LAST_CHANCE',
   MONSTER_CHESS = 'MONSTER_CHESS',
   ALICE_CHESS = 'ALICE_CHESS',
   TWO_FAMILIES = 'TWO_FAMILIES',
@@ -238,6 +246,18 @@ export interface DarkChessRevertableMove extends DarkChessMove {
 }
 
 export type AnyMove = ExtendedMove | DarkChessMove;
+
+export interface PossibleMove {
+  square: Square;
+  capture: null | {
+    piece: BoardPiece;
+    enPassant: boolean;
+  };
+  castling: null | {
+    rook: BoardPiece;
+  };
+  isPawnPromotion: boolean;
+}
 
 export enum GameStatusEnum {
   BEFORE_START = 'BEFORE_START',
