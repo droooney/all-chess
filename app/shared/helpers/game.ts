@@ -3611,31 +3611,6 @@ export class Game implements IGame {
       };
     }
 
-    if (
-      this.isAntichess
-      && !this.isNoPieces(prevTurn)
-      && this.getPieces(currentTurn).every((piece) => (
-        this.getAllowedMoves(piece).every((square) => {
-          const { isCapture, revertMove } = this.performMove({
-            from: piece.location,
-            to: square,
-            duration: 0,
-            promotion: PieceTypeEnum.QUEEN
-          });
-          const isStalemate = !isCapture && this.isStalemate();
-
-          revertMove();
-
-          return isStalemate;
-        })
-      ))
-    ) {
-      return {
-        winner: prevTurn,
-        reason: ResultReasonEnum.STALEMATE
-      };
-    }
-
     return null;
   }
 
