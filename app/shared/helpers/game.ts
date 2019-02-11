@@ -1742,7 +1742,7 @@ export class Game implements IGame {
       this.pocketPiecesUsed = [PieceTypeEnum.MAN];
     }
 
-    if (this.isCapablanca) {
+    if (this.isCapablanca || this.isAmazons) {
       this.validPromotions = CAPABLANCA_VALID_PROMOTIONS;
       this.pocketPiecesUsed = CAPABLANCA_POCKET;
     }
