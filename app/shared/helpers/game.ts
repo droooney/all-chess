@@ -601,7 +601,6 @@ export class Game implements IGame {
         addPiece(PieceTypeEnum.PAWN, boardWidth - 2, lastPawnRank);
         addPiece(PieceTypeEnum.PAWN, boardWidth - 3, lastPawnRank);
       } else if (isAmazons && color === ColorEnum.WHITE) {
-        addPiece(PieceTypeEnum.AMAZON, halfBoard - 2, 0);
         addPiece(PieceTypeEnum.AMAZON, halfBoard - 1, 0);
         addPiece(PieceTypeEnum.AMAZON, halfBoard, 0);
         addPiece(PieceTypeEnum.AMAZON, halfBoard + 1, 0);
