@@ -377,10 +377,10 @@ export class Game extends GameHelper {
     const oldPieces = this.pieces;
     const oldTurn = this.turn;
 
-    this.movesCount++;
     this.turn = this.getNextTurn();
     this.pieces = move.pieces;
     this.visiblePieces[this.darkChessMode!] = move.pieces as any;
+    this.movesCount++;
 
     return () => {
       this.movesCount--;
