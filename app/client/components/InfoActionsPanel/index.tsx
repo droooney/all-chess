@@ -33,6 +33,7 @@ export interface OwnProps {
   isCurrentMoveLast: boolean;
   drawOffer: ColorEnum | null;
   takebackRequest: TakebackRequest | null;
+  isBasicTakeback: boolean;
   darkChessMode: ColorEnum | null;
   showDarkChessHiddenPieces: boolean;
   player: Player | null;
@@ -173,6 +174,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
     const {
       game,
       result,
+      isBasicTakeback,
       isBlackBase,
       isNoMovesMade,
       isCurrentMoveLast,
@@ -185,15 +187,17 @@ class InfoActionsPanel extends React.Component<Props, State> {
     } = this.props;
     const buttons: JSX.Element[] = [];
     const takebackMoveLink = !!takebackRequest && (
-      takebackRequest.moveIndex === -1
-        ? 'up to the start of the game'
-        : (
-          <React.Fragment>
-            up to move <a href="javascript:void(0)" onClick={this.navigateToTakebackRequestMove}>
-              {game.getUsedMoves()[takebackRequest.moveIndex].figurine}
-            </a>
-          </React.Fragment>
-        )
+      isBasicTakeback
+        ? ''
+        : takebackRequest.moveIndex === -1
+          ? ' up to the start of the game'
+          : (
+            <React.Fragment>
+              {' '}up to move <a href="javascript:void(0)" onClick={this.navigateToTakebackRequestMove}>
+                {game.getUsedMoves()[takebackRequest.moveIndex].figurine}
+              </a>
+            </React.Fragment>
+          )
     );
 
     if (!result && player) {
@@ -367,7 +371,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
                   player.color === takebackRequest.player ? (
                     <React.Fragment>
                       <span>
-                        You requested a takeback {takebackMoveLink}
+                        You requested a takeback{takebackMoveLink}
                       </span>
                       <i
                         className="fa fa-times"
@@ -378,7 +382,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
                   ) : (
                     <React.Fragment>
                       <span>
-                        {COLOR_NAMES[takebackRequest.player]} requested a takeback {takebackMoveLink}
+                        {COLOR_NAMES[takebackRequest.player]} requested a takeback{takebackMoveLink}
                       </span>
                       <i
                         className="fa fa-check"

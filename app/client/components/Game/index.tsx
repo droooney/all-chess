@@ -193,6 +193,7 @@ export default class Game extends React.Component<Props, State> {
               isCurrentMoveLast={isCurrentMoveLast}
               drawOffer={drawOffer}
               takebackRequest={takebackRequest}
+              isBasicTakeback={!!takebackRequest && takebackRequest.moveIndex === usedMoves.length - 2}
               darkChessMode={darkChessMode}
               showDarkChessHiddenPieces={showDarkChessHiddenPieces}
               player={player}
