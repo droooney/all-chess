@@ -3192,7 +3192,9 @@ export class Game implements IGame {
                 piece: pieceInSquare!,
                 enPassant: false
               } : null,
-              isPawnPromotion: rankY === (pieceColor === ColorEnum.WHITE ? this.boardHeight - 1 : 0)
+              isPawnPromotion: isCapture && this.isFrankfurt
+                ? false
+                : rankY === (pieceColor === ColorEnum.WHITE ? this.boardHeight - 1 : 0)
             });
           }
         }
