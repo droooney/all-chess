@@ -2432,7 +2432,9 @@ export class Game implements IGame {
     });
 
     let isAllowed = true;
-    const isTurnedKing = Game.isKing(piece) && !wasKing;
+    const isKing = Game.isKing(piece);
+    const isTurnedKing = isKing && !wasKing;
+    const isTurnedFromKing = !isKing && wasKing;
     const setMoveIsAllowed = () => {
       if (checkIfAllowed) {
         isAllowed = isAllowed && (
@@ -2445,6 +2447,8 @@ export class Game implements IGame {
 
     if (isTurnedKing) {
       this.kings[this.turn].push(piece);
+    } else if (isTurnedFromKing) {
+      this.kings[this.turn].pop();
     }
 
     if (this.isAliceChess) {
@@ -2546,6 +2550,8 @@ export class Game implements IGame {
 
         if (isTurnedKing) {
           this.kings[prevTurn].pop();
+        } else if (isTurnedFromKing) {
+          this.kings[prevTurn].push(piece);
         }
 
         if (!isMainPieceMovedOrDisappeared) {
