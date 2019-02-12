@@ -2013,8 +2013,6 @@ export class Game implements IGame {
   }
 
   performMove(move: Move, options: PerformMoveOptions = {}): PerformMoveReturnValue {
-    this.movesCount++;
-
     const {
       constructMoveLiterals = false,
       constructPositionString = false,
@@ -2260,7 +2258,7 @@ export class Game implements IGame {
       && fromLocation.y === (this.turn === ColorEnum.WHITE ? 1 : this.boardHeight - 2)
       && (
         !this.isMonsterChess
-        || this.movesCount % 3 !== 1
+        || prevTurn !== nextTurn
       )
     ) {
       this.possibleEnPassant = {
@@ -2499,6 +2497,7 @@ export class Game implements IGame {
 
     this.turn = nextTurn;
     this.isCheck = this.isInCheck(nextTurn);
+    this.movesCount++;
 
     if (this.isCheck) {
       this.checksCount[nextTurn]++;
@@ -2729,7 +2728,7 @@ export class Game implements IGame {
   }
 
   getNextTurn(): ColorEnum {
-    return this.movesCount % this.pliesPerMove === this.pliesPerMove - 1
+    return this.movesCount % this.pliesPerMove === this.pliesPerMove - 2
       ? ColorEnum.BLACK
       : ColorEnum.WHITE;
   }
