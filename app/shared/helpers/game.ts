@@ -355,6 +355,7 @@ export class Game implements IGame {
         && !isCirce
         && !isMadrasi
         && !isFrankfurt
+        && !isAmazons
       )
     ) && (
       !isFrankfurt
@@ -377,6 +378,10 @@ export class Game implements IGame {
         && !isKingOfTheHill
         && !isThreeCheck
         && !isCirce
+        && !isCrazyhouse
+        && !isPatrol
+        && !isMadrasi
+        && !isAliceChess
       )
     ) && (
       !isThreeCheck
