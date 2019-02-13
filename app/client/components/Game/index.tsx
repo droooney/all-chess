@@ -35,6 +35,7 @@ interface State {
   selectedPiece: RealPiece | null;
   isBlackBase: boolean;
   showHiddenPieces: boolean;
+  boardsShiftX: number;
 }
 
 export default class Game extends React.Component<Props, State> {
@@ -46,7 +47,8 @@ export default class Game extends React.Component<Props, State> {
     selectedPiece: null,
     gameData: null,
     isBlackBase: false,
-    showHiddenPieces: true
+    showHiddenPieces: true,
+    boardsShiftX: 0
   };
 
   componentDidMount() {
@@ -116,8 +118,9 @@ export default class Game extends React.Component<Props, State> {
   };
 
   flipBoard = () => {
-    this.setState(({ isBlackBase }) => ({
-      isBlackBase: !isBlackBase
+    this.setState(({ isBlackBase, boardsShiftX }) => ({
+      isBlackBase: !isBlackBase,
+      boardsShiftX: -boardsShiftX
     }));
   };
 
@@ -136,6 +139,12 @@ export default class Game extends React.Component<Props, State> {
 
   toggleShowDarkChessHiddenPieces = () => {
     this.game!.toggleShowDarkChessHiddenPieces();
+  };
+
+  setBoardsShiftX = (boardsShiftX: number) => {
+    this.setState({
+      boardsShiftX: this.game!.adjustFileX(boardsShiftX)
+    });
   };
 
   render() {
@@ -174,6 +183,7 @@ export default class Game extends React.Component<Props, State> {
         } = this.game!;
         const {
           isBlackBase,
+          boardsShiftX,
           selectedPiece
         } = this.state;
         const usedMoves = this.game!.getUsedMoves();
@@ -197,9 +207,11 @@ export default class Game extends React.Component<Props, State> {
               darkChessMode={darkChessMode}
               showDarkChessHiddenPieces={showDarkChessHiddenPieces}
               player={player}
+              boardsShiftX={boardsShiftX}
               flipBoard={this.flipBoard}
               changeDarkChessMode={this.changeDarkChessMode}
               toggleShowDarkChessHiddenPieces={this.toggleShowDarkChessHiddenPieces}
+              setBoardsShiftX={this.setBoardsShiftX}
             />
 
             <Chat
@@ -226,6 +238,7 @@ export default class Game extends React.Component<Props, State> {
               isBlackBase={isBlackBase}
               darkChessMode={darkChessMode}
               currentMove={usedMoves[currentMoveIndex]}
+              boardsShiftX={boardsShiftX}
             />
 
             <RightPanel

@@ -37,9 +37,11 @@ export interface OwnProps {
   darkChessMode: ColorEnum | null;
   showDarkChessHiddenPieces: boolean;
   player: Player | null;
+  boardsShiftX: number;
   flipBoard(): void;
   changeDarkChessMode(): void;
   toggleShowDarkChessHiddenPieces(): void;
+  setBoardsShiftX(boardsShiftX: number): void;
 }
 
 interface State {
@@ -170,6 +172,19 @@ class InfoActionsPanel extends React.Component<Props, State> {
     }
   };
 
+  shiftBoard = (incrementX: number) => {
+    const {
+      boardsShiftX,
+      setBoardsShiftX
+    } = this.props;
+
+    setBoardsShiftX(boardsShiftX + incrementX);
+  };
+
+  normalizeBoardsShift = () => {
+    this.props.setBoardsShiftX(0);
+  };
+
   render() {
     const {
       game,
@@ -185,6 +200,9 @@ class InfoActionsPanel extends React.Component<Props, State> {
       showDarkChessHiddenPieces,
       showFantomPieces
     } = this.props;
+    const boardsString = game.isAliceChess
+      ? 'boards'
+      : 'board';
     const buttons: JSX.Element[] = [];
     const takebackMoveLink = !!takebackRequest && (
       isBasicTakeback
@@ -241,10 +259,10 @@ class InfoActionsPanel extends React.Component<Props, State> {
       <div
         key="flip-board"
         className="button"
-        title="Flip the board"
+        title={`Flip the ${boardsString}`}
         onClick={this.flipBoard}
       >
-        <i className="fa fa-refresh" />
+        <i className="fa fa-retweet" />
         <div className="piece-container">
           <Piece
             piece={{
@@ -256,6 +274,35 @@ class InfoActionsPanel extends React.Component<Props, State> {
         </div>
       </div>
     );
+
+    if (game.isCylinderChess) {
+      buttons.push(
+        <div
+          key="shift-board-left"
+          className="button"
+          title={`Shift the ${boardsString} to the left`}
+          onClick={() => this.shiftBoard(1)}
+        >
+          <i className="fa fa-arrow-left" />
+        </div>,
+        <div
+          key="normalize-board-shift"
+          className="button"
+          title={`Normalize the ${boardsString}`}
+          onClick={this.normalizeBoardsShift}
+        >
+          <i className="fa fa-balance-scale" />
+        </div>,
+        <div
+          key="shift-board-right"
+          className="button"
+          title={`Shift the ${boardsString} to the right`}
+          onClick={() => this.shiftBoard(-1)}
+        >
+          <i className="fa fa-arrow-right" />
+        </div>
+      );
+    }
 
     if (game.isAliceChess) {
       buttons.push(

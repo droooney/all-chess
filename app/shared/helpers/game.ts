@@ -645,6 +645,7 @@ export class Game implements IGame {
     const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
     const isChessence = _.includes(variants, GameVariantEnum.CHESSENCE);
     const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
+    const isCylinderChess = _.includes(variants, GameVariantEnum.CYLINDER_CHESS);
     const boardDimensions = Game.getBoardDimensions(variants);
     let startingData: StartingData;
 
@@ -731,7 +732,7 @@ export class Game implements IGame {
       }
     }
 
-    if (isAntichess) {
+    if (isAntichess || isCylinderChess) {
       startingData.possibleCastling = {
         [ColorEnum.WHITE]: {
           [CastlingTypeEnum.KING_SIDE]: false,
@@ -787,6 +788,7 @@ export class Game implements IGame {
     const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
     const isChessence = _.includes(variants, GameVariantEnum.CHESSENCE);
     const isThreeCheck = _.includes(variants, GameVariantEnum.THREE_CHECK);
+    const isCylinderChess = _.includes(variants, GameVariantEnum.CYLINDER_CHESS);
     const fenData = fen.trim().split(/\s+/);
     const boards = fenData.slice(0, boardCount);
 
@@ -818,7 +820,7 @@ export class Game implements IGame {
       throw new Error('Invalid FEN: wrong castling block');
     }
 
-    if (possibleCastlingString !== '-' && !isAntichess) {
+    if (possibleCastlingString !== '-' && !isAntichess && !isCylinderChess) {
       startingData.possibleCastling[ColorEnum.WHITE][CastlingTypeEnum.KING_SIDE] = _.includes(possibleCastlingString, 'K');
       startingData.possibleCastling[ColorEnum.WHITE][CastlingTypeEnum.QUEEN_SIDE] = _.includes(possibleCastlingString, 'Q');
       startingData.possibleCastling[ColorEnum.BLACK][CastlingTypeEnum.KING_SIDE] = _.includes(possibleCastlingString, 'k');
@@ -1707,6 +1709,7 @@ export class Game implements IGame {
   isCapablanca: boolean;
   isAmazons: boolean;
   isThreeCheck: boolean;
+  isCylinderChess: boolean;
   isLeftInCheckAllowed: boolean;
   pliesPerMove: number;
   boardCount: number;
@@ -1756,6 +1759,7 @@ export class Game implements IGame {
     this.isCapablanca = _.includes(this.variants, GameVariantEnum.CAPABLANCA);
     this.isAmazons = _.includes(this.variants, GameVariantEnum.AMAZONS);
     this.isThreeCheck = _.includes(this.variants, GameVariantEnum.THREE_CHECK);
+    this.isCylinderChess = _.includes(this.variants, GameVariantEnum.CYLINDER_CHESS);
 
     this.isPocketUsed = Game.getIsPocketUsed(settings.variants);
     this.isLeftInCheckAllowed = (
@@ -2575,6 +2579,12 @@ export class Game implements IGame {
     };
   }
 
+  adjustFileX(fileX: number): number {
+    return this.isCylinderChess
+      ? (fileX + this.boardWidth) % this.boardWidth
+      : fileX;
+  }
+
   getFenPieces(): string {
     return _.times(this.boardCount, (board) => (
       _.times(this.boardHeight, (y) => {
@@ -2972,7 +2982,7 @@ export class Game implements IGame {
 
       while (true) {
         rankY += incrementY;
-        fileX += incrementX;
+        fileX = this.adjustFileX(fileX + incrementX);
 
         const square = {
           board,
@@ -3097,7 +3107,7 @@ export class Game implements IGame {
     if (isAmazon || isEmpress || isCardinal || isKnight) {
       KNIGHT_MOVE_INCREMENTS.forEach(([incrementY, incrementX]) => {
         const rankY = pieceY + incrementY;
-        const fileX = pieceX + incrementX;
+        const fileX = this.adjustFileX(pieceX + incrementX);
         const square = {
           board,
           x: fileX,
@@ -3169,7 +3179,7 @@ export class Game implements IGame {
 
       [1, -1].forEach((incrementX) => {
         // capture
-        const fileX = pieceX + incrementX;
+        const fileX = this.adjustFileX(pieceX + incrementX);
         const square = {
           board,
           x: fileX,

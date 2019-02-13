@@ -209,7 +209,8 @@ export enum GameVariantEnum {
   FRANKFURT = 'FRANKFURT',
   CAPABLANCA = 'CAPABLANCA',
   AMAZONS = 'AMAZONS',
-  THREE_CHECK = 'THREE_CHECK'
+  THREE_CHECK = 'THREE_CHECK',
+  CYLINDER_CHESS = 'CYLINDER_CHESS'
 }
 
 export interface BaseMove {

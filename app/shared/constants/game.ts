@@ -66,7 +66,8 @@ export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.FRANKFURT]: 'Frankfurt chess',
   [GameVariantEnum.CAPABLANCA]: 'Capablanca chess',
   [GameVariantEnum.AMAZONS]: 'Amazons',
-  [GameVariantEnum.THREE_CHECK]: 'Three-check'
+  [GameVariantEnum.THREE_CHECK]: 'Three-check',
+  [GameVariantEnum.CYLINDER_CHESS]: 'Cylinder chess'
 };
 
 export const GAME_VARIANT_PGN_NAMES: { [variation in GameVariantEnum]: string; } = {
@@ -88,7 +89,8 @@ export const GAME_VARIANT_PGN_NAMES: { [variation in GameVariantEnum]: string; }
   [GameVariantEnum.FRANKFURT]: 'Frankfurt',
   [GameVariantEnum.CAPABLANCA]: 'Capablanca',
   [GameVariantEnum.AMAZONS]: 'Amazons',
-  [GameVariantEnum.THREE_CHECK]: 'Three-check'
+  [GameVariantEnum.THREE_CHECK]: 'Three-check',
+  [GameVariantEnum.CYLINDER_CHESS]: 'Cylinder'
 };
 
 export const GAME_VARIANT_LINKS: { [variation in GameVariantEnum]: string; } = {
@@ -110,7 +112,8 @@ export const GAME_VARIANT_LINKS: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.FRANKFURT]: 'frankfurt',
   [GameVariantEnum.CAPABLANCA]: 'capablanca',
   [GameVariantEnum.AMAZONS]: 'amazons',
-  [GameVariantEnum.THREE_CHECK]: 'three-check'
+  [GameVariantEnum.THREE_CHECK]: 'three-check',
+  [GameVariantEnum.CYLINDER_CHESS]: 'cylinder-chess'
 };
 
 export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {

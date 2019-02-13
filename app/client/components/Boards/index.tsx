@@ -35,6 +35,7 @@ export interface OwnProps {
   isBlackBase: boolean;
   darkChessMode: ColorEnum | null;
   currentMove: AnyMove | undefined;
+  boardsShiftX: number;
 
   pieces?: ReadonlyArray<IPiece>;
   withLiterals?: boolean;
@@ -227,6 +228,7 @@ class Boards extends React.Component<Props, State> {
       currentMove,
       isBlackBase,
       darkChessMode,
+      boardsShiftX,
       showFantomPieces,
       squareSize: propsSquareSize
     } = this.props;
@@ -263,9 +265,9 @@ class Boards extends React.Component<Props, State> {
           const filesElement = (
             <div className="rank">
               {(board === 0 || isBlackBase) && emptyCorner}
-              {_.times(game.boardWidth, (file) => (
+              {_.times(game.boardWidth, (fileX) => (
                 <div
-                  key={file}
+                  key={fileX}
                   className="file-literal"
                   style={{
                     fontSize: literalFontSize,
@@ -273,7 +275,7 @@ class Boards extends React.Component<Props, State> {
                     height: literalSize
                   }}
                 >
-                  {Game.getFileLiteral(file)}
+                  {Game.getFileLiteral(game.adjustFileX(fileX + (isBlackBase ? boardsShiftX : -boardsShiftX)))}
                 </div>
               ))}
               {(board === 0 || !isBlackBase) && emptyCorner}
@@ -321,6 +323,8 @@ class Boards extends React.Component<Props, State> {
                   >
                     {withLiterals && (board === 0 || isBlackBase) && rankLiteral}
                     {_.times(game.boardWidth, (fileX) => {
+                      fileX = game.adjustFileX(fileX + (isBlackBase ? boardsShiftX : -boardsShiftX));
+
                       const square = {
                         board,
                         x: fileX,
@@ -383,11 +387,13 @@ class Boards extends React.Component<Props, State> {
               {allPieces.map((piece) => (
                 <BoardPiece
                   key={piece.id}
+                  game={game}
                   piece={piece}
                   isBlackBase={isBlackBase}
                   isFantom={piece.isFantom}
                   boardWidth={game.boardWidth}
                   boardHeight={game.boardHeight}
+                  boardsShiftX={boardsShiftX}
                   squareSize={squareSize}
                   literalSize={literalSize}
                   onClick={readOnly ? undefined : this.onSquareClick}
