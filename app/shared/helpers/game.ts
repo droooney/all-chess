@@ -1078,9 +1078,9 @@ export class Game implements IGame {
         }
       } else if (tagName === 'TimeControl') {
         if (trueTagValue !== '-') {
-          const values = trueTagValue.split(/\s+\+\s+/);
+          const values = trueTagValue.split(/\s*\+\s*/);
           const baseString = values[0];
-          const base = +(+baseString * 60 * 1000).toFixed(2);
+          const base = +(+baseString * 1000).toFixed(2);
 
           if (
             (
@@ -1116,9 +1116,9 @@ export class Game implements IGame {
         }
       } else if (tagName === 'FEN') {
         fen = trueTagValue;
-      } else {
-        pgnTags[tagName] = trueTagValue;
       }
+
+      pgnTags[tagName] = trueTagValue;
     }
 
     if (fen) {
