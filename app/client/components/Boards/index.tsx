@@ -293,13 +293,13 @@ class Boards extends React.Component<Props, State> {
               };
               const translateX = squareSize * (
                 isBlackBase
-                  ? game.boardHeight - 1 - initialFileX
+                  ? game.boardWidth - 1 - initialFileX
                   : initialFileX
               );
               const translateY = squareSize * (
                 isBlackBase
                   ? rankY
-                  : game.boardWidth - 1 - rankY
+                  : game.boardHeight - 1 - rankY
               );
               const baseParams = {
                 key: `${rankY}-${fileX}`,
@@ -376,14 +376,16 @@ class Boards extends React.Component<Props, State> {
                 }
 
                 if (initialFileX === (isBlackBase ? 0 : game.boardWidth - 1)) {
+                  const rankLiteral = Game.getRankLiteral(rankY);
+
                   literals.push(
                     <g {...baseParams} key={`${baseParams.key}-rank`}>
                       <text
                         className={`literal rank-literal ${isLight ? 'dark' : 'light'}`}
-                        transform={`translate(${squareSize - literalFontSize * 0.86}, ${literalFontSize * 1.12})`}
+                        transform={`translate(${squareSize - literalMargin - literalFontSize / 2 * (rankLiteral.length)}, ${literalFontSize * 1.12})`}
                         fontSize={literalFontSize}
                       >
-                        {Game.getRankLiteral(rankY)}
+                        {rankLiteral}
                       </text>
                     </g>
                   );
