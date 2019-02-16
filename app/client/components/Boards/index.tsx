@@ -7,9 +7,9 @@ import {
   AnyMove,
   BaseMove,
   BoardPiece as IBoardPiece,
+  CenterSquareParams,
   ColorEnum,
   Piece as IPiece,
-  PieceTypeEnum,
   PieceLocationEnum,
   PiecePocketLocation,
   Player,
@@ -36,8 +36,8 @@ export interface OwnProps {
   darkChessMode: ColorEnum | null;
   currentMove: AnyMove | undefined;
   boardsShiftX: number;
+  pieces: ReadonlyArray<IPiece>;
 
-  pieces?: ReadonlyArray<IPiece>;
   withLiterals?: boolean;
   showFantomPieces?: boolean;
   squareSize?: number;
@@ -104,22 +104,16 @@ class Boards extends React.Component<Props, State> {
     return allowedMoves;
   }
 
-  getSquareClasses(square: Square): string[] {
+  getSquareParams(square: Square): CenterSquareParams {
     const {
       game
     } = this.props;
 
     if (!game.isKingOfTheHill) {
-      return [];
+      return {};
     }
 
-    const params = game.getCenterSquareParams(square);
-
-    if (!params) {
-      return [];
-    }
-
-    return _.keys(params).map((direction) => `border-${direction}`);
+    return game.getCenterSquareParams(square) || {};
   }
 
   isInCheck(square: Square): boolean {
@@ -138,7 +132,7 @@ class Boards extends React.Component<Props, State> {
     }
 
     return (
-      pieceInSquare.type === PieceTypeEnum.KING
+      Game.isKing(pieceInSquare)
       && game.isAttackedByOpponentPiece(pieceInSquare.location, Game.getOppositeColor(pieceInSquare.color))
     );
   }
@@ -232,9 +226,12 @@ class Boards extends React.Component<Props, State> {
       showFantomPieces,
       squareSize: propsSquareSize
     } = this.props;
+
     const squareSize = propsSquareSize || (game.isChessence ? 60 : game.isAliceChess ? 45 : 70);
     const literalSize = withLiterals ? Math.ceil(squareSize * 0.3) : 0;
     const literalFontSize = Math.ceil(literalSize * 0.85);
+    const literalMargin = literalFontSize / 3;
+    const cornerPieceSize = squareSize * 2 / 7;
     const allowedMoves = this.getAllowedMoves();
     const visibleSquares = game.isDarkChess && darkChessMode ? game.getVisibleSquares(darkChessMode) : [];
     const boardPieces = (pieces || game.pieces).filter(Game.isBoardPiece);
@@ -256,37 +253,21 @@ class Boards extends React.Component<Props, State> {
         })}
       >
         {_.times(game.boardCount, (board) => {
-          const emptyCorner = (
-            <div
-              className="empty-corner"
-              style={{ width: literalSize, height: literalSize }}
-            />
-          );
-          const filesElement = (
-            <div className="rank">
-              {(board === 0 || isBlackBase) && emptyCorner}
-              {_.times(game.boardWidth, (fileX) => (
-                <div
-                  key={fileX}
-                  className="file-literal"
-                  style={{
-                    fontSize: literalFontSize,
-                    width: squareSize,
-                    height: literalSize
-                  }}
-                >
-                  {Game.getFileLiteral(game.adjustFileX(fileX + (isBlackBase ? boardsShiftX : -boardsShiftX)))}
-                </div>
-              ))}
-              {(board === 0 || !isBlackBase) && emptyCorner}
-            </div>
-          );
+          const squares: JSX.Element[] = [];
+          const currentMoveSquares: JSX.Element[] = [];
+          const allowedSquares: JSX.Element[] = [];
+          const checkSquares: JSX.Element[] = [];
+          const literals: JSX.Element[] = [];
+          const hiddenSquares: JSX.Element[] = [];
+          const voidSquares: JSX.Element[] = [];
+          const centerBorders: JSX.Element[] = [];
+          let selectedSquare: JSX.Element | null = null;
           const pieces = boardPieces
             .filter(({ location }) => location.board === board)
             .map((piece) => ({ ...piece, isFantom: false }));
           let fantomPieces: (IBoardPiece & { isFantom: boolean; })[] = [];
 
-          if (game.isAliceChess && showFantomPieces) {
+          if (game.isAliceChess) {
             const prevBoard = game.getPrevBoard(board);
 
             fantomPieces = boardPieces
@@ -299,91 +280,215 @@ class Boards extends React.Component<Props, State> {
             ...fantomPieces
           ], 'id');
 
+          _.times(game.boardHeight, (rankY) => {
+            _.times(game.boardWidth, (fileX) => {
+              const initialFileX = fileX;
+
+              fileX = game.adjustFileX(fileX + (isBlackBase ? boardsShiftX : -boardsShiftX));
+
+              const square = {
+                board,
+                x: fileX,
+                y: rankY
+              };
+              const translateX = squareSize * (
+                isBlackBase
+                  ? game.boardHeight - 1 - initialFileX
+                  : initialFileX
+              );
+              const translateY = squareSize * (
+                isBlackBase
+                  ? rankY
+                  : game.boardWidth - 1 - rankY
+              );
+              const baseParams = {
+                key: `${rankY}-${fileX}`,
+                transform: `translate(${translateX}, ${translateY})`,
+                onClick: readOnly ? undefined : (() => this.onSquareClick(square))
+              };
+              const squareParams = {
+                ...baseParams,
+                width: squareSize,
+                height: squareSize
+              };
+              const centerSquareParams = this.getSquareParams(square);
+              const isLight = (rankY + fileX) % 2;
+
+              squares.push(
+                <rect
+                  className={classNames(`square ${isLight ? 'light' : 'dark'}`)}
+                  {...squareParams}
+                />
+              );
+
+              if (
+                selectedPiece
+                && selectedPiece.location.type === PieceLocationEnum.BOARD
+                && Game.areSquaresEqual(selectedPiece.location, square)
+              ) {
+                selectedSquare = (
+                  <rect className="selected-square" {...squareParams} />
+                );
+              }
+
+              if (
+                currentMove && (
+                  (
+                    currentMove.from
+                    && currentMove.from.type !== PieceLocationEnum.POCKET
+                    && Game.areSquaresEqual(currentMove.from, square)
+                  ) || (
+                    currentMove.to
+                    && Game.areSquaresEqual(currentMove.to, square)
+                  )
+                )
+              ) {
+                currentMoveSquares.push(
+                  <rect className="current-move-square" {...squareParams} />
+                );
+              }
+
+              if (isAllowed(square)) {
+                allowedSquares.push(
+                  <rect className="allowed-square" {...squareParams} />
+                );
+              }
+
+              if (this.isInCheck(square)) {
+                checkSquares.push(
+                  <rect className="check-square" {...squareParams} />
+                );
+              }
+
+              if (withLiterals) {
+                if (rankY === (isBlackBase ? game.boardHeight - 1 : 0)) {
+                  literals.push(
+                    <g {...baseParams} key={`${baseParams.key}-file`}>
+                      <text
+                        className={`literal file-literal ${isLight ? 'dark' : 'light'}`}
+                        transform={`translate(${literalMargin}, ${squareSize - literalMargin})`}
+                        fontSize={literalFontSize}
+                      >
+                        {Game.getFileLiteral(fileX)}
+                      </text>
+                    </g>
+                  );
+                }
+
+                if (initialFileX === (isBlackBase ? 0 : game.boardWidth - 1)) {
+                  literals.push(
+                    <g {...baseParams} key={`${baseParams.key}-rank`}>
+                      <text
+                        className={`literal rank-literal ${isLight ? 'dark' : 'light'}`}
+                        transform={`translate(${squareSize - literalFontSize * 0.86}, ${literalFontSize * 1.12})`}
+                        fontSize={literalFontSize}
+                      >
+                        {Game.getRankLiteral(rankY)}
+                      </text>
+                    </g>
+                  );
+                }
+              }
+
+              if (isHiddenSquare(square)) {
+                hiddenSquares.push(
+                  <rect className="hidden-square" {...squareParams} />
+                );
+              }
+
+              if (game.isVoidSquare(square)) {
+                voidSquares.push(
+                  <rect className="void-square" {...squareParams} />
+                );
+              }
+
+              if (!_.isEmpty(centerSquareParams)) {
+                if (centerSquareParams.top) {
+                  centerBorders.push(
+                    <g {...baseParams} key={`${baseParams.key}-top`}>
+                      <line
+                        className="center-border"
+                        transform={isBlackBase ? undefined : `translate(0, ${squareSize})`}
+                        x1={0}
+                        y1={0}
+                        x2={squareSize}
+                        y2={0}
+                      />
+                    </g>
+                  );
+                }
+
+                if (centerSquareParams.bottom) {
+                  centerBorders.push(
+                    <g {...baseParams} key={`${baseParams.key}-bottom`}>
+                      <line
+                        className="center-border"
+                        transform={isBlackBase ? undefined : `translate(0, -${squareSize})`}
+                        x1={0}
+                        y1={squareSize}
+                        x2={squareSize}
+                        y2={squareSize}
+                      />
+                    </g>
+                  );
+                }
+
+                if (centerSquareParams.left) {
+                  centerBorders.push(
+                    <g {...baseParams} key={`${baseParams.key}-left`}>
+                      <line
+                        className="center-border"
+                        transform={isBlackBase ? `translate(${squareSize}, 0)` : undefined}
+                        x1={0}
+                        y1={0}
+                        x2={0}
+                        y2={squareSize}
+                      />
+                    </g>
+                  );
+                }
+
+                if (centerSquareParams.right) {
+                  centerBorders.push(
+                    <g {...baseParams} key={`${baseParams.key}-right`}>
+                      <line
+                        className="center-border"
+                        transform={isBlackBase ? `translate(-${squareSize}, 0)` : undefined}
+                        x1={squareSize}
+                        y1={0}
+                        x2={squareSize}
+                        y2={squareSize}
+                      />
+                    </g>
+                  );
+                }
+              }
+            });
+          });
+
           return (
-            <div key={board} className="board">
-              {withLiterals && filesElement}
-              {_.times(game.boardHeight, (rankY) => {
-                const rankLiteral = (
-                  <div
-                    className="rank-literal"
-                    style={{
-                      fontSize: literalFontSize,
-                      width: literalSize,
-                      height: squareSize
-                    }}
-                  >
-                    {Game.getRankLiteral(rankY)}
-                  </div>
-                );
-
-                return (
-                  <div
-                    key={rankY}
-                    className="rank"
-                  >
-                    {withLiterals && (board === 0 || isBlackBase) && rankLiteral}
-                    {_.times(game.boardWidth, (fileX) => {
-                      fileX = game.adjustFileX(fileX + (isBlackBase ? boardsShiftX : -boardsShiftX));
-
-                      const square = {
-                        board,
-                        x: fileX,
-                        y: rankY
-                      };
-
-                      return (
-                        <div
-                          key={fileX}
-                          className={classNames(
-                            `square ${(rankY + fileX) % 2 ? 'white' : 'black'}`,
-                            this.getSquareClasses(square)
-                          )}
-                          style={{
-                            width: squareSize,
-                            height: squareSize
-                          }}
-                          onClick={readOnly ? undefined : (() => this.onSquareClick(square))}
-                        >
-                          {
-                            selectedPiece
-                            && selectedPiece.location.type === PieceLocationEnum.BOARD
-                            && Game.areSquaresEqual(selectedPiece.location, square)
-                            && (
-                              <div className="selected-square" />
-                            )
-                          }
-                          {currentMove && (
-                            (
-                              currentMove.from
-                              && currentMove.from.type !== PieceLocationEnum.POCKET
-                              && Game.areSquaresEqual(currentMove.from, square)
-                            ) || (
-                              currentMove.to
-                              && Game.areSquaresEqual(currentMove.to, square)
-                            )
-                          ) && (
-                            <div className="current-move-square" />
-                          )}
-                          {isAllowed(square) && (
-                            <div className="allowed-square" />
-                          )}
-                          {this.isInCheck(square) && (
-                            <div className="check-square" />
-                          )}
-                          {game.isVoidSquare(square) && (
-                            <div className="void-square" />
-                          )}
-                          {isHiddenSquare(square) && (
-                            <div className="hidden-square" />
-                          )}
-                        </div>
-                      );
-                    })}
-                    {withLiterals && (board === 0 || !isBlackBase) && rankLiteral}
-                  </div>
-                );
-              })}
-              {withLiterals && filesElement}
+            <svg
+              key={board}
+              className="board"
+              style={{
+                width: squareSize * game.boardWidth,
+                height: squareSize * game.boardHeight
+              }}
+            >
+              <radialGradient id="allowed-grad" r="100%" cx="50%" cy="50%">
+                <stop offset="0%" stopColor="rgba(0,255,255,0.5)" />
+                <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+              </radialGradient>
+              <radialGradient id="check-grad" r="80%" cx="50%" cy="50%">
+                <stop offset="0%" stopColor="red" />
+                <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+              </radialGradient>
+              {squares}
+              {selectedSquare}
+              {currentMoveSquares}
+              {allowedSquares}
+              {checkSquares}
+              {literals}
               {allPieces.map((piece) => (
                 <BoardPiece
                   key={piece.id}
@@ -391,15 +496,19 @@ class Boards extends React.Component<Props, State> {
                   piece={piece}
                   isBlackBase={isBlackBase}
                   isFantom={piece.isFantom}
+                  isFullFantom={(piece.isFantom && !showFantomPieces) || !piece.location}
                   boardWidth={game.boardWidth}
                   boardHeight={game.boardHeight}
                   boardsShiftX={boardsShiftX}
                   squareSize={squareSize}
-                  literalSize={literalSize}
+                  cornerPieceSize={cornerPieceSize}
                   onClick={readOnly ? undefined : this.onSquareClick}
                 />
               ))}
-            </div>
+              {hiddenSquares}
+              {voidSquares}
+              {centerBorders}
+            </svg>
           );
         })}
         <Modal

@@ -110,6 +110,10 @@ export interface PocketPiece extends Piece {
   location: PiecePocketLocation;
 }
 
+export interface NonExistentPiece extends Piece {
+  location: null;
+}
+
 export type RealPiece = (
   BoardPiece
   | PocketPiece
@@ -313,4 +317,9 @@ export interface ChatMessage {
   message: string;
 }
 
-export type CenterSquareParams = { top?: true; left?: true; bottom?: true; right?: true } | null;
+export interface CenterSquareParams {
+  top?: true;
+  left?: true;
+  bottom?: true;
+  right?: true;
+}

@@ -16,6 +16,7 @@ import {
   GameStatusEnum,
   GameVariantEnum,
   Move,
+  NonExistentPiece,
   PGNTags,
   Piece,
   PieceBoardLocation,
@@ -1619,6 +1620,10 @@ export class Game implements IGame {
     return Game.isRealPiece(piece) && piece.location.type === PieceLocationEnum.POCKET;
   }
 
+  static isNonExistentPiece(piece: Piece): piece is NonExistentPiece {
+    return !piece.location;
+  }
+
   static isRealPiece(piece: Piece): piece is RealPiece {
     return !!piece.location;
   }
@@ -2760,7 +2765,7 @@ export class Game implements IGame {
       : ColorEnum.WHITE;
   }
 
-  getCenterSquareParams(square: Square): CenterSquareParams {
+  getCenterSquareParams(square: Square): CenterSquareParams | null {
     const leftCenterX = Math.round(this.boardWidth / 2) - 1;
     const rightCenterX = leftCenterX + 1;
     const topCenterY = Math.round(this.boardHeight / 2) - 1;

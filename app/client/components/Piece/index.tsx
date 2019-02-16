@@ -20,6 +20,11 @@ import Pawn from './Pawn';
 interface OwnProps {
   piece: Partial<RealPiece> & Pick<RealPiece, 'color' | 'type' | 'location'>;
 
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  transform?: string;
   className?: string;
   style?: React.CSSProperties;
   onClick?(location: RealPieceLocation): void;
@@ -41,6 +46,11 @@ export default class Piece extends React.Component<Props> {
     const {
       className,
       style,
+      x,
+      y,
+      width,
+      height,
+      transform,
       piece,
       onClick
     } = this.props;
@@ -60,6 +70,11 @@ export default class Piece extends React.Component<Props> {
         strokeDasharray="none"
         strokeOpacity="1"
         style={style}
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        transform={transform}
         onClick={onClick && this.onClick}
       >
         {piece.type === PieceTypeEnum.KING ? (

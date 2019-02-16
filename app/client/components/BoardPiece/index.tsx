@@ -14,11 +14,12 @@ interface OwnProps {
   piece: IBoardPiece;
   isBlackBase: boolean;
   isFantom: boolean;
+  isFullFantom: boolean;
   boardWidth: number;
   boardHeight: number;
   boardsShiftX: number;
-  literalSize: number;
   squareSize: number;
+  cornerPieceSize: number;
 
   onClick?(location: PieceBoardLocation): void;
 }
@@ -32,15 +33,15 @@ export default class BoardPiece extends React.Component<Props> {
       piece,
       piece: {
         location: {
-          board: pieceBoard,
           x: pieceX,
           y: pieceY
         }
       },
       isBlackBase,
       isFantom,
-      literalSize,
+      isFullFantom,
       squareSize,
+      cornerPieceSize,
       boardWidth,
       boardHeight,
       boardsShiftX,
@@ -56,39 +57,54 @@ export default class BoardPiece extends React.Component<Props> {
     const y = isBlackBase
       ? pieceY
       : boardHeight - 1 - pieceY;
+    const pieceClassNames = {
+      fantom: isFantom,
+      'full-fantom': isFullFantom
+    };
+    const originalPieceCoords = {
+      x: squareSize - cornerPieceSize,
+      y: squareSize - cornerPieceSize
+    };
 
     return (
-      <div
+      <g
         className="piece-container"
-        style={{
-          width: squareSize,
-          height: squareSize,
-          left: x * squareSize + (pieceBoard ? 0 : literalSize),
-          top: y * squareSize + literalSize
-        }}
+        transform={`translate(${x * squareSize}, ${y * squareSize})`}
       >
         <Piece
+          width={squareSize}
+          height={squareSize}
           piece={{
             ...piece,
             type: piece.abilities || piece.type
           }}
           onClick={onClick}
-          className={classNames({ fantom: isFantom })}
+          className={classNames(pieceClassNames)}
         />
 
         {(piece.abilities || piece.type !== piece.originalType) && (
-          <Piece
-            className="original-piece"
-            piece={{
-              ...piece,
-              type: piece.abilities
-                ? piece.type
-                : piece.originalType
-            }}
-            onClick={onClick}
-          />
+          <React.Fragment>
+            <rect
+              {...originalPieceCoords}
+              width={cornerPieceSize}
+              height={cornerPieceSize}
+              className={classNames('original-piece', pieceClassNames)}
+            />
+            <Piece
+              {...originalPieceCoords}
+              width={cornerPieceSize}
+              height={cornerPieceSize}
+              piece={{
+                ...piece,
+                type: piece.abilities
+                  ? piece.type
+                  : piece.originalType
+              }}
+              onClick={onClick}
+            />
+          </React.Fragment>
         )}
-      </div>
+      </g>
     );
   }
 }

@@ -75,6 +75,7 @@ export default class GameRulesExample extends React.Component<Props> {
             currentMove={this.game.moves[this.game.currentMoveIndex]}
             squareSize={35}
             boardsShiftX={0}
+            pieces={this.game.pieces}
           />
           <div className="description">
             {description}
