@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 
 import { GameSettings } from '../../types';
-import { GAME_DEFAULT_SETTINGS } from '../../shared/constants';
+import { GAME_DEFAULT_SETTINGS } from '../constants';
 
 function getLocalStorageSettingsKey(key: string): string {
   return `settings.${key}`;

@@ -17,6 +17,7 @@ import {
   RealPiece,
   Square
 } from '../../../types';
+import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from '../../constants';
 import { Game } from '../../helpers';
 import { ReduxState } from '../../store';
 
@@ -227,11 +228,31 @@ class Boards extends React.Component<Props, State> {
       squareSize: propsSquareSize
     } = this.props;
 
-    const squareSize = propsSquareSize || (game.isChessence ? 60 : game.isAliceChess ? 45 : 70);
-    const literalSize = withLiterals ? Math.ceil(squareSize * 0.3) : 0;
-    const literalFontSize = Math.ceil(literalSize * 0.85);
+    const maximumSize = Math.max(game.boardOrthodoxWidth, game.boardOrthodoxHeight);
+    const squareSize = propsSquareSize || (
+      game.isCircularChess
+        ? game.isAliceChess
+          ? game.isTwoFamilies || game.isCapablanca || game.isAmazons
+            ? 38
+            : 45
+          : game.isTwoFamilies || game.isCapablanca || game.isAmazons
+            ? 60
+            : 70
+        : game.isChessence
+          ? 60
+          : game.isAliceChess
+            ? 45
+            : 70
+    );
+    const half = maximumSize * squareSize / 2;
+    const rOuter = game.boardWidth * squareSize;
+    const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * squareSize;
+    const literalFontSize = Math.ceil((
+      game.isCircularChess
+        ? (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO / 2) * squareSize
+        : squareSize
+    ) * 0.25);
     const literalMargin = literalFontSize / 3;
-    const cornerPieceSize = squareSize * 2 / 7;
     const allowedMoves = this.getAllowedMoves();
     const visibleSquares = game.isDarkChess && darkChessMode ? game.getVisibleSquares(darkChessMode) : [];
     const boardPieces = (pieces || game.pieces).filter(Game.isBoardPiece);
@@ -261,11 +282,11 @@ class Boards extends React.Component<Props, State> {
           const hiddenSquares: JSX.Element[] = [];
           const voidSquares: JSX.Element[] = [];
           const centerBorders: JSX.Element[] = [];
-          let selectedSquare: JSX.Element | null = null;
           const pieces = boardPieces
             .filter(({ location }) => location.board === board)
             .map((piece) => ({ ...piece, isFantom: false }));
           let fantomPieces: (IBoardPiece & { isFantom: boolean; })[] = [];
+          let selectedSquare: JSX.Element | null = null;
 
           if (game.isAliceChess) {
             const prevBoard = game.getPrevBoard(board);
@@ -303,22 +324,69 @@ class Boards extends React.Component<Props, State> {
               );
               const baseParams = {
                 key: `${rankY}-${fileX}`,
-                transform: `translate(${translateX}, ${translateY})`,
+                transform: game.isCircularChess
+                  ? undefined
+                  : `translate(${translateX}, ${translateY})`,
                 onClick: readOnly ? undefined : (() => this.onSquareClick(square))
-              };
-              const squareParams = {
-                ...baseParams,
-                width: squareSize,
-                height: squareSize
               };
               const centerSquareParams = this.getSquareParams(square);
               const isLight = (rankY + fileX) % 2;
+              const SVGSquareElem = (props: React.SVGProps<SVGPathElement> | React.SVGProps<SVGRectElement>) => (
+                game.isCircularChess ? (
+                  <path
+                    d={pathD}
+                    {...baseParams}
+                    {...props as React.SVGProps<SVGPathElement>}
+                  />
+                ) : (
+                  <rect
+                    width={squareSize}
+                    height={squareSize}
+                    {...baseParams}
+                    {...props as React.SVGProps<SVGRectElement>}
+                  />
+                )
+              );
+              let pathD = '';
+
+              if (game.isCircularChess) {
+                const adjustedRankY = rankY > game.boardOrthodoxHeight
+                  ? game.boardHeight - 1 - rankY
+                  : rankY;
+                const adjustedFileX = rankY > game.boardOrthodoxHeight
+                  ? game.boardOrthodoxWidth - fileX
+                  : fileX;
+                const right = rankY > game.boardOrthodoxHeight ? 1 : 0;
+                const r = rOuter - (right ? game.boardOrthodoxWidth - adjustedFileX : adjustedFileX) * rDiff;
+                const nextR = r - rDiff;
+                const angle = adjustedRankY * Math.PI / 8;
+                const nextAngle = (adjustedRankY + 1) * Math.PI / 8;
+                const getCirclePoint = (r: number, angle: number) => {
+                  const x = half - (right ? -1 : 1) * r * Math.sin(angle);
+                  const y = half - r * Math.cos(angle);
+
+                  return isBlackBase
+                    ? { x: maximumSize * squareSize - x, y }
+                    : { x, y: maximumSize * squareSize - y };
+                };
+                const circlePoints = [
+                  getCirclePoint(r, angle),
+                  getCirclePoint(r, nextAngle),
+                  getCirclePoint(nextR, nextAngle),
+                  getCirclePoint(nextR, angle)
+                ];
+
+                pathD = `
+                  M ${circlePoints[0].x},${circlePoints[0].y}
+                  A ${r} ${r} 0 0 ${1 - right} ${circlePoints[1].x} ${circlePoints[1].y}
+                  L ${circlePoints[2].x},${circlePoints[2].y}
+                  A ${nextR} ${nextR} 0 0 ${right} ${circlePoints[3].x} ${circlePoints[3].y}
+                  Z
+                `;
+              }
 
               squares.push(
-                <rect
-                  className={classNames(`square ${isLight ? 'light' : 'dark'}`)}
-                  {...squareParams}
-                />
+                <SVGSquareElem className={classNames(`square ${isLight ? 'light' : 'dark'}`)} />
               );
 
               if (
@@ -327,7 +395,7 @@ class Boards extends React.Component<Props, State> {
                 && Game.areSquaresEqual(selectedPiece.location, square)
               ) {
                 selectedSquare = (
-                  <rect className="selected-square" {...squareParams} />
+                  <SVGSquareElem className="selected-square" />
                 );
               }
 
@@ -344,46 +412,84 @@ class Boards extends React.Component<Props, State> {
                 )
               ) {
                 currentMoveSquares.push(
-                  <rect className="current-move-square" {...squareParams} />
+                  <SVGSquareElem className="current-move-square" />
                 );
               }
 
               if (isAllowed(square)) {
                 allowedSquares.push(
-                  <rect className="allowed-square" {...squareParams} />
+                  <SVGSquareElem className="allowed-square" />
                 );
               }
 
               if (this.isInCheck(square)) {
                 checkSquares.push(
-                  <rect className="check-square" {...squareParams} />
+                  <SVGSquareElem className="check-square" />
                 );
               }
 
               if (withLiterals) {
-                if (rankY === (isBlackBase ? game.boardHeight - 1 : 0)) {
+                if (
+                  rankY === (
+                    isBlackBase
+                      ? game.isCircularChess
+                        ? game.boardOrthodoxHeight
+                        : game.boardHeight - 1
+                      : 0
+                  )
+                ) {
+                  const fileLiteral = Game.getFileLiteral(fileX);
+                  let transform = baseParams.transform;
+
+                  if (game.isCircularChess) {
+                    const r = rOuter - (fileX + 1) * rDiff;
+
+                    transform = `translate(${half},${half + r})`;
+                  }
+
                   literals.push(
-                    <g {...baseParams} key={`${baseParams.key}-file`}>
+                    <g {...baseParams} key={`${baseParams.key}-file`} transform={transform}>
                       <text
                         className={`literal file-literal ${isLight ? 'dark' : 'light'}`}
-                        transform={`translate(${literalMargin}, ${squareSize - literalMargin})`}
+                        transform={
+                          game.isCircularChess
+                            ? `translate(${-literalMargin - literalFontSize / 2 * (fileLiteral.length)},${literalFontSize * 1.05})`
+                            : `translate(${literalMargin}, ${squareSize - literalMargin})`
+                        }
                         fontSize={literalFontSize}
                       >
-                        {Game.getFileLiteral(fileX)}
+                        {fileLiteral}
                       </text>
                     </g>
                   );
                 }
 
-                if (initialFileX === (isBlackBase ? 0 : game.boardWidth - 1)) {
+                if (initialFileX === (isBlackBase || game.isCircularChess ? 0 : game.boardWidth - 1)) {
                   const rankLiteral = Game.getRankLiteral(rankY);
+                  let transform = baseParams.transform;
+
+                  if (game.isCircularChess) {
+                    const angleDiff = 2 * Math.PI / game.boardHeight;
+                    const angle = rankY * angleDiff + (isBlackBase ? Math.PI : 0) + Math.PI / 80;
+                    const r = rOuter - rDiff * 0.25;
+                    const translateX = half - r * Math.sin(angle);
+                    const translateY = half + r * Math.cos(angle);
+
+                    transform = `translate(${translateX},${translateY})`;
+                  }
 
                   literals.push(
-                    <g {...baseParams} key={`${baseParams.key}-rank`}>
+                    <g {...baseParams} key={`${baseParams.key}-rank`} transform={transform}>
                       <text
                         className={`literal rank-literal ${isLight ? 'dark' : 'light'}`}
-                        transform={`translate(${squareSize - literalMargin - literalFontSize / 2 * (rankLiteral.length)}, ${literalFontSize * 1.12})`}
+                        transform={
+                          game.isCircularChess
+                            ? undefined
+                            : `translate(${squareSize - literalMargin - literalFontSize / 2 * (rankLiteral.length)}, ${literalFontSize * 1.12})`
+                        }
                         fontSize={literalFontSize}
+                        alignmentBaseline={game.isCircularChess ? 'middle' : undefined}
+                        textAnchor={game.isCircularChess ? 'middle' : undefined}
                       >
                         {rankLiteral}
                       </text>
@@ -394,13 +500,13 @@ class Boards extends React.Component<Props, State> {
 
               if (isHiddenSquare(square)) {
                 hiddenSquares.push(
-                  <rect className="hidden-square" {...squareParams} />
+                  <SVGSquareElem className="hidden-square" />
                 );
               }
 
               if (game.isVoidSquare(square)) {
                 voidSquares.push(
-                  <rect className="void-square" {...squareParams} />
+                  <SVGSquareElem className="void-square" />
                 );
               }
 
@@ -472,9 +578,12 @@ class Boards extends React.Component<Props, State> {
             <svg
               key={board}
               className="board"
-              style={{
-                width: squareSize * game.boardWidth,
-                height: squareSize * game.boardHeight
+              style={game.isCircularChess ? {
+                width: maximumSize * squareSize,
+                height: maximumSize * squareSize
+              } : {
+                width: game.boardOrthodoxWidth * squareSize,
+                height: game.boardOrthodoxHeight * squareSize
               }}
             >
               <radialGradient id="allowed-grad" r="100%" cx="50%" cy="50%">
@@ -499,11 +608,8 @@ class Boards extends React.Component<Props, State> {
                   isBlackBase={isBlackBase}
                   isFantom={piece.isFantom}
                   isFullFantom={(piece.isFantom && !showFantomPieces) || !piece.location}
-                  boardWidth={game.boardWidth}
-                  boardHeight={game.boardHeight}
                   boardsShiftX={boardsShiftX}
                   squareSize={squareSize}
-                  cornerPieceSize={cornerPieceSize}
                   onClick={readOnly ? undefined : this.onSquareClick}
                 />
               ))}

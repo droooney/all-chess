@@ -1,6 +1,5 @@
 import {
   ColorEnum,
-  GameSettings,
   GameVariantEnum,
   PieceTypeEnum,
   ResultReasonEnum,
@@ -67,7 +66,8 @@ export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.CAPABLANCA]: 'Capablanca chess',
   [GameVariantEnum.AMAZONS]: 'Amazons',
   [GameVariantEnum.THREE_CHECK]: 'Three-check',
-  [GameVariantEnum.CYLINDER_CHESS]: 'Cylinder chess'
+  [GameVariantEnum.CYLINDER_CHESS]: 'Cylinder chess',
+  [GameVariantEnum.CIRCULAR_CHESS]: 'Circular chess'
 };
 
 export const GAME_VARIANT_PGN_NAMES: { [variation in GameVariantEnum]: string; } = {
@@ -90,7 +90,8 @@ export const GAME_VARIANT_PGN_NAMES: { [variation in GameVariantEnum]: string; }
   [GameVariantEnum.CAPABLANCA]: 'Capablanca',
   [GameVariantEnum.AMAZONS]: 'Amazons',
   [GameVariantEnum.THREE_CHECK]: 'Three-check',
-  [GameVariantEnum.CYLINDER_CHESS]: 'Cylinder'
+  [GameVariantEnum.CYLINDER_CHESS]: 'Cylinder',
+  [GameVariantEnum.CIRCULAR_CHESS]: 'Circular'
 };
 
 export const GAME_VARIANT_LINKS: { [variation in GameVariantEnum]: string; } = {
@@ -113,7 +114,8 @@ export const GAME_VARIANT_LINKS: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.CAPABLANCA]: 'capablanca',
   [GameVariantEnum.AMAZONS]: 'amazons',
   [GameVariantEnum.THREE_CHECK]: 'three-check',
-  [GameVariantEnum.CYLINDER_CHESS]: 'cylinder-chess'
+  [GameVariantEnum.CYLINDER_CHESS]: 'cylinder-chess',
+  [GameVariantEnum.CIRCULAR_CHESS]: 'circular-chess'
 };
 
 export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
@@ -137,9 +139,4 @@ export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
 export const COLOR_NAMES: { [color in ColorEnum]: string } = {
   [ColorEnum.WHITE]: 'White',
   [ColorEnum.BLACK]: 'Black'
-};
-
-export const GAME_DEFAULT_SETTINGS: { [key in keyof GameSettings]: GameSettings[key]; } = {
-  showFantomPieces: true,
-  timeControl: null
 };

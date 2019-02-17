@@ -272,6 +272,8 @@ export class Game implements IGame {
     const isCapablanca = _.includes(variants, GameVariantEnum.CAPABLANCA);
     const isAmazons = _.includes(variants, GameVariantEnum.AMAZONS);
     const isThreeCheck = _.includes(variants, GameVariantEnum.THREE_CHECK);
+    const isCylinderChess = _.includes(variants, GameVariantEnum.CYLINDER_CHESS);
+    const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
 
     return ((
       !isKingOfTheHill
@@ -314,6 +316,8 @@ export class Game implements IGame {
         && !isFrankfurt
         && !isCapablanca
         && !isAmazons
+        && !isCylinderChess
+        && !isCircularChess
       )
     ) && (
       !isHorde
@@ -390,6 +394,14 @@ export class Game implements IGame {
         !isDarkChess
         && !isAtomic
       )
+    ) && (
+      !isCircularChess
+      || (
+        !isCylinderChess
+        // TODO: add support for circular + circe
+        && !isCirce
+        && !isKingOfTheHill
+      )
     ));
   }
 
@@ -425,7 +437,7 @@ export class Game implements IGame {
       ...whiteVoidSquares.map(([y, x]) => [boardHeight - 1 - y, boardWidth - 1 - x])
     ].map(([y, x]) => ({ board: 0, y, x }));
 
-    [ColorEnum.WHITE, ColorEnum.BLACK].forEach((color) => {
+    _.forEach(ColorEnum, (color) => {
       const startingMenCoordinates = Game.chessenceStartingMenSquares[color];
       const addPiece = (type: PieceTypeEnum, location: RealPieceLocation) => {
         pieces.push({
@@ -477,8 +489,8 @@ export class Game implements IGame {
     const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
     const isCapablanca = _.includes(variants, GameVariantEnum.CAPABLANCA);
     const isAmazons = _.includes(variants, GameVariantEnum.AMAZONS);
-
-    return {
+    const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
+    const dimensions = {
       boardCount: isAliceChess ? 2 : 1,
       boardWidth: isChessence
         ? 6
@@ -486,6 +498,16 @@ export class Game implements IGame {
           ? 10
           : 8,
       boardHeight: isChessence ? 9 : 8
+    };
+
+    if (!isCircularChess) {
+      return dimensions;
+    }
+
+    return {
+      ...dimensions,
+      boardWidth: dimensions.boardWidth / 2,
+      boardHeight: dimensions.boardHeight * 2
     };
   }
 
@@ -498,12 +520,19 @@ export class Game implements IGame {
     const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
     const isCapablanca = _.includes(variants, GameVariantEnum.CAPABLANCA);
     const isAmazons = _.includes(variants, GameVariantEnum.AMAZONS);
-    const halfBoard = Math.round(boardWidth / 2);
+    const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
+    const orthodoxBoardWidth = isCircularChess
+      ? boardWidth * 2
+      : boardWidth;
+    const orthodoxBoardHeight = isCircularChess
+      ? boardHeight / 2
+      : boardHeight;
+    const halfBoard = Math.round(orthodoxBoardWidth / 2);
     let id = 0;
     let pieceTypes: PieceTypeEnum[];
 
     if (_.includes(variants, GameVariantEnum.CHESS_960)) {
-      pieceTypes = _.times(boardWidth, () => null!);
+      pieceTypes = _.times(orthodoxBoardWidth, () => null!);
 
       const darkColoredBishopPosition = 2 * Math.floor(halfBoard * Math.random());
       const lightColoredBishopPosition = 2 * Math.floor(halfBoard * Math.random()) + 1;
@@ -525,15 +554,15 @@ export class Game implements IGame {
         });
       };
 
-      placePiece(PieceTypeEnum.QUEEN, Math.floor((boardWidth - 2) * Math.random()));
-      placePiece(PieceTypeEnum.KNIGHT, Math.floor((boardWidth - 3) * Math.random()));
-      placePiece(PieceTypeEnum.KNIGHT, Math.floor((boardWidth - 4) * Math.random()));
+      placePiece(PieceTypeEnum.QUEEN, Math.floor((orthodoxBoardWidth - 2) * Math.random()));
+      placePiece(PieceTypeEnum.KNIGHT, Math.floor((orthodoxBoardWidth - 3) * Math.random()));
+      placePiece(PieceTypeEnum.KNIGHT, Math.floor((orthodoxBoardWidth - 4) * Math.random()));
 
       if (isTwoFamilies) {
-        placePiece(PieceTypeEnum.QUEEN, Math.floor((boardWidth - 5) * Math.random()));
+        placePiece(PieceTypeEnum.QUEEN, Math.floor((orthodoxBoardWidth - 5) * Math.random()));
       } else if (isCapablanca || isAmazons) {
-        placePiece(PieceTypeEnum.EMPRESS, Math.floor((boardWidth - 5) * Math.random()));
-        placePiece(PieceTypeEnum.CARDINAL, Math.floor((boardWidth - 6) * Math.random()));
+        placePiece(PieceTypeEnum.EMPRESS, Math.floor((orthodoxBoardWidth - 5) * Math.random()));
+        placePiece(PieceTypeEnum.CARDINAL, Math.floor((orthodoxBoardWidth - 6) * Math.random()));
       }
 
       const restPieces = [PieceTypeEnum.ROOK, PieceTypeEnum.KING, PieceTypeEnum.ROOK];
@@ -578,7 +607,7 @@ export class Game implements IGame {
 
     const pieces: RealPiece[] = [];
 
-    [ColorEnum.WHITE, ColorEnum.BLACK].forEach((color) => {
+    _.forEach(ColorEnum, (color) => {
       const addPiece = (type: PieceTypeEnum, x: number, y: number) => {
         pieces.push({
           id: `${++id}`,
@@ -600,7 +629,7 @@ export class Game implements IGame {
         const lastPawnRank = 4;
 
         _.times(lastPawnRank, (y) => {
-          _.times(boardWidth, (x) => {
+          _.times(orthodoxBoardWidth, (x) => {
             addPiece(PieceTypeEnum.PAWN, x, y);
           });
         });
@@ -613,25 +642,34 @@ export class Game implements IGame {
           addPiece(PieceTypeEnum.PAWN, halfBoard, lastPawnRank);
         }
 
-        addPiece(PieceTypeEnum.PAWN, boardWidth - 2, lastPawnRank);
-        addPiece(PieceTypeEnum.PAWN, boardWidth - 3, lastPawnRank);
+        addPiece(PieceTypeEnum.PAWN, orthodoxBoardWidth - 2, lastPawnRank);
+        addPiece(PieceTypeEnum.PAWN, orthodoxBoardWidth - 3, lastPawnRank);
       } else if (isAmazons && color === ColorEnum.WHITE) {
         addPiece(PieceTypeEnum.AMAZON, halfBoard - 1, 0);
         addPiece(PieceTypeEnum.AMAZON, halfBoard, 0);
         addPiece(PieceTypeEnum.AMAZON, halfBoard + 1, 0);
       } else {
-        const pieceRankY = color === ColorEnum.WHITE ? 0 : boardHeight - 1;
-        const pawnRankY = color === ColorEnum.WHITE ? 1 : boardHeight - 2;
+        const pieceRankY = color === ColorEnum.WHITE ? 0 : orthodoxBoardHeight - 1;
+        const pawnRankY = color === ColorEnum.WHITE ? 1 : orthodoxBoardHeight - 2;
 
         pieceTypes.forEach((type, x) => {
           addPiece(type, x, pieceRankY);
         });
 
-        _.times(boardWidth, (x) => {
+        _.times(orthodoxBoardWidth, (x) => {
           addPiece(PieceTypeEnum.PAWN, x, pawnRankY);
         });
       }
     });
+
+    if (isCircularChess) {
+      pieces.forEach((piece) => {
+        if (Game.isBoardPiece(piece) && piece.location.x >= boardWidth) {
+          piece.location.x = orthodoxBoardWidth - 1 - piece.location.x;
+          piece.location.y = boardHeight - 1 - piece.location.y;
+        }
+      });
+    }
 
     return {
       ...PARTIAL_STANDARD_STARTING_DATA,
@@ -647,6 +685,7 @@ export class Game implements IGame {
     const isChessence = _.includes(variants, GameVariantEnum.CHESSENCE);
     const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
     const isCylinderChess = _.includes(variants, GameVariantEnum.CYLINDER_CHESS);
+    const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
     const boardDimensions = Game.getBoardDimensions(variants);
     let startingData: StartingData;
 
@@ -702,7 +741,7 @@ export class Game implements IGame {
         const pieceType = PieceTypeEnum.MAN;
         let id = +_.last(startingData.pieces)!.id;
 
-        [ColorEnum.WHITE, ColorEnum.BLACK].forEach((color) => {
+        _.forEach(ColorEnum, (color) => {
           _.times(3, () => {
             pieces.push({
               id: `${++id}`,
@@ -733,7 +772,7 @@ export class Game implements IGame {
       }
     }
 
-    if (isAntichess || isCylinderChess) {
+    if (isAntichess || isCylinderChess || isCircularChess) {
       startingData.possibleCastling = {
         [ColorEnum.WHITE]: {
           [CastlingTypeEnum.KING_SIDE]: false,
@@ -790,6 +829,8 @@ export class Game implements IGame {
     const isChessence = _.includes(variants, GameVariantEnum.CHESSENCE);
     const isThreeCheck = _.includes(variants, GameVariantEnum.THREE_CHECK);
     const isCylinderChess = _.includes(variants, GameVariantEnum.CYLINDER_CHESS);
+    const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
+    const isDarkChess = _.includes(variants, GameVariantEnum.DARK_CHESS);
     const fenData = fen.trim().split(/\s+/);
     const boards = fenData.slice(0, boardCount);
 
@@ -831,6 +872,8 @@ export class Game implements IGame {
     if (possibleEnPassantString !== '-') {
       if (
         isChessence
+        || isCircularChess
+        || isDarkChess
         || (isMonsterChess && turnString === 'w2')
       ) {
         throw new Error('Invalid FEN: wrong en passant');
@@ -1002,8 +1045,10 @@ export class Game implements IGame {
     )).length;
 
     if (
-      whiteKingsCount !== (isHorde ? 0 : isTwoFamilies ? 2 : 1)
-      || blackKingsCount !== (isTwoFamilies ? 2 : 1)
+      !isAntichess && (
+        whiteKingsCount !== (isHorde ? 0 : isTwoFamilies ? 2 : 1)
+        || blackKingsCount !== (isTwoFamilies ? 2 : 1)
+      )
     ) {
       throw new Error('Invalid FEN: wrong kings count');
     }
@@ -1450,8 +1495,8 @@ export class Game implements IGame {
       : -1;
   }
 
-  static getRankLiteral(rank: number): number {
-    return rank + 1;
+  static getRankLiteral(rank: number): string {
+    return `${rank + 1}`;
   }
 
   static getRankNumber(rankLiteral: string): number {
@@ -1715,11 +1760,14 @@ export class Game implements IGame {
   isAmazons: boolean;
   isThreeCheck: boolean;
   isCylinderChess: boolean;
+  isCircularChess: boolean;
   isLeftInCheckAllowed: boolean;
   pliesPerMove: number;
   boardCount: number;
   boardWidth: number;
   boardHeight: number;
+  boardOrthodoxWidth: number;
+  boardOrthodoxHeight: number;
   nullSquares: ReadonlyArray<Square>;
   voidSquares: ReadonlyArray<Square>;
   variants: ReadonlyArray<GameVariantEnum>;
@@ -1765,6 +1813,7 @@ export class Game implements IGame {
     this.isAmazons = _.includes(this.variants, GameVariantEnum.AMAZONS);
     this.isThreeCheck = _.includes(this.variants, GameVariantEnum.THREE_CHECK);
     this.isCylinderChess = _.includes(this.variants, GameVariantEnum.CYLINDER_CHESS);
+    this.isCircularChess = _.includes(this.variants, GameVariantEnum.CIRCULAR_CHESS);
 
     this.isPocketUsed = Game.getIsPocketUsed(settings.variants);
     this.isLeftInCheckAllowed = (
@@ -1778,6 +1827,13 @@ export class Game implements IGame {
       [ColorEnum.WHITE]: this.getCastlingRookCoordinates(ColorEnum.WHITE),
       [ColorEnum.BLACK]: this.getCastlingRookCoordinates(ColorEnum.BLACK)
     };
+
+    this.boardOrthodoxWidth = this.isCircularChess
+      ? this.boardWidth * 2
+      : this.boardWidth;
+    this.boardOrthodoxHeight = this.isCircularChess
+      ? this.boardHeight / 2
+      : this.boardHeight;
 
     if (this.isChessence) {
       this.pocketPiecesUsed = [PieceTypeEnum.MAN];
@@ -2091,8 +2147,8 @@ export class Game implements IGame {
       ATOMIC_SQUARE_INCREMENTS.forEach(([incrementY, incrementX]) => {
         const pieceInSquare = this.getBoardPiece({
           board,
-          y: toY + incrementY,
-          x: toX + incrementX
+          y: this.adjustRankY(toY + incrementY),
+          x: this.adjustFileX(toX + incrementX)
         });
 
         if (pieceInSquare && (!Game.isPawn(pieceInSquare) || pieceInSquare.abilities)) {
@@ -2265,6 +2321,7 @@ export class Game implements IGame {
 
     if (
       !this.isDarkChess
+      && !this.isCircularChess
       && fromLocation.type === PieceLocationEnum.BOARD
       && Game.isPawn(piece)
       && Math.abs(toY - fromLocation.y) > 1
@@ -2588,6 +2645,12 @@ export class Game implements IGame {
     return this.isCylinderChess
       ? (fileX + this.boardWidth) % this.boardWidth
       : fileX;
+  }
+
+  adjustRankY(rankY: number): number {
+    return this.isCircularChess
+      ? (rankY + this.boardHeight) % this.boardHeight
+      : rankY;
   }
 
   getFenPieces(): string {
@@ -2921,8 +2984,17 @@ export class Game implements IGame {
           let newMoves: PossibleMove[] = [];
 
           if (
-            (rankY !== 0 && rankY !== this.boardHeight - 1)
-            || (piece.location as PiecePocketLocation).pieceType !== PieceTypeEnum.PAWN
+            (piece.location as PiecePocketLocation).pieceType !== PieceTypeEnum.PAWN
+            || (
+              rankY !== 0
+              && rankY !== this.boardHeight - 1
+              && (
+                !this.isCircularChess || (
+                  rankY !== this.boardOrthodoxHeight - 1
+                  && rankY !== this.boardOrthodoxHeight
+                )
+              )
+            )
           ) {
             newMoves = _
               .times(this.boardWidth, (fileX) => ({
@@ -2986,7 +3058,7 @@ export class Game implements IGame {
       let iterations = 0;
 
       while (true) {
-        rankY += incrementY;
+        rankY = this.adjustRankY(rankY + incrementY);
         fileX = this.adjustFileX(fileX + incrementX);
 
         const square = {
@@ -3111,7 +3183,7 @@ export class Game implements IGame {
 
     if (isAmazon || isEmpress || isCardinal || isKnight) {
       KNIGHT_MOVE_INCREMENTS.forEach(([incrementY, incrementX]) => {
-        const rankY = pieceY + incrementY;
+        const rankY = this.adjustRankY(pieceY + incrementY);
         const fileX = this.adjustFileX(pieceX + incrementX);
         const square = {
           board,
@@ -3139,13 +3211,41 @@ export class Game implements IGame {
     }
 
     if (isPawn) {
-      const direction = pieceColor === ColorEnum.WHITE ? 1 : -1;
-      const rankY = pieceY + direction;
+      let direction: number;
+
+      if (this.isCircularChess) {
+        direction = (
+          pieceColor === ColorEnum.WHITE
+          && pieceY < this.boardHeight / 2
+        ) || (
+          pieceColor === ColorEnum.BLACK
+          && pieceY >= this.boardHeight / 2
+        ) ? 1 : -1;
+      } else {
+        direction = pieceColor === ColorEnum.WHITE ? 1 : -1;
+      }
+
+      const rankY = this.adjustRankY(pieceY + direction);
       const square = {
         board,
         x: pieceX,
         y: rankY
       };
+      let promotionRank: number;
+
+      if (this.isCircularChess) {
+        if (pieceColor === ColorEnum.WHITE) {
+          promotionRank = direction === 1
+            ? this.boardOrthodoxHeight - 1
+            : this.boardOrthodoxHeight;
+        } else {
+          promotionRank = direction === 1 ? this.boardHeight - 1 : 0;
+        }
+      } else {
+        promotionRank = pieceColor === ColorEnum.WHITE ? this.boardHeight - 1 : 0;
+      }
+
+      const isPawnPromotion = rankY === promotionRank;
 
       if ((forMove || onlyPossible || onlyVisible) && !this.isNullSquare(square)) {
         // 1-forward move
@@ -3155,13 +3255,20 @@ export class Game implements IGame {
           possibleMoves.push({
             ...DEFAULT_MOVE,
             square,
-            isPawnPromotion: rankY === (pieceColor === ColorEnum.WHITE ? this.boardHeight - 1 : 0)
+            isPawnPromotion
           });
 
           if (
             !pieceInSquare && (
-              (pieceColor === ColorEnum.WHITE ? pieceY === 1 : pieceY === this.boardHeight - 2)
-              || (pieceColor === ColorEnum.WHITE && this.isHorde && pieceY === 0)
+              (
+                pieceColor === ColorEnum.WHITE
+                  ? pieceY === 1 || (this.isCircularChess && pieceY === this.boardHeight - 2)
+                  : pieceY === this.boardOrthodoxHeight - 2 || (this.isCircularChess && pieceY === this.boardOrthodoxHeight + 1)
+              ) || (
+                pieceColor === ColorEnum.WHITE
+                && this.isHorde
+                && (pieceY === 0 || (this.isCircularChess && pieceY === this.boardHeight - 1))
+              )
             )
           ) {
             // 2-forward move
@@ -3219,7 +3326,7 @@ export class Game implements IGame {
               } : null,
               isPawnPromotion: isCapture && this.isFrankfurt
                 ? false
-                : rankY === (pieceColor === ColorEnum.WHITE ? this.boardHeight - 1 : 0)
+                : isPawnPromotion
             });
           }
         }
