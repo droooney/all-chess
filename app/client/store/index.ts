@@ -39,7 +39,6 @@ declare module 'react-redux' {
   }
 }
 
-// console.log(initialState);
 const store = createStore(rootReducer, compose(applyMiddleware(...middlewares)));
 
 export default store;

@@ -103,21 +103,54 @@ const KNIGHT_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
   [+2, +1]
 ];
 
-const BISHOP_NEIGHBOR_INCREMENTS: ReadonlyArray<[number, number]> = [
+const HEX_KNIGHT_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
+  [-2, -3],
+  [-1, -3],
+  [+1, +3],
+  [+2, +3],
+  [-3, -1],
+  [-3, -2],
+  [+3, +1],
+  [+3, +2],
+  [-2, +1],
+  [-1, +2],
+  [+1, -2],
+  [+2, -1]
+];
+
+const BISHOP_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
   [-1, -1],
   [-1, +1],
   [+1, -1],
   [+1, +1]
 ];
 
-const ROOK_NEIGHBOR_INCREMENTS: ReadonlyArray<[number, number]> = [
+const HEX_BISHOP_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
+  [-1, -2],
+  [+1, +2],
+  [-2, -1],
+  [-1, +1],
+  [+1, -1],
+  [+2, +1]
+];
+
+const ROOK_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
   [-1, 0],
   [0, -1],
   [0, +1],
   [+1, 0]
 ];
 
-const STANDARD_PIECES: PieceTypeEnum[] = [
+const HEX_ROOK_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
+  [-1, 0],
+  [0, -1],
+  [0, 1],
+  [1, 0],
+  [-1, -1],
+  [1, 1]
+];
+
+const STANDARD_PIECES: ReadonlyArray<PieceTypeEnum> = [
   PieceTypeEnum.KING,
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.ROOK,
@@ -126,7 +159,7 @@ const STANDARD_PIECES: PieceTypeEnum[] = [
   PieceTypeEnum.PAWN
 ];
 
-const STANDARD_PIECE_PLACEMENT: PieceTypeEnum[] = [
+const STANDARD_PIECE_PLACEMENT: ReadonlyArray<PieceTypeEnum> = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.KNIGHT,
   PieceTypeEnum.BISHOP,
@@ -208,7 +241,39 @@ const PIECES_SORTING: PieceTypeEnum[] = [
   PieceTypeEnum.PAWN
 ];
 
-const PARTIAL_STANDARD_STARTING_DATA = {
+const HEXAGONAL_EMPTY_SQUARES: ReadonlyArray<Square> = [
+  [6, 0], [6, 10],
+  [7, 0], [7, 1], [7, 9], [7, 10],
+  [8, 0], [8, 1], [8, 2], [8, 8], [8, 9], [8, 10],
+  [9, 0], [9, 1], [9, 2], [9, 3], [9, 7], [9, 8], [9, 9], [9, 10],
+  [10, 0], [10, 1], [10, 2], [10, 3], [10, 4], [10, 6], [10, 7], [10, 8], [10, 9], [10, 10]
+].map(([y, x]) => ({ board: 0, x, y }));
+
+const HEXAGONAL_PIECE_SQUARES: ReadonlyArray<[number, number]> = [
+  [0, 2],
+  [0, 3],
+  [0, 4],
+  [0, 5],
+  [0, 6],
+  [0, 7],
+  [0, 8],
+  [1, 5],
+  [2, 5]
+];
+
+const HEXAGONAL_PIECE_PLACEMENT: ReadonlyArray<PieceTypeEnum> = [
+  PieceTypeEnum.ROOK,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.QUEEN,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.KING,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.ROOK,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.BISHOP
+];
+
+const STANDARD_STARTING_DATA: StartingData = {
   result: null,
   turn: ColorEnum.WHITE,
   startingMoveIndex: 0,
@@ -227,7 +292,10 @@ const PARTIAL_STANDARD_STARTING_DATA = {
   checksCount: {
     [ColorEnum.WHITE]: 0,
     [ColorEnum.BLACK]: 0
-  }
+  },
+  pieces: [],
+  emptySquares: [],
+  voidSquares: []
 };
 
 const DEFAULT_MOVE = {
@@ -274,6 +342,7 @@ export class Game implements IGame {
     const isThreeCheck = _.includes(variants, GameVariantEnum.THREE_CHECK);
     const isCylinderChess = _.includes(variants, GameVariantEnum.CYLINDER_CHESS);
     const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
+    const isHexagonalChess = _.includes(variants, GameVariantEnum.HEXAGONAL_CHESS);
 
     return ((
       !isKingOfTheHill
@@ -300,6 +369,8 @@ export class Game implements IGame {
         && !isCapablanca
         && !isAmazons
         && !isThreeCheck
+        && !isCircularChess
+        && !isHexagonalChess
       )
     ) && (
       !isChessence
@@ -318,6 +389,7 @@ export class Game implements IGame {
         && !isAmazons
         && !isCylinderChess
         && !isCircularChess
+        && !isHexagonalChess
       )
     ) && (
       !isHorde
@@ -334,6 +406,8 @@ export class Game implements IGame {
         && !isAbsorption
         && !isFrankfurt
         && !isAmazons
+        // TODO: add support for horde + hex
+        && !isHexagonalChess
       )
     ) && (
       !isAtomic
@@ -341,6 +415,8 @@ export class Game implements IGame {
         !isAliceChess
         && !isDarkChess
         && !isAmazons
+        // TODO: add support for hex + atomic
+        && !isHexagonalChess
       )
     ) && (
       !isAntichess
@@ -387,6 +463,7 @@ export class Game implements IGame {
         && !isPatrol
         && !isMadrasi
         && !isAliceChess
+        && !isHexagonalChess
       )
     ) && (
       !isThreeCheck
@@ -401,6 +478,21 @@ export class Game implements IGame {
         // TODO: add support for circular + circe
         && !isCirce
         && !isKingOfTheHill
+        && !isHexagonalChess
+      )
+    ) && (
+      !isHexagonalChess
+      || (
+        // TODO: add support for hex + 960
+        !is960
+        && !isCylinderChess
+        // TODO: add support for hex + koth
+        && !isKingOfTheHill
+        // TODO: add support for hex + two families
+        && !isTwoFamilies
+        // TODO: add support for hex + capablanca
+        && !isCapablanca
+        && !isCirce
       )
     ));
   }
@@ -476,10 +568,9 @@ export class Game implements IGame {
     });
 
     return {
-      ...PARTIAL_STANDARD_STARTING_DATA,
+      ...STANDARD_STARTING_DATA,
       pieces,
-      voidSquares,
-      emptySquares: []
+      voidSquares
     };
   })();
 
@@ -490,14 +581,21 @@ export class Game implements IGame {
     const isCapablanca = _.includes(variants, GameVariantEnum.CAPABLANCA);
     const isAmazons = _.includes(variants, GameVariantEnum.AMAZONS);
     const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
+    const isHexagonalChess = _.includes(variants, GameVariantEnum.HEXAGONAL_CHESS);
     const dimensions = {
       boardCount: isAliceChess ? 2 : 1,
       boardWidth: isChessence
         ? 6
         : isTwoFamilies || isCapablanca || isAmazons
           ? 10
-          : 8,
-      boardHeight: isChessence ? 9 : 8
+          : isHexagonalChess
+            ? 11
+            : 8,
+      boardHeight: isChessence
+        ? 9
+        : isHexagonalChess
+          ? 11
+          : 8
     };
 
     if (!isCircularChess) {
@@ -508,6 +606,48 @@ export class Game implements IGame {
       ...dimensions,
       boardWidth: dimensions.boardWidth / 2,
       boardHeight: dimensions.boardHeight * 2
+    };
+  }
+
+  static generateHexagonalStartingData(): StartingData {
+    const pieces: RealPiece[] = [];
+    const boardHeight = 11;
+    const middleFile = 5;
+    let id = 0;
+
+    _.forEach(ColorEnum, (color) => {
+      const addPiece = (type: PieceTypeEnum, x: number, y: number) => {
+        pieces.push({
+          id: `${++id}`,
+          type,
+          originalType: type,
+          color,
+          moved: false,
+          abilities: null,
+          location: {
+            type: PieceLocationEnum.BOARD,
+            board: 0,
+            x,
+            y: color === ColorEnum.WHITE
+              ? y
+              : boardHeight - 1 - y - (Math.abs(x - middleFile))
+          }
+        });
+      };
+
+      HEXAGONAL_PIECE_SQUARES.forEach(([y, x], ix) => {
+        addPiece(HEXAGONAL_PIECE_PLACEMENT[ix], x, y);
+      });
+
+      _.times(9, (x) => {
+        addPiece(PieceTypeEnum.PAWN, x + 1, middleFile - 1 - Math.abs(x + 1 - middleFile));
+      });
+    });
+
+    return {
+      ...STANDARD_STARTING_DATA,
+      pieces,
+      emptySquares: HEXAGONAL_EMPTY_SQUARES
     };
   }
 
@@ -529,23 +669,23 @@ export class Game implements IGame {
       : boardHeight;
     const halfBoard = Math.round(orthodoxBoardWidth / 2);
     let id = 0;
-    let pieceTypes: PieceTypeEnum[];
+    let pieceTypes: ReadonlyArray<PieceTypeEnum>;
 
     if (_.includes(variants, GameVariantEnum.CHESS_960)) {
-      pieceTypes = _.times(orthodoxBoardWidth, () => null!);
+      const randomPieceTypes: (PieceTypeEnum | null)[] = _.times(orthodoxBoardWidth, () => null!);
 
       const darkColoredBishopPosition = 2 * Math.floor(halfBoard * Math.random());
       const lightColoredBishopPosition = 2 * Math.floor(halfBoard * Math.random()) + 1;
 
-      pieceTypes[darkColoredBishopPosition] = PieceTypeEnum.BISHOP;
-      pieceTypes[lightColoredBishopPosition] = PieceTypeEnum.BISHOP;
+      randomPieceTypes[darkColoredBishopPosition] = PieceTypeEnum.BISHOP;
+      randomPieceTypes[lightColoredBishopPosition] = PieceTypeEnum.BISHOP;
 
       const placePiece = (type: PieceTypeEnum, position: number) => {
         let currentPosition = 0;
 
-        pieceTypes.some((piece, ix) => {
+        randomPieceTypes.some((piece, ix) => {
           if (!piece && currentPosition++ === position) {
-            pieceTypes[ix] = type;
+            randomPieceTypes[ix] = type;
 
             return true;
           }
@@ -573,9 +713,9 @@ export class Game implements IGame {
 
       let placedPieces = 0;
 
-      pieceTypes.some((piece, ix) => {
+      randomPieceTypes.some((piece, ix) => {
         if (!piece) {
-          pieceTypes[ix] = restPieces[placedPieces++];
+          randomPieceTypes[ix] = restPieces[placedPieces++];
 
           if (placedPieces === restPieces.length) {
             return true;
@@ -584,6 +724,8 @@ export class Game implements IGame {
 
         return false;
       });
+
+      pieceTypes = randomPieceTypes as ReadonlyArray<PieceTypeEnum>;
     } else if (isTwoFamilies) {
       pieceTypes = TWO_FAMILIES_PIECE_PLACEMENT;
     } else if (isCapablanca || isAmazons) {
@@ -591,19 +733,6 @@ export class Game implements IGame {
     } else {
       pieceTypes = STANDARD_PIECE_PLACEMENT;
     }
-
-    /*
-    pieceTypes = [
-      PieceTypeEnum.QUEEN,
-      PieceTypeEnum.ROOK,
-      PieceTypeEnum.KING,
-      PieceTypeEnum.ROOK,
-      PieceTypeEnum.BISHOP,
-      PieceTypeEnum.BISHOP,
-      PieceTypeEnum.KNIGHT,
-      PieceTypeEnum.KNIGHT
-    ];
-    */
 
     const pieces: RealPiece[] = [];
 
@@ -672,10 +801,8 @@ export class Game implements IGame {
     }
 
     return {
-      ...PARTIAL_STANDARD_STARTING_DATA,
-      pieces,
-      voidSquares: [],
-      emptySquares: []
+      ...STANDARD_STARTING_DATA,
+      pieces
     };
   }
 
@@ -686,13 +813,16 @@ export class Game implements IGame {
     const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
     const isCylinderChess = _.includes(variants, GameVariantEnum.CYLINDER_CHESS);
     const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
+    const isHexagonalChess = _.includes(variants, GameVariantEnum.HEXAGONAL_CHESS);
     const boardDimensions = Game.getBoardDimensions(variants);
     let startingData: StartingData;
 
     if (isChessence) {
-      startingData = this.chessenceStartingData;
+      startingData = Game.chessenceStartingData;
+    } else if (isHexagonalChess) {
+      startingData = Game.generateHexagonalStartingData();
     } else {
-      startingData = this.generateClassicStartingData(boardDimensions, variants);
+      startingData = Game.generateClassicStartingData(boardDimensions, variants);
     }
 
     startingData = { ...startingData };
@@ -772,7 +902,7 @@ export class Game implements IGame {
       }
     }
 
-    if (isAntichess || isCylinderChess || isCircularChess) {
+    if (isChessence || isAntichess || isCylinderChess || isCircularChess || isHexagonalChess) {
       startingData.possibleCastling = {
         [ColorEnum.WHITE]: {
           [CastlingTypeEnum.KING_SIDE]: false,
@@ -1022,9 +1152,9 @@ export class Game implements IGame {
 
     if (
       isAliceChess
-      && startingData.pieces.some(({ location }) => (
+      && pieces.some(({ location }) => (
         location.type === PieceLocationEnum.BOARD
-        && startingData.pieces.some(({ location: pieceLocation }) => (
+        && pieces.some(({ location: pieceLocation }) => (
           pieceLocation.type === PieceLocationEnum.BOARD
           && location.x === pieceLocation.x
           && location.y === pieceLocation.y
@@ -1035,11 +1165,11 @@ export class Game implements IGame {
       throw new Error('Invalid FEN: multiple pieces on the same square');
     }
 
-    const whiteKingsCount = startingData.pieces.filter((piece) => (
+    const whiteKingsCount = pieces.filter((piece) => (
       piece.color === ColorEnum.WHITE
       && Game.isKing(piece)
     )).length;
-    const blackKingsCount = startingData.pieces.filter((piece) => (
+    const blackKingsCount = pieces.filter((piece) => (
       piece.color === ColorEnum.BLACK
       && Game.isKing(piece)
     )).length;
@@ -1055,7 +1185,7 @@ export class Game implements IGame {
 
     if (startingData.possibleEnPassant) {
       const { x, y } = startingData.possibleEnPassant.pieceLocation;
-      const enPassantPiece = _.find(startingData.pieces, (piece) => (
+      const enPassantPiece = _.find(pieces, (piece) => (
         Game.isPawn(piece)
         && piece.location.type === PieceLocationEnum.BOARD
         && piece.location.x === x
@@ -1371,7 +1501,7 @@ export class Game implements IGame {
                 && (!fromFileLiteral || piece.location.x === fromFile)
                 && (!fromRankLiteral || piece.location.x === fromRank)
               ))
-              && game.getAllowedMoves(piece).some(({ square }) => this.areSquaresEqual(square, toSquare))
+              && game.getAllowedMoves(piece).some(({ square }) => Game.areSquaresEqual(square, toSquare))
             );
           });
 
@@ -1761,6 +1891,7 @@ export class Game implements IGame {
   isThreeCheck: boolean;
   isCylinderChess: boolean;
   isCircularChess: boolean;
+  isHexagonalChess: boolean;
   isLeftInCheckAllowed: boolean;
   pliesPerMove: number;
   boardCount: number;
@@ -1768,7 +1899,10 @@ export class Game implements IGame {
   boardHeight: number;
   boardOrthodoxWidth: number;
   boardOrthodoxHeight: number;
+  middleFileX: number;
+  middleRankY: number;
   nullSquares: ReadonlyArray<Square>;
+  emptySquares: ReadonlyArray<Square>;
   voidSquares: ReadonlyArray<Square>;
   variants: ReadonlyArray<GameVariantEnum>;
   drawOffer: ColorEnum | null = null;
@@ -1787,6 +1921,7 @@ export class Game implements IGame {
       ...this.startingData.voidSquares,
       ...this.startingData.emptySquares
     ];
+    this.emptySquares = this.startingData.emptySquares;
     this.voidSquares = this.startingData.voidSquares;
 
     this.pgnTags = settings.pgnTags || {};
@@ -1814,6 +1949,7 @@ export class Game implements IGame {
     this.isThreeCheck = _.includes(this.variants, GameVariantEnum.THREE_CHECK);
     this.isCylinderChess = _.includes(this.variants, GameVariantEnum.CYLINDER_CHESS);
     this.isCircularChess = _.includes(this.variants, GameVariantEnum.CIRCULAR_CHESS);
+    this.isHexagonalChess = _.includes(this.variants, GameVariantEnum.HEXAGONAL_CHESS);
 
     this.isPocketUsed = Game.getIsPocketUsed(settings.variants);
     this.isLeftInCheckAllowed = (
@@ -1834,6 +1970,8 @@ export class Game implements IGame {
     this.boardOrthodoxHeight = this.isCircularChess
       ? this.boardHeight / 2
       : this.boardHeight;
+    this.middleFileX = Math.ceil(this.boardWidth / 2) - 1;
+    this.middleRankY = Math.ceil(this.boardHeight / 2) - 1;
 
     if (this.isChessence) {
       this.pocketPiecesUsed = [PieceTypeEnum.MAN];
@@ -1870,15 +2008,8 @@ export class Game implements IGame {
     this.checksCount = this.startingData.checksCount;
 
     if (this.isDarkChess) {
-      if (!this.startingData.visiblePieces) {
-        this.startingData.visiblePieces = {
-          [ColorEnum.WHITE]: this.getVisiblePieces(ColorEnum.WHITE),
-          [ColorEnum.BLACK]: this.getVisiblePieces(ColorEnum.BLACK)
-        };
-      }
-
       _.forEach(ColorEnum, (color) => {
-        this.visiblePieces[color] = this.startingData.visiblePieces![color].map((piece) => ({
+        this.visiblePieces[color] = this.getVisiblePieces(color).map((piece) => ({
           ...piece,
           realId: piece.id
         }));
@@ -2034,7 +2165,11 @@ export class Game implements IGame {
           figurine += '?';
         }
 
-        const promotionVisible = isPromotion && fromLocationVisible;
+        const promotionVisible = (
+          isPromotion
+          && fromLocationVisible
+          && (!this.isHexagonalChess || toLocationVisible)
+        );
 
         if (promotionVisible) {
           algebraic += `=${toLocationVisible ? Game.getPieceAlgebraicLiteral(move.promotion!) : '?'}`;
@@ -2326,7 +2461,7 @@ export class Game implements IGame {
       && Game.isPawn(piece)
       && Math.abs(toY - fromLocation.y) > 1
       && fromLocation.board === toBoard
-      && fromLocation.y === (this.turn === ColorEnum.WHITE ? 1 : this.boardHeight - 2)
+      && (!this.isHorde || fromLocation.y !== 0)
       && (
         !this.isMonsterChess
         || prevTurn !== nextTurn
@@ -3052,14 +3187,167 @@ export class Game implements IGame {
       || this.isPatrolledByFriendlyPiece(piece as BoardPiece)
     );
     let possibleMoves: PossibleMove[] = [];
-    const traverseDirection = (incrementY: 0 | 1 | -1, incrementX: 0 | 1 | -1, stopAfter: number) => {
+    const traverseDirection = (
+      movementType: (
+        PieceTypeEnum.KNIGHT
+        | PieceTypeEnum.BISHOP
+        | PieceTypeEnum.ROOK
+      ),
+      incrementY: number,
+      incrementX: number,
+      stopAfter: number
+    ) => {
       let rankY = pieceY;
       let fileX = pieceX;
       let iterations = 0;
 
       while (true) {
-        rankY = this.adjustRankY(rankY + incrementY);
-        fileX = this.adjustFileX(fileX + incrementX);
+        const newFileX = this.adjustFileX(fileX + incrementX);
+        let eventualIncrementY = incrementY;
+
+        if (this.isHexagonalChess) {
+          if (movementType === PieceTypeEnum.ROOK) {
+            if ((
+              incrementX === -1
+              && incrementY === -1
+              && fileX > this.middleFileX
+            ) || (
+              incrementX === +1
+              && incrementY === +1
+              && fileX >= this.middleFileX
+            )) {
+              eventualIncrementY = 0;
+            } else if ((
+              incrementX === -1
+              && incrementY === 0
+              && fileX > this.middleFileX
+            ) || (
+              incrementX === +1
+              && incrementY === 0
+              && fileX >= this.middleFileX
+            )) {
+              eventualIncrementY = -incrementX;
+            }
+          } else if (movementType === PieceTypeEnum.BISHOP) {
+            if (
+              (incrementX === +2 || incrementX === -2)
+              && (fileX - this.middleFileX) * incrementX < 0
+              && (newFileX - this.middleFileX) * incrementX > 0
+            ) {
+              eventualIncrementY = 0;
+            } else if ((
+              incrementX === -2
+              && incrementY === -1
+              && fileX > this.middleFileX
+            ) || (
+              incrementX === +2
+              && incrementY === +1
+              && fileX >= this.middleFileX
+            )) {
+              eventualIncrementY = -incrementY;
+            } else if ((
+              incrementX === -1
+              && incrementY === -2
+              && fileX > this.middleFileX
+            ) || (
+              incrementX === +1
+              && incrementY === +2
+              && fileX >= this.middleFileX
+            )) {
+              eventualIncrementY = incrementX;
+            } else if ((
+              incrementX === -1
+              && incrementY === +1
+              && fileX > this.middleFileX
+            ) || (
+              incrementX === +1
+              && incrementY === -1
+              && fileX >= this.middleFileX
+            )) {
+              eventualIncrementY = 2 * incrementY;
+            }
+          } else {
+            // eslint-disable-next-line no-lonely-if
+            if (
+              (incrementX === +3 || incrementX === -3)
+              && (fileX - this.middleFileX) * incrementX < 0
+              && (newFileX - this.middleFileX) * incrementX > 0
+            ) {
+              eventualIncrementY = incrementY - (
+                incrementX === +3
+                  ? newFileX - this.middleFileX
+                  : this.middleFileX - fileX
+              );
+            } else if ((
+              incrementX === -3
+              && fileX > this.middleFileX
+            ) || (
+              incrementX === +3
+              && fileX >= this.middleFileX
+            )) {
+              eventualIncrementY = incrementX === +3
+                ? incrementY - 3
+                : incrementY + 3;
+            } else if (
+              (incrementX === +2 || incrementX === -2)
+              && (incrementY === +3 || incrementY === -3)
+              && (fileX - this.middleFileX) * incrementX < 0
+              && (newFileX - this.middleFileX) * incrementX > 0
+            ) {
+              eventualIncrementY = incrementX;
+            } else if ((
+              incrementX === -2
+              && incrementY === -3
+              && fileX > this.middleFileX
+            ) || (
+              incrementX === +2
+              && incrementY === +3
+              && fileX >= this.middleFileX
+            )) {
+              eventualIncrementY = incrementY / 3;
+            } else if (
+              (incrementX === +2 || incrementX === -2)
+              && (incrementY === +1 || incrementY === -1)
+              && (fileX - this.middleFileX) * incrementX < 0
+              && (newFileX - this.middleFileX) * incrementX > 0
+            ) {
+              eventualIncrementY = incrementY * 2;
+            } else if ((
+              incrementX === -2
+              && incrementY === +1
+              && fileX > this.middleFileX
+            ) || (
+              incrementX === +2
+              && incrementY === -1
+              && fileX >= this.middleFileX
+            )) {
+              eventualIncrementY = incrementY * 3;
+            } else if ((
+              incrementX === -1
+              && incrementY === -3
+              && fileX > this.middleFileX
+            ) || (
+              incrementX === +1
+              && incrementY === +3
+              && fileX >= this.middleFileX
+            )) {
+              eventualIncrementY = incrementX * 2;
+            } else if ((
+              incrementX === -1
+              && incrementY === +2
+              && fileX > this.middleFileX
+            ) || (
+              incrementX === +1
+              && incrementY === -2
+              && fileX >= this.middleFileX
+            )) {
+              eventualIncrementY = -incrementX * 3;
+            }
+          }
+        }
+
+        rankY = this.adjustRankY(rankY + eventualIncrementY);
+        fileX = newFileX;
 
         const square = {
           board,
@@ -3154,8 +3442,8 @@ export class Game implements IGame {
         );
       };
 
-      isRook = ROOK_NEIGHBOR_INCREMENTS.some(isFriendlyMan);
-      isBishop = BISHOP_NEIGHBOR_INCREMENTS.some(isFriendlyMan);
+      isRook = ROOK_MOVE_INCREMENTS.some(isFriendlyMan);
+      isBishop = BISHOP_MOVE_INCREMENTS.some(isFriendlyMan);
       isKnight = KNIGHT_MOVE_INCREMENTS.some(isFriendlyMan);
     }
 
@@ -3164,10 +3452,13 @@ export class Game implements IGame {
         ? 1
         : Infinity;
 
-      traverseDirection(+1, 0, stopAfter);
-      traverseDirection(-1, 0, stopAfter);
-      traverseDirection(0, +1, stopAfter);
-      traverseDirection(0, -1, stopAfter);
+      (
+        this.isHexagonalChess
+          ? HEX_ROOK_MOVE_INCREMENTS
+          : ROOK_MOVE_INCREMENTS
+      ).forEach(([incrementY, incrementX]) => {
+        traverseDirection(PieceTypeEnum.ROOK, incrementY, incrementX, stopAfter);
+      });
     }
 
     if (isKingMove || isAmazon || isQueen || isCardinal || isBishop) {
@@ -3175,38 +3466,22 @@ export class Game implements IGame {
         ? 1
         : Infinity;
 
-      traverseDirection(+1, +1, stopAfter);
-      traverseDirection(+1, -1, stopAfter);
-      traverseDirection(-1, +1, stopAfter);
-      traverseDirection(-1, -1, stopAfter);
+      (
+        this.isHexagonalChess
+          ? HEX_BISHOP_MOVE_INCREMENTS
+          : BISHOP_MOVE_INCREMENTS
+      ).forEach(([incrementY, incrementX]) => {
+        traverseDirection(PieceTypeEnum.BISHOP, incrementY, incrementX, stopAfter);
+      });
     }
 
     if (isAmazon || isEmpress || isCardinal || isKnight) {
-      KNIGHT_MOVE_INCREMENTS.forEach(([incrementY, incrementX]) => {
-        const rankY = this.adjustRankY(pieceY + incrementY);
-        const fileX = this.adjustFileX(pieceX + incrementX);
-        const square = {
-          board,
-          x: fileX,
-          y: rankY
-        };
-
-        if (this.isNullSquare(square)) {
-          return;
-        }
-
-        const pieceInSquare = this.getBoardPiece(square);
-
-        if ((!forMove && !onlyPossible) || !pieceInSquare || pieceInSquare.color !== pieceColor) {
-          possibleMoves.push({
-            ...DEFAULT_MOVE,
-            square,
-            capture: pieceInSquare && pieceInSquare.color !== pieceColor ? {
-              piece: pieceInSquare,
-              enPassant: false
-            } : null
-          });
-        }
+      (
+        this.isHexagonalChess
+          ? HEX_KNIGHT_MOVE_INCREMENTS
+          : KNIGHT_MOVE_INCREMENTS
+      ).forEach(([incrementY, incrementX]) => {
+        traverseDirection(PieceTypeEnum.KNIGHT, incrementY, incrementX, 1);
       });
     }
 
@@ -3231,21 +3506,30 @@ export class Game implements IGame {
         x: pieceX,
         y: rankY
       };
-      let promotionRank: number;
-
-      if (this.isCircularChess) {
-        if (pieceColor === ColorEnum.WHITE) {
-          promotionRank = direction === 1
-            ? this.boardOrthodoxHeight - 1
-            : this.boardOrthodoxHeight;
-        } else {
-          promotionRank = direction === 1 ? this.boardHeight - 1 : 0;
-        }
-      } else {
-        promotionRank = pieceColor === ColorEnum.WHITE ? this.boardHeight - 1 : 0;
-      }
-
-      const isPawnPromotion = rankY === promotionRank;
+      const isPawnPromotion = rankY === (
+        this.isCircularChess
+          ? pieceColor === ColorEnum.WHITE
+            ? direction === 1
+              ? this.boardOrthodoxHeight - 1
+              : this.boardOrthodoxHeight
+            : direction === 1
+              ? this.boardHeight - 1
+              : 0
+          : this.isHexagonalChess
+            ? Infinity
+            : pieceColor === ColorEnum.WHITE
+              ? this.boardHeight - 1
+              : 0
+      );
+      const getIsPawnPromotion = (square: Square): boolean => (
+        this.isHexagonalChess
+          ? square.y === (
+            pieceColor === ColorEnum.WHITE
+              ? this.boardHeight - 1 - Math.abs(square.x - this.middleFileX)
+              : 0
+          )
+          : isPawnPromotion
+      );
 
       if ((forMove || onlyPossible || onlyVisible) && !this.isNullSquare(square)) {
         // 1-forward move
@@ -3255,15 +3539,19 @@ export class Game implements IGame {
           possibleMoves.push({
             ...DEFAULT_MOVE,
             square,
-            isPawnPromotion
+            isPawnPromotion: getIsPawnPromotion(square)
           });
 
           if (
             !pieceInSquare && (
               (
                 pieceColor === ColorEnum.WHITE
-                  ? pieceY === 1 || (this.isCircularChess && pieceY === this.boardHeight - 2)
-                  : pieceY === this.boardOrthodoxHeight - 2 || (this.isCircularChess && pieceY === this.boardOrthodoxHeight + 1)
+                  ? this.isHexagonalChess
+                    ? pieceY === this.middleFileX - 1 - Math.abs(pieceX - this.middleFileX)
+                    : pieceY === 1 || (this.isCircularChess && pieceY === this.boardHeight - 2)
+                  : this.isHexagonalChess
+                    ? pieceY === this.middleRankY + 1
+                    : pieceY === this.boardOrthodoxHeight - 2 || (this.isCircularChess && pieceY === this.boardOrthodoxHeight + 1)
               ) || (
                 pieceColor === ColorEnum.WHITE
                 && this.isHorde
@@ -3295,7 +3583,15 @@ export class Game implements IGame {
         const square = {
           board,
           x: fileX,
-          y: rankY
+          y: this.isHexagonalChess && ((
+            pieceColor === ColorEnum.WHITE
+            && (pieceX - this.middleFileX) * incrementX >= 0
+          ) || (
+            pieceColor === ColorEnum.BLACK
+            && (pieceX - this.middleFileX) * incrementX < 0
+          ))
+            ? rankY - direction
+            : rankY
         };
 
         if (!this.isNullSquare(square)) {
@@ -3324,9 +3620,7 @@ export class Game implements IGame {
                 piece: pieceInSquare!,
                 enPassant: false
               } : null,
-              isPawnPromotion: isCapture && this.isFrankfurt
-                ? false
-                : isPawnPromotion
+              isPawnPromotion: (!isCapture || !this.isFrankfurt) && getIsPawnPromotion(square)
             });
           }
         }
@@ -3562,11 +3856,11 @@ export class Game implements IGame {
   isNullSquare(square: Square): boolean {
     return (
       square.board < 0
-      || square.board >= this.boardCount
+      || square.board > this.boardCount - 1
       || square.y < 0
-      || square.y >= this.boardHeight
+      || square.y > this.boardHeight - 1
       || square.x < 0
-      || square.x >= this.boardWidth
+      || square.x > this.boardWidth - 1
       || this.nullSquares.some((nullSquare) => (
         Game.areSquaresEqual(square, nullSquare)
       ))

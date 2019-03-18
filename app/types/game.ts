@@ -87,9 +87,6 @@ export interface StartingData {
   pieces: ReadonlyArray<RealPiece>;
   voidSquares: ReadonlyArray<Square>;
   emptySquares: ReadonlyArray<Square>;
-  visiblePieces?: {
-    [color in ColorEnum]: Piece[];
-  };
 }
 
 export interface Piece {
@@ -215,7 +212,8 @@ export enum GameVariantEnum {
   AMAZONS = 'AMAZONS',
   THREE_CHECK = 'THREE_CHECK',
   CYLINDER_CHESS = 'CYLINDER_CHESS',
-  CIRCULAR_CHESS = 'CIRCULAR_CHESS'
+  CIRCULAR_CHESS = 'CIRCULAR_CHESS',
+  HEXAGONAL_CHESS = 'HEXAGONAL_CHESS'
 }
 
 export interface BaseMove {
