@@ -38,9 +38,13 @@ export default class GameRulesExample extends React.Component<Props> {
   constructor(props: Props) {
     super(props);
 
+    const variantsString = props.variants.length
+      ? props.variants.map((variant) => GAME_VARIANT_PGN_NAMES[variant]).join(' + ')
+      : 'Standard';
+
     this.game = Game.getGameFromPgn(`
       ${props.fen ? `[FEN "${props.fen}"]` : ''}
-      [Variant "${props.variants.map((variant) => GAME_VARIANT_PGN_NAMES[variant]).join(' + ')}"]
+      [Variant "${variantsString}"]
 
       ${props.moves || ''}
     `);

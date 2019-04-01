@@ -309,7 +309,7 @@ const DIGITS_REGEX = /^\d+$/;
 const FEN_CASTLING_REGEX = /^[kq]+$/i;
 const FEN_CHECKS_COUNT_REGEX = /^\+([0-3])\+([0-3])$/i;
 
-const PGN_TAG_REGEX = /^\[([a-z0-9]+) +"((?:[^"\\]|\\"|\\\\)+)"]$/i;
+const PGN_TAG_REGEX = /^\[([a-z0-9]+) +"((?:[^"\\]|\\"|\\\\)*)"]$/i;
 const PGN_MOVE_REGEX = /^\S+(?=\s|$)/;
 const PGN_MOVE_SQUARES_REGEX = /^(?:([A-Z]?)(@?)([₀-₉]*)([a-w]*)(\d*)x?([₀-₉]*)([a-w])(\d+))|O-O(-O)?/;
 const PGN_PROMOTION_REGEX = /^=([A-Z])/;
@@ -1242,17 +1242,19 @@ export class Game implements IGame {
         .replace(/\\\\/, '\\');
 
       if (tagName === 'Variant') {
-        const variantStrings = trueTagValue.split(/\s+\+\s+/);
+        if (trueTagValue !== 'Standard') {
+          const variantStrings = trueTagValue.split(/\s+\+\s+/);
 
-        for (let i = 0; i < variantStrings.length; i++) {
-          const variantString = variantStrings[i];
-          const variant = _.findKey(GAME_VARIANT_PGN_NAMES, (name) => name === variantStrings[i]) as GameVariantEnum | undefined;
+          for (let i = 0; i < variantStrings.length; i++) {
+            const variantString = variantStrings[i];
+            const variant = _.findKey(GAME_VARIANT_PGN_NAMES, (name) => name === variantStrings[i]) as GameVariantEnum | undefined;
 
-          if (!variant) {
-            throw new Error(`Invalid PGN: invalid variant (${variantString})`);
+            if (!variant) {
+              throw new Error(`Invalid PGN: invalid variant (${variantString})`);
+            }
+
+            variants.push(variant);
           }
-
-          variants.push(variant);
         }
       } else if (tagName === 'TimeControl') {
         if (trueTagValue !== '-') {
