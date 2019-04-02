@@ -485,6 +485,8 @@ export class Game implements IGame {
       || (
         // TODO: add support for hex + 960
         !is960
+        // TODO: add support for hex + crazyhouse (pawns)
+        && !isCrazyhouse
         && !isCylinderChess
         // TODO: add support for hex + koth
         && !isKingOfTheHill
@@ -493,6 +495,8 @@ export class Game implements IGame {
         // TODO: add support for hex + capablanca
         && !isCapablanca
         && !isCirce
+        // TODO: add support for hex + frankfurt (promotion when capturing pawn)
+        && !isFrankfurt
       )
     ));
   }
