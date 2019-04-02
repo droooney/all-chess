@@ -1,9 +1,9 @@
 import {
   GameSettings,
-  User
+  ShortUser
 } from '../../types';
 
-export type UserState = User | null;
+export type UserState = ShortUser | null;
 
 export type GameSettingsState = GameSettings;
 

@@ -461,6 +461,7 @@ export default class Game extends GameHelper {
     } else {
       this.io.emit('moveMade', {
         move,
+        moveIndex: this.moves.length - 1,
         lastMoveTimestamp: this.lastMoveTimestamp
       });
     }

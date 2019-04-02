@@ -1,5 +1,6 @@
 import {
   ColorEnum,
+  GameStatusEnum,
   GameVariantEnum,
   PieceTypeEnum,
   ResultReasonEnum,
@@ -142,4 +143,10 @@ export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
 export const COLOR_NAMES: { [color in ColorEnum]: string } = {
   [ColorEnum.WHITE]: 'White',
   [ColorEnum.BLACK]: 'Black'
+};
+
+export const GAME_STATUS_NAMES: { [status in GameStatusEnum]: string; } = {
+  [GameStatusEnum.BEFORE_START]: 'Waiting for the opponent',
+  [GameStatusEnum.ONGOING]: 'In progress',
+  [GameStatusEnum.FINISHED]: 'Finished'
 };

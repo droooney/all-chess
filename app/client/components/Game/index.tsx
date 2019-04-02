@@ -1,9 +1,12 @@
+import * as _ from 'lodash';
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import io = require('socket.io-client');
 import classNames = require('classnames');
 
 import {
+  BaseMove,
+  BoardPossibleMove,
   ColorEnum,
   DarkChessGame,
   DarkChessGameInitialData,
@@ -11,9 +14,11 @@ import {
   GameInitialData,
   GameStatusEnum,
   PieceLocationEnum,
+  PiecePocketLocation,
   Player,
   PocketPiece,
-  RealPiece
+  RealPiece,
+  RealPieceLocation, Square
 } from '../../../types';
 import {
   GAME_VARIANT_NAMES
@@ -21,10 +26,13 @@ import {
 import { Game as GameHelper } from '../../helpers';
 
 import DocumentTitle from '../DocumentTitle';
+import FixedElement from '../FixedElement';
 import RightPanel from '../RightPanel';
 import InfoActionsPanel from '../InfoActionsPanel';
 import Chat from '../Chat';
 import Boards from '../Boards';
+import Piece from '../Piece';
+import Modal from '../Modal';
 
 import './index.less';
 
@@ -36,6 +44,10 @@ interface State {
   isBlackBase: boolean;
   showHiddenPieces: boolean;
   boardsShiftX: number;
+  promotionModalVisible: boolean;
+  promotionMove: BaseMove | null;
+  isDragging: boolean;
+  squareSize: number;
 }
 
 export default class Game extends React.Component<Props, State> {
@@ -43,12 +55,19 @@ export default class Game extends React.Component<Props, State> {
   player: Player | null = null;
   timeDiff?: number;
   game?: GameHelper;
+  draggingPieceRef = React.createRef<SVGSVGElement>();
+  dragX = 0;
+  dragY = 0;
   state: State = {
     selectedPiece: null,
     gameData: null,
     isBlackBase: false,
     showHiddenPieces: true,
-    boardsShiftX: 0
+    boardsShiftX: 0,
+    promotionModalVisible: false,
+    promotionMove: null,
+    isDragging: false,
+    squareSize: 0
   };
 
   componentDidMount() {
@@ -76,10 +95,24 @@ export default class Game extends React.Component<Props, State> {
         }
       }));
     });
+
+    document.addEventListener('mousemove', this.onMouseMove);
+    document.addEventListener('mouseup', this.onMouseUp);
   }
 
   componentWillUnmount() {
     this.socket!.disconnect();
+
+    document.removeEventListener('mousemove', this.onMouseMove);
+    document.removeEventListener('mouseup', this.onMouseUp);
+  }
+
+  componentDidUpdate(_prevProps: Props, prevState: State): void {
+    if (!prevState.isDragging && this.state.isDragging) {
+      document.body.classList.add('no-user-select');
+    } else if (prevState.isDragging && !this.state.isDragging) {
+      document.body.classList.remove('no-user-select');
+    }
   }
 
   getStartingIsBlackBase(): boolean {
@@ -101,6 +134,7 @@ export default class Game extends React.Component<Props, State> {
 
     this.setState({
       gameData: game,
+      squareSize: this.game.getSquareSize(),
       isBlackBase: this.getStartingIsBlackBase()
     });
 
@@ -147,6 +181,154 @@ export default class Game extends React.Component<Props, State> {
     });
   };
 
+  getAllowedMoves = (): BoardPossibleMove[] => {
+    const {
+      selectedPiece
+    } = this.state;
+
+    if (!selectedPiece) {
+      return [];
+    }
+
+    const allowedMoves = this.game!.getAllowedMoves(selectedPiece).map((move) => ({
+      ...move,
+      realSquare: move.square
+    }));
+
+    // add own rooks as castling move targets
+    if (!this.game!.is960) {
+      [...allowedMoves].forEach(({ square, castling }) => {
+        if (castling) {
+          allowedMoves.push({
+            square: castling.rook.location,
+            realSquare: square,
+            capture: null,
+            castling,
+            isPawnPromotion: false
+          });
+        }
+      });
+    }
+
+    return allowedMoves;
+  };
+
+  makeMove = (square: Square, isDndMove: boolean) => {
+    const {
+      selectedPiece
+    } = this.state;
+
+    if (!selectedPiece) {
+      return;
+    }
+
+    if (GameHelper.isBoardPiece(selectedPiece) && GameHelper.areSquaresEqual(selectedPiece.location, square)) {
+      return;
+    }
+
+    const allowedMoves = this.getAllowedMoves().filter(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
+
+    this.selectPiece(null);
+
+    if (!allowedMoves.length) {
+      return;
+    }
+
+    const move = {
+      from: selectedPiece.location,
+      to: allowedMoves[0].realSquare
+    };
+
+    this.selectPiece(null);
+
+    if (allowedMoves.some(({ isPawnPromotion }) => isPawnPromotion)) {
+      this.setState({
+        promotionModalVisible: true,
+        promotionMove: move
+      });
+    } else {
+      this.game!.move(move);
+
+      if (!this.game!.isDarkChess) {
+        _.last(this.game!.moves)!.isDndMove = isDndMove;
+      }
+    }
+  };
+
+  closePromotionPopup = () => {
+    this.setState({
+      promotionModalVisible: false,
+      promotionMove: null
+    });
+  };
+
+  promoteToPiece = (location: PiecePocketLocation) => {
+    this.game!.move({
+      ...this.state.promotionMove!,
+      promotion: location.pieceType
+    });
+    this.closePromotionPopup();
+  };
+
+  startDraggingPiece = (e: React.MouseEvent, location: RealPieceLocation) => {
+    const draggedPiece = location.type === PieceLocationEnum.BOARD
+      ? this.game!.getBoardPiece(location)
+      : this.game!.getPocketPiece(location.pieceType, this.player!.color);
+
+    if (draggedPiece && draggedPiece.color === this.player!.color) {
+      this.dragX = e.pageX;
+      this.dragY = e.pageY;
+
+      this.setState({
+        selectedPiece: draggedPiece,
+        isDragging: true
+      });
+    }
+  };
+
+  onMouseMove = (e: MouseEvent) => {
+    if (!this.state.isDragging) {
+      return;
+    }
+
+    const pieceSize = this.game!.getPieceSize(this.state.squareSize);
+
+    this.dragX = e.pageX;
+    this.dragY = e.pageY;
+
+    this.draggingPieceRef.current!.transform.baseVal.getItem(0).setTranslate(this.dragX - pieceSize / 2, this.dragY - pieceSize / 2);
+  };
+
+  onMouseUp = (e: MouseEvent) => {
+    if (!this.state.isDragging) {
+      return;
+    }
+
+    this.setState({
+      isDragging: false
+    });
+
+    if (
+      !document.elementsFromPoint(e.pageX, e.pageY).some((element) => {
+        try {
+          const squareJSON = (element as HTMLElement).dataset.square;
+
+          if (!squareJSON) {
+            return false;
+          }
+
+          this.makeMove(JSON.parse(squareJSON), true);
+
+          return true;
+        } catch (err) {
+          return false;
+        }
+      })
+    ) {
+      this.selectPiece(null);
+    }
+  };
+
   render() {
     let content: JSX.Element | string;
     let title: string | null;
@@ -170,6 +352,7 @@ export default class Game extends React.Component<Props, State> {
           chat,
           turn,
           players,
+          validPromotions,
           isAliceChess,
           isChessence,
           drawOffer,
@@ -184,12 +367,21 @@ export default class Game extends React.Component<Props, State> {
         const {
           isBlackBase,
           boardsShiftX,
-          selectedPiece
+          selectedPiece,
+          isDragging,
+          squareSize
         } = this.state;
         const usedMoves = this.game!.getUsedMoves();
         const player = this.player;
         const isBoardAtTop = isAliceChess && !isChessence;
         const isCurrentMoveLast = currentMoveIndex === usedMoves.length - 1;
+        const pieceSize = this.game!.getPieceSize(squareSize);
+        const readOnly = (
+          !player
+          || player.color !== turn
+          || status !== GameStatusEnum.ONGOING
+          || !isCurrentMoveLast
+        );
 
         content = (
           <div className={classNames('game', { 'top-boards-grid': isBoardAtTop })}>
@@ -228,17 +420,17 @@ export default class Game extends React.Component<Props, State> {
                   ? selectedPiece
                   : null
               }
+              makeMove={this.makeMove}
               selectPiece={this.selectPiece}
-              readOnly={(
-                !player
-                || player.color !== turn
-                || status !== GameStatusEnum.ONGOING
-                || !isCurrentMoveLast
-              )}
+              startDraggingPiece={this.startDraggingPiece}
+              getAllowedMoves={this.getAllowedMoves}
+              readOnly={readOnly}
               isBlackBase={isBlackBase}
+              isDragging={isDragging}
               darkChessMode={darkChessMode}
               currentMove={usedMoves[currentMoveIndex]}
               boardsShiftX={boardsShiftX}
+              squareSize={squareSize}
             />
 
             <RightPanel
@@ -249,6 +441,7 @@ export default class Game extends React.Component<Props, State> {
               currentMoveIndex={currentMoveIndex}
               timeControl={timeControl}
               moves={usedMoves}
+              readOnly={readOnly}
               isBlackBase={isBlackBase}
               status={status}
               timeDiff={this.timeDiff!}
@@ -259,7 +452,43 @@ export default class Game extends React.Component<Props, State> {
                   : null
               }
               selectPiece={this.selectPiece}
+              startDraggingPiece={this.startDraggingPiece}
             />
+
+            <Modal
+              visible={this.state.promotionModalVisible}
+              onOverlayClick={this.closePromotionPopup}
+              className="promotion-modal"
+            >
+              <div className="modal-content">
+                {validPromotions.map((pieceType) => (
+                  <Piece
+                    key={pieceType}
+                    piece={{
+                      type: pieceType,
+                      color: player ? player.color : ColorEnum.WHITE,
+                      location: {
+                        type: PieceLocationEnum.POCKET,
+                        pieceType
+                      }
+                    }}
+                    onClick={this.promoteToPiece}
+                  />
+                ))}
+              </div>
+            </Modal>
+
+            {isDragging && selectedPiece && (
+              <FixedElement>
+                <Piece
+                  pieceRef={this.draggingPieceRef}
+                  piece={selectedPiece}
+                  width={pieceSize}
+                  height={pieceSize}
+                  transform={`translate(${this.dragX - pieceSize / 2}, ${this.dragY - pieceSize / 2})`}
+                />
+              </FixedElement>
+            )}
 
           </div>
         );

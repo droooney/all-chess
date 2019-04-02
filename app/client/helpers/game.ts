@@ -10,11 +10,13 @@ import {
   DarkChessRevertableMove,
   Game as IGame,
   GameStatusEnum,
+  LocalMove,
   Move,
   Player,
   RevertableMove
 } from '../../types';
 import { Game as GameHelper } from '../../shared/helpers';
+import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from '../constants';
 
 type GameEvent = 'updateChat' | 'updateGame';
 
@@ -30,6 +32,7 @@ export class Game extends GameHelper {
   }
 
   socket?: Socket;
+  moves: LocalMove[] = [];
   currentMoveIndex: number;
   isOngoingDarkChessGame: boolean;
   darkChessMode: ColorEnum | null;
@@ -78,10 +81,18 @@ export class Game extends GameHelper {
     }
 
     if (socket) {
-      socket.on('moveMade', ({ move, lastMoveTimestamp }) => {
+      socket.on('moveMade', ({ move, moveIndex, lastMoveTimestamp }) => {
         this.lastMoveTimestamp = lastMoveTimestamp;
 
-        this.onMoveMade(move, false);
+        if (moveIndex >= this.moves.length) {
+          this.onMoveMade(move, false);
+        } else if (moveIndex === this.moves.length - 1) {
+          const lastMove = _.last(this.moves)!;
+
+          lastMove.duration = move.duration;
+
+          delete lastMove.isDndMove;
+        }
       });
 
       socket.on('darkChessMoveMade', ({ move, lastMoveTimestamp }) => {
@@ -143,25 +154,29 @@ export class Game extends GameHelper {
       });
 
       socket.on('takebackAccepted', (lastMoveTimestamp) => {
-        if (this.takebackRequest) {
-          const { currentMoveIndex } = this;
+        const { takebackRequest } = this;
 
-          this.navigateToMove(this.getUsedMoves().length - 1, false);
-
-          while (this.takebackRequest.moveIndex < this.getUsedMoves().length - 1) {
-            this.unregisterLastMove();
-
-            if (this.currentMoveIndex === this.getUsedMoves().length) {
-              this.currentMoveIndex--;
-            }
-          }
-
-          this.takebackRequest = null;
-          this.lastMoveTimestamp = lastMoveTimestamp;
-
-          this.navigateToMove(Math.min(currentMoveIndex, this.getUsedMoves().length - 1), false);
-          this.updateGame();
+        if (!takebackRequest) {
+          return;
         }
+
+        const { currentMoveIndex } = this;
+
+        this.navigateToMove(this.getUsedMoves().length - 1, false);
+
+        while (takebackRequest.moveIndex < this.getUsedMoves().length - 1) {
+          this.unregisterLastMove();
+
+          if (this.currentMoveIndex === this.getUsedMoves().length) {
+            this.currentMoveIndex--;
+          }
+        }
+
+        this.takebackRequest = null;
+        this.lastMoveTimestamp = lastMoveTimestamp;
+
+        this.navigateToMove(Math.min(currentMoveIndex, this.getUsedMoves().length - 1), false);
+        this.updateGame();
       });
 
       socket.on('takebackDeclined', () => {
@@ -251,6 +266,36 @@ export class Game extends GameHelper {
     this.listeners[event].forEach((listener) => listener());
   }
 
+  getSquareSize(): number {
+    const is10by8 = this.isTwoFamilies || this.isCapablanca || this.isAmazons;
+
+    return this.isCircularChess
+      ? this.isAliceChess
+        ? is10by8
+          ? 38
+          : 45
+        : is10by8
+          ? 60
+          : 70
+      : this.isChessence
+        ? 60
+        : this.isHexagonalChess
+          ? this.isAliceChess
+            ? 35
+            : 50
+          : this.isAliceChess
+            ? 45
+            : 70;
+  }
+
+  getPieceSize(squareSize: number): number {
+    return this.isCircularChess
+      ? (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * squareSize * 0.9
+      : this.isHexagonalChess
+        ? squareSize / 1.3
+        : squareSize;
+  }
+
   getUsedMoves(): AnyMove[] {
     return this.darkChessMode && !this.showDarkChessHiddenPieces
       ? this.colorMoves[this.darkChessMode]
@@ -258,6 +303,13 @@ export class Game extends GameHelper {
   }
 
   move(move: BaseMove) {
+    if (!this.isDarkChess) {
+      this.onMoveMade({
+        ...move,
+        duration: 0
+      }, false, true);
+    }
+
     if (this.socket) {
       this.socket.emit('makeMove', move);
     }
@@ -335,9 +387,9 @@ export class Game extends GameHelper {
     this.navigateToMove(currentMoveIndex, false);
   }
 
-  onMoveMade(move: DarkChessMove, isDarkChessMove: true): void;
-  onMoveMade(move: Move, isDarkChessMove: false): void;
-  onMoveMade(move: DarkChessMove | Move, isDarkChessMove: boolean): void {
+  onMoveMade(move: DarkChessMove, isDarkChessMove: true, updateGame?: boolean): void;
+  onMoveMade(move: Move, isDarkChessMove: false, updateGame?: boolean): void;
+  onMoveMade(move: DarkChessMove | Move, isDarkChessMove: boolean, updateGame: boolean = true): void {
     const moves = this.darkChessMode
       ? this.colorMoves[this.darkChessMode]
       : this.moves;
@@ -362,7 +414,10 @@ export class Game extends GameHelper {
     this.currentMoveIndex++;
 
     this.navigateToMove(currentMoveIndex, false);
-    this.updateGame();
+
+    if (updateGame) {
+      this.updateGame();
+    }
   }
 
   performAnyMove() {

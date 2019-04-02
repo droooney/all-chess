@@ -47,16 +47,22 @@ interface State {
   variants: GameVariant[];
 }
 
+const ONE_DAY = 24 * 60 * 60 * 1000;
+const ONE_MINUTE = 60 * 1000;
+const ONE_SECOND = 1000;
+
 class Games extends React.Component<Props, State> {
+  static defaultVariants = _.map(GameVariantEnum, (variant) => ({
+    variant,
+    allowed: true,
+    enabled: false
+  }));
+
   socket?: io.Socket;
   state: State = {
     createGameModalVisible: false,
     timeControl: this.props.timeControl,
-    variants: _.map(GameVariantEnum, (variant) => ({
-      variant,
-      allowed: true,
-      enabled: false
-    })),
+    variants: Games.defaultVariants,
     games: []
   };
 
@@ -97,6 +103,7 @@ class Games extends React.Component<Props, State> {
 
   closeModal = () => {
     this.setState({
+      variants: Games.defaultVariants,
       createGameModalVisible: false
     });
   };
@@ -104,10 +111,12 @@ class Games extends React.Component<Props, State> {
   createGame = () => {
     this.closeModal();
 
-    this.socket!.emit('createGame', {
-      timeControl: this.state.timeControl,
-      variants: this.getSelectedVariants(this.state.variants)
-    });
+    if (this.props.loggedIn) {
+      this.socket!.emit('createGame', {
+        timeControl: this.state.timeControl,
+        variants: this.getSelectedVariants(this.state.variants)
+      });
+    }
   };
 
   onTimeControlChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -221,17 +230,40 @@ class Games extends React.Component<Props, State> {
           value="Create game"
           onClick={this.openModal}
           style={{ margin: 10 }}
+          disabled={!this.props.loggedIn}
         />
 
         <table className="games">
+          <thead>
+            <tr>
+              <th className="time-control">Time control</th>
+              <th className="variants">Variants</th>
+            </tr>
+          </thead>
           <tbody>
-            {games.map(({ id }) => (
+            {games.map(({ id, timeControl, variants }) => (
               <tr
                 key={id}
                 className="game"
                 onClick={() => this.enterGame(id)}
               >
-                <td>{id}</td>
+                <td className="time-control">{
+                  timeControl
+                    ? timeControl.type === TimeControlEnum.CORRESPONDENCE
+                      ? `${Math.round(timeControl.base / ONE_DAY)} ${timeControl.base === ONE_DAY ? 'day' : 'days'}`
+                      : `${Math.round(timeControl.base / ONE_MINUTE)} + ${Math.round(timeControl.increment / ONE_SECOND)}`
+                    : '∞'
+                }</td>
+                <td className="variants">{variants.length ? variants.map((variant, ix) => (
+                  <React.Fragment key={variant}>
+                    {' '}
+                    <GameVariantLink
+                      variant={variant}
+                      className="variant"
+                    />
+                    {ix === variants.length - 1 ? '' : ','}
+                  </React.Fragment>
+                )) : 'Standard'}</td>
               </tr>
             ))}
           </tbody>
@@ -343,6 +375,7 @@ class Games extends React.Component<Props, State> {
 
 function mapStateToProps(state: ReduxState) {
   return {
+    loggedIn: !!state.user,
     timeControl: state.gameSettings.timeControl
   };
 }

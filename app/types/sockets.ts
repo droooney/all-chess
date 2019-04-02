@@ -18,6 +18,7 @@ declare global {
     gameList: GameMinimalData[];
     moveMade: {
       move: Move;
+      moveIndex: number;
       lastMoveTimestamp: number;
     };
     darkChessMoveMade: {

@@ -235,6 +235,10 @@ export interface RevertableMove extends ExtendedMove {
   revertMove(): void;
 }
 
+export interface LocalMove extends RevertableMove {
+  isDndMove?: boolean;
+}
+
 export interface DarkChessMove {
   from: PieceLocation;
   to: Square | null;
@@ -249,7 +253,11 @@ export interface DarkChessRevertableMove extends DarkChessMove {
   revertMove(): void;
 }
 
-export type AnyMove = ExtendedMove | DarkChessMove;
+export interface DarkChessLocalMove extends DarkChessRevertableMove {
+  isDndMove?: false;
+}
+
+export type AnyMove = LocalMove | DarkChessLocalMove;
 
 export interface PossibleMove {
   square: Square;
@@ -261,6 +269,10 @@ export interface PossibleMove {
     rook: BoardPiece;
   };
   isPawnPromotion: boolean;
+}
+
+export interface BoardPossibleMove extends PossibleMove {
+  realSquare: Square;
 }
 
 export enum GameStatusEnum {

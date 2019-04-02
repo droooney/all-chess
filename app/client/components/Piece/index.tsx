@@ -20,6 +20,7 @@ import Pawn from './Pawn';
 interface OwnProps {
   piece: Partial<RealPiece> & Pick<RealPiece, 'color' | 'type' | 'location'>;
 
+  pieceRef?: React.RefObject<SVGSVGElement>;
   x?: number;
   y?: number;
   width?: number;
@@ -28,6 +29,7 @@ interface OwnProps {
   className?: string;
   style?: React.CSSProperties;
   onClick?(location: RealPieceLocation): void;
+  onDragStart?(e: React.MouseEvent, location: RealPieceLocation): void;
 }
 
 type Props = OwnProps;
@@ -42,8 +44,18 @@ export default class Piece extends React.Component<Props> {
     onClick!(piece.location);
   };
 
+  onDragStart = (e: React.MouseEvent) => {
+    const {
+      piece,
+      onDragStart
+    } = this.props;
+
+    onDragStart!(e, piece.location);
+  };
+
   render() {
     const {
+      pieceRef,
       className,
       style,
       x,
@@ -52,11 +64,13 @@ export default class Piece extends React.Component<Props> {
       height,
       transform,
       piece,
-      onClick
+      onClick,
+      onDragStart
     } = this.props;
 
     return (
       <svg
+        ref={pieceRef}
         className={classNames('piece', className)}
         viewBox="0 0 45 45"
         fill="none"
@@ -76,6 +90,7 @@ export default class Piece extends React.Component<Props> {
         height={height}
         transform={transform}
         onClick={onClick && this.onClick}
+        onMouseDown={onDragStart && this.onDragStart}
       >
         {piece.type === PieceTypeEnum.KING ? (
           <King color={piece.color} />

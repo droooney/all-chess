@@ -1,7 +1,10 @@
-export interface User {
+export interface ShortUser {
+  login: string;
+}
+
+export interface User extends ShortUser {
   id: number;
   email: string;
-  login: string;
   password: string;
   confirmToken: string | null;
   confirmed: boolean;

@@ -1,4 +1,4 @@
-import { User } from '../../types';
+import { ShortUser } from '../../types';
 
 export enum UserActions {
   SET_USER_DATA = 'SET_USER_DATA'
@@ -6,10 +6,10 @@ export enum UserActions {
 
 export interface SetUserDataAction {
   type: UserActions.SET_USER_DATA;
-  user: User | null;
+  user: ShortUser | null;
 }
 
-export function setUserData(user: User | null): SetUserDataAction {
+export function setUserData(user: ShortUser | null): SetUserDataAction {
   return {
     type: UserActions.SET_USER_DATA,
     user

@@ -32,8 +32,10 @@ class Header extends React.Component<Props> {
 
   render() {
     const {
+      location,
       user
     } = this.props;
+    const from = location.pathname + location.search;
 
     return (
       <header>
@@ -54,10 +56,16 @@ class Header extends React.Component<Props> {
             </React.Fragment>
           ) : (
             <React.Fragment>
-              <Link to="/Register" style={{ marginRight: 20 }}>
+              <Link to="/register" style={{ marginRight: 20 }}>
                 Register
               </Link>
-              <Link to="/login">
+              <Link
+                replace
+                to={{
+                  pathname: '/login',
+                  search: from === '/' ? '' : `?from=${from}`
+                }}
+              >
                 Login
               </Link>
             </React.Fragment>

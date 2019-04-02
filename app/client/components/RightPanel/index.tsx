@@ -9,6 +9,7 @@ import {
   Piece,
   Player,
   PocketPiece,
+  RealPieceLocation,
   TimeControl,
   TimeControlEnum
 } from '../../../types';
@@ -25,12 +26,14 @@ interface OwnProps {
   currentMoveIndex: number;
   timeControl: TimeControl;
   moves: AnyMove[];
+  readOnly: boolean;
   isBlackBase: boolean;
   status: GameStatusEnum;
   timeDiff: number;
   lastMoveTimestamp: number;
   selectedPiece: PocketPiece | null;
   selectPiece(piece: Piece | null): void;
+  startDraggingPiece(e: React.MouseEvent, location: RealPieceLocation): void;
 }
 
 interface State {
@@ -93,6 +96,10 @@ export default class RightPanel extends React.Component<Props, State> {
         game.moveBack();
       } else if (e.key === 'ArrowRight') {
         game.moveForward();
+      } else if (e.key === 'ArrowUp') {
+        game.navigateToMove(-1);
+      } else if (e.key === 'ArrowDown') {
+        game.navigateToMove(game.getUsedMoves().length - 1);
       }
     }
   };
@@ -136,9 +143,11 @@ export default class RightPanel extends React.Component<Props, State> {
       lastMoveTimestamp,
       moves,
       timeControl,
+      readOnly,
       isBlackBase,
       selectedPiece,
-      selectPiece
+      selectPiece,
+      startDraggingPiece
     } = this.props;
     const startingMoveIndex = game.startingData.startingMoveIndex;
     const realTurn = (moves.length + startingMoveIndex) % game.pliesPerMove === game.pliesPerMove - 1
@@ -163,10 +172,12 @@ export default class RightPanel extends React.Component<Props, State> {
           timePassedSinceLastMove={timePassedSinceLastMove}
           timeControl={timeControl}
           realTurn={realTurn}
+          readOnly={readOnly || !player || topPlayer.login !== player.login}
           isTop
           pocket={pieces.filter((piece) => Game.isPocketPiece(piece) && piece.color === topPlayer.color) as PocketPiece[]}
           selectedPiece={selectedPiece}
           selectPiece={selectPiece}
+          startDraggingPiece={startDraggingPiece}
         />
 
         <MovesPanel
@@ -182,10 +193,12 @@ export default class RightPanel extends React.Component<Props, State> {
           timePassedSinceLastMove={timePassedSinceLastMove}
           timeControl={timeControl}
           realTurn={realTurn}
+          readOnly={readOnly || !player || bottomPlayer.login !== player.login}
           isTop={false}
           pocket={pieces.filter((piece) => Game.isPocketPiece(piece) && piece.color === bottomPlayer.color) as PocketPiece[]}
           selectedPiece={selectedPiece}
           selectPiece={selectPiece}
+          startDraggingPiece={startDraggingPiece}
         />
 
       </div>

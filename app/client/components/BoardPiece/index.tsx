@@ -3,7 +3,8 @@ import classNames = require('classnames');
 
 import {
   BoardPiece as IBoardPiece,
-  PieceBoardLocation
+  PieceBoardLocation,
+  RealPieceLocation
 } from '../../../types';
 import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from '../../constants';
 import { Game } from '../../helpers';
@@ -20,6 +21,7 @@ interface OwnProps {
   squareSize: number;
 
   onClick?(location: PieceBoardLocation): void;
+  onDragStart?(e: React.MouseEvent, location: RealPieceLocation): void;
 }
 
 type Props = OwnProps;
@@ -30,6 +32,7 @@ export default class BoardPiece extends React.Component<Props> {
       game,
       piece,
       piece: {
+        location,
         location: {
           x: pieceX,
           y: pieceY
@@ -40,13 +43,10 @@ export default class BoardPiece extends React.Component<Props> {
       isFullFantom,
       squareSize,
       boardsShiftX,
-      onClick
+      onClick,
+      onDragStart
     } = this.props;
-    const pieceSize = game.isCircularChess
-      ? (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * squareSize * 0.9
-      : game.isHexagonalChess
-        ? squareSize / 1.3
-        : squareSize;
+    const pieceSize = game.getPieceSize(squareSize);
     const cornerPieceSize = pieceSize * 2 / 7;
     const pieceClassNames = {
       fantom: isFantom,
@@ -111,6 +111,7 @@ export default class BoardPiece extends React.Component<Props> {
       <g
         className="piece-container"
         transform={`translate(${translateX}, ${translateY})`}
+        data-square={JSON.stringify(location)}
       >
         <Piece
           width={pieceSize}
@@ -120,6 +121,7 @@ export default class BoardPiece extends React.Component<Props> {
             type: piece.abilities || piece.type
           }}
           onClick={onClick}
+          onDragStart={onDragStart}
           className={classNames(pieceClassNames)}
         />
 
@@ -142,6 +144,7 @@ export default class BoardPiece extends React.Component<Props> {
                   : piece.originalType
               }}
               onClick={onClick}
+              onDragStart={onDragStart}
             />
           </React.Fragment>
         )}

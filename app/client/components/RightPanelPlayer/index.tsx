@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import moment = require('moment');
 import * as React from 'react';
 import classNames = require('classnames');
@@ -9,6 +10,7 @@ import {
   PiecePocketLocation,
   Player,
   PocketPiece,
+  RealPieceLocation,
   TimeControl
 } from '../../../types';
 import { Game } from '../../helpers';
@@ -22,10 +24,12 @@ interface OwnProps {
   pocket: PocketPiece[];
   timePassedSinceLastMove: number;
   timeControl: TimeControl;
+  readOnly: boolean;
   realTurn: ColorEnum;
   isTop: boolean;
   selectedPiece: PocketPiece | null;
   selectPiece(piece: IPiece | null): void;
+  startDraggingPiece(e: React.MouseEvent, location: RealPieceLocation): void;
 }
 
 type Props = OwnProps;
@@ -46,35 +50,37 @@ export default class RightPanelPlayer extends React.Component<Props> {
         : player.time!,
       0
     );
+    const duration = moment.duration(time);
 
-    if (time > ONE_DAY) {
-      const days = Math.floor(moment.duration(time).asDays());
+    if (time >= ONE_DAY) {
+      const days = duration.days();
 
-      return `${days} ${moment(time).format('HH:mm:ss')}`;
+      return `${days} ${days === 1 ? 'day' : 'days'}`;
     }
+
+    const minutes = _.padStart(`${duration.minutes()}`, 2, '0');
 
     if (time > ONE_HOUR) {
-      return moment(time).format('HH:mm:ss');
+      const hours = _.padStart(`${duration.hours()}`, 2, '0');
+
+      return `${hours}:${minutes}`;
     }
 
-    return moment(time).format('mm:ss');
+    const seconds = _.padStart(`${duration.seconds()}`, 2, '0');
+
+    return `${minutes}:${seconds}`;
   }
 
   onPocketPieceClick(location: PiecePocketLocation) {
     const {
       game,
-      currentPlayer,
       player,
-      realTurn,
+      readOnly,
       selectPiece,
       selectedPiece
     } = this.props;
 
-    if (
-      !currentPlayer
-      || currentPlayer.color !== player.color
-      || player.color !== realTurn
-    ) {
+    if (readOnly) {
       return;
     }
 
@@ -94,9 +100,11 @@ export default class RightPanelPlayer extends React.Component<Props> {
       player,
       currentPlayer,
       pocket,
+      readOnly,
       selectedPiece,
       timeControl,
-      isTop
+      isTop,
+      startDraggingPiece
     } = this.props;
     const elements: JSX.Element[] = [];
 
@@ -112,7 +120,8 @@ export default class RightPanelPlayer extends React.Component<Props> {
                 className={classNames('piece-container', {
                   disabled: !pieces.length
                 })}
-                onClick={pieces.length ? (() => this.onPocketPieceClick(pieces[0].location)) : undefined}
+                onClick={pieces.length && !readOnly ? (() => this.onPocketPieceClick(pieces[0].location)) : undefined}
+                onMouseDown={pieces.length && !readOnly ? (e) => startDraggingPiece(e, pieces[0].location) : undefined}
               >
                 {
                   selectedPiece

@@ -73,8 +73,11 @@ const toJSON = ((User as any).prototype as UserModel).toJSON;
 ((User as any).prototype as UserModel).toJSON = function (...args: any[]) {
   const json: UserModel = toJSON.apply(this, args);
 
+  delete json.email;
   delete json.password;
   delete json.confirmToken;
+  delete json.confirmed;
+  delete json.updatedAt;
 
   return json;
 };
