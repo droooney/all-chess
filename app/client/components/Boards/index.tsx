@@ -225,9 +225,6 @@ class Boards extends React.Component<Props> {
       && isDarkChess
       && visibleSquares.every((visibleSquare) => !Game.areSquaresEqual(square, visibleSquare))
     );
-    const isEmptySquare = (square: Square): boolean => (
-      game.emptySquares.some((emptySquare) => Game.areSquaresEqual(square, emptySquare))
-    );
     const isAllowed = (square: Square) => (
       allowedMoves.some(({ square: allowedSquare }) => Game.areSquaresEqual(square, allowedSquare))
     );
@@ -291,7 +288,7 @@ class Boards extends React.Component<Props> {
                 type: PieceLocationEnum.BOARD
               };
 
-              if (isEmptySquare(square)) {
+              if (game.isEmptySquare(square)) {
                 return;
               }
 
@@ -600,15 +597,6 @@ class Boards extends React.Component<Props> {
                   <SVGSquareElem
                     key={key}
                     className="hidden-square"
-                  />
-                );
-              }
-
-              if (game.isVoidSquare(square)) {
-                voidSquares.push(
-                  <SVGSquareElem
-                    key={key}
-                    className="void-square"
                   />
                 );
               }

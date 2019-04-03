@@ -20,7 +20,6 @@ import Pawn from './Pawn';
 interface OwnProps {
   piece: Partial<RealPiece> & Pick<RealPiece, 'color' | 'type' | 'location'>;
 
-  pieceRef?: React.RefObject<SVGSVGElement>;
   x?: number;
   y?: number;
   width?: number;
@@ -55,7 +54,6 @@ export default class Piece extends React.Component<Props> {
 
   render() {
     const {
-      pieceRef,
       className,
       style,
       x,
@@ -70,7 +68,6 @@ export default class Piece extends React.Component<Props> {
 
     return (
       <svg
-        ref={pieceRef}
         className={classNames('piece', className)}
         viewBox="0 0 45 45"
         fill="none"
@@ -108,7 +105,7 @@ export default class Piece extends React.Component<Props> {
           <Bishop color={piece.color} />
         ) : piece.type === PieceTypeEnum.KNIGHT ? (
           <Knight color={piece.color} />
-        ) : piece.type === PieceTypeEnum.PAWN || piece.type === PieceTypeEnum.MAN ? (
+        ) : piece.type === PieceTypeEnum.PAWN ? (
           <Pawn color={piece.color} />
         ) : null}
       </svg>

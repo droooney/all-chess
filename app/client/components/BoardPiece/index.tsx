@@ -9,7 +9,7 @@ import {
 import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from '../../constants';
 import { Game } from '../../helpers';
 
-import Piece from '../Piece';
+import GamePiece from '../GamePiece';
 
 interface OwnProps {
   game: Game;
@@ -47,15 +47,10 @@ export default class BoardPiece extends React.Component<Props> {
       onDragStart
     } = this.props;
     const pieceSize = game.getPieceSize(squareSize);
-    const cornerPieceSize = pieceSize * 2 / 7;
-    const pieceClassNames = {
+    const pieceClassNames = classNames({
       fantom: isFantom,
       'full-fantom': isFullFantom
-    };
-    const originalPieceCoords = {
-      x: pieceSize - cornerPieceSize,
-      y: pieceSize - cornerPieceSize
-    };
+    });
     let translateX: number;
     let translateY: number;
 
@@ -113,41 +108,14 @@ export default class BoardPiece extends React.Component<Props> {
         transform={`translate(${translateX}, ${translateY})`}
         data-square={JSON.stringify(location)}
       >
-        <Piece
-          width={pieceSize}
-          height={pieceSize}
-          piece={{
-            ...piece,
-            type: piece.abilities || piece.type
-          }}
+        <GamePiece
+          piece={piece}
+          pieceSize={pieceSize}
+          className={pieceClassNames}
+          originalPieceClassName={pieceClassNames}
           onClick={onClick}
           onDragStart={onDragStart}
-          className={classNames(pieceClassNames)}
         />
-
-        {(piece.abilities || piece.type !== piece.originalType) && (
-          <React.Fragment>
-            <rect
-              {...originalPieceCoords}
-              width={cornerPieceSize}
-              height={cornerPieceSize}
-              className={classNames('original-piece', pieceClassNames)}
-            />
-            <Piece
-              {...originalPieceCoords}
-              width={cornerPieceSize}
-              height={cornerPieceSize}
-              piece={{
-                ...piece,
-                type: piece.abilities
-                  ? piece.type
-                  : piece.originalType
-              }}
-              onClick={onClick}
-              onDragStart={onDragStart}
-            />
-          </React.Fragment>
-        )}
       </g>
     );
   }

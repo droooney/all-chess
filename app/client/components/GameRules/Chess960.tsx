@@ -152,8 +152,7 @@ export default class Chess960GameRules extends React.Component {
         </h2>
 
         <p>
-          Chess 960 is a pretty neutral variant so it may be combined with almost all variants, except
-          {' '}<GameVariantLink variant={GameVariantEnum.CHESSENCE} />.
+          Chess 960 is a neutral variant so it may be combined with all variants.
         </p>
 
         <h3 id="combinations-circe">

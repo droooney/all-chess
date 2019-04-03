@@ -6,6 +6,10 @@
 @dark-color: #bbb;
 // @dark-color: silver;
 
+.original-piece {
+  fill: #aaa;
+}
+
 .boards {
   grid-area: boards;
   justify-self: center;
@@ -46,7 +50,6 @@
     .current-move-square,
     .allowed-square,
     .check-square,
-    .void-square,
     .hidden-square,
     .literal,
     .center-border {
@@ -91,10 +94,6 @@
       fill: rgba(0,0,0,0.7);
     }
 
-    .void-square {
-      fill: black;
-    }
-
     .center-border {
       stroke: black;
       stroke-width: 3;
@@ -119,10 +118,6 @@
       &.full-fantom {
         opacity: 0;
       }
-    }
-
-    .original-piece {
-      fill: #aaa;
     }
   }
 

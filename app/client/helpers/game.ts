@@ -37,6 +37,7 @@ export class Game extends GameHelper {
   isOngoingDarkChessGame: boolean;
   darkChessMode: ColorEnum | null;
   showDarkChessHiddenPieces: boolean;
+  needToCalculateMaterialDifference: boolean;
   listeners: {
     [event in GameEvent]: (() => void)[];
   } = {
@@ -65,6 +66,7 @@ export class Game extends GameHelper {
     this.isOngoingDarkChessGame = this.isDarkChess && this.status !== GameStatusEnum.FINISHED;
     this.showDarkChessHiddenPieces = !this.isOngoingDarkChessGame;
     this.darkChessMode = this.isDarkChess && player ? player.color : null;
+    this.needToCalculateMaterialDifference = !this.isAbsorption && !this.isDarkChess;
 
     const moves: (Move | DarkChessMove)[] = game.moves;
 
@@ -277,15 +279,13 @@ export class Game extends GameHelper {
         : is10by8
           ? 60
           : 70
-      : this.isChessence
-        ? 60
-        : this.isHexagonalChess
-          ? this.isAliceChess
-            ? 35
-            : 50
-          : this.isAliceChess
-            ? 45
-            : 70;
+      : this.isHexagonalChess
+        ? this.isAliceChess
+          ? 35
+          : 50
+        : this.isAliceChess
+          ? 45
+          : 70;
   }
 
   getPieceSize(squareSize: number): number {

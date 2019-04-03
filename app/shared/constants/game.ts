@@ -16,8 +16,7 @@ export const SHORT_PIECE_NAMES: { [piece in PieceTypeEnum]: string } = {
   [PieceTypeEnum.ROOK]: 'R',
   [PieceTypeEnum.BISHOP]: 'B',
   [PieceTypeEnum.KNIGHT]: 'N',
-  [PieceTypeEnum.PAWN]: 'P',
-  [PieceTypeEnum.MAN]: 'M'
+  [PieceTypeEnum.PAWN]: 'P'
 };
 
 export const PIECE_LITERALS: { [color in ColorEnum]: { [piece in StandardPiece]: string; }; } = {
@@ -58,7 +57,6 @@ export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.MONSTER_CHESS]: 'Monster chess',
   [GameVariantEnum.ALICE_CHESS]: 'Alice chess',
   [GameVariantEnum.TWO_FAMILIES]: 'Two families',
-  [GameVariantEnum.CHESSENCE]: 'Chessence',
   [GameVariantEnum.HORDE]: 'Horde',
   [GameVariantEnum.DARK_CHESS]: 'Dark chess',
   [GameVariantEnum.ANTICHESS]: 'Antichess',
@@ -83,7 +81,6 @@ export const GAME_VARIANT_PGN_NAMES: { [variation in GameVariantEnum]: string; }
   [GameVariantEnum.MONSTER_CHESS]: 'Monster',
   [GameVariantEnum.ALICE_CHESS]: 'Alice',
   [GameVariantEnum.TWO_FAMILIES]: 'Two Families',
-  [GameVariantEnum.CHESSENCE]: 'Chessence',
   [GameVariantEnum.HORDE]: 'Horde',
   [GameVariantEnum.DARK_CHESS]: 'Dark',
   [GameVariantEnum.ANTICHESS]: 'Antichess',
@@ -108,7 +105,6 @@ export const GAME_VARIANT_LINKS: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.MONSTER_CHESS]: 'monster-chess',
   [GameVariantEnum.ALICE_CHESS]: 'alice-chess',
   [GameVariantEnum.TWO_FAMILIES]: 'two-families',
-  [GameVariantEnum.CHESSENCE]: 'chessence',
   [GameVariantEnum.HORDE]: 'horde',
   [GameVariantEnum.DARK_CHESS]: 'dark-chess',
   [GameVariantEnum.ANTICHESS]: 'antichess',
@@ -149,4 +145,40 @@ export const GAME_STATUS_NAMES: { [status in GameStatusEnum]: string; } = {
   [GameStatusEnum.BEFORE_START]: 'Waiting for the opponent',
   [GameStatusEnum.ONGOING]: 'In progress',
   [GameStatusEnum.FINISHED]: 'Finished'
+};
+
+export const PIECES_WORTH: { [type in 'orthodox' | 'circular' | 'hexagonal']: { [piece in PieceTypeEnum]: number; }; } = {
+  orthodox: {
+    [PieceTypeEnum.KING]: 3,
+    [PieceTypeEnum.AMAZON]: 12,
+    [PieceTypeEnum.QUEEN]: 9,
+    [PieceTypeEnum.EMPRESS]: 8,
+    [PieceTypeEnum.CARDINAL]: 7,
+    [PieceTypeEnum.ROOK]: 5,
+    [PieceTypeEnum.BISHOP]: 3,
+    [PieceTypeEnum.KNIGHT]: 3,
+    [PieceTypeEnum.PAWN]: 1
+  },
+  circular: {
+    [PieceTypeEnum.KING]: 2,
+    [PieceTypeEnum.AMAZON]: 10,
+    [PieceTypeEnum.QUEEN]: 8,
+    [PieceTypeEnum.EMPRESS]: 8,
+    [PieceTypeEnum.CARDINAL]: 4,
+    [PieceTypeEnum.ROOK]: 6,
+    [PieceTypeEnum.BISHOP]: 2,
+    [PieceTypeEnum.KNIGHT]: 2,
+    [PieceTypeEnum.PAWN]: 1
+  },
+  hexagonal: {
+    [PieceTypeEnum.KING]: 3,
+    [PieceTypeEnum.AMAZON]: 13,
+    [PieceTypeEnum.QUEEN]: 10,
+    [PieceTypeEnum.EMPRESS]: 10,
+    [PieceTypeEnum.CARDINAL]: 6,
+    [PieceTypeEnum.ROOK]: 7,
+    [PieceTypeEnum.BISHOP]: 2,
+    [PieceTypeEnum.KNIGHT]: 3,
+    [PieceTypeEnum.PAWN]: 1
+  }
 };

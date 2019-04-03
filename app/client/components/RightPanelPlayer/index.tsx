@@ -8,6 +8,7 @@ import {
   Piece as IPiece,
   PieceLocationEnum,
   PiecePocketLocation,
+  PieceTypeEnum,
   Player,
   PocketPiece,
   RealPieceLocation,
@@ -27,6 +28,10 @@ interface OwnProps {
   readOnly: boolean;
   realTurn: ColorEnum;
   isTop: boolean;
+  allMaterialDifference: number;
+  materialDifference: {
+    [piece in PieceTypeEnum]: number;
+  };
   selectedPiece: PocketPiece | null;
   selectPiece(piece: IPiece | null): void;
   startDraggingPiece(e: React.MouseEvent, location: RealPieceLocation): void;
@@ -104,9 +109,52 @@ export default class RightPanelPlayer extends React.Component<Props> {
       selectedPiece,
       timeControl,
       isTop,
+      allMaterialDifference,
+      materialDifference,
       startDraggingPiece
     } = this.props;
     const elements: JSX.Element[] = [];
+
+    if (game.needToCalculateMaterialDifference) {
+      elements.push(
+        <div key="material-advantage" className="material-advantage">
+          {_.map(materialDifference, (count, pieceType) => {
+            const isAdvantage = player.color === ColorEnum.WHITE ? count > 0 : count < 0;
+
+            if (!isAdvantage) {
+              return;
+            }
+
+            count = Math.abs(count);
+
+            return (
+              <div className="piece-advantage" key={pieceType}>
+                <Piece
+                  piece={{
+                    color: player.color,
+                    type: pieceType as PieceTypeEnum,
+                    location: {
+                      type: PieceLocationEnum.POCKET,
+                      pieceType: pieceType as PieceTypeEnum
+                    }
+                  }}
+                />
+                {count > 1 && (
+                  <span className="count">
+                    x{count}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+          {(player.color === ColorEnum.WHITE ? allMaterialDifference > 0 : allMaterialDifference < 0) && (
+            <span className="all-material-advantage">
+              +{Math.abs(allMaterialDifference)}
+            </span>
+          )}
+        </div>
+      );
+    }
 
     if (game.isPocketUsed) {
       elements.push(

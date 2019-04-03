@@ -31,6 +31,7 @@ import RightPanel from '../RightPanel';
 import InfoActionsPanel from '../InfoActionsPanel';
 import Chat from '../Chat';
 import Boards from '../Boards';
+import GamePiece from '../GamePiece';
 import Piece from '../Piece';
 import Modal from '../Modal';
 
@@ -58,6 +59,7 @@ export default class Game extends React.Component<Props, State> {
   draggingPieceRef = React.createRef<SVGSVGElement>();
   dragX = 0;
   dragY = 0;
+  prevMoveIndex = -1;
   state: State = {
     selectedPiece: null,
     gameData: null,
@@ -109,9 +111,20 @@ export default class Game extends React.Component<Props, State> {
 
   componentDidUpdate(_prevProps: Props, prevState: State): void {
     if (!prevState.isDragging && this.state.isDragging) {
-      document.body.classList.add('no-user-select');
+      document.body.classList.add('dragging');
     } else if (prevState.isDragging && !this.state.isDragging) {
-      document.body.classList.remove('no-user-select');
+      document.body.classList.remove('dragging');
+    }
+
+    if (this.game) {
+      if (this.prevMoveIndex !== this.game.currentMoveIndex) {
+        this.selectPiece(null);
+        this.setState({
+          isDragging: false
+        });
+      }
+
+      this.prevMoveIndex = this.game.currentMoveIndex;
     }
   }
 
@@ -354,7 +367,6 @@ export default class Game extends React.Component<Props, State> {
           players,
           validPromotions,
           isAliceChess,
-          isChessence,
           drawOffer,
           takebackRequest,
           timeControl,
@@ -373,7 +385,7 @@ export default class Game extends React.Component<Props, State> {
         } = this.state;
         const usedMoves = this.game!.getUsedMoves();
         const player = this.player;
-        const isBoardAtTop = isAliceChess && !isChessence;
+        const isBoardAtTop = isAliceChess;
         const isCurrentMoveLast = currentMoveIndex === usedMoves.length - 1;
         const pieceSize = this.game!.getPieceSize(squareSize);
         const readOnly = (
@@ -480,13 +492,15 @@ export default class Game extends React.Component<Props, State> {
 
             {isDragging && selectedPiece && (
               <FixedElement>
-                <Piece
-                  pieceRef={this.draggingPieceRef}
-                  piece={selectedPiece}
-                  width={pieceSize}
-                  height={pieceSize}
+                <svg
+                  ref={this.draggingPieceRef}
                   transform={`translate(${this.dragX - pieceSize / 2}, ${this.dragY - pieceSize / 2})`}
-                />
+                >
+                  <GamePiece
+                    piece={selectedPiece}
+                    pieceSize={pieceSize}
+                  />
+                </svg>
               </FixedElement>
             )}
 

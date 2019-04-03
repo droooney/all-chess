@@ -32,8 +32,7 @@ export enum PieceTypeEnum {
   ROOK = 'ROOK',
   BISHOP = 'BISHOP',
   KNIGHT = 'KNIGHT',
-  PAWN = 'PAWN',
-  MAN = 'MAN'
+  PAWN = 'PAWN'
 }
 
 export type StandardPiece = (
@@ -85,7 +84,6 @@ export interface StartingData {
   possibleEnPassant: PossibleEnPassant | null;
   checksCount: ChecksCount;
   pieces: ReadonlyArray<RealPiece>;
-  voidSquares: ReadonlyArray<Square>;
   emptySquares: ReadonlyArray<Square>;
 }
 
@@ -202,7 +200,6 @@ export enum GameVariantEnum {
   MONSTER_CHESS = 'MONSTER_CHESS',
   ALICE_CHESS = 'ALICE_CHESS',
   TWO_FAMILIES = 'TWO_FAMILIES',
-  CHESSENCE = 'CHESSENCE',
   HORDE = 'HORDE',
   DARK_CHESS = 'DARK_CHESS',
   ANTICHESS = 'ANTICHESS',

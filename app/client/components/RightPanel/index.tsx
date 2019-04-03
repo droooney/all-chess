@@ -7,6 +7,7 @@ import {
   GamePlayers,
   GameStatusEnum,
   Piece,
+  PieceTypeEnum,
   Player,
   PocketPiece,
   RealPieceLocation,
@@ -14,6 +15,7 @@ import {
   TimeControlEnum
 } from '../../../types';
 import { Game } from '../../helpers';
+import { PIECES_WORTH } from '../../../shared/constants';
 
 import MovesPanel from '../MovesPanel';
 import RightPanelPlayer from '../RightPanelPlayer';
@@ -161,6 +163,30 @@ export default class RightPanel extends React.Component<Props, State> {
       : players[ColorEnum.WHITE];
     const adjustedLastMoveTimestamp = this.adjustServerTime(lastMoveTimestamp);
     const timePassedSinceLastMove = (this.state.intervalActivated ? Date.now() : adjustedLastMoveTimestamp) - adjustedLastMoveTimestamp;
+    const materialDifference: { [piece in PieceTypeEnum]: number; } = {} as any;
+    let allMaterialDifference = 0;
+
+    if (game.needToCalculateMaterialDifference) {
+      _.forEach(PieceTypeEnum, (pieceType) => {
+        const getPiecesCount = (color: ColorEnum): number => (
+          pieces.filter((piece) => (
+            Game.isRealPiece(piece)
+            && (piece.abilities || piece.type) === pieceType
+            && piece.color === color
+          )).length
+        );
+
+        const diff = materialDifference[pieceType] = getPiecesCount(ColorEnum.WHITE) - getPiecesCount(ColorEnum.BLACK);
+
+        allMaterialDifference += diff * PIECES_WORTH[
+          game.isCircularChess
+            ? 'circular'
+            : game.isHexagonalChess
+              ? 'hexagonal'
+              : 'orthodox'
+        ][pieceType];
+      });
+    }
 
     return (
       <div className="right-panel">
@@ -175,6 +201,8 @@ export default class RightPanel extends React.Component<Props, State> {
           readOnly={readOnly || !player || topPlayer.login !== player.login}
           isTop
           pocket={pieces.filter((piece) => Game.isPocketPiece(piece) && piece.color === topPlayer.color) as PocketPiece[]}
+          allMaterialDifference={allMaterialDifference}
+          materialDifference={materialDifference}
           selectedPiece={selectedPiece}
           selectPiece={selectPiece}
           startDraggingPiece={startDraggingPiece}
@@ -196,6 +224,8 @@ export default class RightPanel extends React.Component<Props, State> {
           readOnly={readOnly || !player || bottomPlayer.login !== player.login}
           isTop={false}
           pocket={pieces.filter((piece) => Game.isPocketPiece(piece) && piece.color === bottomPlayer.color) as PocketPiece[]}
+          allMaterialDifference={allMaterialDifference}
+          materialDifference={materialDifference}
           selectedPiece={selectedPiece}
           selectPiece={selectPiece}
           startDraggingPiece={startDraggingPiece}

@@ -294,8 +294,7 @@ const STANDARD_STARTING_DATA: StartingData = {
     [ColorEnum.BLACK]: 0
   },
   pieces: [],
-  emptySquares: [],
-  voidSquares: []
+  emptySquares: []
 };
 
 const DEFAULT_MOVE = {
@@ -331,7 +330,6 @@ export class Game implements IGame {
     const isMonsterChess = _.includes(variants, GameVariantEnum.MONSTER_CHESS);
     const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
     const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
-    const isChessence = _.includes(variants, GameVariantEnum.CHESSENCE);
     const isHorde = _.includes(variants, GameVariantEnum.HORDE);
     const isDarkChess = _.includes(variants, GameVariantEnum.DARK_CHESS);
     const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
@@ -360,7 +358,6 @@ export class Game implements IGame {
         && !isPatrol
         && !isMadrasi
         && !isAliceChess
-        && !isChessence
         && !isHorde
         && !isDarkChess
         && !isAntichess
@@ -369,25 +366,6 @@ export class Game implements IGame {
         && !isCapablanca
         && !isAmazons
         && !isThreeCheck
-        && !isCircularChess
-        && !isHexagonalChess
-      )
-    ) && (
-      !isChessence
-      || (
-        !is960
-        && !isKingOfTheHill
-        && !isCirce
-        && !isPatrol
-        && !isMadrasi
-        && !isTwoFamilies
-        && !isHorde
-        && !isAntichess
-        && !isAbsorption
-        && !isFrankfurt
-        && !isCapablanca
-        && !isAmazons
-        && !isCylinderChess
         && !isCircularChess
         && !isHexagonalChess
       )
@@ -501,85 +479,7 @@ export class Game implements IGame {
     ));
   }
 
-  static chessenceStartingMenSquares: { [color in ColorEnum]: { x: number; y: number; }[] } = (() => {
-    const whiteMenStartingCoordinates = [
-      [0, 4],
-      [1, 3],
-      [1, 4],
-      [1, 5],
-      [2, 3],
-      [2, 4]
-    ];
-
-    return {
-      [ColorEnum.WHITE]: whiteMenStartingCoordinates.map(([y, x]) => ({ x, y })),
-      [ColorEnum.BLACK]: whiteMenStartingCoordinates.map(([y, x]) => ({ x: 5 - x, y: 8 - y }))
-    };
-  })();
-
-  static chessenceStartingData: StartingData = (() => {
-    let id = 0;
-    const boardWidth = 6;
-    const boardHeight = 9;
-    const pieces: RealPiece[] = [];
-    const whiteVoidSquares = [
-      [1, 0],
-      [2, 1],
-      [3, 3],
-      [4, 4]
-    ];
-    const voidSquares = [
-      ...whiteVoidSquares,
-      ...whiteVoidSquares.map(([y, x]) => [boardHeight - 1 - y, boardWidth - 1 - x])
-    ].map(([y, x]) => ({ board: 0, y, x }));
-
-    _.forEach(ColorEnum, (color) => {
-      const startingMenCoordinates = Game.chessenceStartingMenSquares[color];
-      const addPiece = (type: PieceTypeEnum, location: RealPieceLocation) => {
-        pieces.push({
-          id: `${++id}`,
-          type,
-          originalType: type,
-          color,
-          moved: false,
-          abilities: null,
-          location
-        } as RealPiece);
-      };
-
-      addPiece(PieceTypeEnum.KING, {
-        type: PieceLocationEnum.BOARD,
-        board: 0,
-        x: color === ColorEnum.WHITE ? 5 : 0,
-        y: color === ColorEnum.WHITE ? 0 : 8
-      });
-
-      startingMenCoordinates.forEach(({ x, y }) => {
-        addPiece(PieceTypeEnum.MAN, {
-          type: PieceLocationEnum.BOARD,
-          board: 0,
-          x,
-          y
-        });
-      });
-
-      _.times(3, () => {
-        addPiece(PieceTypeEnum.MAN, {
-          type: PieceLocationEnum.POCKET,
-          pieceType: PieceTypeEnum.MAN
-        });
-      });
-    });
-
-    return {
-      ...STANDARD_STARTING_DATA,
-      pieces,
-      voidSquares
-    };
-  })();
-
   static getBoardDimensions(variants: ReadonlyArray<GameVariantEnum>): BoardDimensions {
-    const isChessence = _.includes(variants, GameVariantEnum.CHESSENCE);
     const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
     const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
     const isCapablanca = _.includes(variants, GameVariantEnum.CAPABLANCA);
@@ -588,18 +488,14 @@ export class Game implements IGame {
     const isHexagonalChess = _.includes(variants, GameVariantEnum.HEXAGONAL_CHESS);
     const dimensions = {
       boardCount: isAliceChess ? 2 : 1,
-      boardWidth: isChessence
-        ? 6
-        : isTwoFamilies || isCapablanca || isAmazons
-          ? 10
-          : isHexagonalChess
-            ? 11
-            : 8,
-      boardHeight: isChessence
-        ? 9
+      boardWidth: isTwoFamilies || isCapablanca || isAmazons
+        ? 10
         : isHexagonalChess
           ? 11
-          : 8
+          : 8,
+      boardHeight: isHexagonalChess
+        ? 11
+        : 8
     };
 
     if (!isCircularChess) {
@@ -813,23 +709,14 @@ export class Game implements IGame {
   static getStartingData(variants: ReadonlyArray<GameVariantEnum>): StartingData {
     const isMonsterChess = _.includes(variants, GameVariantEnum.MONSTER_CHESS);
     const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
-    const isChessence = _.includes(variants, GameVariantEnum.CHESSENCE);
     const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
     const isCylinderChess = _.includes(variants, GameVariantEnum.CYLINDER_CHESS);
     const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
     const isHexagonalChess = _.includes(variants, GameVariantEnum.HEXAGONAL_CHESS);
     const boardDimensions = Game.getBoardDimensions(variants);
-    let startingData: StartingData;
-
-    if (isChessence) {
-      startingData = Game.chessenceStartingData;
-    } else if (isHexagonalChess) {
-      startingData = Game.generateHexagonalStartingData();
-    } else {
-      startingData = Game.generateClassicStartingData(boardDimensions, variants);
-    }
-
-    startingData = { ...startingData };
+    const startingData = isHexagonalChess
+      ? Game.generateHexagonalStartingData()
+      : Game.generateClassicStartingData(boardDimensions, variants);
 
     let pieces = [...startingData.pieces];
 
@@ -860,53 +747,13 @@ export class Game implements IGame {
     }
 
     if (isAliceChess) {
-      startingData.voidSquares = [
-        ...startingData.voidSquares,
-        ...startingData.voidSquares.map((square) => ({ ...square, board: 1 }))
-      ];
       startingData.emptySquares = [
         ...startingData.emptySquares,
         ...startingData.emptySquares.map((square) => ({ ...square, board: 1 }))
       ];
-
-      if (isChessence) {
-        pieces = [...pieces];
-
-        const pieceType = PieceTypeEnum.MAN;
-        let id = +_.last(startingData.pieces)!.id;
-
-        _.forEach(ColorEnum, (color) => {
-          _.times(3, () => {
-            pieces.push({
-              id: `${++id}`,
-              type: pieceType,
-              originalType: pieceType,
-              color,
-              moved: false,
-              abilities: null,
-              location: {
-                type: PieceLocationEnum.POCKET,
-                pieceType
-              }
-            });
-          });
-        });
-
-        startingData.pieces.forEach((piece, ix) => {
-          if (piece.color === ColorEnum.BLACK && piece.location.type === PieceLocationEnum.BOARD) {
-            pieces[ix] = {
-              ...piece,
-              location: {
-                ...piece.location,
-                board: 1
-              }
-            };
-          }
-        });
-      }
     }
 
-    if (isChessence || isAntichess || isCylinderChess || isCircularChess || isHexagonalChess) {
+    if (isAntichess || isCylinderChess || isCircularChess || isHexagonalChess) {
       startingData.possibleCastling = {
         [ColorEnum.WHITE]: {
           [CastlingTypeEnum.KING_SIDE]: false,
@@ -951,7 +798,6 @@ export class Game implements IGame {
       startingMoveIndex: 0,
       pliesWithoutCaptureOrPawnMove: 0,
       pieces: [],
-      voidSquares: [],
       emptySquares: []
     };
     const isPocketUsed = Game.getIsPocketUsed(variants);
@@ -960,7 +806,6 @@ export class Game implements IGame {
     const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
     const isHorde = _.includes(variants, GameVariantEnum.HORDE);
     const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
-    const isChessence = _.includes(variants, GameVariantEnum.CHESSENCE);
     const isThreeCheck = _.includes(variants, GameVariantEnum.THREE_CHECK);
     const isCylinderChess = _.includes(variants, GameVariantEnum.CYLINDER_CHESS);
     const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
@@ -1005,8 +850,7 @@ export class Game implements IGame {
 
     if (possibleEnPassantString !== '-') {
       if (
-        isChessence
-        || isCircularChess
+        isCircularChess
         || isDarkChess
         || (isMonsterChess && turnString === 'w2')
       ) {
@@ -1595,10 +1439,7 @@ export class Game implements IGame {
   }
 
   static getIsPocketUsed(variants: ReadonlyArray<GameVariantEnum>): boolean {
-    return (
-      _.includes(variants, GameVariantEnum.CRAZYHOUSE)
-      || _.includes(variants, GameVariantEnum.CHESSENCE)
-    );
+    return _.includes(variants, GameVariantEnum.CRAZYHOUSE);
   }
 
   static getBoardLiteral(board: number): string {
@@ -1655,10 +1496,6 @@ export class Game implements IGame {
 
     if (_.includes(STANDARD_PIECES, pieceType)) {
       return pieceLiterals[pieceType as StandardPiece];
-    }
-
-    if (pieceType === PieceTypeEnum.MAN) {
-      return pieceLiterals[PieceTypeEnum.PAWN];
     }
 
     if (pieceType === PieceTypeEnum.AMAZON) {
@@ -1833,7 +1670,6 @@ export class Game implements IGame {
   static isBishop = (piece: Piece): boolean => Game.isPiece(piece, PieceTypeEnum.BISHOP);
   static isKnight = (piece: Piece): boolean => Game.isPiece(piece, PieceTypeEnum.KNIGHT);
   static isPawn = (piece: Piece): boolean => Game.isPiece(piece, PieceTypeEnum.PAWN);
-  static isMan = (piece: Piece): boolean => Game.isPiece(piece, PieceTypeEnum.MAN);
 
   id: string;
   startingData: StartingData;
@@ -1886,7 +1722,6 @@ export class Game implements IGame {
   isMonsterChess: boolean;
   isAliceChess: boolean;
   isTwoFamilies: boolean;
-  isChessence: boolean;
   isHorde: boolean;
   isDarkChess: boolean;
   isAntichess: boolean;
@@ -1907,9 +1742,7 @@ export class Game implements IGame {
   boardOrthodoxHeight: number;
   middleFileX: number;
   middleRankY: number;
-  nullSquares: ReadonlyArray<Square>;
   emptySquares: ReadonlyArray<Square>;
-  voidSquares: ReadonlyArray<Square>;
   variants: ReadonlyArray<GameVariantEnum>;
   drawOffer: ColorEnum | null = null;
   takebackRequest: TakebackRequest | null = null;
@@ -1923,12 +1756,7 @@ export class Game implements IGame {
       boardWidth: this.boardWidth,
       boardHeight: this.boardHeight
     } = Game.getBoardDimensions(settings.variants));
-    this.nullSquares = [
-      ...this.startingData.voidSquares,
-      ...this.startingData.emptySquares
-    ];
     this.emptySquares = this.startingData.emptySquares;
-    this.voidSquares = this.startingData.voidSquares;
 
     this.pgnTags = settings.pgnTags || {};
     this.timeControl = settings.timeControl;
@@ -1944,7 +1772,6 @@ export class Game implements IGame {
     this.isMonsterChess = _.includes(this.variants, GameVariantEnum.MONSTER_CHESS);
     this.isAliceChess = _.includes(this.variants, GameVariantEnum.ALICE_CHESS);
     this.isTwoFamilies = _.includes(this.variants, GameVariantEnum.TWO_FAMILIES);
-    this.isChessence = _.includes(this.variants, GameVariantEnum.CHESSENCE);
     this.isHorde = _.includes(this.variants, GameVariantEnum.HORDE);
     this.isDarkChess = _.includes(this.variants, GameVariantEnum.DARK_CHESS);
     this.isAntichess = _.includes(this.variants, GameVariantEnum.ANTICHESS);
@@ -1978,10 +1805,6 @@ export class Game implements IGame {
       : this.boardHeight;
     this.middleFileX = Math.ceil(this.boardWidth / 2) - 1;
     this.middleRankY = Math.ceil(this.boardHeight / 2) - 1;
-
-    if (this.isChessence) {
-      this.pocketPiecesUsed = [PieceTypeEnum.MAN];
-    }
 
     if (this.isCapablanca || this.isAmazons) {
       this.validPromotions = CAPABLANCA_VALID_PROMOTIONS;
@@ -2809,24 +2632,22 @@ export class Game implements IGame {
         _.times(this.boardWidth, (x) => {
           const square = { board, x, y };
 
-          if (this.isVoidSquare(square)) {
+          if (this.isEmptySquare(square)) {
+            return;
+          }
+
+          const pieceInSquare = this.getBoardPiece(square);
+
+          if (pieceInSquare) {
             putEmptySpacesIfNeeded();
 
-            rankString += '-';
+            const pieceLiteral = Game.getPieceFullAlgebraicLiteral(pieceInSquare);
+
+            rankString += pieceInSquare.color === ColorEnum.WHITE
+              ? pieceLiteral
+              : pieceLiteral.toLowerCase();
           } else {
-            const pieceInSquare = this.getBoardPiece(square);
-
-            if (pieceInSquare) {
-              putEmptySpacesIfNeeded();
-
-              const pieceLiteral = Game.getPieceFullAlgebraicLiteral(pieceInSquare);
-
-              rankString += pieceInSquare.color === ColorEnum.WHITE
-                ? pieceLiteral
-                : pieceLiteral.toLowerCase();
-            } else {
-              emptySpaces++;
-            }
+            emptySpaces++;
           }
         });
 
@@ -3145,10 +2966,6 @@ export class Game implements IGame {
               }))
               .filter((square) => (
                 (
-                  !this.isChessence
-                  || Game.chessenceStartingMenSquares[piece.color].some(({ x, y }) => y === square.y && x === square.x)
-                )
-                && (
                   !this.isDarkChess
                   || this.getVisibleSquares(piece.color).some((visibleSquare) => Game.areSquaresEqual(square, visibleSquare))
                 )
@@ -3177,10 +2994,7 @@ export class Game implements IGame {
       return [];
     }
 
-    const {
-      color: pieceColor,
-      type: pieceType
-    } = piece;
+    const pieceColor = piece.color;
     const {
       board,
       x: pieceX,
@@ -3408,19 +3222,6 @@ export class Game implements IGame {
       });
     }
 
-    if (Game.isKing(piece) && this.isChessence) {
-      if (onlyVisible) {
-        possibleMoves.push(
-          ...Game.chessenceStartingMenSquares[pieceColor].map(({ x, y }) => ({
-            ...DEFAULT_MOVE,
-            square: { board, x, y }
-          }))
-        );
-      }
-
-      return possibleMoves;
-    }
-
     const isKing = Game.isKing(piece);
     const isKingMove = isKing && (!this.isFrankfurt || !piece.abilities);
     const isAmazon = Game.isAmazon(piece);
@@ -3428,30 +3229,9 @@ export class Game implements IGame {
     const isEmpress = Game.isEmpress(piece);
     const isCardinal = Game.isCardinal(piece);
     const isPawn = Game.isPawn(piece);
-    const isMan = Game.isMan(piece);
-    let isBishop = Game.isBishop(piece);
-    let isRook = Game.isRook(piece);
-    let isKnight = Game.isKnight(piece);
-
-    if (isMan) {
-      const isFriendlyMan = ([incrementY, incrementX]: [number, number]): boolean => {
-        const pieceInSquare = this.getBoardPiece({
-          board,
-          y: pieceY + incrementY,
-          x: pieceX + incrementX
-        });
-
-        return (
-          !!pieceInSquare
-          && pieceInSquare.color === pieceColor
-          && pieceInSquare.type === pieceType
-        );
-      };
-
-      isRook = ROOK_MOVE_INCREMENTS.some(isFriendlyMan);
-      isBishop = BISHOP_MOVE_INCREMENTS.some(isFriendlyMan);
-      isKnight = KNIGHT_MOVE_INCREMENTS.some(isFriendlyMan);
-    }
+    const isBishop = Game.isBishop(piece);
+    const isRook = Game.isRook(piece);
+    const isKnight = Game.isKnight(piece);
 
     if (isKingMove || isAmazon || isQueen || isEmpress || isRook) {
       const stopAfter = isKingMove && !isAmazon && !isQueen && !isEmpress && !isRook
@@ -3798,15 +3578,6 @@ export class Game implements IGame {
   }
 
   getVisibleSquares(forColor: ColorEnum): Square[] {
-    let visibleSquares: Square[] = [];
-
-    if (this.isChessence) {
-      visibleSquares = _.times(this.boardCount).reduce((squares, board) => [
-        ...squares,
-        ...Game.chessenceStartingMenSquares[forColor].map(({ x, y }) => ({ board, x, y }))
-      ], [] as Square[]);
-    }
-
     return this.getPieces(forColor)
       .filter(Game.isBoardPiece)
       .reduce((squares, piece) => {
@@ -3828,7 +3599,7 @@ export class Game implements IGame {
           ...squares,
           ...newSquares
         ];
-      }, visibleSquares);
+      }, [] as Square[]);
   }
 
   getVisiblePieces(forColor: ColorEnum): Piece[] {
@@ -3867,15 +3638,13 @@ export class Game implements IGame {
       || square.y > this.boardHeight - 1
       || square.x < 0
       || square.x > this.boardWidth - 1
-      || this.nullSquares.some((nullSquare) => (
-        Game.areSquaresEqual(square, nullSquare)
-      ))
+      || this.isEmptySquare(square)
     );
   }
 
-  isVoidSquare(square: Square): boolean {
-    return this.voidSquares.some((voidSquare) => (
-      Game.areSquaresEqual(square, voidSquare)
+  isEmptySquare(square: Square): boolean {
+    return this.emptySquares.some((emptySquares) => (
+      Game.areSquaresEqual(square, emptySquares)
     ));
   }
 
@@ -3949,13 +3718,6 @@ export class Game implements IGame {
       return {
         winner: prevTurn,
         reason: ResultReasonEnum.KING_CAPTURED
-      };
-    }
-
-    if (this.isChessence && this.isStalemate()) {
-      return {
-        winner: prevTurn,
-        reason: ResultReasonEnum.STALEMATE
       };
     }
 
