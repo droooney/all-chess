@@ -3643,8 +3643,8 @@ export class Game implements IGame {
   }
 
   isEmptySquare(square: Square): boolean {
-    return this.emptySquares.some((emptySquares) => (
-      Game.areSquaresEqual(square, emptySquares)
+    return this.emptySquares.some((emptySquare) => (
+      Game.areSquaresEqual(square, emptySquare)
     ));
   }
 

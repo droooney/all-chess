@@ -387,23 +387,21 @@ class InfoActionsPanel extends React.Component<Props, State> {
             Time control: {Game.getTimeControlString(game.timeControl)}
           </div>
 
-          {!!game.variants.length && (
-            <div className="variants">
-              <span className="variants-header">
-                Variants include:
-              </span>
-              {game.variants.map((variant, ix) => (
-                <React.Fragment key={variant}>
-                  {' '}
-                  <GameVariantLink
-                    variant={variant}
-                    className="variant"
-                  />
-                  {ix === game.variants.length - 1 ? '' : ','}
-                </React.Fragment>
-              ))}
-            </div>
-          )}
+          <div className="variants">
+            <span className="variants-header">
+              Variants:
+            </span>
+            {game.variants.length ? game.variants.map((variant, ix) => (
+              <React.Fragment key={variant}>
+                {' '}
+                <GameVariantLink
+                  variant={variant}
+                  className="variant"
+                />
+                {ix === game.variants.length - 1 ? '' : ','}
+              </React.Fragment>
+            )) : ' none'}
+          </div>
 
           {result && (
             <div className="result">
