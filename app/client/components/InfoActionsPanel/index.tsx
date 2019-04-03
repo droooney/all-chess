@@ -383,6 +383,10 @@ class InfoActionsPanel extends React.Component<Props, State> {
 
         <div className="info-actions-panel">
 
+          <div className="time-control">
+            Time control: {Game.getTimeControlString(game.timeControl)}
+          </div>
+
           {!!game.variants.length && (
             <div className="variants">
               <span className="variants-header">

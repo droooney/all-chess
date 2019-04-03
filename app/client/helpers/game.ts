@@ -13,9 +13,19 @@ import {
   LocalMove,
   Move,
   Player,
-  RevertableMove
+  RevertableMove,
+  TimeControl,
+  TimeControlEnum
 } from '../../types';
 import { Game as GameHelper } from '../../shared/helpers';
+import {
+  POSSIBLE_TIMER_BASES_IN_MINUTES,
+  POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
+  POSSIBLE_TIMER_INCREMENTS_IN_SECONDS,
+  POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS,
+  POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS,
+  POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS
+} from '../../shared/constants';
 import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from '../constants';
 
 type GameEvent = 'updateChat' | 'updateGame';
@@ -29,6 +39,23 @@ export class Game extends GameHelper {
 
   static isLightColor(color: ColorEnum): boolean {
     return color === ColorEnum.WHITE;
+  }
+
+  static getTimeControlString(timeControl: TimeControl): string {
+    if (!timeControl) {
+      return '∞';
+    }
+
+    if (timeControl.type === TimeControlEnum.CORRESPONDENCE) {
+      const days = POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS[POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS.indexOf(timeControl.base)];
+
+      return `${days} ${days === 1 ? 'day' : 'days'}`;
+    }
+
+    const base = POSSIBLE_TIMER_BASES_IN_MINUTES[POSSIBLE_TIMER_BASES_IN_MILLISECONDS.indexOf(timeControl.base)];
+    const increment = POSSIBLE_TIMER_INCREMENTS_IN_SECONDS[POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS.indexOf(timeControl.increment)];
+
+    return `${base} + ${increment}`;
   }
 
   socket?: Socket;

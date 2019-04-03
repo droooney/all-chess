@@ -5,7 +5,7 @@ import { RouteComponentProps } from 'react-router-dom';
 import io = require('socket.io-client');
 
 import { ReduxState } from '../../store';
-import { Game as GameHelper } from '../../helpers';
+import { Game } from '../../helpers';
 import {
   CorrespondenceTimeControl,
   GameMinimalData,
@@ -46,10 +46,6 @@ interface State {
   timeControl: TimeControl;
   variants: GameVariant[];
 }
-
-const ONE_DAY = 24 * 60 * 60 * 1000;
-const ONE_MINUTE = 60 * 1000;
-const ONE_SECOND = 1000;
 
 class Games extends React.Component<Props, State> {
   static defaultVariants = _.map(GameVariantEnum, (variant) => ({
@@ -180,7 +176,7 @@ class Games extends React.Component<Props, State> {
     });
   };
 
-  onVariationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  onVariantChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const changedVariant = e.target.name as GameVariantEnum;
     const enabled = e.target.checked;
 
@@ -195,7 +191,7 @@ class Games extends React.Component<Props, State> {
 
       newVariants = newVariants.map((variant) => ({
         ...variant,
-        allowed: variant.enabled || GameHelper.validateVariants([...selectedVariations, variant.variant])
+        allowed: variant.enabled || Game.validateVariants([...selectedVariations, variant.variant])
       }));
 
       return {
@@ -247,13 +243,7 @@ class Games extends React.Component<Props, State> {
                 className="game"
                 onClick={() => this.enterGame(id)}
               >
-                <td className="time-control">{
-                  timeControl
-                    ? timeControl.type === TimeControlEnum.CORRESPONDENCE
-                      ? `${Math.round(timeControl.base / ONE_DAY)} ${timeControl.base === ONE_DAY ? 'day' : 'days'}`
-                      : `${Math.round(timeControl.base / ONE_MINUTE)} + ${Math.round(timeControl.increment / ONE_SECOND)}`
-                    : '∞'
-                }</td>
+                <td className="time-control">{Game.getTimeControlString(timeControl)}</td>
                 <td className="variants">{variants.length ? variants.map((variant, ix) => (
                   <React.Fragment key={variant}>
                     {' '}
@@ -351,7 +341,7 @@ class Games extends React.Component<Props, State> {
                     name={variant}
                     checked={enabled}
                     disabled={!allowed}
-                    onChange={this.onVariationChange}
+                    onChange={this.onVariantChange}
                   />
                   {' '}
                   <GameVariantLink variant={variant} />
