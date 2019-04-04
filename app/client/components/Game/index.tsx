@@ -54,7 +54,6 @@ interface State {
 export default class Game extends React.Component<Props, State> {
   socket?: io.Socket;
   player: Player | null = null;
-  timeDiff?: number;
   game?: GameHelper;
   draggingPieceRef = React.createRef<SVGSVGElement>();
   dragX = 0;
@@ -134,8 +133,13 @@ export default class Game extends React.Component<Props, State> {
 
   onGameData = ({ timestamp, player, game }: GameInitialData | DarkChessGameInitialData) => {
     this.player = player;
-    this.timeDiff = Date.now() - timestamp;
-    this.game = new GameHelper(game, this.socket!, player);
+    this.game = new GameHelper({
+      game,
+      socket: this.socket,
+      player,
+      currentMoveIndex: this.game && this.game.currentMoveIndex,
+      timestamp
+    });
 
     this.game.on('updateChat', () => {
       this.forceUpdate();
@@ -374,6 +378,7 @@ export default class Game extends React.Component<Props, State> {
           darkChessMode,
           showDarkChessHiddenPieces,
           lastMoveTimestamp,
+          timeDiff,
           currentMoveIndex
         } = this.game!;
         const {
@@ -456,7 +461,7 @@ export default class Game extends React.Component<Props, State> {
               readOnly={readOnly}
               isBlackBase={isBlackBase}
               status={status}
-              timeDiff={this.timeDiff!}
+              timeDiff={timeDiff}
               lastMoveTimestamp={lastMoveTimestamp}
               selectedPiece={
                 selectedPiece && selectedPiece.location.type === PieceLocationEnum.POCKET

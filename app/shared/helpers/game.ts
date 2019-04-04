@@ -801,14 +801,10 @@ export class Game implements IGame {
       emptySquares: []
     };
     const isPocketUsed = Game.getIsPocketUsed(variants);
-    const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
     const isMonsterChess = _.includes(variants, GameVariantEnum.MONSTER_CHESS);
-    const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
-    const isHorde = _.includes(variants, GameVariantEnum.HORDE);
     const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
     const isThreeCheck = _.includes(variants, GameVariantEnum.THREE_CHECK);
     const isCylinderChess = _.includes(variants, GameVariantEnum.CYLINDER_CHESS);
-    const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
     const isDarkChess = _.includes(variants, GameVariantEnum.DARK_CHESS);
     const fenData = fen.trim().split(/\s+/);
     const boards = fenData.slice(0, boardCount);
@@ -850,8 +846,7 @@ export class Game implements IGame {
 
     if (possibleEnPassantString !== '-') {
       if (
-        isCircularChess
-        || isDarkChess
+        isDarkChess
         || (isMonsterChess && turnString === 'w2')
       ) {
         throw new Error('Invalid FEN: wrong en passant');
@@ -926,7 +921,7 @@ export class Game implements IGame {
       const ranksCount = isPocketUsed && board === 0 ? boardHeight + 1 : boardHeight;
 
       if (ranks.length !== ranksCount) {
-        throw new Error('Invalid FEN: wrong ranks blocks count');
+        throw new Error(`Invalid FEN: wrong ranks blocks count on board ${board}`);
       }
 
       for (let rank = ranksCount - boardHeight; rank < ranks.length; rank++) {
@@ -948,11 +943,6 @@ export class Game implements IGame {
 
             if (!piece) {
               throw new Error(`Invalid FEN: wrong piece literal (${character})`);
-            }
-
-            // not promoted pawns
-            if (piece.type === PieceTypeEnum.PAWN && rank === (piece.color === ColorEnum.WHITE ? boardHeight - 1 : 0)) {
-              throw new Error('Invalid FEN: not promoted pawn');
             }
 
             addPiece(
@@ -996,39 +986,6 @@ export class Game implements IGame {
           );
         }
       }
-    }
-
-    if (
-      isAliceChess
-      && pieces.some(({ location }) => (
-        location.type === PieceLocationEnum.BOARD
-        && pieces.some(({ location: pieceLocation }) => (
-          pieceLocation.type === PieceLocationEnum.BOARD
-          && location.x === pieceLocation.x
-          && location.y === pieceLocation.y
-          && location.board !== pieceLocation.board
-        ))
-      ))
-    ) {
-      throw new Error('Invalid FEN: multiple pieces on the same square');
-    }
-
-    const whiteKingsCount = pieces.filter((piece) => (
-      piece.color === ColorEnum.WHITE
-      && Game.isKing(piece)
-    )).length;
-    const blackKingsCount = pieces.filter((piece) => (
-      piece.color === ColorEnum.BLACK
-      && Game.isKing(piece)
-    )).length;
-
-    if (
-      !isAntichess && (
-        whiteKingsCount !== (isHorde ? 0 : isTwoFamilies ? 2 : 1)
-        || blackKingsCount !== (isTwoFamilies ? 2 : 1)
-      )
-    ) {
-      throw new Error('Invalid FEN: wrong kings count');
     }
 
     if (startingData.possibleEnPassant) {
@@ -1398,6 +1355,65 @@ export class Game implements IGame {
     }
 
     return game;
+  }
+
+  static validateStartingData(startingData: StartingData, variants: ReadonlyArray<GameVariantEnum>): void {
+    const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
+    const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
+    const isHorde = _.includes(variants, GameVariantEnum.HORDE);
+    const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
+
+    if (isAliceChess) {
+      // pieces on the same square
+      startingData.pieces.forEach(({ location }) => {
+        if (
+          location.type === PieceLocationEnum.BOARD
+          && startingData.pieces.some(({ location: pieceLocation }) => (
+            pieceLocation.type === PieceLocationEnum.BOARD
+            && location.x === pieceLocation.x
+            && location.y === pieceLocation.y
+            && location.board !== pieceLocation.board
+          ))
+        ) {
+          throw new Error(`Invalid FEN: multiple pieces on the same square (${Game.getFileLiteral(location.x) + Game.getRankLiteral(location.y)})`);
+        }
+      });
+    }
+
+    const whiteKingsNumber = startingData.pieces.filter((piece) => (
+      piece.color === ColorEnum.WHITE
+      && Game.isKing(piece)
+    )).length;
+    const blackKingsNumber = startingData.pieces.filter((piece) => (
+      piece.color === ColorEnum.BLACK
+      && Game.isKing(piece)
+    )).length;
+
+    // wrong number of kings on the board
+    if (
+      !isAntichess && (
+        whiteKingsNumber !== (isHorde ? 0 : isTwoFamilies ? 2 : 1)
+        || blackKingsNumber !== (isTwoFamilies ? 2 : 1)
+      )
+    ) {
+      throw new Error('Invalid FEN: wrong number of kings');
+    }
+
+    const {
+      boardHeight
+    } = Game.getBoardDimensions(variants);
+
+    // not promoted pawns
+    if (
+      startingData.pieces.some((piece) => (
+        Game.isBoardPiece(piece)
+        && Game.isPawn(piece)
+        // TODO: fix for hex
+        && piece.location.y === (piece.color === ColorEnum.WHITE ? boardHeight - 1 : 0)
+      ))
+    ) {
+      throw new Error('Invalid FEN: not promoted pawn');
+    }
   }
 
   static generateGameDataFromStartingData(startingData: StartingData): BoardData {
@@ -2285,7 +2301,6 @@ export class Game implements IGame {
 
     if (
       !this.isDarkChess
-      && !this.isCircularChess
       && fromLocation.type === PieceLocationEnum.BOARD
       && Game.isPawn(piece)
       && Math.abs(toY - fromLocation.y) > 1
@@ -3901,5 +3916,30 @@ export class Game implements IGame {
 
   isStalemate(): boolean {
     return !this.isCheck && this.isNoMoves();
+  }
+
+  isOngoing(): boolean {
+    return this.status === GameStatusEnum.ONGOING;
+  }
+
+  changePlayerTime() {
+    if (
+      this.isOngoing()
+      && this.moves.length > this.pliesPerMove
+      && this.timeControl
+    ) {
+      const prevTurn = this.getPrevTurn();
+      const isPlayerChanged = this.turn !== prevTurn;
+      const player = this.players[this.getPrevTurn()];
+      const { duration } = _.last(this.moves)!;
+
+      if (this.timeControl.type === TimeControlEnum.TIMER) {
+        player.time! -= duration - (isPlayerChanged ? this.timeControl.increment : 0);
+      } else if (isPlayerChanged) {
+        player.time = this.timeControl.base;
+      } else {
+        player.time! -= duration;
+      }
+    }
   }
 }

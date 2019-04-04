@@ -30,11 +30,20 @@ import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from '../constants';
 
 type GameEvent = 'updateChat' | 'updateGame';
 
+export interface InitGameOptions {
+  game: IGame | DarkChessGame;
+
+  socket?: Socket;
+  player?: Player | null;
+  currentMoveIndex?: number;
+  timestamp?: number;
+}
+
 export class Game extends GameHelper {
   static getGameFromPgn(pgn: string): Game {
     const game = super.getGameFromPgn(pgn);
 
-    return new Game(game);
+    return new Game({ game });
   }
 
   static isLightColor(color: ColorEnum): boolean {
@@ -59,6 +68,7 @@ export class Game extends GameHelper {
   }
 
   socket?: Socket;
+  timeDiff = 0;
   moves: LocalMove[] = [];
   currentMoveIndex: number;
   isOngoingDarkChessGame: boolean;
@@ -72,7 +82,7 @@ export class Game extends GameHelper {
     updateGame: []
   };
 
-  constructor(game: IGame | DarkChessGame, socket?: Socket, player?: Player | null) {
+  constructor({ game, socket, player, currentMoveIndex, timestamp }: InitGameOptions) {
     super({
       id: game.id,
       pgnTags: game.pgnTags,
@@ -93,7 +103,13 @@ export class Game extends GameHelper {
     this.isOngoingDarkChessGame = this.isDarkChess && this.status !== GameStatusEnum.FINISHED;
     this.showDarkChessHiddenPieces = !this.isOngoingDarkChessGame;
     this.darkChessMode = this.isDarkChess && player ? player.color : null;
-    this.needToCalculateMaterialDifference = !this.isAbsorption && !this.isDarkChess;
+    this.needToCalculateMaterialDifference = (
+      !this.isAbsorption
+      && !this.isDarkChess
+      && !this.isMonsterChess
+      && !this.isHorde
+      && !this.isAmazons
+    );
 
     const moves: (Move | DarkChessMove)[] = game.moves;
 
@@ -107,6 +123,14 @@ export class Game extends GameHelper {
       moves.forEach((move) => {
         this.registerAnyMove(move as Move);
       });
+    }
+
+    if (typeof currentMoveIndex === 'number') {
+      this.navigateToMove(currentMoveIndex);
+    }
+
+    if (typeof timestamp === 'number') {
+      this.timeDiff = Date.now() - timestamp;
     }
 
     if (socket) {
@@ -331,10 +355,17 @@ export class Game extends GameHelper {
 
   move(move: BaseMove) {
     if (!this.isDarkChess) {
+      const newTimestamp = Date.now() - this.timeDiff;
+
       this.onMoveMade({
         ...move,
-        duration: 0
-      }, false, true);
+        duration: newTimestamp - this.lastMoveTimestamp
+      }, false, false);
+
+      this.lastMoveTimestamp = newTimestamp;
+
+      this.changePlayerTime();
+      this.updateGame();
     }
 
     if (this.socket) {

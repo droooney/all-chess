@@ -381,10 +381,6 @@ export default class Game extends GameHelper {
     );
   }
 
-  isOngoing(): boolean {
-    return this.status === GameStatusEnum.ONGOING;
-  }
-
   move(player: Player, moveForServer: BaseMove) {
     if (!this.validateMove(moveForServer)) {
       return;
@@ -433,19 +429,7 @@ export default class Game extends GameHelper {
 
     const isPlayerChanged = this.turn !== prevTurn;
 
-    if (
-      this.isOngoing()
-      && this.moves.length > this.pliesPerMove
-      && this.timeControl
-    ) {
-      if (this.timeControl.type === TimeControlEnum.TIMER) {
-        player.time! -= move.duration - (isPlayerChanged ? this.timeControl.increment : 0);
-      } else if (isPlayerChanged) {
-        player.time = this.timeControl.base;
-      } else {
-        player.time! -= move.duration;
-      }
-    }
+    this.changePlayerTime();
 
     this.lastMoveTimestamp = newTimestamp;
 
