@@ -165,6 +165,7 @@ export default class RightPanelPlayer extends React.Component<Props> {
             return (
               <div
                 key={type}
+                data-pocket-piece={type}
                 className={classNames('piece-container', {
                   disabled: !pieces.length
                 })}

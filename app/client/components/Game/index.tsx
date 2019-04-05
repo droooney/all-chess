@@ -328,6 +328,14 @@ export default class Game extends React.Component<Props, State> {
     if (
       !document.elementsFromPoint(e.pageX, e.pageY).some((element) => {
         try {
+          if (
+            this.state.selectedPiece
+            && GameHelper.isPocketPiece(this.state.selectedPiece)
+            && (element as HTMLElement).dataset.pocketPiece === this.state.selectedPiece.location.pieceType
+          ) {
+            return true;
+          }
+
           const squareJSON = (element as HTMLElement).dataset.square;
 
           if (!squareJSON) {

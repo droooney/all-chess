@@ -435,12 +435,14 @@ export default class Game extends GameHelper {
 
     if (this.isDarkChess) {
       _.forEach(this.io.sockets, (socket) => {
-        const socketPlayer = socket.player!;
+        const socketPlayer = socket.player;
 
-        socket.emit('darkChessMoveMade', {
-          move: _.last(this.colorMoves[socketPlayer.color])!,
-          lastMoveTimestamp: this.lastMoveTimestamp
-        });
+        if (socketPlayer) {
+          socket.emit('darkChessMoveMade', {
+            move: _.last(this.colorMoves[socketPlayer.color])!,
+            lastMoveTimestamp: this.lastMoveTimestamp
+          });
+        }
       });
     } else {
       this.io.emit('moveMade', {
