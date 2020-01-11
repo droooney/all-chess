@@ -1,3 +1,4 @@
+import * as qs from 'querystring';
 import * as React from 'react';
 import { connect, DispatchProps } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
@@ -5,6 +6,7 @@ import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { ReduxState } from '../../store';
 import { setUserData } from '../../actions';
 import { fetch } from '../../helpers';
+import { STANDARD_FEN } from '../../constants';
 
 import Link from '../Link';
 
@@ -13,7 +15,9 @@ import './index.less';
 type Props = ReturnType<typeof mapStateToProps> & DispatchProps & RouteComponentProps<any>;
 
 class Header extends React.Component<Props> {
-  logout = async () => {
+  logout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+
     const {
       dispatch,
       history
@@ -39,10 +43,26 @@ class Header extends React.Component<Props> {
 
     return (
       <header>
-        <Link to="/" className="main-link">
-          AllChess
-        </Link>
+        <div className="main-link">
+          <Link to="/">
+            AllChess
+          </Link>
+        </div>
         <div className="right-header-block">
+          {user && (
+            <Link
+              to={{
+                pathname: '/editor',
+                search: `?${qs.stringify({
+                  fen: STANDARD_FEN,
+                  variants: ''
+                })}`
+              }}
+              style={{ marginRight: 20 }}
+            >
+              Editor
+            </Link>
+          )}
           <Link to="/rules" style={{ marginRight: 20 }}>
             Rules
           </Link>
@@ -63,7 +83,7 @@ class Header extends React.Component<Props> {
                 replace
                 to={{
                   pathname: '/login',
-                  search: from === '/' ? '' : `?from=${from}`
+                  search: from === '/' ? '' : `?${qs.stringify({ from })}`
                 }}
               >
                 Login

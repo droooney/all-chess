@@ -1,5 +1,5 @@
 import * as Sequelize from 'sequelize';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 import sequelize from '../';
 import { User as UserAttributes } from '../../../types';

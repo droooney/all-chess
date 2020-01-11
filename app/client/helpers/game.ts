@@ -339,12 +339,14 @@ export class Game extends GameHelper {
           : 70;
   }
 
-  getPieceSize(squareSize: number): number {
+  getPieceSize(squareSize?: number): number {
+    const eventualSquareSize = squareSize || this.getSquareSize();
+
     return this.isCircularChess
-      ? (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * squareSize * 0.9
+      ? (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * eventualSquareSize * 0.9
       : this.isHexagonalChess
-        ? squareSize / 1.3
-        : squareSize;
+        ? eventualSquareSize / 1.3
+        : eventualSquareSize;
   }
 
   getUsedMoves(): AnyMove[] {

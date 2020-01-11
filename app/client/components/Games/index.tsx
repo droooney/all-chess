@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import * as React from 'react';
 import { connect, DispatchProps } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
@@ -28,15 +27,10 @@ import {
 
 import DocumentTitle from '../DocumentTitle';
 import GameVariantLink from '../GameVariantLink';
+import GameVariantList from '../GameVariantList';
 import Modal from '../Modal';
 
 import './index.less';
-
-interface GameVariant {
-  variant: GameVariantEnum;
-  enabled: boolean;
-  allowed: boolean;
-}
 
 type Props = RouteComponentProps<any> & ReturnType<typeof mapStateToProps> & DispatchProps;
 
@@ -44,21 +38,15 @@ interface State {
   createGameModalVisible: boolean;
   games: GameMinimalData[];
   timeControl: TimeControl;
-  variants: GameVariant[];
+  variants: GameVariantEnum[];
 }
 
 class Games extends React.Component<Props, State> {
-  static defaultVariants = _.map(GameVariantEnum, (variant) => ({
-    variant,
-    allowed: true,
-    enabled: false
-  }));
-
   socket?: io.Socket;
   state: State = {
     createGameModalVisible: false,
     timeControl: this.props.timeControl,
-    variants: Games.defaultVariants,
+    variants: [],
     games: []
   };
 
@@ -85,12 +73,6 @@ class Games extends React.Component<Props, State> {
     this.socket!.disconnect();
   }
 
-  getSelectedVariants(variants: GameVariant[]): GameVariantEnum[] {
-    return variants
-      .filter(({ enabled }) => enabled)
-      .map(({ variant }) => variant);
-  }
-
   openModal = () => {
     this.setState({
       createGameModalVisible: true
@@ -99,7 +81,7 @@ class Games extends React.Component<Props, State> {
 
   closeModal = () => {
     this.setState({
-      variants: Games.defaultVariants,
+      variants: [],
       createGameModalVisible: false
     });
   };
@@ -110,7 +92,7 @@ class Games extends React.Component<Props, State> {
     if (this.props.loggedIn) {
       this.socket!.emit('createGame', {
         timeControl: this.state.timeControl,
-        variants: this.getSelectedVariants(this.state.variants)
+        variants: this.state.variants
       });
     }
   };
@@ -176,27 +158,9 @@ class Games extends React.Component<Props, State> {
     });
   };
 
-  onVariantChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const changedVariant = e.target.name as GameVariantEnum;
-    const enabled = e.target.checked;
-
-    this.setState(({ variants }) => {
-      let newVariants = variants.map((variant) => ({
-        ...variant,
-        enabled: variant.variant === changedVariant
-          ? enabled
-          : variant.enabled
-      }));
-      const selectedVariations = this.getSelectedVariants(newVariants);
-
-      newVariants = newVariants.map((variant) => ({
-        ...variant,
-        allowed: variant.enabled || Game.validateVariants([...selectedVariations, variant.variant])
-      }));
-
-      return {
-        variants: newVariants
-      };
+  onVariantsChange = (variants: GameVariantEnum[]) => {
+    this.setState({
+      variants
     });
   };
 
@@ -334,19 +298,10 @@ class Games extends React.Component<Props, State> {
                 Variants
               </h5>
 
-              {variants.map(({ variant, enabled, allowed }) => (
-                <div key={variant} className="variant">
-                  <input
-                    type="checkbox"
-                    name={variant}
-                    checked={enabled}
-                    disabled={!allowed}
-                    onChange={this.onVariantChange}
-                  />
-                  {' '}
-                  <GameVariantLink variant={variant} />
-                </div>
-              ))}
+              <GameVariantList
+                variants={variants}
+                onVariantsChange={this.onVariantsChange}
+              />
             </div>
 
             <input

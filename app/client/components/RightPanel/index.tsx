@@ -28,7 +28,8 @@ interface OwnProps {
   currentMoveIndex: number;
   timeControl: TimeControl;
   moves: AnyMove[];
-  readOnly: boolean;
+  enableClick: boolean;
+  enableDnd: boolean;
   isBlackBase: boolean;
   status: GameStatusEnum;
   timeDiff: number;
@@ -145,7 +146,8 @@ export default class RightPanel extends React.Component<Props, State> {
       lastMoveTimestamp,
       moves,
       timeControl,
-      readOnly,
+      enableClick,
+      enableDnd,
       isBlackBase,
       selectedPiece,
       selectPiece,
@@ -194,11 +196,11 @@ export default class RightPanel extends React.Component<Props, State> {
         <RightPanelPlayer
           game={game}
           player={topPlayer}
-          currentPlayer={player}
           timePassedSinceLastMove={timePassedSinceLastMove}
           timeControl={timeControl}
           realTurn={realTurn}
-          readOnly={readOnly || !player || topPlayer.login !== player.login}
+          enableClick={enableClick && !!player && topPlayer.login === player.login}
+          enableDnd={enableDnd && !!player && topPlayer.login === player.login}
           isTop
           pocket={pieces.filter((piece) => Game.isPocketPiece(piece) && piece.color === topPlayer.color) as PocketPiece[]}
           allMaterialDifference={allMaterialDifference}
@@ -217,11 +219,11 @@ export default class RightPanel extends React.Component<Props, State> {
         <RightPanelPlayer
           game={game}
           player={bottomPlayer}
-          currentPlayer={player}
           timePassedSinceLastMove={timePassedSinceLastMove}
           timeControl={timeControl}
           realTurn={realTurn}
-          readOnly={readOnly || !player || bottomPlayer.login !== player.login}
+          enableClick={enableClick && !!player && bottomPlayer.login === player.login}
+          enableDnd={enableDnd && !!player && bottomPlayer.login === player.login}
           isTop={false}
           pocket={pieces.filter((piece) => Game.isPocketPiece(piece) && piece.color === bottomPlayer.color) as PocketPiece[]}
           allMaterialDifference={allMaterialDifference}

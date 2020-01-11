@@ -23,7 +23,7 @@ class Route extends React.Component<Props> {
       window.scrollTo(0, 0);
       history.replace({
         ...location,
-        state: {}
+        state: _.omit(state, 'resetScroll')
       });
     }
   }

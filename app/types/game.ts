@@ -126,6 +126,7 @@ export interface PieceBoardLocation extends Square {
 export interface PiecePocketLocation {
   type: PieceLocationEnum.POCKET;
   pieceType: PieceTypeEnum;
+  color: ColorEnum;
 }
 
 export type RealPieceLocation = PieceBoardLocation | PiecePocketLocation;

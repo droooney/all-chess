@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
 import moment = require('moment');
 import * as React from 'react';
-import classNames = require('classnames');
 
 import {
   ColorEnum,
@@ -17,15 +16,16 @@ import {
 import { Game } from '../../helpers';
 
 import Piece from '../Piece';
+import PlayerPocket from '../PlayerPocket';
 
 interface OwnProps {
   game: Game;
-  currentPlayer: Player | null;
   player: Player;
   pocket: PocketPiece[];
   timePassedSinceLastMove: number;
   timeControl: TimeControl;
-  readOnly: boolean;
+  enableClick: boolean;
+  enableDnd: boolean;
   realTurn: ColorEnum;
   isTop: boolean;
   allMaterialDifference: number;
@@ -80,14 +80,9 @@ export default class RightPanelPlayer extends React.Component<Props> {
     const {
       game,
       player,
-      readOnly,
       selectPiece,
       selectedPiece
     } = this.props;
-
-    if (readOnly) {
-      return;
-    }
 
     if (
       selectedPiece
@@ -103,14 +98,15 @@ export default class RightPanelPlayer extends React.Component<Props> {
     const {
       game,
       player,
-      currentPlayer,
       pocket,
-      readOnly,
+      enableClick,
+      enableDnd,
       selectedPiece,
       timeControl,
       isTop,
       allMaterialDifference,
       materialDifference,
+      selectPiece,
       startDraggingPiece
     } = this.props;
     const elements: JSX.Element[] = [];
@@ -119,6 +115,10 @@ export default class RightPanelPlayer extends React.Component<Props> {
       elements.push(
         <div key="material-advantage" className="material-advantage">
           {_.map(materialDifference, (count, pieceType) => {
+            if (game.isThreeCheck && pieceType === PieceTypeEnum.KING) {
+              count = game.checksCount[player.color] * (player.color === ColorEnum.WHITE ? 1 : -1);
+            }
+
             const isAdvantage = player.color === ColorEnum.WHITE ? count > 0 : count < 0;
 
             if (!isAdvantage) {
@@ -135,7 +135,8 @@ export default class RightPanelPlayer extends React.Component<Props> {
                     type: pieceType as PieceTypeEnum,
                     location: {
                       type: PieceLocationEnum.POCKET,
-                      pieceType: pieceType as PieceTypeEnum
+                      pieceType: pieceType as PieceTypeEnum,
+                      color: player.color
                     }
                   }}
                 />
@@ -158,51 +159,17 @@ export default class RightPanelPlayer extends React.Component<Props> {
 
     if (game.isPocketUsed) {
       elements.push(
-        <div key="pocket" className="pocket">
-          {game.pocketPiecesUsed.map((type) => {
-            const pieces = pocket.filter(({ type: pieceType }) => pieceType === type);
-
-            return (
-              <div
-                key={type}
-                data-pocket-piece={type}
-                className={classNames('piece-container', {
-                  disabled: !pieces.length
-                })}
-                onClick={pieces.length && !readOnly ? (() => this.onPocketPieceClick(pieces[0].location)) : undefined}
-                onMouseDown={pieces.length && !readOnly ? (e) => startDraggingPiece(e, pieces[0].location) : undefined}
-              >
-                {
-                  selectedPiece
-                  && currentPlayer
-                  && selectedPiece.location.pieceType === type
-                  && player.color === currentPlayer.color
-                  && (
-                    <div className="selected-square" />
-                  )
-                }
-
-                <Piece
-                  key={type}
-                  piece={pieces.length ? pieces[0] : {
-                    color: player.color,
-                    type,
-                    location: {
-                      type: PieceLocationEnum.POCKET,
-                      pieceType: type
-                    }
-                  }}
-                />
-
-                {!!pieces.length && (
-                  <span className="count">
-                    {pieces.length}
-                  </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <PlayerPocket
+          key="pocket"
+          game={game}
+          color={player.color}
+          pocket={pocket}
+          enableClick={enableClick}
+          enableDnd={enableDnd}
+          selectedPiece={selectedPiece}
+          selectPiece={selectPiece}
+          startDraggingPiece={startDraggingPiece}
+        />
       );
     }
 

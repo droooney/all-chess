@@ -75,12 +75,13 @@ export default class GameRulesExample extends React.Component<Props> {
             selectPiece={() => {}}
             startDraggingPiece={() => {}}
             makeMove={() => {}}
-            readOnly
+            enableClick={false}
+            enableDnd={false}
             darkChessMode={null}
             isBlackBase={false}
             isDragging={false}
             currentMove={this.game.moves[this.game.currentMoveIndex]}
-            squareSize={35}
+            squareSize={this.game.getSquareSize() / 2}
             boardsShiftX={0}
             pieces={this.game.pieces}
           />

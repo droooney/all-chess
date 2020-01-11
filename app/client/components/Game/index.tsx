@@ -18,7 +18,8 @@ import {
   Player,
   PocketPiece,
   RealPiece,
-  RealPieceLocation, Square
+  RealPieceLocation,
+  Square
 } from '../../../types';
 import {
   GAME_VARIANT_NAMES
@@ -290,9 +291,16 @@ export default class Game extends React.Component<Props, State> {
   startDraggingPiece = (e: React.MouseEvent, location: RealPieceLocation) => {
     const draggedPiece = location.type === PieceLocationEnum.BOARD
       ? this.game!.getBoardPiece(location)
-      : this.game!.getPocketPiece(location.pieceType, this.player!.color);
+      : this.game!.getPocketPiece(location.pieceType, location.color);
 
-    if (draggedPiece && draggedPiece.color === this.player!.color) {
+    if (
+      draggedPiece
+      && draggedPiece.color === this.player!.color
+      && (
+        !GameHelper.isBoardPiece(draggedPiece)
+        || this.getAllowedMoves().every(({ square }) => !GameHelper.areSquaresEqual(draggedPiece.location, square))
+      )
+    ) {
       this.dragX = e.pageX;
       this.dragY = e.pageY;
 
@@ -449,7 +457,8 @@ export default class Game extends React.Component<Props, State> {
               selectPiece={this.selectPiece}
               startDraggingPiece={this.startDraggingPiece}
               getAllowedMoves={this.getAllowedMoves}
-              readOnly={readOnly}
+              enableClick={!readOnly}
+              enableDnd={!readOnly}
               isBlackBase={isBlackBase}
               isDragging={isDragging}
               darkChessMode={darkChessMode}
@@ -466,7 +475,8 @@ export default class Game extends React.Component<Props, State> {
               currentMoveIndex={currentMoveIndex}
               timeControl={timeControl}
               moves={usedMoves}
-              readOnly={readOnly}
+              enableClick={!readOnly}
+              enableDnd={!readOnly}
               isBlackBase={isBlackBase}
               status={status}
               timeDiff={timeDiff}
@@ -494,7 +504,8 @@ export default class Game extends React.Component<Props, State> {
                       color: player ? player.color : ColorEnum.WHITE,
                       location: {
                         type: PieceLocationEnum.POCKET,
-                        pieceType
+                        pieceType,
+                        color: player ? player.color : ColorEnum.WHITE
                       }
                     }}
                     onClick={this.promoteToPiece}

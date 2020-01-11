@@ -11,6 +11,7 @@ import Route from '../Route';
 import Header from '../Header';
 
 import Home from '../Home';
+import BoardEditor from '../BoardEditor';
 import GamesRules from '../GamesRules';
 import Login from '../Login';
 import Register from '../Register';
@@ -32,6 +33,7 @@ export default class App extends React.Component {
           <main>
             <Switch>
               <Route exact strict path="/" component={Home} />
+              <Route strict path="/editor" component={BoardEditor} />
               <Route strict path="/rules" component={GamesRules} />
               <Route exact strict path="/login" component={Login} />
               <Route exact strict path="/register" component={Register} />

@@ -33,7 +33,8 @@ export interface OwnProps {
   makeMove(square: Square, isDndMove: boolean): void;
   selectPiece(piece: IPiece | null): void;
   startDraggingPiece(e: React.MouseEvent, location: RealPieceLocation): void;
-  readOnly: boolean;
+  enableClick: boolean;
+  enableDnd: boolean;
   isBlackBase: boolean;
   isDragging: boolean;
   darkChessMode: ColorEnum | null;
@@ -44,6 +45,8 @@ export interface OwnProps {
 
   withLiterals?: boolean;
   showFantomPieces?: boolean;
+  showKingAttack?: boolean;
+  forceMoveWithClick?: boolean;
   getAllowedMoves?(): BoardPossibleMove[];
 }
 
@@ -51,7 +54,9 @@ type Props = OwnProps & ReturnType<typeof mapStateToProps>;
 
 class Boards extends React.Component<Props> {
   static defaultProps = {
-    withLiterals: true
+    withLiterals: true,
+    showKingAttack: true,
+    forceMoveWithClick: false
   };
 
   boardsRef = React.createRef<HTMLDivElement>();
@@ -60,6 +65,7 @@ class Boards extends React.Component<Props> {
     if (
       prevProps.isBlackBase !== this.props.isBlackBase
       || prevProps.isDragging !== this.props.isDragging
+      || prevProps.game !== this.props.game
       || (
         this.props.currentMove
         && this.props.currentMove.isDndMove
@@ -108,10 +114,11 @@ class Boards extends React.Component<Props> {
 
   isInCheck(square: Square): boolean {
     const {
-      game
+      game,
+      showKingAttack
     } = this.props;
 
-    if (game.isAntichess) {
+    if (game.isAntichess || !showKingAttack) {
       return false;
     }
 
@@ -133,9 +140,10 @@ class Boards extends React.Component<Props> {
       player,
       selectedPiece,
       selectPiece,
-      makeMove
+      makeMove,
+      forceMoveWithClick
     } = this.props;
-    const playerColor = player!.color;
+    const playerColor = player ? player.color : null;
 
     if (!selectedPiece) {
       const pieceInSquare = game.getBoardPiece(square);
@@ -156,7 +164,7 @@ class Boards extends React.Component<Props> {
 
     const allowedMoves = this.getAllowedMoves().filter(({ square: allowedSquare }) => Game.areSquaresEqual(square, allowedSquare));
 
-    if (!allowedMoves.length) {
+    if (!allowedMoves.length && !forceMoveWithClick) {
       const pieceInSquare = game.getBoardPiece(square);
 
       if (!pieceInSquare || playerColor !== pieceInSquare.color) {
@@ -166,7 +174,7 @@ class Boards extends React.Component<Props> {
       return selectPiece(pieceInSquare);
     }
 
-    makeMove(allowedMoves[0].realSquare, false);
+    makeMove(square, false);
   };
 
   onPieceDragStart = (e: React.MouseEvent, location: RealPieceLocation) => {
@@ -195,7 +203,8 @@ class Boards extends React.Component<Props> {
         middleRankY
       },
       selectedPiece,
-      readOnly,
+      enableClick,
+      enableDnd,
       pieces,
       withLiterals,
       currentMove,
@@ -308,8 +317,8 @@ class Boards extends React.Component<Props> {
                 transform: isCircularChess || isHexagonalChess
                   ? undefined
                   : `translate(${translateX}, ${translateY})`,
-                onClick: readOnly ? undefined : (() => this.onSquareClick(square)),
-                onMouseDown: readOnly ? undefined : ((e: React.MouseEvent) => this.onPieceDragStart(e, location))
+                onClick: enableClick ? (() => this.onSquareClick(square)) : undefined,
+                onMouseDown: enableDnd ? ((e: React.MouseEvent) => this.onPieceDragStart(e, location)) : undefined
               };
               const centerSquareParams = this.getSquareParams(square);
               const SVGSquareElem = (props: React.SVGProps<SVGPathElement> | React.SVGProps<SVGRectElement>) => (
@@ -703,8 +712,8 @@ class Boards extends React.Component<Props> {
                   isFullFantom={(piece.isFantom && !showFantomPieces) || !piece.location}
                   boardsShiftX={boardsShiftX}
                   squareSize={squareSize}
-                  onClick={readOnly ? undefined : this.onSquareClick}
-                  onDragStart={readOnly ? undefined : this.onPieceDragStart}
+                  onClick={enableClick ? this.onSquareClick : undefined}
+                  onDragStart={enableDnd ? this.onPieceDragStart : undefined}
                 />
               ))}
               {hiddenSquares}

@@ -66,7 +66,12 @@ export default class Game extends GameHelper {
       return false;
     }
 
-    if (variants.some((variation) => !VARIANTS.includes(variation))) {
+    if (
+      variants.some((variant) => (
+        !VARIANTS.includes(variant)
+        || variants.indexOf(variant) !== variants.lastIndexOf(variant)
+      ))
+    ) {
       return false;
     }
 
