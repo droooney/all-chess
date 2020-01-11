@@ -70,8 +70,8 @@ export const User = sequelize.define<UserModel, UserAddAttributes>('users', {
 
 const toJSON = ((User as any).prototype as UserModel).toJSON;
 
-((User as any).prototype as UserModel).toJSON = function (...args: any[]) {
-  const json: UserModel = toJSON.apply(this, args);
+((User as any).prototype as UserModel).toJSON = function () {
+  const json: UserModel = toJSON.apply(this);
 
   delete json.email;
   delete json.password;

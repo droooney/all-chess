@@ -4,9 +4,9 @@ import * as util from 'util';
 import { IncomingMessage, ServerResponse } from 'http';
 import expressSession = require('express-session');
 import redis = require('connect-redis');
-import { Context } from 'koa';
 
 import { createClient } from '../helpers';
+import { CustomContext } from '../types';
 import config from '../config';
 
 const Store = redis(expressSession);
@@ -40,16 +40,16 @@ const sessionPrototype: Express.Session = (expressSession as any).Session.protot
 sessionPrototype.asyncSave = util.promisify(sessionPrototype.save) as () => Promise<void>;
 sessionPrototype.asyncDestroy = util.promisify(sessionPrototype.destroy) as () => Promise<void>;
 
-export async function session(ctx: Context, next: (err?: any) => Promise<any>) {
+export async function session(ctx: CustomContext, next: (err?: any) => Promise<any>) {
   await sessionMiddleware(ctx.req, ctx.res);
 
-  ctx.session = (ctx.req as any).session;
+  ctx.state.session = (ctx.req as any).session;
 
   await next();
 }
 
-export async function sessionRequired(ctx: Context, next: (err?: any) => Promise<any>) {
-  if (!ctx.session) {
+export async function sessionRequired(ctx: CustomContext, next: (err?: any) => Promise<any>) {
+  if (!ctx.state.session) {
     ctx.throw(500, 'No session found');
   }
 

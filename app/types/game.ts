@@ -83,8 +83,8 @@ export interface StartingData {
   possibleCastling: PossibleCastling;
   possibleEnPassant: PossibleEnPassant | null;
   checksCount: ChecksCount;
-  pieces: ReadonlyArray<RealPiece>;
-  emptySquares: ReadonlyArray<Square>;
+  pieces: readonly RealPiece[];
+  emptySquares: readonly Square[];
 }
 
 export interface Piece {
@@ -148,7 +148,7 @@ export interface GameMinimalData {
   players: GamePlayers;
   result: GameResult | null;
   timeControl: TimeControl;
-  variants: ReadonlyArray<GameVariantEnum>;
+  variants: readonly GameVariantEnum[];
 }
 
 export interface CommonGameData extends GameMinimalData {
@@ -187,7 +187,7 @@ export type PGNTags = {
 
 export interface GameCreateSettings {
   timeControl: TimeControl;
-  variants: ReadonlyArray<GameVariantEnum>;
+  variants: readonly GameVariantEnum[];
 }
 
 export enum GameVariantEnum {

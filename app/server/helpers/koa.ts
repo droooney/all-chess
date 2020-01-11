@@ -1,13 +1,13 @@
-import { Middleware } from 'koa';
+import { CustomMiddleware } from '../types';
 
 type Method = 'get' | 'post' | 'put' | 'delete';
 type Url = string | RegExp;
 
 export function url(
   url: Url,
-  middleware: Middleware,
+  middleware: CustomMiddleware,
   exact = true
-): Middleware {
+): CustomMiddleware {
   return async (ctx, next) => {
     if (typeof url === 'string') {
       if (ctx.path.indexOf(url) !== 0) {
@@ -34,8 +34,8 @@ export function url(
         return next();
       }
 
-      ctx.urlIndexGroups = match.slice(1);
-      ctx.urlKeyGroups = match.groups;
+      ctx.state.urlIndexGroups = match.slice(1);
+      ctx.state.urlKeyGroups = match.groups;
     }
 
     await middleware(ctx, next);
@@ -44,8 +44,8 @@ export function url(
 
 export function method(
   method: Method,
-  middleware: Middleware
-): Middleware {
+  middleware: CustomMiddleware
+): CustomMiddleware {
   const upperCaseMethod = method.toUpperCase();
 
   return async (ctx, next) => {
@@ -63,24 +63,24 @@ interface RouteOptions {
 }
 
 export function route(
-  middleware: Middleware,
+  middleware: CustomMiddleware,
   options: RouteOptions
-): Middleware {
+): CustomMiddleware {
   return url(options.url, method(options.method, middleware));
 }
 
-export function get(url: Url, middleware: Middleware): Middleware {
+export function get(url: Url, middleware: CustomMiddleware): CustomMiddleware {
   return route(middleware, { url, method: 'get' });
 }
 
-export function post(url: Url, middleware: Middleware): Middleware {
+export function post(url: Url, middleware: CustomMiddleware): CustomMiddleware {
   return route(middleware, { url, method: 'post' });
 }
 
-export function put(url: Url, middleware: Middleware): Middleware {
+export function put(url: Url, middleware: CustomMiddleware): CustomMiddleware {
   return route(middleware, { url, method: 'put' });
 }
 
-export function Delete(url: Url, middleware: Middleware): Middleware {
+export function Delete(url: Url, middleware: CustomMiddleware): CustomMiddleware {
   return route(middleware, { url, method: 'delete' });
 }

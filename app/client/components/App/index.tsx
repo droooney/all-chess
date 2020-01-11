@@ -4,7 +4,7 @@ import {
   Router,
   Switch
 } from 'react-router-dom';
-import createHistory from 'history/createBrowserHistory';
+import { createBrowserHistory } from 'history';
 
 import Route from '../Route';
 
@@ -20,7 +20,7 @@ import Game from '../Game';
 
 import './index.less';
 
-const history = createHistory();
+const history = createBrowserHistory();
 
 export default class App extends React.Component {
   render() {

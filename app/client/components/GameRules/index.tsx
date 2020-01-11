@@ -30,7 +30,7 @@ export default class GameRules extends React.Component<Props> {
     } = this.props;
     const gameType = _.findKey(GAME_VARIANT_LINKS, (link) => link === gameLink) as GameVariantEnum;
     const gameName = GAME_VARIANT_NAMES[gameType];
-    let Component: React.ComponentClass | React.StatelessComponent;
+    let Component: React.ComponentType;
 
     switch (gameType) {
       case GameVariantEnum.CHESS_960: {
@@ -48,7 +48,7 @@ export default class GameRules extends React.Component<Props> {
       default: {
         Component = () => (
           <div>
-            The rules section for this variant is not yet ready.
+            The rules section for this variant is not ready yet.
           </div>
         );
       }

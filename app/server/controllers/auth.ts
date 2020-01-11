@@ -3,16 +3,16 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as bcrypt from 'bcryptjs';
-import { Context } from 'koa';
 import * as pug from 'pug';
 import uuid = require('uuid/v1');
 
 import { User, UserModel } from '../db';
 import { buildURL, sendEmail } from '../helpers';
+import { CustomContext } from '../types';
 
 const registerHTML = pug.compile(fs.readFileSync(path.resolve('./app/server/emails/register.pug'), 'utf8'));
 
-export async function confirmRegister(ctx: Context) {
+export async function confirmRegister(ctx: CustomContext) {
   const {
     query: {
       email,
@@ -41,7 +41,7 @@ export async function confirmRegister(ctx: Context) {
   ctx.redirect('/');
 }
 
-export async function login(ctx: Context) {
+export async function login(ctx: CustomContext) {
   const {
     request: {
       body: {
@@ -50,7 +50,7 @@ export async function login(ctx: Context) {
       }
     }
   } = ctx;
-  const session = ctx.session!;
+  const session = ctx.state.session!;
   const user = await User.findOne({
     where: {
       login
@@ -81,13 +81,13 @@ export async function login(ctx: Context) {
   };
 }
 
-export async function logout(ctx: Context) {
-  await ctx.session!.asyncDestroy();
+export async function logout(ctx: CustomContext) {
+  await ctx.state.session!.asyncDestroy();
 
-  ctx.success();
+  ctx.state.success();
 }
 
-export async function register(ctx: Context) {
+export async function register(ctx: CustomContext) {
   const {
     request: {
       body: {
@@ -107,7 +107,7 @@ export async function register(ctx: Context) {
       confirmToken: uuid()
     });
   } catch (err) {
-    ctx.success(false);
+    ctx.state.success(false);
 
     return;
   }
@@ -120,7 +120,7 @@ export async function register(ctx: Context) {
   };
 }
 
-async function sendConfirmationEmail(ctx: Context, user: UserModel) {
+async function sendConfirmationEmail(ctx: CustomContext, user: UserModel) {
   try {
     await sendEmail({
       to: user.email,

@@ -16,11 +16,12 @@ import {
   register
 } from '../controllers/auth';
 import { get, post } from '../helpers';
+import { CustomState, CustomContext } from '../types';
 
 const bodyParser = BodyParser();
 
-const apiApp = new Application();
-const authApp = new Application();
+const apiApp = new Application<CustomState, CustomContext>();
+const authApp = new Application<CustomState, CustomContext>();
 
 authApp.use(get('/confirm_register', confirmRegister));
 authApp.use(post('/login', compose([bodyParser, login])));

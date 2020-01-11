@@ -2,10 +2,10 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { Context } from 'koa';
 import * as pug from 'pug';
 
 import { getSortedFilesSync } from '../helpers';
+import { CustomContext } from '../types';
 
 const html = pug.compile(fs.readFileSync(path.resolve('./index.pug'), 'utf8'));
 const JS_BUNDLE_NAME = path.basename(
@@ -18,14 +18,14 @@ const CSS_BUNDLE_NAME = path.basename(
 );
 
 export async function render(
-  ctx: Context,
+  ctx: CustomContext,
   next: () => Promise<void>
 ): Promise<void> {
   if (ctx.accepts('text/html')) {
     ctx.body = html({
       jsBundlePath: `/public/${JS_BUNDLE_NAME}`,
       cssBundlePath: `/public/${CSS_BUNDLE_NAME}`,
-      user: JSON.stringify(ctx.session!.user || null).replace(/</g, '\\u003c')
+      user: JSON.stringify(ctx.state.session!.user || null).replace(/</g, '\\u003c')
     });
   } else {
     await next();

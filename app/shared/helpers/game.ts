@@ -81,7 +81,7 @@ type CastlingRookCoordinates = {
   [castling in CastlingTypeEnum]: Square | null;
 };
 
-const ATOMIC_SQUARE_INCREMENTS: ReadonlyArray<[number, number]> = [
+const ATOMIC_SQUARE_INCREMENTS: readonly [number, number][] = [
   [-1, -1],
   [-1, 0],
   [-1, 1],
@@ -93,7 +93,7 @@ const ATOMIC_SQUARE_INCREMENTS: ReadonlyArray<[number, number]> = [
   [1, 1]
 ];
 
-const KNIGHT_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
+const KNIGHT_MOVE_INCREMENTS: readonly [number, number][] = [
   [-2, -1],
   [-2, +1],
   [-1, -2],
@@ -104,7 +104,7 @@ const KNIGHT_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
   [+2, +1]
 ];
 
-const HEX_KNIGHT_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
+const HEX_KNIGHT_MOVE_INCREMENTS: readonly [number, number][] = [
   [-2, -3],
   [-1, -3],
   [+1, +3],
@@ -119,14 +119,14 @@ const HEX_KNIGHT_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
   [+2, -1]
 ];
 
-const BISHOP_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
+const BISHOP_MOVE_INCREMENTS: readonly [number, number][] = [
   [-1, -1],
   [-1, +1],
   [+1, -1],
   [+1, +1]
 ];
 
-const HEX_BISHOP_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
+const HEX_BISHOP_MOVE_INCREMENTS: readonly [number, number][] = [
   [-1, -2],
   [+1, +2],
   [-2, -1],
@@ -135,14 +135,14 @@ const HEX_BISHOP_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
   [+2, +1]
 ];
 
-const ROOK_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
+const ROOK_MOVE_INCREMENTS: readonly [number, number][] = [
   [-1, 0],
   [0, -1],
   [0, +1],
   [+1, 0]
 ];
 
-const HEX_ROOK_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
+const HEX_ROOK_MOVE_INCREMENTS: readonly [number, number][] = [
   [-1, 0],
   [0, -1],
   [0, 1],
@@ -151,7 +151,7 @@ const HEX_ROOK_MOVE_INCREMENTS: ReadonlyArray<[number, number]> = [
   [1, 1]
 ];
 
-const STANDARD_PIECES: ReadonlyArray<PieceTypeEnum> = [
+const STANDARD_PIECES: readonly PieceTypeEnum[] = [
   PieceTypeEnum.KING,
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.ROOK,
@@ -160,7 +160,7 @@ const STANDARD_PIECES: ReadonlyArray<PieceTypeEnum> = [
   PieceTypeEnum.PAWN
 ];
 
-const STANDARD_PIECE_PLACEMENT: ReadonlyArray<PieceTypeEnum> = [
+const STANDARD_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.KNIGHT,
   PieceTypeEnum.BISHOP,
@@ -171,7 +171,7 @@ const STANDARD_PIECE_PLACEMENT: ReadonlyArray<PieceTypeEnum> = [
   PieceTypeEnum.ROOK
 ];
 
-const TWO_FAMILIES_PIECE_PLACEMENT: PieceTypeEnum[] = [
+const TWO_FAMILIES_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.KNIGHT,
   PieceTypeEnum.BISHOP,
@@ -184,7 +184,7 @@ const TWO_FAMILIES_PIECE_PLACEMENT: PieceTypeEnum[] = [
   PieceTypeEnum.ROOK
 ];
 
-const CAPABLANCA_PIECE_PLACEMENT: PieceTypeEnum[] = [
+const CAPABLANCA_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.KNIGHT,
   PieceTypeEnum.BISHOP,
@@ -197,14 +197,14 @@ const CAPABLANCA_PIECE_PLACEMENT: PieceTypeEnum[] = [
   PieceTypeEnum.ROOK
 ];
 
-const STANDARD_VALID_PROMOTIONS: PieceTypeEnum[] = [
+const STANDARD_VALID_PROMOTIONS: readonly PieceTypeEnum[] = [
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.ROOK,
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.KNIGHT
 ];
 
-const CAPABLANCA_VALID_PROMOTIONS: PieceTypeEnum[] = [
+const CAPABLANCA_VALID_PROMOTIONS: readonly PieceTypeEnum[] = [
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.EMPRESS,
   PieceTypeEnum.CARDINAL,
@@ -213,7 +213,7 @@ const CAPABLANCA_VALID_PROMOTIONS: PieceTypeEnum[] = [
   PieceTypeEnum.KNIGHT
 ];
 
-const STANDARD_POCKET: PieceTypeEnum[] = [
+const STANDARD_POCKET: readonly PieceTypeEnum[] = [
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.ROOK,
   PieceTypeEnum.BISHOP,
@@ -221,7 +221,7 @@ const STANDARD_POCKET: PieceTypeEnum[] = [
   PieceTypeEnum.PAWN
 ];
 
-const CAPABLANCA_POCKET: PieceTypeEnum[] = [
+const CAPABLANCA_POCKET: readonly PieceTypeEnum[] = [
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.EMPRESS,
   PieceTypeEnum.CARDINAL,
@@ -231,7 +231,7 @@ const CAPABLANCA_POCKET: PieceTypeEnum[] = [
   PieceTypeEnum.PAWN
 ];
 
-const PIECES_SORTING: PieceTypeEnum[] = [
+const PIECES_SORTING: readonly PieceTypeEnum[] = [
   PieceTypeEnum.AMAZON,
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.EMPRESS,
@@ -242,7 +242,7 @@ const PIECES_SORTING: PieceTypeEnum[] = [
   PieceTypeEnum.PAWN
 ];
 
-const HEXAGONAL_EMPTY_SQUARES: ReadonlyArray<Square> = [
+const HEXAGONAL_EMPTY_SQUARES: readonly Square[] = [
   [6, 0], [6, 10],
   [7, 0], [7, 1], [7, 9], [7, 10],
   [8, 0], [8, 1], [8, 2], [8, 8], [8, 9], [8, 10],
@@ -250,7 +250,7 @@ const HEXAGONAL_EMPTY_SQUARES: ReadonlyArray<Square> = [
   [10, 0], [10, 1], [10, 2], [10, 3], [10, 4], [10, 6], [10, 7], [10, 8], [10, 9], [10, 10]
 ].map(([y, x]) => ({ board: 0, x, y }));
 
-const HEXAGONAL_PIECE_SQUARES: ReadonlyArray<[number, number]> = [
+const HEXAGONAL_PIECE_SQUARES: readonly [number, number][] = [
   [0, 2],
   [0, 3],
   [0, 4],
@@ -262,7 +262,7 @@ const HEXAGONAL_PIECE_SQUARES: ReadonlyArray<[number, number]> = [
   [2, 5]
 ];
 
-const HEXAGONAL_PIECE_PLACEMENT: ReadonlyArray<PieceTypeEnum> = [
+const HEXAGONAL_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.KNIGHT,
   PieceTypeEnum.QUEEN,
@@ -320,7 +320,7 @@ const RESULT_WIN_BLACK = '0-1';
 const RESULT_DRAW = '1/2-1/2';
 
 export class Game implements IGame {
-  static validateVariants(variants: ReadonlyArray<GameVariantEnum>): boolean {
+  static validateVariants(variants: readonly GameVariantEnum[]): boolean {
     const isCrazyhouse = _.includes(variants, GameVariantEnum.CRAZYHOUSE);
     const is960 = _.includes(variants, GameVariantEnum.CHESS_960);
     const isKingOfTheHill = _.includes(variants, GameVariantEnum.KING_OF_THE_HILL);
@@ -482,7 +482,7 @@ export class Game implements IGame {
     ));
   }
 
-  static getBoardDimensions(variants: ReadonlyArray<GameVariantEnum>): BoardDimensions {
+  static getBoardDimensions(variants: readonly GameVariantEnum[]): BoardDimensions {
     const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
     const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
     const isCapablanca = _.includes(variants, GameVariantEnum.CAPABLANCA);
@@ -554,7 +554,7 @@ export class Game implements IGame {
     };
   }
 
-  static generateClassicStartingData(boardDimensions: BoardDimensions, variants: ReadonlyArray<GameVariantEnum>): StartingData {
+  static generateClassicStartingData(boardDimensions: BoardDimensions, variants: readonly GameVariantEnum[]): StartingData {
     const {
       boardWidth,
       boardHeight
@@ -572,7 +572,7 @@ export class Game implements IGame {
       : boardHeight;
     const halfBoard = Math.round(orthodoxBoardWidth / 2);
     let id = 0;
-    let pieceTypes: ReadonlyArray<PieceTypeEnum>;
+    let pieceTypes: readonly PieceTypeEnum[];
 
     if (_.includes(variants, GameVariantEnum.CHESS_960)) {
       const randomPieceTypes: (PieceTypeEnum | null)[] = _.times(orthodoxBoardWidth, () => null!);
@@ -628,7 +628,7 @@ export class Game implements IGame {
         return false;
       });
 
-      pieceTypes = randomPieceTypes as ReadonlyArray<PieceTypeEnum>;
+      pieceTypes = randomPieceTypes as readonly PieceTypeEnum[];
     } else if (isTwoFamilies) {
       pieceTypes = TWO_FAMILIES_PIECE_PLACEMENT;
     } else if (isCapablanca || isAmazons) {
@@ -709,7 +709,7 @@ export class Game implements IGame {
     };
   }
 
-  static getStartingData(variants: ReadonlyArray<GameVariantEnum>): StartingData {
+  static getStartingData(variants: readonly GameVariantEnum[]): StartingData {
     const isMonsterChess = _.includes(variants, GameVariantEnum.MONSTER_CHESS);
     const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
     const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
@@ -774,7 +774,7 @@ export class Game implements IGame {
     return startingData;
   }
 
-  static getStartingDataFromFen(fen: string, variants: ReadonlyArray<GameVariantEnum>): StartingData {
+  static getStartingDataFromFen(fen: string, variants: readonly GameVariantEnum[]): StartingData {
     const {
       boardCount,
       boardWidth,
@@ -1366,7 +1366,7 @@ export class Game implements IGame {
     return game;
   }
 
-  static validateStartingData(startingData: StartingData, variants: ReadonlyArray<GameVariantEnum>): void {
+  static validateStartingData(startingData: StartingData, variants: readonly GameVariantEnum[]): void {
     const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
     const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
     const isHorde = _.includes(variants, GameVariantEnum.HORDE);
@@ -1513,7 +1513,7 @@ export class Game implements IGame {
     return id;
   }
 
-  static getIsPocketUsed(variants: ReadonlyArray<GameVariantEnum>): boolean {
+  static getIsPocketUsed(variants: readonly GameVariantEnum[]): boolean {
     return _.includes(variants, GameVariantEnum.CRAZYHOUSE);
   }
 
@@ -1776,13 +1776,13 @@ export class Game implements IGame {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  pieces: ReadonlyArray<Piece> = [];
+  pieces: readonly Piece[]= [];
   visiblePieces: { [color in ColorEnum]: (Piece & { realId: number | string; })[]; } = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  pocketPiecesUsed: ReadonlyArray<PieceTypeEnum> = STANDARD_POCKET;
-  validPromotions: ReadonlyArray<PieceTypeEnum> = STANDARD_VALID_PROMOTIONS;
+  pocketPiecesUsed: readonly PieceTypeEnum[]= STANDARD_POCKET;
+  validPromotions: readonly PieceTypeEnum[]= STANDARD_VALID_PROMOTIONS;
   checksCount: ChecksCount = {
     [ColorEnum.WHITE]: 0,
     [ColorEnum.BLACK]: 0
@@ -1818,8 +1818,8 @@ export class Game implements IGame {
   boardOrthodoxHeight: number;
   middleFileX: number;
   middleRankY: number;
-  emptySquares: ReadonlyArray<Square>;
-  variants: ReadonlyArray<GameVariantEnum>;
+  emptySquares: readonly Square[];
+  variants: readonly GameVariantEnum[];
   drawOffer: ColorEnum | null = null;
   takebackRequest: TakebackRequest | null = null;
   lastMoveTimestamp: number = 0;
@@ -2916,10 +2916,18 @@ export class Game implements IGame {
   }
 
   getBoardPiece(square: Square): BoardPiece | null {
-    return _.find(this.pieces, (piece) => (
-      Game.isBoardPiece(piece)
-      && Game.areSquaresEqual(piece.location, square)
-    )) as BoardPiece | undefined || null;
+    for (let i = 0; i < this.pieces.length; i++) {
+      const piece = this.pieces[i];
+
+      if (
+        Game.isBoardPiece(piece)
+        && Game.areSquaresEqual(piece.location, square)
+      ) {
+        return piece;
+      }
+    }
+
+    return null;
   }
 
   getPocketPiece(type: PieceTypeEnum, color: ColorEnum): PocketPiece | null {

@@ -40,7 +40,7 @@ export interface OwnProps {
   darkChessMode: ColorEnum | null;
   currentMove: DarkChessLocalMove | LocalMove | undefined;
   boardsShiftX: number;
-  pieces: ReadonlyArray<IPiece>;
+  pieces: readonly IPiece[];
   squareSize: number;
 
   withLiterals?: boolean;

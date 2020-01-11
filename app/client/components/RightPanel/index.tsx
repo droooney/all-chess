@@ -24,7 +24,7 @@ interface OwnProps {
   game: Game;
   players: GamePlayers;
   player: Player | null;
-  pieces: ReadonlyArray<Piece>;
+  pieces: readonly Piece[];
   currentMoveIndex: number;
   timeControl: TimeControl;
   moves: AnyMove[];
