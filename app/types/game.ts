@@ -9,9 +9,9 @@ declare module 'socket.io' {
 }
 
 export interface Square {
-  board: number;
-  x: number;
-  y: number;
+  readonly board: number;
+  readonly x: number;
+  readonly y: number;
 }
 
 export interface Player extends User {

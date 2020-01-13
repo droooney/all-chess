@@ -20,6 +20,7 @@ import {
   PGNTags,
   Piece,
   PieceBoardLocation,
+  PieceLocation,
   PieceLocationEnum,
   PiecePocketLocation,
   PieceTypeEnum,
@@ -697,8 +698,11 @@ export class Game implements IGame {
     if (isCircularChess) {
       pieces.forEach((piece) => {
         if (Game.isBoardPiece(piece) && piece.location.x >= boardWidth) {
-          piece.location.x = orthodoxBoardWidth - 1 - piece.location.x;
-          piece.location.y = boardHeight - 1 - piece.location.y;
+          piece.location = {
+            ...piece.location,
+            x: orthodoxBoardWidth - 1 - piece.location.x,
+            y: boardHeight - 1 - piece.location.y
+          };
         }
       });
     }
@@ -1006,8 +1010,16 @@ export class Game implements IGame {
         throw new Error('Invalid FEN: wrong en passant');
       }
 
-      startingData.possibleEnPassant.enPassantSquare.board = (enPassantPiece.location.board + boardCount - 1) % boardCount;
-      startingData.possibleEnPassant.pieceLocation.board = enPassantPiece.location.board;
+      startingData.possibleEnPassant = {
+        enPassantSquare: {
+          ...startingData.possibleEnPassant.enPassantSquare,
+          board: (enPassantPiece.location.board + boardCount - 1) % boardCount
+        },
+        pieceLocation: {
+          ...startingData.possibleEnPassant.pieceLocation,
+          board: enPassantPiece.location.board
+        }
+      };
     }
 
     if (isThreeCheck) {
@@ -1772,17 +1784,18 @@ export class Game implements IGame {
   castlingRookCoordinates: { [color in ColorEnum]: CastlingRookCoordinates; };
   startingMoveIndex: number = 0;
   pliesWithoutCaptureOrPawnMove: number = 0;
+  boards: (BoardPiece | null)[][][] = [];
   kings: GameKings = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  pieces: readonly Piece[]= [];
+  pieces: readonly Piece[] = [];
   visiblePieces: { [color in ColorEnum]: (Piece & { realId: number | string; })[]; } = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  pocketPiecesUsed: readonly PieceTypeEnum[]= STANDARD_POCKET;
-  validPromotions: readonly PieceTypeEnum[]= STANDARD_VALID_PROMOTIONS;
+  pocketPiecesUsed: readonly PieceTypeEnum[] = STANDARD_POCKET;
+  validPromotions: readonly PieceTypeEnum[] = STANDARD_VALID_PROMOTIONS;
   checksCount: ChecksCount = {
     [ColorEnum.WHITE]: 0,
     [ColorEnum.BLACK]: 0
@@ -1905,6 +1918,8 @@ export class Game implements IGame {
       kings: this.kings
     } = Game.generateGameDataFromStartingData(this.startingData));
 
+    this.resetBoards();
+
     this.turn = this.startingData.turn;
     this.movesCount = this.startingMoveIndex = this.startingData.startingMoveIndex;
     this.pliesWithoutCaptureOrPawnMove = this.startingData.pliesWithoutCaptureOrPawnMove;
@@ -1924,6 +1939,20 @@ export class Game implements IGame {
     }
 
     this.isCheck = this.isInCheck(this.turn);
+  }
+
+  resetBoards() {
+    this.boards = _.times(this.boardCount, () => (
+      _.times(this.boardHeight, () => (
+        _.times(this.boardWidth, () => null)
+      ))
+    ));
+
+    this.pieces.forEach((piece) => {
+      if (Game.isBoardPiece(piece)) {
+        this.changePieceLocation(piece, piece.location);
+      }
+    });
   }
 
   registerMove(move: Move): RegisterMoveReturnValue {
@@ -2352,7 +2381,7 @@ export class Game implements IGame {
     }
 
     disappearedOrMovedPieces.forEach((disappearedOrMovedPiece) => {
-      disappearedOrMovedPiece.location = null!;
+      this.changePieceLocation(disappearedOrMovedPiece, null);
     });
 
     if (Game.isPawn(piece) || isCapture) {
@@ -2387,11 +2416,7 @@ export class Game implements IGame {
       this.possibleEnPassant = null;
     }
 
-    if (fromLocation.type === PieceLocationEnum.BOARD) {
-      (piece as Piece).location = null;
-    } else {
-      piece.location = newLocation;
-    }
+    this.changePieceLocation(piece, fromLocation.type === PieceLocationEnum.BOARD ? null : newLocation);
 
     if (!isMainPieceMovedOrDisappeared) {
       const isRoyalKing = wasKing && !this.isAntichess;
@@ -2403,10 +2428,11 @@ export class Game implements IGame {
       piece.originalType = this.isCrazyhouse
         ? piece.originalType
         : piece.type;
-      piece.location = newLocation;
       piece.abilities = this.isFrankfurt && isRoyalKing && isPawnPromotion
         ? promotion!
         : piece.abilities;
+
+      this.changePieceLocation(piece, newLocation);
 
       if (this.isAbsorption && isCapture) {
         const {
@@ -2437,7 +2463,7 @@ export class Game implements IGame {
     }
 
     const removePieceOrMoveToOpponentPocket = (piece: Piece) => {
-      piece.location = null;
+      this.changePieceLocation(piece, null);
 
       if (this.isCrazyhouse && _.includes(this.pocketPiecesUsed, piece.originalType)) {
         const pieceType = piece.originalType;
@@ -2446,11 +2472,12 @@ export class Game implements IGame {
         piece.moved = false;
         piece.type = pieceType;
         piece.color = opponentColor;
-        (piece as any as PocketPiece).location = {
+
+        this.changePieceLocation(piece, {
           type: PieceLocationEnum.POCKET,
           pieceType,
           color: opponentColor
-        };
+        });
       }
     };
 
@@ -2534,11 +2561,12 @@ export class Game implements IGame {
 
       if (newSquare) {
         disappearedOrMovedPiece.moved = disappearedOrMovedPiece === castlingRook;
-        disappearedOrMovedPiece.location = {
+
+        this.changePieceLocation(disappearedOrMovedPiece, {
           ...newSquare,
           board: location.board,
           type: PieceLocationEnum.BOARD
-        };
+        });
       } else {
         removePieceOrMoveToOpponentPocket(disappearedOrMovedPiece);
       }
@@ -2572,10 +2600,10 @@ export class Game implements IGame {
       const nextBoard = this.getNextBoard(toBoard);
 
       if (!isMainPieceMovedOrDisappeared && fromLocation.type === PieceLocationEnum.BOARD) {
-        piece.location = {
+        this.changePieceLocation(piece, {
           ...newLocation,
           board: nextBoard
-        };
+        });
       }
 
       disappearedOrMovedPieces.forEach((disappearedOrMovedPiece) => {
@@ -2602,11 +2630,11 @@ export class Game implements IGame {
           ) {
             removePieceOrMoveToOpponentPocket(disappearedOrMovedPiece);
           } else {
-            disappearedOrMovedPiece.location = {
+            this.changePieceLocation(disappearedOrMovedPiece, {
               ...square,
               board: nextBoard,
               type: PieceLocationEnum.BOARD
-            };
+            });
           }
         }
       });
@@ -2669,18 +2697,42 @@ export class Game implements IGame {
 
         if (!isMainPieceMovedOrDisappeared) {
           piece.color = prevPieceColor;
-          piece.location = prevPieceLocation;
           piece.moved = prevPieceMoved;
           piece.type = prevPieceType;
           piece.originalType = prevPieceOriginalType;
           piece.abilities = prevPieceAbilities;
+
+          this.changePieceLocation(piece, prevPieceLocation);
         }
 
         disappearedOrMovedPiecesData.forEach((pieceData, ix) => {
-          _.assign(disappearedOrMovedPieces[ix], pieceData);
+          const disappearedPiece = disappearedOrMovedPieces[ix];
+
+          disappearedPiece.color = pieceData.color;
+          disappearedPiece.moved = pieceData.moved;
+          disappearedPiece.type = pieceData.type;
+          disappearedPiece.originalType = pieceData.originalType;
+          disappearedPiece.abilities = pieceData.abilities;
+
+          this.changePieceLocation(disappearedPiece, pieceData.location);
         });
       }
     };
+  }
+
+  changePieceLocation(piece: Piece, location: PieceLocation) {
+    if (
+      Game.isBoardPiece(piece)
+      && this.boards[piece.location.board][piece.location.y][piece.location.x] === piece
+    ) {
+      this.boards[piece.location.board][piece.location.y][piece.location.x] = null;
+    }
+
+    piece.location = location;
+
+    if (location && location.type === PieceLocationEnum.BOARD) {
+      this.boards[location.board][location.y][location.x] = piece as BoardPiece;
+    }
   }
 
   adjustFileX(fileX: number): number {
@@ -2916,18 +2968,7 @@ export class Game implements IGame {
   }
 
   getBoardPiece(square: Square): BoardPiece | null {
-    for (let i = 0; i < this.pieces.length; i++) {
-      const piece = this.pieces[i];
-
-      if (
-        Game.isBoardPiece(piece)
-        && Game.areSquaresEqual(piece.location, square)
-      ) {
-        return piece;
-      }
-    }
-
-    return null;
+    return this.boards[square.board][square.y][square.x];
   }
 
   getPocketPiece(type: PieceTypeEnum, color: ColorEnum): PocketPiece | null {
