@@ -2,6 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import io = require('socket.io-client');
+import { MenuItem } from '@material-ui/core';
 
 import { DispatchProps, ReduxState } from '../../store';
 import { Game } from '../../helpers';
@@ -17,6 +18,7 @@ import {
   changeSettings
 } from '../../actions';
 import {
+  TIME_CONTROL_NAMES,
   POSSIBLE_TIMER_BASES_IN_MINUTES,
   POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
   POSSIBLE_TIMER_INCREMENTS_IN_SECONDS,
@@ -28,8 +30,9 @@ import {
 import Button from '../Button';
 import DocumentTitle from '../DocumentTitle';
 import GameVariantLink from '../GameVariantLink';
-import GameVariantList from '../GameVariantList';
+import GameVariantSelect from '../GameVariantSelect';
 import Modal from '../Modal';
+import Select from '../Select';
 
 import './index.less';
 
@@ -98,7 +101,7 @@ class Games extends React.Component<Props, State> {
     }
   };
 
-  onTimeControlChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  onTimeControlChange = (e: React.ChangeEvent<{ value: unknown; }>) => {
     const {
       dispatch
     } = this.props;
@@ -116,11 +119,11 @@ class Games extends React.Component<Props, State> {
     });
   };
 
-  onTimeControlBaseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  onTimeControlBaseChange = (e: React.ChangeEvent<{ value: unknown; }>) => {
     const {
       dispatch
     } = this.props;
-    const newBase = +e.target.value;
+    const newBase = +(e.target.value as string);
 
     this.setState(({ timeControl }) => {
       const newTimeControl = {
@@ -136,11 +139,11 @@ class Games extends React.Component<Props, State> {
     });
   };
 
-  onTimeControlIncrementChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  onTimeControlIncrementChange = (e: React.ChangeEvent<{ value: unknown; }>) => {
     const {
       dispatch
     } = this.props;
-    const newIncrement = +e.target.value;
+    const newIncrement = +(e.target.value as string);
 
     this.setState(({ timeControl }) => {
       const newTimeControl = {
@@ -237,26 +240,27 @@ class Games extends React.Component<Props, State> {
             <div className="time-control">
               <div>
                 Time control:{' '}
-                <select
+                <Select
                   value={timeControl ? timeControl.type : TimeControlEnum.NONE}
                   onChange={this.onTimeControlChange}
+                  renderValue={() => TIME_CONTROL_NAMES[timeControl ? timeControl.type : TimeControlEnum.NONE]}
                 >
-                  <option value={TimeControlEnum.NONE}>
-                    None
-                  </option>
-                  <option value={TimeControlEnum.TIMER}>
-                    Real time
-                  </option>
-                  <option value={TimeControlEnum.CORRESPONDENCE}>
-                    Correspondence
-                  </option>
-                </select>
+                  <MenuItem value={TimeControlEnum.NONE}>
+                    {TIME_CONTROL_NAMES[TimeControlEnum.NONE]}
+                  </MenuItem>
+                  <MenuItem value={TimeControlEnum.TIMER}>
+                    {TIME_CONTROL_NAMES[TimeControlEnum.TIMER]}
+                  </MenuItem>
+                  <MenuItem value={TimeControlEnum.CORRESPONDENCE}>
+                    {TIME_CONTROL_NAMES[TimeControlEnum.CORRESPONDENCE]}
+                  </MenuItem>
+                </Select>
               </div>
 
               {timeControl && (
-                <div style={{ marginTop: 20 }}>
+                <div style={{ marginTop: 15 }}>
                   {timeControl.type === TimeControlEnum.TIMER ? 'Minutes per player: ' : 'Days per turn: '}
-                  <select
+                  <Select
                     value={timeControl.base}
                     onChange={this.onTimeControlBaseChange}
                   >
@@ -265,52 +269,51 @@ class Games extends React.Component<Props, State> {
                         ? POSSIBLE_TIMER_BASES_IN_MILLISECONDS
                         : POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS
                     ).map((base, ix) => (
-                      <option key={ix} value={base}>
+                      <MenuItem key={ix} value={base}>
                         {(
                           timeControl.type === TimeControlEnum.TIMER
                             ? POSSIBLE_TIMER_BASES_IN_MINUTES
                             : POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS
                         )[ix]}
-                      </option>
+                      </MenuItem>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               )}
 
               {timeControl && timeControl.type === TimeControlEnum.TIMER && (
-                <div style={{ marginTop: 8 }}>
+                <div>
                   Increment in seconds per turn:{' '}
-                  <select
+                  <Select
                     value={timeControl.increment}
                     onChange={this.onTimeControlIncrementChange}
                   >
                     {POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS.map((increment, ix) => (
-                      <option key={ix} value={increment}>
+                      <MenuItem key={ix} value={increment}>
                         {POSSIBLE_TIMER_INCREMENTS_IN_SECONDS[ix]}
-                      </option>
+                      </MenuItem>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               )}
             </div>
 
             <div className="variants" style={{ marginTop: 20 }}>
-              <h5 style={{ alignSelf: 'center' }}>
-                Variants
-              </h5>
-
-              <GameVariantList
-                variants={variants}
-                onVariantsChange={this.onVariantsChange}
-              />
+              <div>
+                Variants:{' '}
+                <GameVariantSelect
+                  variants={variants}
+                  onVariantsChange={this.onVariantsChange}
+                />
+              </div>
             </div>
 
-            <input
-              type="submit"
-              value="Create game"
+            <Button
               onClick={this.createGame}
               style={{ marginTop: 30 }}
-            />
+            >
+              Create game
+            </Button>
           </div>
         </Modal>
 

@@ -4,10 +4,11 @@ import {
   GameVariantEnum,
   PieceTypeEnum,
   ResultReasonEnum,
-  StandardPiece
+  StandardPiece,
+  TimeControlEnum
 } from '../../types';
 
-export const SHORT_PIECE_NAMES: { [piece in PieceTypeEnum]: string } = {
+export const SHORT_PIECE_NAMES: Record<PieceTypeEnum, string> = {
   [PieceTypeEnum.KING]: 'K',
   [PieceTypeEnum.AMAZON]: 'A',
   [PieceTypeEnum.QUEEN]: 'Q',
@@ -19,7 +20,7 @@ export const SHORT_PIECE_NAMES: { [piece in PieceTypeEnum]: string } = {
   [PieceTypeEnum.PAWN]: 'P'
 };
 
-export const PIECE_LITERALS: { [color in ColorEnum]: { [piece in StandardPiece]: string; }; } = {
+export const PIECE_LITERALS: Record<ColorEnum, Record<StandardPiece, string>> = {
   [ColorEnum.WHITE]: {
     [PieceTypeEnum.KING]: '♔',
     [PieceTypeEnum.QUEEN]: '♕',
@@ -46,7 +47,7 @@ export const POSSIBLE_TIMER_BASES_IN_MILLISECONDS = POSSIBLE_TIMER_BASES_IN_MINU
 export const POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS = POSSIBLE_TIMER_INCREMENTS_IN_SECONDS.map((base) => base * 1000);
 export const POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS = POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS.map((base) => base * 24 * 60 * 60 * 1000);
 
-export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
+export const GAME_VARIANT_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.CHESS_960]: 'Chess 960',
   [GameVariantEnum.CRAZYHOUSE]: 'Crazyhouse',
   [GameVariantEnum.ATOMIC]: 'Atomic chess',
@@ -70,7 +71,31 @@ export const GAME_VARIANT_NAMES: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal chess'
 };
 
-export const GAME_VARIANT_PGN_NAMES: { [variation in GameVariantEnum]: string; } = {
+export const GAME_VARIANT_SHORT_NAMES: Record<GameVariantEnum, string> = {
+  [GameVariantEnum.CHESS_960]: '960',
+  [GameVariantEnum.CRAZYHOUSE]: 'Crazyhouse',
+  [GameVariantEnum.ATOMIC]: 'Atomic',
+  [GameVariantEnum.KING_OF_THE_HILL]: 'KOTH',
+  [GameVariantEnum.CIRCE]: 'Circe',
+  [GameVariantEnum.PATROL]: 'Patrol',
+  [GameVariantEnum.MADRASI]: 'Madrasi',
+  [GameVariantEnum.MONSTER_CHESS]: 'Monster',
+  [GameVariantEnum.ALICE_CHESS]: 'Alice',
+  [GameVariantEnum.TWO_FAMILIES]: 'Two families',
+  [GameVariantEnum.HORDE]: 'Horde',
+  [GameVariantEnum.DARK_CHESS]: 'Dark',
+  [GameVariantEnum.ANTICHESS]: 'Antichess',
+  [GameVariantEnum.ABSORPTION]: 'Absorption',
+  [GameVariantEnum.FRANKFURT]: 'Frankfurt',
+  [GameVariantEnum.CAPABLANCA]: 'Capablanca',
+  [GameVariantEnum.AMAZONS]: 'Amazons',
+  [GameVariantEnum.THREE_CHECK]: 'Three-check',
+  [GameVariantEnum.CYLINDER_CHESS]: 'Cylinder',
+  [GameVariantEnum.CIRCULAR_CHESS]: 'Circular',
+  [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal'
+};
+
+export const GAME_VARIANT_PGN_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.CHESS_960]: 'Chess960',
   [GameVariantEnum.CRAZYHOUSE]: 'Crazyhouse',
   [GameVariantEnum.ATOMIC]: 'Atomic',
@@ -94,7 +119,7 @@ export const GAME_VARIANT_PGN_NAMES: { [variation in GameVariantEnum]: string; }
   [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal'
 };
 
-export const GAME_VARIANT_LINKS: { [variation in GameVariantEnum]: string; } = {
+export const GAME_VARIANT_LINKS: Record<GameVariantEnum, string> = {
   [GameVariantEnum.CHESS_960]: 'chess-960',
   [GameVariantEnum.CRAZYHOUSE]: 'crazyhouse',
   [GameVariantEnum.ATOMIC]: 'atomic-chess',
@@ -118,7 +143,7 @@ export const GAME_VARIANT_LINKS: { [variation in GameVariantEnum]: string; } = {
   [GameVariantEnum.HEXAGONAL_CHESS]: 'hexagonal-chess'
 };
 
-export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
+export const RESULT_REASON_NAMES: Record<ResultReasonEnum, string> = {
   [ResultReasonEnum.CHECKMATE]: 'checkmate',
   [ResultReasonEnum.KING_IN_THE_CENTER]: 'king in the center',
   [ResultReasonEnum.KING_EXPLODED]: 'king exploded',
@@ -136,18 +161,24 @@ export const RESULT_REASON_NAMES: { [reason in ResultReasonEnum]: string } = {
   [ResultReasonEnum.FIFTY_MOVE_RULE]: '50 moves without pawn moves or captures'
 };
 
-export const COLOR_NAMES: { [color in ColorEnum]: string } = {
+export const COLOR_NAMES: Record<ColorEnum, string> = {
   [ColorEnum.WHITE]: 'White',
   [ColorEnum.BLACK]: 'Black'
 };
 
-export const GAME_STATUS_NAMES: { [status in GameStatusEnum]: string; } = {
+export const GAME_STATUS_NAMES: Record<GameStatusEnum, string> = {
   [GameStatusEnum.BEFORE_START]: 'Waiting for the opponent',
   [GameStatusEnum.ONGOING]: 'In progress',
   [GameStatusEnum.FINISHED]: 'Finished'
 };
 
-export const PIECES_WORTH: { [type in 'orthodox' | 'circular' | 'hexagonal']: { [piece in PieceTypeEnum]: number; }; } = {
+export const TIME_CONTROL_NAMES: Record<TimeControlEnum, string> = {
+  [TimeControlEnum.NONE]: 'None',
+  [TimeControlEnum.TIMER]: 'Real time',
+  [TimeControlEnum.CORRESPONDENCE]: 'Correspondence'
+};
+
+export const PIECES_WORTH: Record<'orthodox' | 'circular' | 'hexagonal', Record<PieceTypeEnum, number>> = {
   orthodox: {
     [PieceTypeEnum.KING]: 3,
     [PieceTypeEnum.AMAZON]: 12,

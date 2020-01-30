@@ -78,9 +78,7 @@ interface PerformMoveOptions {
   checkIfAllowed?: boolean;
 }
 
-type CastlingRookCoordinates = {
-  [castling in CastlingTypeEnum]: Square | null;
-};
+type CastlingRookCoordinates = Record<CastlingTypeEnum, Square | null>;
 
 const ATOMIC_SQUARE_INCREMENTS: readonly [number, number][] = [
   [-1, -1],
@@ -322,27 +320,27 @@ const RESULT_DRAW = '1/2-1/2';
 
 export class Game implements IGame {
   static validateVariants(variants: readonly GameVariantEnum[]): boolean {
-    const isCrazyhouse = _.includes(variants, GameVariantEnum.CRAZYHOUSE);
-    const is960 = _.includes(variants, GameVariantEnum.CHESS_960);
-    const isKingOfTheHill = _.includes(variants, GameVariantEnum.KING_OF_THE_HILL);
-    const isAtomic = _.includes(variants, GameVariantEnum.ATOMIC);
-    const isCirce = _.includes(variants, GameVariantEnum.CIRCE);
-    const isPatrol = _.includes(variants, GameVariantEnum.PATROL);
-    const isMadrasi = _.includes(variants, GameVariantEnum.MADRASI);
-    const isMonsterChess = _.includes(variants, GameVariantEnum.MONSTER_CHESS);
-    const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
-    const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
-    const isHorde = _.includes(variants, GameVariantEnum.HORDE);
-    const isDarkChess = _.includes(variants, GameVariantEnum.DARK_CHESS);
-    const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
-    const isAbsorption = _.includes(variants, GameVariantEnum.ABSORPTION);
-    const isFrankfurt = _.includes(variants, GameVariantEnum.FRANKFURT);
-    const isCapablanca = _.includes(variants, GameVariantEnum.CAPABLANCA);
-    const isAmazons = _.includes(variants, GameVariantEnum.AMAZONS);
-    const isThreeCheck = _.includes(variants, GameVariantEnum.THREE_CHECK);
-    const isCylinderChess = _.includes(variants, GameVariantEnum.CYLINDER_CHESS);
-    const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
-    const isHexagonalChess = _.includes(variants, GameVariantEnum.HEXAGONAL_CHESS);
+    const isCrazyhouse = variants.includes(GameVariantEnum.CRAZYHOUSE);
+    const is960 = variants.includes(GameVariantEnum.CHESS_960);
+    const isKingOfTheHill = variants.includes(GameVariantEnum.KING_OF_THE_HILL);
+    const isAtomic = variants.includes(GameVariantEnum.ATOMIC);
+    const isCirce = variants.includes(GameVariantEnum.CIRCE);
+    const isPatrol = variants.includes(GameVariantEnum.PATROL);
+    const isMadrasi = variants.includes(GameVariantEnum.MADRASI);
+    const isMonsterChess = variants.includes(GameVariantEnum.MONSTER_CHESS);
+    const isAliceChess = variants.includes(GameVariantEnum.ALICE_CHESS);
+    const isTwoFamilies = variants.includes(GameVariantEnum.TWO_FAMILIES);
+    const isHorde = variants.includes(GameVariantEnum.HORDE);
+    const isDarkChess = variants.includes(GameVariantEnum.DARK_CHESS);
+    const isAntichess = variants.includes(GameVariantEnum.ANTICHESS);
+    const isAbsorption = variants.includes(GameVariantEnum.ABSORPTION);
+    const isFrankfurt = variants.includes(GameVariantEnum.FRANKFURT);
+    const isCapablanca = variants.includes(GameVariantEnum.CAPABLANCA);
+    const isAmazons = variants.includes(GameVariantEnum.AMAZONS);
+    const isThreeCheck = variants.includes(GameVariantEnum.THREE_CHECK);
+    const isCylinderChess = variants.includes(GameVariantEnum.CYLINDER_CHESS);
+    const isCircularChess = variants.includes(GameVariantEnum.CIRCULAR_CHESS);
+    const isHexagonalChess = variants.includes(GameVariantEnum.HEXAGONAL_CHESS);
 
     return ((
       !isKingOfTheHill
@@ -484,12 +482,12 @@ export class Game implements IGame {
   }
 
   static getBoardDimensions(variants: readonly GameVariantEnum[]): BoardDimensions {
-    const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
-    const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
-    const isCapablanca = _.includes(variants, GameVariantEnum.CAPABLANCA);
-    const isAmazons = _.includes(variants, GameVariantEnum.AMAZONS);
-    const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
-    const isHexagonalChess = _.includes(variants, GameVariantEnum.HEXAGONAL_CHESS);
+    const isAliceChess = variants.includes(GameVariantEnum.ALICE_CHESS);
+    const isTwoFamilies = variants.includes(GameVariantEnum.TWO_FAMILIES);
+    const isCapablanca = variants.includes(GameVariantEnum.CAPABLANCA);
+    const isAmazons = variants.includes(GameVariantEnum.AMAZONS);
+    const isCircularChess = variants.includes(GameVariantEnum.CIRCULAR_CHESS);
+    const isHexagonalChess = variants.includes(GameVariantEnum.HEXAGONAL_CHESS);
     const dimensions = {
       boardCount: isAliceChess ? 2 : 1,
       boardWidth: isTwoFamilies || isCapablanca || isAmazons
@@ -560,11 +558,11 @@ export class Game implements IGame {
       boardWidth,
       boardHeight
     } = boardDimensions;
-    const isHorde = _.includes(variants, GameVariantEnum.HORDE);
-    const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
-    const isCapablanca = _.includes(variants, GameVariantEnum.CAPABLANCA);
-    const isAmazons = _.includes(variants, GameVariantEnum.AMAZONS);
-    const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
+    const isHorde = variants.includes(GameVariantEnum.HORDE);
+    const isTwoFamilies = variants.includes(GameVariantEnum.TWO_FAMILIES);
+    const isCapablanca = variants.includes(GameVariantEnum.CAPABLANCA);
+    const isAmazons = variants.includes(GameVariantEnum.AMAZONS);
+    const isCircularChess = variants.includes(GameVariantEnum.CIRCULAR_CHESS);
     const orthodoxBoardWidth = isCircularChess
       ? boardWidth * 2
       : boardWidth;
@@ -575,7 +573,7 @@ export class Game implements IGame {
     let id = 0;
     let pieceTypes: readonly PieceTypeEnum[];
 
-    if (_.includes(variants, GameVariantEnum.CHESS_960)) {
+    if (variants.includes(GameVariantEnum.CHESS_960)) {
       const randomPieceTypes: (PieceTypeEnum | null)[] = _.times(orthodoxBoardWidth, () => null!);
 
       const darkColoredBishopPosition = 2 * Math.floor(halfBoard * Math.random());
@@ -714,12 +712,12 @@ export class Game implements IGame {
   }
 
   static getStartingData(variants: readonly GameVariantEnum[]): StartingData {
-    const isMonsterChess = _.includes(variants, GameVariantEnum.MONSTER_CHESS);
-    const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
-    const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
-    const isCylinderChess = _.includes(variants, GameVariantEnum.CYLINDER_CHESS);
-    const isCircularChess = _.includes(variants, GameVariantEnum.CIRCULAR_CHESS);
-    const isHexagonalChess = _.includes(variants, GameVariantEnum.HEXAGONAL_CHESS);
+    const isMonsterChess = variants.includes(GameVariantEnum.MONSTER_CHESS);
+    const isAliceChess = variants.includes(GameVariantEnum.ALICE_CHESS);
+    const isAntichess = variants.includes(GameVariantEnum.ANTICHESS);
+    const isCylinderChess = variants.includes(GameVariantEnum.CYLINDER_CHESS);
+    const isCircularChess = variants.includes(GameVariantEnum.CIRCULAR_CHESS);
+    const isHexagonalChess = variants.includes(GameVariantEnum.HEXAGONAL_CHESS);
     const boardDimensions = Game.getBoardDimensions(variants);
     const startingData = isHexagonalChess
       ? Game.generateHexagonalStartingData()
@@ -808,12 +806,12 @@ export class Game implements IGame {
       emptySquares: []
     };
     const isPocketUsed = Game.getIsPocketUsed(variants);
-    const isMonsterChess = _.includes(variants, GameVariantEnum.MONSTER_CHESS);
-    const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
-    const isThreeCheck = _.includes(variants, GameVariantEnum.THREE_CHECK);
-    const isCylinderChess = _.includes(variants, GameVariantEnum.CYLINDER_CHESS);
-    const isDarkChess = _.includes(variants, GameVariantEnum.DARK_CHESS);
-    const isHexagonalChess = _.includes(variants, GameVariantEnum.HEXAGONAL_CHESS);
+    const isMonsterChess = variants.includes(GameVariantEnum.MONSTER_CHESS);
+    const isAntichess = variants.includes(GameVariantEnum.ANTICHESS);
+    const isThreeCheck = variants.includes(GameVariantEnum.THREE_CHECK);
+    const isCylinderChess = variants.includes(GameVariantEnum.CYLINDER_CHESS);
+    const isDarkChess = variants.includes(GameVariantEnum.DARK_CHESS);
+    const isHexagonalChess = variants.includes(GameVariantEnum.HEXAGONAL_CHESS);
     const fenData = fen.trim().split(/\s+/);
     const boards = fenData.slice(0, boardCount);
 
@@ -835,7 +833,7 @@ export class Game implements IGame {
       ? ['w1', 'w2', 'b']
       : ['w', 'b'];
 
-    if (!_.includes(possibleTurnValues, turnString)) {
+    if (!possibleTurnValues.includes(turnString)) {
       throw new Error('Invalid FEN: wrong turn');
     }
 
@@ -846,10 +844,10 @@ export class Game implements IGame {
     }
 
     if (possibleCastlingString !== '-' && !isAntichess && !isCylinderChess) {
-      startingData.possibleCastling[ColorEnum.WHITE][CastlingTypeEnum.KING_SIDE] = _.includes(possibleCastlingString, 'K');
-      startingData.possibleCastling[ColorEnum.WHITE][CastlingTypeEnum.QUEEN_SIDE] = _.includes(possibleCastlingString, 'Q');
-      startingData.possibleCastling[ColorEnum.BLACK][CastlingTypeEnum.KING_SIDE] = _.includes(possibleCastlingString, 'k');
-      startingData.possibleCastling[ColorEnum.BLACK][CastlingTypeEnum.QUEEN_SIDE] = _.includes(possibleCastlingString, 'q');
+      startingData.possibleCastling[ColorEnum.WHITE][CastlingTypeEnum.KING_SIDE] = possibleCastlingString.includes('K');
+      startingData.possibleCastling[ColorEnum.WHITE][CastlingTypeEnum.QUEEN_SIDE] = possibleCastlingString.includes('Q');
+      startingData.possibleCastling[ColorEnum.BLACK][CastlingTypeEnum.KING_SIDE] = possibleCastlingString.includes('k');
+      startingData.possibleCastling[ColorEnum.BLACK][CastlingTypeEnum.QUEEN_SIDE] = possibleCastlingString.includes('q');
     }
 
     if (possibleEnPassantString !== '-') {
@@ -1259,7 +1257,7 @@ export class Game implements IGame {
           queenSideCastling
         ] = moveSquaresMatch;
         const isDrop = !!drop;
-        const isCastling = _.includes(moveSquares, 'O-O');
+        const isCastling = moveSquares.includes('O-O');
         const isQueenSideCastling = !!queenSideCastling;
         // TODO: fix piece parsing for absorption/frankfurt
         const pieceFromLiteral = Game.getPieceFromLiteral(isCastling ? 'K' : pieceLiteral || 'P');
@@ -1361,7 +1359,7 @@ export class Game implements IGame {
 
           const promotedPiece = Game.getPieceFromLiteral(promotionMatch[1]);
 
-          if (!promotedPiece || !_.includes(game.validPromotions, promotedPiece.type)) {
+          if (!promotedPiece || !game.validPromotions.includes(promotedPiece.type)) {
             throw new Error(`Invalid PGN: wrong promotion piece (${promotionMatch[1]})`);
           }
 
@@ -1379,11 +1377,11 @@ export class Game implements IGame {
   }
 
   static validateStartingData(startingData: StartingData, variants: readonly GameVariantEnum[]): void {
-    const isTwoFamilies = _.includes(variants, GameVariantEnum.TWO_FAMILIES);
-    const isAliceChess = _.includes(variants, GameVariantEnum.ALICE_CHESS);
-    const isHorde = _.includes(variants, GameVariantEnum.HORDE);
-    const isAntichess = _.includes(variants, GameVariantEnum.ANTICHESS);
-    const isHexagonalChess = _.includes(variants, GameVariantEnum.HEXAGONAL_CHESS);
+    const isTwoFamilies = variants.includes(GameVariantEnum.TWO_FAMILIES);
+    const isAliceChess = variants.includes(GameVariantEnum.ALICE_CHESS);
+    const isHorde = variants.includes(GameVariantEnum.HORDE);
+    const isAntichess = variants.includes(GameVariantEnum.ANTICHESS);
+    const isHexagonalChess = variants.includes(GameVariantEnum.HEXAGONAL_CHESS);
     const middleFile = 5;
 
     if (isAliceChess) {
@@ -1526,7 +1524,7 @@ export class Game implements IGame {
   }
 
   static getIsPocketUsed(variants: readonly GameVariantEnum[]): boolean {
-    return _.includes(variants, GameVariantEnum.CRAZYHOUSE);
+    return variants.includes(GameVariantEnum.CRAZYHOUSE);
   }
 
   static getBoardLiteral(board: number): string {
@@ -1581,7 +1579,7 @@ export class Game implements IGame {
   static getPieceFigurineLiteral(pieceType: PieceTypeEnum, color: ColorEnum): string {
     const pieceLiterals = PIECE_LITERALS[color];
 
-    if (_.includes(STANDARD_PIECES, pieceType)) {
+    if (STANDARD_PIECES.includes(pieceType)) {
       return pieceLiterals[pieceType as StandardPiece];
     }
 
@@ -1772,7 +1770,7 @@ export class Game implements IGame {
   timeControl: TimeControl;
   pgnTags: PGNTags;
   moves: RevertableMove[] = [];
-  colorMoves: { [color in ColorEnum]: DarkChessRevertableMove[] } = {
+  colorMoves: Record<ColorEnum, DarkChessRevertableMove[]> = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
@@ -1781,7 +1779,7 @@ export class Game implements IGame {
   possibleEnPassant: PossibleEnPassant | null = null;
   positionsMap: { [position: string]: number; } = {};
   positionString: string = '';
-  castlingRookCoordinates: { [color in ColorEnum]: CastlingRookCoordinates; };
+  castlingRookCoordinates: Record<ColorEnum, CastlingRookCoordinates>;
   startingMoveIndex: number = 0;
   pliesWithoutCaptureOrPawnMove: number = 0;
   boards: (BoardPiece | null)[][][] = [];
@@ -1790,7 +1788,7 @@ export class Game implements IGame {
     [ColorEnum.BLACK]: []
   };
   pieces: readonly Piece[] = [];
-  visiblePieces: { [color in ColorEnum]: (Piece & { realId: number | string; })[]; } = {
+  visiblePieces: Record<ColorEnum, (Piece & { realId: number | string; })[]> = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
@@ -1853,27 +1851,27 @@ export class Game implements IGame {
     this.variants = settings.variants;
     this.result = this.startingData.result;
 
-    this.isCrazyhouse = _.includes(this.variants, GameVariantEnum.CRAZYHOUSE);
-    this.is960 = _.includes(this.variants, GameVariantEnum.CHESS_960);
-    this.isKingOfTheHill = _.includes(this.variants, GameVariantEnum.KING_OF_THE_HILL);
-    this.isAtomic = _.includes(this.variants, GameVariantEnum.ATOMIC);
-    this.isCirce = _.includes(this.variants, GameVariantEnum.CIRCE);
-    this.isPatrol = _.includes(this.variants, GameVariantEnum.PATROL);
-    this.isMadrasi = _.includes(this.variants, GameVariantEnum.MADRASI);
-    this.isMonsterChess = _.includes(this.variants, GameVariantEnum.MONSTER_CHESS);
-    this.isAliceChess = _.includes(this.variants, GameVariantEnum.ALICE_CHESS);
-    this.isTwoFamilies = _.includes(this.variants, GameVariantEnum.TWO_FAMILIES);
-    this.isHorde = _.includes(this.variants, GameVariantEnum.HORDE);
-    this.isDarkChess = _.includes(this.variants, GameVariantEnum.DARK_CHESS);
-    this.isAntichess = _.includes(this.variants, GameVariantEnum.ANTICHESS);
-    this.isAbsorption = _.includes(this.variants, GameVariantEnum.ABSORPTION);
-    this.isFrankfurt = _.includes(this.variants, GameVariantEnum.FRANKFURT);
-    this.isCapablanca = _.includes(this.variants, GameVariantEnum.CAPABLANCA);
-    this.isAmazons = _.includes(this.variants, GameVariantEnum.AMAZONS);
-    this.isThreeCheck = _.includes(this.variants, GameVariantEnum.THREE_CHECK);
-    this.isCylinderChess = _.includes(this.variants, GameVariantEnum.CYLINDER_CHESS);
-    this.isCircularChess = _.includes(this.variants, GameVariantEnum.CIRCULAR_CHESS);
-    this.isHexagonalChess = _.includes(this.variants, GameVariantEnum.HEXAGONAL_CHESS);
+    this.isCrazyhouse = this.variants.includes(GameVariantEnum.CRAZYHOUSE);
+    this.is960 = this.variants.includes(GameVariantEnum.CHESS_960);
+    this.isKingOfTheHill = this.variants.includes(GameVariantEnum.KING_OF_THE_HILL);
+    this.isAtomic = this.variants.includes(GameVariantEnum.ATOMIC);
+    this.isCirce = this.variants.includes(GameVariantEnum.CIRCE);
+    this.isPatrol = this.variants.includes(GameVariantEnum.PATROL);
+    this.isMadrasi = this.variants.includes(GameVariantEnum.MADRASI);
+    this.isMonsterChess = this.variants.includes(GameVariantEnum.MONSTER_CHESS);
+    this.isAliceChess = this.variants.includes(GameVariantEnum.ALICE_CHESS);
+    this.isTwoFamilies = this.variants.includes(GameVariantEnum.TWO_FAMILIES);
+    this.isHorde = this.variants.includes(GameVariantEnum.HORDE);
+    this.isDarkChess = this.variants.includes(GameVariantEnum.DARK_CHESS);
+    this.isAntichess = this.variants.includes(GameVariantEnum.ANTICHESS);
+    this.isAbsorption = this.variants.includes(GameVariantEnum.ABSORPTION);
+    this.isFrankfurt = this.variants.includes(GameVariantEnum.FRANKFURT);
+    this.isCapablanca = this.variants.includes(GameVariantEnum.CAPABLANCA);
+    this.isAmazons = this.variants.includes(GameVariantEnum.AMAZONS);
+    this.isThreeCheck = this.variants.includes(GameVariantEnum.THREE_CHECK);
+    this.isCylinderChess = this.variants.includes(GameVariantEnum.CYLINDER_CHESS);
+    this.isCircularChess = this.variants.includes(GameVariantEnum.CIRCULAR_CHESS);
+    this.isHexagonalChess = this.variants.includes(GameVariantEnum.HEXAGONAL_CHESS);
 
     this.isPocketUsed = Game.getIsPocketUsed(settings.variants);
     this.isLeftInCheckAllowed = (
@@ -2229,11 +2227,11 @@ export class Game implements IGame {
     }
 
     // in case of en passant
-    if (opponentPiece && !_.includes(disappearedOrMovedPieces, opponentPiece)) {
+    if (opponentPiece && !disappearedOrMovedPieces.includes(opponentPiece)) {
       disappearedOrMovedPieces.push(opponentPiece);
     }
 
-    if (isMainPieceMovedOrDisappeared && !_.includes(disappearedOrMovedPieces, piece)) {
+    if (isMainPieceMovedOrDisappeared && !disappearedOrMovedPieces.includes(piece as BoardPiece)) {
       disappearedOrMovedPieces.push(piece as BoardPiece);
     }
 
@@ -2465,7 +2463,7 @@ export class Game implements IGame {
     const removePieceOrMoveToOpponentPocket = (piece: Piece) => {
       this.changePieceLocation(piece, null);
 
-      if (this.isCrazyhouse && _.includes(this.pocketPiecesUsed, piece.originalType)) {
+      if (this.isCrazyhouse && this.pocketPiecesUsed.includes(piece.originalType)) {
         const pieceType = piece.originalType;
         const opponentColor = Game.getOppositeColor(piece.color);
 
@@ -3043,7 +3041,7 @@ export class Game implements IGame {
     return rookCoordinates;
   }
 
-  getCastlingRooks(color: ColorEnum): { [castling in CastlingTypeEnum]: BoardPiece | null; } {
+  getCastlingRooks(color: ColorEnum): Record<CastlingTypeEnum, BoardPiece | null> {
     const getRook = (square: Square | null): BoardPiece | null => {
       const pieceInSquare = square && this.getBoardPiece(square);
 

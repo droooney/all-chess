@@ -24,26 +24,18 @@ class GameVariantList extends React.Component<Props> {
     const changedVariant = e.target.name as GameVariantEnum;
     const enabled = e.target.checked;
 
-    if (enabled) {
-      onVariantsChange([
-        ...variants,
-        changedVariant
-      ]);
-    } else {
-      const existingVariantIndex = variants.indexOf(changedVariant);
-
-      if (existingVariantIndex !== -1) {
-        onVariantsChange([
-          ...variants.slice(0, existingVariantIndex),
-          ...variants.slice(existingVariantIndex + 1)
-        ]);
-      }
-    }
+    onVariantsChange(
+      _.filter(GameVariantEnum, (variant) => (
+        variant === changedVariant
+          ? enabled
+          : variants.includes(variant)
+      ))
+    );
   };
 
   render(): React.ReactNode {
     const variants = _.map(GameVariantEnum, (variant) => {
-      const enabled = _.includes(this.props.variants, variant);
+      const enabled = this.props.variants.includes(variant);
 
       return {
         variant,

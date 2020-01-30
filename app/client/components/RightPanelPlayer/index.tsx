@@ -11,7 +11,8 @@ import {
   Player,
   PocketPiece,
   RealPieceLocation,
-  TimeControl
+  TimeControl,
+  TimeControlEnum
 } from '../../../types';
 import { COLOR_NAMES } from '../../../shared/constants';
 import { Game } from '../../helpers';
@@ -31,9 +32,7 @@ interface OwnProps {
   realTurn: ColorEnum;
   isTop: boolean;
   allMaterialDifference: number;
-  materialDifference: {
-    [piece in PieceTypeEnum]: number;
-  };
+  materialDifference: Record<PieceTypeEnum, number>;
   selectedPiece: PocketPiece | null;
   selectPiece(piece: IPiece | null): void;
   startDraggingPiece(e: React.MouseEvent, location: RealPieceLocation): void;
@@ -171,6 +170,7 @@ export default class RightPanelPlayer extends React.Component<Props> {
         <div
           key="timer"
           className={classNames('timer', {
+            correspondence: timeControl.type === TimeControlEnum.CORRESPONDENCE,
             low: 6 * time <= timeControl.base,
             critical: 12 * time <= timeControl.base
           })}

@@ -413,7 +413,7 @@ export default class Game extends GameHelper {
 
     const isPawnPromotion = allowedMoves.some(({ isPawnPromotion }) => isPawnPromotion);
 
-    if (isPawnPromotion && !_.includes(this.validPromotions, promotion)) {
+    if (isPawnPromotion && !this.validPromotions.includes(promotion!)) {
       return;
     }
 

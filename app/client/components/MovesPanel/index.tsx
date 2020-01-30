@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import * as React from 'react';
-import classNames from 'classNames';
+import classNames from 'classnames';
 
 import {
   AnyMove

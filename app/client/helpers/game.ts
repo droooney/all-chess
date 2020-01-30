@@ -76,9 +76,7 @@ export class Game extends GameHelper {
   darkChessMode: ColorEnum | null;
   showDarkChessHiddenPieces: boolean;
   needToCalculateMaterialDifference: boolean;
-  listeners: {
-    [event in GameEvent]: (() => void)[];
-  } = {
+  listeners: Record<GameEvent, (() => void)[]> = {
     updateChat: [],
     updateGame: []
   };

@@ -19,9 +19,7 @@ export interface Player extends User {
   time: number | null;
 }
 
-export type GamePlayers = {
-  [color in ColorEnum]: Player;
-};
+export type GamePlayers = Record<ColorEnum, Player>;
 
 export enum PieceTypeEnum {
   KING = 'KING',
@@ -54,15 +52,9 @@ export enum CastlingTypeEnum {
   QUEEN_SIDE = 'QUEEN_SIDE'
 }
 
-export type PossibleCastling = {
-  [color in ColorEnum]: {
-    [castling in CastlingTypeEnum]: boolean;
-  };
-};
+export type PossibleCastling = Record<ColorEnum, Record<CastlingTypeEnum, boolean>>;
 
-export type ChecksCount = {
-  [color in ColorEnum]: number;
-};
+export type ChecksCount = Record<ColorEnum, number>;
 
 export interface BoardDimensions {
   boardCount: number;
@@ -133,9 +125,7 @@ export type RealPieceLocation = PieceBoardLocation | PiecePocketLocation;
 
 export type PieceLocation = null | RealPieceLocation;
 
-export type GameKings = {
-  [color in ColorEnum]: Piece[];
-};
+export type GameKings = Record<ColorEnum, Piece[]>;
 
 export interface TakebackRequest {
   player: ColorEnum;

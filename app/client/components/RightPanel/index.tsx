@@ -94,7 +94,7 @@ export default class RightPanel extends React.Component<Props, State> {
       game
     } = this.props;
 
-    if (!e.target || !_.includes(INPUT_ELEMENTS, (e.target as HTMLElement).tagName.toLowerCase())) {
+    if (!e.target || !INPUT_ELEMENTS.includes((e.target as HTMLElement).tagName.toLowerCase())) {
       if (e.key === 'ArrowLeft') {
         game.moveBack();
       } else if (e.key === 'ArrowRight') {
@@ -165,7 +165,7 @@ export default class RightPanel extends React.Component<Props, State> {
       : players[ColorEnum.WHITE];
     const adjustedLastMoveTimestamp = this.adjustServerTime(lastMoveTimestamp);
     const timePassedSinceLastMove = (this.state.intervalActivated ? Date.now() : adjustedLastMoveTimestamp) - adjustedLastMoveTimestamp;
-    const materialDifference: { [piece in PieceTypeEnum]: number; } = {} as any;
+    const materialDifference: Record<PieceTypeEnum, number> = {} as any;
     let allMaterialDifference = 0;
 
     if (game.needToCalculateMaterialDifference) {
