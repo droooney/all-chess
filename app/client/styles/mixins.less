@@ -1,25 +1,44 @@
-.flex(@justify-content: center, @align-items: center) {
+.desktop (@rules) {
+  @media screen and (min-width: 801px) {
+    @rules();
+  }
+}
+
+.not-desktop (@rules) {
+  @media screen and (max-width: 800px) {
+    @rules();
+  }
+}
+
+.mobile (@rules) {
+  @media screen and (max-width: 500px) {
+    @rules();
+  }
+}
+
+.not-mobile (@rules) {
+  @media screen and (min-width: 501px) {
+    @rules();
+  }
+}
+
+.flex(@justify-content: center, @align-items: center, @flex-direction: row) {
   display: flex;
   align-items: @align-items;
   justify-content: @justify-content;
-}
-
-.flex-col(@justify-content: center, @align-items: center, @flex-direction: column) {
-  .flex(@justify-content, @align-items);
-
   flex-direction: @flex-direction;
 }
 
-.flex-stretch(@justify-content: center) {
-  display: flex;
-  align-items: stretch;
-  justify-content: @justify-content;
+.flex-col(@justify-content: center, @align-items: center) {
+  .flex(@justify-content: @justify-content, @align-items: @align-items, @flex-direction: column);
+}
+
+.flex-stretch(@justify-content: center, @flex-direction: row) {
+  .flex(@justify-content: @justify-content, @align-items: stretch, @flex-direction: @flex-direction);
 }
 
 .flex-col-stretch(@justify-content: center) {
-  .flex-stretch(@justify-content);
-
-  flex-direction: column;
+  .flex-col(@justify-content: @justify-content, @align-items: stretch);
 }
 
 .flex-child(@size: auto) {

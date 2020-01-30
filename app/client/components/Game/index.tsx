@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import io = require('socket.io-client');
-import classNames = require('classnames');
+import classNames from 'classNames';
 
 import {
   BaseMove,

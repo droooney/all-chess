@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { connect, DispatchProps } from 'react-redux';
-import classNames = require('classnames');
+import { connect } from 'react-redux';
+import classNames from 'classNames';
 
 import {
   changeSettings
@@ -18,7 +18,7 @@ import {
   RESULT_REASON_NAMES
 } from '../../../shared/constants';
 import { Game } from '../../helpers';
-import { ReduxState } from '../../store';
+import { DispatchProps, ReduxState } from '../../store';
 
 import GameVariantLink from '../GameVariantLink';
 import Piece from '../Piece';

@@ -1,10 +1,13 @@
 import * as React from 'react';
-import {
-  Redirect,
-  Router,
-  Switch
-} from 'react-router-dom';
+import { connect } from 'react-redux';
+import { Redirect, Router, Switch } from 'react-router-dom';
+import { ThemeProvider } from '@material-ui/styles';
 import { createBrowserHistory } from 'history';
+
+import lightTheme from '../../themes/light';
+import { DispatchProps, ReduxState } from '../../store';
+import { setIsMobile } from '../../actions';
+import { isMobileDevice } from '../../helpers';
 
 import Route from '../Route';
 
@@ -22,29 +25,55 @@ import './index.less';
 
 const history = createBrowserHistory();
 
-export default class App extends React.Component {
+type Props = ReturnType<typeof mapStateToProps> & DispatchProps;
+
+class App extends React.Component<Props> {
+  componentDidMount(): void {
+    window.addEventListener('resize', this.onWindowResize);
+  }
+
+  onWindowResize = () => {
+    const {
+      dispatch,
+      isMobile
+    } = this.props;
+    const newIsMobile = isMobileDevice();
+
+    if (isMobile !== newIsMobile) {
+      dispatch(setIsMobile(newIsMobile));
+    }
+  };
+
   render() {
     return (
-      <Router history={history}>
-        <div className="route route-root">
+      <ThemeProvider theme={lightTheme}>
+        <Router history={history}>
+          <div className="route route-root">
 
-          <Header />
+            <Header />
 
-          <main>
-            <Switch>
-              <Route exact strict path="/" component={Home} />
-              <Route strict path="/editor" component={BoardEditor} />
-              <Route strict path="/rules" component={GamesRules} />
-              <Route exact strict path="/login" component={Login} />
-              <Route exact strict path="/register" component={Register} />
-              <Route exact strict path="/games" component={Games} />
-              <Route exact strict path="/games/:gameId" component={Game} />
-              <Redirect to="/" />
-            </Switch>
-          </main>
-        </div>
+            <main>
+              <Switch>
+                <Route exact strict path="/" component={Home} />
+                <Route strict path="/editor" component={BoardEditor} />
+                <Route strict path="/rules/:gameLink?" component={GamesRules} />
+                <Route exact strict path="/login" component={Login} />
+                <Route exact strict path="/register" component={Register} />
+                <Route exact strict path="/games" component={Games} />
+                <Route exact strict path="/games/:gameId" component={Game} />
+                <Redirect to="/" />
+              </Switch>
+            </main>
+          </div>
 
-      </Router>
+        </Router>
+      </ThemeProvider>
     );
   }
 }
+
+const mapStateToProps = (state: ReduxState) => ({
+  isMobile: state.common.isMobile
+});
+
+export default connect(mapStateToProps)(App);

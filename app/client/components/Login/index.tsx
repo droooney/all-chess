@@ -1,25 +1,31 @@
 import * as qs from 'querystring';
 import * as React from 'react';
-import { connect, DispatchProps } from 'react-redux';
+import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
+import { FormControl, InputLabel } from '@material-ui/core';
 
 import { setUserData } from '../../actions';
 import { fetch } from '../../helpers';
+import { DispatchProps } from '../../store';
 
+import Button from '../Button';
 import DocumentTitle from '../DocumentTitle';
+import Input from '../Input';
 
 import './index.less';
 
 type Props = RouteComponentProps<any> & DispatchProps;
 
 interface State {
+  login: string;
+  password: string;
   error: boolean;
 }
 
 class Login extends React.Component<Props, State> {
-  loginInputRef = React.createRef<HTMLInputElement>();
-  passwordInputRef = React.createRef<HTMLInputElement>();
-  state = {
+  state: State = {
+    login: '',
+    password: '',
     error: false
   };
 
@@ -33,8 +39,6 @@ class Login extends React.Component<Props, State> {
     const {
       from = '/'
     } = qs.parse(location.search.slice(1));
-    const login = this.loginInputRef.current!.value;
-    const password = this.passwordInputRef.current!.value;
 
     const {
       success,
@@ -43,8 +47,8 @@ class Login extends React.Component<Props, State> {
       url: '/api/auth/login',
       method: 'post',
       data: {
-        login,
-        password
+        login: this.state.login,
+        password: this.state.password
       }
     });
 
@@ -65,27 +69,36 @@ class Login extends React.Component<Props, State> {
 
         <DocumentTitle value="AllChess - Login" />
 
-        {this.state.error && (
-          <div className="error">
-            Wrong login or password
-          </div>
-        )}
+        <form className="login-form" onSubmit={this.onSubmit}>
 
-        <form onSubmit={this.onSubmit}>
-          <input
-            type="text"
-            placeholder="Login"
-            ref={this.loginInputRef}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            ref={this.passwordInputRef}
-          />
-          <input
-            type="submit"
-            value="Login"
-          />
+          <FormControl error={this.state.error} required>
+            <InputLabel htmlFor="login">
+              Login
+            </InputLabel>
+            <Input
+              id="login"
+              type="text"
+              value={this.state.login}
+              onChange={(e) => this.setState({ login: e.currentTarget.value })}
+            />
+          </FormControl>
+
+          <FormControl error={this.state.error} required>
+            <InputLabel htmlFor="password">
+              Password
+            </InputLabel>
+            <Input
+              id="password"
+              type="password"
+              value={this.state.password}
+              onChange={(e) => this.setState({ password: e.currentTarget.value })}
+            />
+          </FormControl>
+
+          <Button type="submit">
+            Login
+          </Button>
+
         </form>
 
       </div>

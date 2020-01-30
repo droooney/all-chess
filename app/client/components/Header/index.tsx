@@ -1,9 +1,9 @@
 import * as qs from 'querystring';
 import * as React from 'react';
-import { connect, DispatchProps } from 'react-redux';
+import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 
-import { ReduxState } from '../../store';
+import { DispatchProps, ReduxState } from '../../store';
 import { setUserData } from '../../actions';
 import { fetch } from '../../helpers';
 import { STANDARD_FEN } from '../../constants';

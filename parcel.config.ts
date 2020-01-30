@@ -7,6 +7,7 @@ export default (isProduction: boolean): ParcelOptions => {
     publicUrl: '/public',
     contentHash: isProduction,
     watch: !isProduction,
+    hmr: !isProduction,
     minify: isProduction,
     cacheDir: '.parcel-cache',
     cache: true,

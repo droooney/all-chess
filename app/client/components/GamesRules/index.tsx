@@ -1,11 +1,13 @@
 import * as _ from 'lodash';
 import * as React from 'react';
-import { Redirect, Switch } from 'react-router-dom';
+import { Redirect, RouteComponentProps, Switch } from 'react-router-dom';
+import { MenuItem, Select } from '@material-ui/core';
 
 import {
   GameVariantEnum
 } from '../../../types';
 import {
+  GAME_VARIANT_NAMES,
   GAME_VARIANT_LINKS
 } from '../../../shared/constants';
 
@@ -17,14 +19,40 @@ import GameVariantLink from '../GameVariantLink';
 
 import './index.less';
 
-export default class GamesRules extends React.Component {
+type Props = RouteComponentProps<{ gameLink?: string; }>;
+
+export default class GamesRules extends React.Component<Props> {
   render() {
+    const {
+      history,
+      match: {
+        params: {
+          gameLink
+        }
+      }
+    } = this.props;
+    const gameType = _.findKey(GAME_VARIANT_LINKS, (link) => link === gameLink) as GameVariantEnum;
+
     return (
       <div className="route rules-route">
-        <div className="variants">
+        <div className="desktop-variants">
           {_.map(GameVariantEnum, (variant) => (
             <GameVariantLink key={variant} variant={variant} />
           ))}
+        </div>
+        <div className="mobile-variants">
+          <Select
+            displayEmpty
+            value={gameType || ''}
+            renderValue={() => gameType ? GAME_VARIANT_NAMES[gameType] : 'Select variant'}
+            onChange={(e) => history.push(`/rules/${GAME_VARIANT_LINKS[e.target.value as GameVariantEnum]}`)}
+          >
+            {_.map(GameVariantEnum, (variant) => (
+              <MenuItem key={variant} value={variant}>
+                {GAME_VARIANT_NAMES[variant]}
+              </MenuItem>
+            ))}
+          </Select>
         </div>
         <div className="rules-container">
           <Switch>

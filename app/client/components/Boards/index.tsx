@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import classNames = require('classnames');
+import classNames from 'classNames';
 
 import {
   BoardPiece as IBoardPiece,

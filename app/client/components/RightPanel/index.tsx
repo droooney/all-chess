@@ -196,6 +196,7 @@ export default class RightPanel extends React.Component<Props, State> {
         <RightPanelPlayer
           game={game}
           player={topPlayer}
+          playingPlayer={player}
           timePassedSinceLastMove={timePassedSinceLastMove}
           timeControl={timeControl}
           realTurn={realTurn}
@@ -219,6 +220,7 @@ export default class RightPanel extends React.Component<Props, State> {
         <RightPanelPlayer
           game={game}
           player={bottomPlayer}
+          playingPlayer={player}
           timePassedSinceLastMove={timePassedSinceLastMove}
           timeControl={timeControl}
           realTurn={realTurn}

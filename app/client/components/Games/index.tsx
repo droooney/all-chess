@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { connect, DispatchProps } from 'react-redux';
+import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import io = require('socket.io-client');
 
-import { ReduxState } from '../../store';
+import { DispatchProps, ReduxState } from '../../store';
 import { Game } from '../../helpers';
 import {
   CorrespondenceTimeControl,
@@ -25,6 +25,7 @@ import {
   POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS
 } from '../../../shared/constants';
 
+import Button from '../Button';
 import DocumentTitle from '../DocumentTitle';
 import GameVariantLink from '../GameVariantLink';
 import GameVariantList from '../GameVariantList';
@@ -185,13 +186,13 @@ class Games extends React.Component<Props, State> {
 
         <DocumentTitle value="AllChess - Games" />
 
-        <input
-          type="submit"
-          value="Create game"
+        <Button
           onClick={this.openModal}
           style={{ margin: 10 }}
           disabled={!this.props.loggedIn}
-        />
+        >
+          Create game
+        </Button>
 
         <table className="games">
           <thead>

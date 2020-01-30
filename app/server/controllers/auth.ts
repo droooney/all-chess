@@ -58,17 +58,13 @@ export async function login(ctx: CustomContext) {
   });
 
   if (!user) {
-    return ctx.body = {
-      success: false
-    };
+    return ctx.state.success(false);
   }
 
   const match = await bcrypt.compare(password, user.password);
 
   if (!match) {
-    return ctx.body = {
-      success: false
-    };
+    return ctx.state.success(false);
   }
 
   session.user = user;
@@ -107,7 +103,13 @@ export async function register(ctx: CustomContext) {
       confirmToken: uuid()
     });
   } catch (err) {
-    ctx.state.success(false);
+    ctx.body = {
+      success: false,
+      errors: {
+        login: !!err.fields && 'login' in err.fields,
+        email: !!err.fields && 'email' in err.fields
+      }
+    };
 
     return;
   }

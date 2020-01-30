@@ -1,65 +1,65 @@
 @import (reference) '../../styles/mixins';
 
 .route.rules-route {
-  flex-direction: row;
-  padding: 20px;
+  display: grid;
   width: 100%;
   max-width: 1200px;
   align-self: center;
 
-  .variants {
-    .flex-col(flex-start, flex-start);
+  .desktop-variants {
+    .flex-col(@justify-content: flex-start, @align-items: flex-start);
     .flex-child-fixed();
 
+    grid-area: desktop-variants;
     padding-right: 20px;
     border-right: 1px solid black;
   }
 
-  .rules-container {
-    .flex-col-stretch(flex-start);
-    .flex-child();
+  .mobile-variants {
+    grid-area: mobile-variants;
+    width: 100%;
+    padding: 10px;
 
-    padding: 0 20px;
+    .MuiInput-root {
+      width: 100%;
+    }
+  }
+
+  .rules-container {
+    .flex-col-stretch(@justify-content: flex-start);
+
+    grid-area: rules-container;
 
     .game-name-header {
       text-align: center;
     }
-
-    .game-rules-examples-container {
-      .flex();
-    }
-
-    .game-rules-example {
-      .flex();
-
-      margin: 20px 0;
-
-      .boards-description-container {
-        .flex-col();
-
-        .description {
-          margin-top: 5px;
-          font-style: italic;
-          text-align: center;
-        }
-      }
-
-      .moves-panel {
-        width: 160px;
-        height: 160px;
-        margin-left: 20px;
-
-        .moves-icons {
-          margin-bottom: 8px;
-        }
-
-        .moves-container {
-          .move-row {
-            height: 15px;
-            font-size: 11px;
-          }
-        }
-      }
-    }
   }
+
+  .mobile({
+    grid-template:
+      "mobile-variants" 50px
+      "rules-container" calc(100% - 50px) ~"/" 100%;
+    justify-items: center;
+
+    .desktop-variants {
+      display: none;
+    }
+
+    .rules-container {
+      padding: 0 10px;
+    }
+  });
+
+  .not-mobile({
+    grid-template: "desktop-variants rules-container" 100% ~"/" auto 1fr;
+    padding: 20px;
+
+    .mobile-variants {
+      display: none;
+    }
+
+    .rules-container {
+      padding: 0 20px;
+    }
+  });
 }

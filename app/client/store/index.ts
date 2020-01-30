@@ -19,24 +19,15 @@ const middlewares = [
   })
 ];
 
-type LocalCustomDispatch = ThunkDispatch<ReduxState, never, Action>;
+export type CustomDispatch = ThunkDispatch<ReduxState, never, Action>;
 
-declare module 'redux' {
-  export type CustomDispatch = LocalCustomDispatch;
-}
+export type CustomThunkAction<R> = (
+  dispatch: CustomDispatch,
+  getState: () => ReduxState
+) => R;
 
-declare module 'redux-thunk' {
-  // eslint-disable-next-line
-  export type CustomThunkAction<R> = (
-    dispatch: LocalCustomDispatch,
-    getState: () => ReduxState
-  ) => R;
-}
-
-declare module 'react-redux' {
-  export interface DispatchProps {
-    dispatch: LocalCustomDispatch;
-  }
+export interface DispatchProps {
+  dispatch: CustomDispatch;
 }
 
 const store = createStore(rootReducer, compose(applyMiddleware(...middlewares)));

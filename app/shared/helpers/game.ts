@@ -3834,21 +3834,28 @@ export class Game implements IGame {
       };
     }
 
-    if (this.isAtomic && !this.isAntichess && !this.areKingsOnTheBoard(this.turn)) {
+    if (this.isAtomic && !this.isAntichess && !this.areKingsOnTheBoard(currentTurn)) {
       return {
         winner: prevTurn,
         reason: ResultReasonEnum.KING_EXPLODED
       };
     }
 
-    if ((this.isMonsterChess || this.isDarkChess) && !this.isAntichess && !this.areKingsOnTheBoard(this.turn)) {
+    if ((this.isMonsterChess || this.isDarkChess) && !this.isAntichess && !this.areKingsOnTheBoard(currentTurn)) {
       return {
         winner: prevTurn,
         reason: ResultReasonEnum.KING_CAPTURED
       };
     }
 
-    if ((this.isHorde || this.isAmazons) && this.turn === ColorEnum.WHITE && this.isNoPieces(ColorEnum.WHITE)) {
+    if (this.isMonsterChess && !this.areKingsOnTheBoard(nextTurn)) {
+      return {
+        winner: currentTurn,
+        reason: ResultReasonEnum.KING_CAPTURED
+      };
+    }
+
+    if ((this.isHorde || this.isAmazons) && currentTurn === ColorEnum.WHITE && this.isNoPieces(ColorEnum.WHITE)) {
       return {
         winner: prevTurn,
         reason: this.isHorde

@@ -1,18 +1,19 @@
 import * as _ from 'lodash';
 import moment = require('moment');
 import * as React from 'react';
+import classNames from 'classnames';
 
 import {
   ColorEnum,
   Piece as IPiece,
   PieceLocationEnum,
-  PiecePocketLocation,
   PieceTypeEnum,
   Player,
   PocketPiece,
   RealPieceLocation,
   TimeControl
 } from '../../../types';
+import { COLOR_NAMES } from '../../../shared/constants';
 import { Game } from '../../helpers';
 
 import Piece from '../Piece';
@@ -21,6 +22,7 @@ import PlayerPocket from '../PlayerPocket';
 interface OwnProps {
   game: Game;
   player: Player;
+  playingPlayer: Player | null;
   pocket: PocketPiece[];
   timePassedSinceLastMove: number;
   timeControl: TimeControl;
@@ -43,18 +45,23 @@ const ONE_HOUR = 60 * 60 * 1000;
 const ONE_DAY = 24 * ONE_HOUR;
 
 export default class RightPanelPlayer extends React.Component<Props> {
-  getTimeString(): string {
+  getTime(): number {
     const {
       player,
       timePassedSinceLastMove,
       realTurn
     } = this.props;
-    const time = Math.max(
+
+    return Math.max(
       player.color === realTurn
         ? player.time! - timePassedSinceLastMove
         : player.time!,
       0
     );
+  }
+
+  getTimeString(): string {
+    const time = this.getTime();
     const duration = moment.duration(time);
 
     if (time >= ONE_DAY) {
@@ -76,31 +83,15 @@ export default class RightPanelPlayer extends React.Component<Props> {
     return `${minutes}:${seconds}`;
   }
 
-  onPocketPieceClick(location: PiecePocketLocation) {
-    const {
-      game,
-      player,
-      selectPiece,
-      selectedPiece
-    } = this.props;
-
-    if (
-      selectedPiece
-      && selectedPiece.location.pieceType === location.pieceType
-    ) {
-      selectPiece(null);
-    } else {
-      selectPiece(game.getPocketPiece(location.pieceType, player.color));
-    }
-  }
-
   render() {
     const {
       game,
       player,
+      playingPlayer,
       pocket,
       enableClick,
       enableDnd,
+      realTurn,
       selectedPiece,
       timeControl,
       isTop,
@@ -109,6 +100,8 @@ export default class RightPanelPlayer extends React.Component<Props> {
       selectPiece,
       startDraggingPiece
     } = this.props;
+    const active = player.color === realTurn;
+    const time = this.getTime();
     const elements: JSX.Element[] = [];
 
     if (game.needToCalculateMaterialDifference) {
@@ -175,14 +168,34 @@ export default class RightPanelPlayer extends React.Component<Props> {
 
     if (timeControl) {
       elements.push(
-        <div key="timer" className="timer">
+        <div
+          key="timer"
+          className={classNames('timer', {
+            low: 6 * time <= timeControl.base,
+            critical: 12 * time <= timeControl.base
+          })}
+        >
           {this.getTimeString()}
+        </div>
+      );
+    } else {
+      elements.push(
+        <div key="turn" className="turn">
+          {
+            active
+              ? playingPlayer
+                ? player.login === playingPlayer.login
+                  ? 'Your turn'
+                  : 'Waiting for the opponent'
+                : `${COLOR_NAMES[player.color]} to move`
+              : '\u00a0'
+          }
         </div>
       );
     }
 
     elements.push(
-      <div key="login">
+      <div key="login" className="login">
         {player.login}
       </div>
     );
@@ -192,7 +205,7 @@ export default class RightPanelPlayer extends React.Component<Props> {
     }
 
     return (
-      <div className="player">
+      <div className={classNames('player', { active, top: isTop })}>
         {elements}
       </div>
     );

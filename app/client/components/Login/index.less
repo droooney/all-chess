@@ -1,5 +1,13 @@
 @import (reference) '../../styles/mixins';
 
 .route.login-route {
-  .flex-col(center);
+  .flex-col();
+
+  .login-form {
+    .flex-col-stretch();
+
+    .MuiFormControl-root {
+      margin-bottom: 6px;
+    }
+  }
 }

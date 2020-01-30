@@ -1,4 +1,4 @@
-import { CustomThunkAction } from 'redux-thunk';
+import { CustomThunkAction } from '../store';
 
 import {
   GameSettings

@@ -11,6 +11,8 @@ import { Game } from '../../helpers';
 import Boards from '../Boards';
 import MovesPanel from '../MovesPanel';
 
+import './index.less';
+
 interface OwnProps {
   id: string;
   description: string | JSX.Element;
@@ -67,27 +69,25 @@ export default class GameRulesExample extends React.Component<Props> {
 
     return (
       <div className="game-rules-example" id={`example-${id}`}>
-        <div className="boards-description-container">
-          <Boards
-            game={this.game}
-            player={null}
-            selectedPiece={null}
-            selectPiece={() => {}}
-            startDraggingPiece={() => {}}
-            makeMove={() => {}}
-            enableClick={false}
-            enableDnd={false}
-            darkChessMode={null}
-            isBlackBase={false}
-            isDragging={false}
-            currentMove={this.game.moves[this.game.currentMoveIndex]}
-            squareSize={this.game.getSquareSize() / 2}
-            boardsShiftX={0}
-            pieces={this.game.pieces}
-          />
-          <div className="description">
-            {description}
-          </div>
+        <Boards
+          game={this.game}
+          player={null}
+          selectedPiece={null}
+          selectPiece={() => {}}
+          startDraggingPiece={() => {}}
+          makeMove={() => {}}
+          enableClick={false}
+          enableDnd={false}
+          darkChessMode={null}
+          isBlackBase={false}
+          isDragging={false}
+          currentMove={this.game.moves[this.game.currentMoveIndex]}
+          squareSize={this.game.getSquareSize() / 2}
+          boardsShiftX={0}
+          pieces={this.game.pieces}
+        />
+        <div className="description">
+          {description}
         </div>
         {moves && (
           <MovesPanel
