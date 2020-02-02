@@ -997,7 +997,7 @@ export class Game implements IGame {
 
     if (startingData.possibleEnPassant) {
       const { x, y } = startingData.possibleEnPassant.pieceLocation;
-      const enPassantPiece = _.find(pieces, (piece) => (
+      const enPassantPiece = pieces.find((piece) => (
         Game.isPawn(piece)
         && piece.location.type === PieceLocationEnum.BOARD
         && piece.location.x === x
@@ -2020,8 +2020,8 @@ export class Game implements IGame {
 
       const newPieces = newVisiblePieces.map((piece) => {
         const isOwnPiece = piece.color === color;
-        const oldPiece = _.find(oldVisiblePieces, { realId: piece.id });
-        const prevPieceLocation = prevPieceLocations[_.findIndex(this.pieces, { id: piece.id })];
+        const oldPiece = oldVisiblePieces.find(({ realId }) => realId === piece.id);
+        const prevPieceLocation = prevPieceLocations[this.pieces.findIndex(({ id }) => id === piece.id)];
         const oldLocationVisible = (
           !!prevPieceLocation
           && prevPieceLocation.type === PieceLocationEnum.BOARD
@@ -2536,7 +2536,7 @@ export class Game implements IGame {
             : Game.isKnight(disappearedOrMovedPiece)
               ? [1, this.boardWidth - 2]
               : [2, this.boardWidth - 3];
-          const fileX = _.find(choicesX, (fileX) => (fileX + pieceRankY) % 2 === squareColor)!;
+          const fileX = choicesX.find((fileX) => (fileX + pieceRankY) % 2 === squareColor)!;
 
           newSquare = {
             x: fileX,
@@ -2970,7 +2970,7 @@ export class Game implements IGame {
   }
 
   getPocketPiece(type: PieceTypeEnum, color: ColorEnum): PocketPiece | null {
-    return _.find(this.pieces, (piece) => (
+    return this.pieces.find((piece) => (
       Game.isPocketPiece(piece)
       && piece.color === color
       && piece.location.pieceType === type
@@ -3000,7 +3000,7 @@ export class Game implements IGame {
           [CastlingTypeEnum.KING_SIDE]: _.last(rooksOnTheCastlingRank)!.location
         };
       } else if (rooksOnTheCastlingRank.length === 1) {
-        const kingOnTheCastlingRank = _.find(this.startingData.pieces, (piece) => (
+        const kingOnTheCastlingRank = this.startingData.pieces.find((piece) => (
           piece.color === color
           && Game.isKing(piece)
           && piece.location.type === PieceLocationEnum.BOARD

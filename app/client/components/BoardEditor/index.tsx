@@ -6,6 +6,7 @@ import { RouteComponentProps } from 'react-router-dom';
 import { Game } from '../../helpers';
 import { Game as BaseGame } from '../../../shared/helpers';
 import {
+  BoardPiece,
   GameVariantEnum,
   Piece,
   PieceLocationEnum,
@@ -219,6 +220,15 @@ class BoardEditor extends React.Component<Props, State> {
     }
 
     this.game.pieces = pieces;
+
+    if (selectedPiece.location.type === PieceLocationEnum.BOARD) {
+      this.game.boards[selectedPiece.location.board][selectedPiece.location.y][selectedPiece.location.x] = null;
+    }
+
+    if (square) {
+      this.game.boards[square.board][square.y][square.x] = selectedPiece as BoardPiece;
+    }
+
     (selectedPiece as Piece).location = square && {
       ...square,
       type: PieceLocationEnum.BOARD
