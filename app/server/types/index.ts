@@ -4,9 +4,7 @@ import { UserModel } from '../db/models';
 
 export interface CustomState {
   urlIndexGroups: string[];
-  urlKeyGroups?: {
-    [key: string]: string;
-  };
+  urlKeyGroups?: Record<string, string>;
   session?: Express.Session;
   user?: UserModel;
   success(value?: any): void;

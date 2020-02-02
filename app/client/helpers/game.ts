@@ -159,7 +159,9 @@ export class Game extends GameHelper {
         this.updateGame();
       });
 
-      socket.on('gameOver', (result) => {
+      socket.on('gameOver', ({ result, players }) => {
+        this.players = players;
+
         this.end(result.winner, result.reason);
         this.updateGame();
       });
@@ -494,10 +496,10 @@ export class Game extends GameHelper {
 
     this.turn = this.getNextTurn();
     this.visiblePieces[this.darkChessMode!] = move.pieces as any;
-    this.movesCount++;
+    this.pliesCount++;
 
     return () => {
-      this.movesCount--;
+      this.pliesCount--;
       this.visiblePieces[this.darkChessMode!] = oldPieces as any;
       this.turn = oldTurn;
 

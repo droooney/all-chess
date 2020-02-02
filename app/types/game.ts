@@ -76,7 +76,6 @@ export interface StartingData {
   possibleEnPassant: PossibleEnPassant | null;
   checksCount: ChecksCount;
   pieces: readonly RealPiece[];
-  emptySquares: readonly Square[];
 }
 
 export interface Piece {
@@ -125,6 +124,8 @@ export type RealPieceLocation = PieceBoardLocation | PiecePocketLocation;
 
 export type PieceLocation = null | RealPieceLocation;
 
+export type Boards = (BoardPiece | null)[][][];
+
 export type GameKings = Record<ColorEnum, Piece[]>;
 
 export interface TakebackRequest {
@@ -171,13 +172,18 @@ export interface DarkChessGameInitialData {
   game: DarkChessGame;
 }
 
-export type PGNTags = {
-  [tag: string]: string;
-};
+export type PGNTags = Record<string, string>;
 
 export interface GameCreateSettings {
   timeControl: TimeControl;
   variants: readonly GameVariantEnum[];
+}
+
+export interface GameCreateOptions extends GameCreateSettings {
+  id: string;
+  pgnTags?: PGNTags;
+  startingData?: StartingData;
+  startingFen?: string;
 }
 
 export enum GameVariantEnum {
@@ -261,6 +267,14 @@ export interface PossibleMove {
 
 export interface BoardPossibleMove extends PossibleMove {
   realSquare: Square;
+}
+
+export enum GetPossibleMovesMode {
+  FOR_MOVE = 'FOR_MOVE',
+  ATTACKED = 'ATTACKED',
+  CONTROLLED = 'CONTROLLED',
+  VISIBLE = 'VISIBLE',
+  POSSIBLE = 'POSSIBLE'
 }
 
 export enum GameStatusEnum {

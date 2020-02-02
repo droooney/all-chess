@@ -2,9 +2,7 @@ declare module 'gulp-run' {
   import { Duplex } from 'stream';
 
   interface GulpRunOptions {
-    env?: {
-      [param: string]: string;
-    };
+    env?: Record<string, string>;
     cwd?: string;
     silent?: boolean;
     verbosity?: 0 | 1 | 2 | 3;

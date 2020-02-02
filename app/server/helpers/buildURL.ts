@@ -5,9 +5,7 @@ export interface BuildURLOptions {
   protocol: string;
   host: string;
   path: string;
-  query?: {
-    [key: string]: string;
-  };
+  query?: Record<string, string>;
 }
 
 export function buildURL(options: BuildURLOptions): string {

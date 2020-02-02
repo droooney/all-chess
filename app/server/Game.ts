@@ -457,7 +457,9 @@ export default class Game extends GameHelper {
       });
     }
 
-    this.updatePlayers();
+    if (!this.isOngoing()) {
+      this.updatePlayers();
+    }
 
     if (isPlayerChanged) {
       this.setTimeout();
@@ -518,9 +520,6 @@ export default class Game extends GameHelper {
       this.clearTimeout();
 
       this.timerTimeout = setTimeout(() => {
-        player.time = 0;
-
-        this.updatePlayers();
         this.end(this.getOpponentColor(), ResultReasonEnum.TIME_RAN_OUT);
       }, player.time!) as any;
     }
@@ -534,10 +533,19 @@ export default class Game extends GameHelper {
       reason === ResultReasonEnum.RESIGN
       || reason === ResultReasonEnum.AGREED_TO_DRAW
       || reason === ResultReasonEnum.TIME_RAN_OUT
-      || reason === ResultReasonEnum.THREEFOLD_REPETITION
-      || reason === ResultReasonEnum.FIFTY_MOVE_RULE
     ) {
-      this.io.emit('gameOver', this.result!);
+      const player = this.players[this.turn];
+
+      if (reason === ResultReasonEnum.TIME_RAN_OUT) {
+        player.time = 0;
+      } else if (this.timeControl && this.timerTimeout) {
+        player.time! -= Date.now() - this.lastMoveTimestamp;
+      }
+
+      this.io.emit('gameOver', {
+        result: this.result!,
+        players: this.players
+      });
     }
 
     if (this.isDarkChess) {

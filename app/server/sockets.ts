@@ -6,7 +6,7 @@ import { sessionMiddleware } from './controllers/session';
 import Game from './Game';
 
 const gameList: Game[] = [];
-const gameMap: { [gameId: string]: Game } = {};
+const gameMap: Record<string, Game> = {};
 
 games.use(async (socket, next) => {
   try {

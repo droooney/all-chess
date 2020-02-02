@@ -26,7 +26,10 @@ declare global {
       lastMoveTimestamp: number;
     };
     drawOffered: ColorEnum;
-    gameOver: GameResult;
+    gameOver: {
+      result: GameResult;
+      players: GamePlayers;
+    };
     darkChessMoves: Move[];
     startGame: GamePlayers;
     updatePlayers: GamePlayers;

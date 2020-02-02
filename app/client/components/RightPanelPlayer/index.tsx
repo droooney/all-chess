@@ -99,7 +99,7 @@ export default class RightPanelPlayer extends React.Component<Props> {
       selectPiece,
       startDraggingPiece
     } = this.props;
-    const active = player.color === realTurn;
+    const active = player.color === realTurn && game.isOngoing();
     const time = this.getTime();
     const elements: JSX.Element[] = [];
 
