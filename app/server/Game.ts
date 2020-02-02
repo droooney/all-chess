@@ -358,33 +358,40 @@ export default class Game extends GameHelper {
     this.io.emit('newChatMessage', chatMessage);
   }
 
-  validateMove(move: any): boolean {
-    return !!(
-      move
-      && move.from
-      && move.to
-      && typeof move.to.board === 'number'
-      && typeof move.to.y === 'number'
-      && typeof move.to.x === 'number'
-      && ((
-        move.from.type === PieceLocationEnum.POCKET
-        && this.isPocketUsed
-      ) || (
-        move.from.type === PieceLocationEnum.BOARD
-        && typeof move.from.board === 'number'
-        && typeof move.from.y === 'number'
-        && typeof move.from.x === 'number'
-        && !this.isNullSquare(move.from)
-      ))
-    );
+  clearTimeout() {
+    clearTimeout(this.timerTimeout);
   }
 
-  validateTakebackRequest(moveIndex: any): boolean {
-    return (
-      typeof moveIndex === 'number'
-      && moveIndex < this.moves.length - 1
-      && (!!this.moves[moveIndex] || moveIndex === -1)
-    );
+  end(winner: ColorEnum | null, reason: ResultReasonEnum) {
+    super.end(winner, reason);
+
+    // anything that client can't recognize
+    if (
+      reason === ResultReasonEnum.RESIGN
+      || reason === ResultReasonEnum.AGREED_TO_DRAW
+      || reason === ResultReasonEnum.TIME_RAN_OUT
+    ) {
+      const player = this.players[this.turn];
+
+      if (reason === ResultReasonEnum.TIME_RAN_OUT) {
+        player.time = 0;
+      } else if (this.timeControl && this.timerTimeout) {
+        player.time! -= Date.now() - this.lastMoveTimestamp;
+      }
+
+      this.io.emit('gameOver', {
+        result: this.result!,
+        players: this.players
+      });
+    }
+
+    if (this.isDarkChess) {
+      setTimeout(() => {
+        this.io.emit('darkChessMoves', this.moves);
+      }, 0);
+    }
+
+    this.clearTimeout();
   }
 
   move(player: Player, moveForServer: BaseMove) {
@@ -469,6 +476,40 @@ export default class Game extends GameHelper {
     }
   }
 
+  setTimeout() {
+    if (
+      this.isOngoing()
+      && this.moves.length >= this.pliesPerMove
+      && this.timeControl
+    ) {
+      const player = this.players[this.turn];
+
+      this.clearTimeout();
+
+      this.timerTimeout = setTimeout(() => {
+        this.end(this.getOpponentColor(), ResultReasonEnum.TIME_RAN_OUT);
+      }, player.time!) as any;
+    }
+  }
+
+  toJSON(): IGame {
+    return _.pick(this, [
+      'id',
+      'startingData',
+      'variants',
+      'status',
+      'players',
+      'result',
+      'timeControl',
+      'pgnTags',
+      'drawOffer',
+      'takebackRequest',
+      'lastMoveTimestamp',
+      'moves',
+      'chat'
+    ]);
+  }
+
   updatePlayers() {
     this.io.emit('updatePlayers', this.players);
   }
@@ -508,73 +549,32 @@ export default class Game extends GameHelper {
     }
   }
 
-  clearTimeout() {
-    clearTimeout(this.timerTimeout);
+  validateMove(move: any): boolean {
+    return !!(
+      move
+      && move.from
+      && move.to
+      && typeof move.to.board === 'number'
+      && typeof move.to.y === 'number'
+      && typeof move.to.x === 'number'
+      && ((
+        move.from.type === PieceLocationEnum.POCKET
+        && this.isPocketUsed
+      ) || (
+        move.from.type === PieceLocationEnum.BOARD
+        && typeof move.from.board === 'number'
+        && typeof move.from.y === 'number'
+        && typeof move.from.x === 'number'
+        && !this.isNullSquare(move.from)
+      ))
+    );
   }
 
-  setTimeout() {
-    if (
-      this.isOngoing()
-      && this.moves.length >= this.pliesPerMove
-      && this.timeControl
-    ) {
-      const player = this.players[this.turn];
-
-      this.clearTimeout();
-
-      this.timerTimeout = setTimeout(() => {
-        this.end(this.getOpponentColor(), ResultReasonEnum.TIME_RAN_OUT);
-      }, player.time!) as any;
-    }
-  }
-
-  end(winner: ColorEnum | null, reason: ResultReasonEnum) {
-    super.end(winner, reason);
-
-    // anything that client can't recognize
-    if (
-      reason === ResultReasonEnum.RESIGN
-      || reason === ResultReasonEnum.AGREED_TO_DRAW
-      || reason === ResultReasonEnum.TIME_RAN_OUT
-    ) {
-      const player = this.players[this.turn];
-
-      if (reason === ResultReasonEnum.TIME_RAN_OUT) {
-        player.time = 0;
-      } else if (this.timeControl && this.timerTimeout) {
-        player.time! -= Date.now() - this.lastMoveTimestamp;
-      }
-
-      this.io.emit('gameOver', {
-        result: this.result!,
-        players: this.players
-      });
-    }
-
-    if (this.isDarkChess) {
-      setTimeout(() => {
-        this.io.emit('darkChessMoves', this.moves);
-      }, 0);
-    }
-
-    this.clearTimeout();
-  }
-
-  toJSON(): IGame {
-    return _.pick(this, [
-      'id',
-      'startingData',
-      'variants',
-      'status',
-      'players',
-      'result',
-      'timeControl',
-      'pgnTags',
-      'drawOffer',
-      'takebackRequest',
-      'lastMoveTimestamp',
-      'moves',
-      'chat'
-    ]);
+  validateTakebackRequest(moveIndex: any): boolean {
+    return (
+      typeof moveIndex === 'number'
+      && moveIndex < this.moves.length - 1
+      && (!!this.moves[moveIndex] || moveIndex === -1)
+    );
   }
 }
