@@ -379,11 +379,13 @@ export class Game extends GameResultUtils implements IGame {
   }
 
   static validateStartingData(startingData: StartingData, variants: readonly GameVariantEnum[]): void {
-    const isTwoFamilies = variants.includes(GameVariantEnum.TWO_FAMILIES);
-    const isAliceChess = variants.includes(GameVariantEnum.ALICE_CHESS);
-    const isHorde = variants.includes(GameVariantEnum.HORDE);
-    const isAntichess = variants.includes(GameVariantEnum.ANTICHESS);
-    const isHexagonalChess = variants.includes(GameVariantEnum.HEXAGONAL_CHESS);
+    const {
+      isAliceChess,
+      isAntichess,
+      isHexagonalChess,
+      isHorde,
+      isTwoFamilies
+    } = Game.getVariantsInfo(variants);
     const middleFile = 5;
 
     if (isAliceChess) {

@@ -777,6 +777,27 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     return possibleMoves;
   }
 
+  isMoveAllowed(piece: RealPiece, move: PossibleMove): boolean {
+    if (this.isAntichess) {
+      return !this.hasCapturePieces(piece.color) || !!move.capture;
+    }
+
+    if (this.isLeftInCheckAllowed && !this.isAtomic) {
+      return true;
+    }
+
+    const { allowed, revertMove } = this.performMove({
+      from: piece.location,
+      to: move.square,
+      duration: 0,
+      promotion: PieceTypeEnum.QUEEN
+    }, { checkIfAllowed: true });
+
+    revertMove();
+
+    return allowed;
+  }
+
   isNoMoves(): boolean {
     return this.getPieces(this.turn).every((piece) => (
       this.getAllowedMoves(piece).length === 0

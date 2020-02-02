@@ -1,15 +1,16 @@
 import * as _ from 'lodash';
 import { Namespace } from 'socket.io';
+
 import {
   BaseMove,
   ChatMessage,
   ColorEnum,
   Game as IGame,
-  GameCreateSettings,
+  GameCreateOptions,
   GameStatusEnum,
   GameVariantEnum,
+  GetPossibleMovesMode,
   Move,
-  PGNTags,
   PieceLocationEnum,
   Player,
   ResultReasonEnum,
@@ -24,7 +25,7 @@ import {
   POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS
 } from '../shared/constants';
 
-const VARIANTS = _.keys(GameVariantEnum);
+const VARIANTS = _.values(GameVariantEnum);
 
 export default class Game extends GameHelper {
   static validateSettings(settings: any): boolean {
@@ -82,8 +83,8 @@ export default class Game extends GameHelper {
   io: Namespace;
   lastMoveTimestamp: number = Date.now();
 
-  constructor(io: Namespace, settings: GameCreateSettings & { pgnTags?: PGNTags; id: string; }) {
-    super(settings);
+  constructor(io: Namespace, options: GameCreateOptions) {
+    super(options);
 
     this.io = io;
 
@@ -405,13 +406,15 @@ export default class Game extends GameHelper {
       return;
     }
 
-    const allowedMoves = this.getAllowedMoves(piece).filter(({ square }) => Game.areSquaresEqual(square, toLocation));
+    const possibleMoves = this
+      .getPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE)
+      .filter(({ square }) => Game.areSquaresEqual(square, toLocation));
 
-    if (!allowedMoves.length) {
+    if (!possibleMoves.length || !this.isMoveAllowed(piece, possibleMoves[0])) {
       return;
     }
 
-    const isPawnPromotion = allowedMoves.some(({ isPawnPromotion }) => isPawnPromotion);
+    const isPawnPromotion = possibleMoves[0].isPawnPromotion;
 
     if (isPawnPromotion && !this.validPromotions.includes(promotion!)) {
       return;
