@@ -320,7 +320,7 @@ class BoardEditor extends React.Component<Props, State> {
           pieces={this.game.pieces}
           showKingAttack={false}
           forceMoveWithClick
-          getAllowedMoves={() => []}
+          getAllowedMoves={function* () {}}
         />
 
         {isDragging && selectedPiece && (

@@ -289,7 +289,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
 
   abstract boards: Boards;
 
-  abstract getPossibleMoves(piece: RealPiece, move: GetPossibleMovesMode): PossibleMove[];
+  abstract getFilteredPossibleMoves(piece: RealPiece, move: GetPossibleMovesMode): Generator<PossibleMove>;
 
   kings: GameKings = {
     [ColorEnum.WHITE]: [],
@@ -357,7 +357,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
 
   hasCapturePieces(color: ColorEnum): boolean {
     return this.getPieces(color).some((piece) => (
-      this.getPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE).some(({ capture }) => !!capture)
+      this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE).any(({ capture }) => !!capture)
     ));
   }
 
@@ -365,10 +365,10 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
     return !this.getPieces(color).length;
   }
 
-  isParalysed(piece: RealPiece, possibleMoves?: PossibleMove[]): boolean {
+  isParalysed(piece: RealPiece): boolean {
     return (
       piece.location.type === PieceLocationEnum.BOARD
-      && (possibleMoves || this.getPossibleMoves(piece, GetPossibleMovesMode.POSSIBLE)).some(({ square }) => {
+      && this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.POSSIBLE).any(({ square }) => {
         const pieceInSquare = this.getBoardPiece(square);
 
         return (

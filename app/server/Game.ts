@@ -413,15 +413,15 @@ export default class Game extends GameHelper {
       return;
     }
 
-    const possibleMoves = this
-      .getPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE)
-      .filter(({ square }) => Game.areSquaresEqual(square, toLocation));
+    const possibleMove = this
+      .getFilteredPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE)
+      .find(({ square }) => Game.areSquaresEqual(square, toLocation));
 
-    if (!possibleMoves.length || !this.isMoveAllowed(piece, possibleMoves[0])) {
+    if (!possibleMove || !this.isMoveAllowed(piece, possibleMove)) {
       return;
     }
 
-    const isPawnPromotion = possibleMoves[0].isPawnPromotion;
+    const isPawnPromotion = possibleMove.isPawnPromotion;
 
     if (isPawnPromotion && !this.validPromotions.includes(promotion!)) {
       return;

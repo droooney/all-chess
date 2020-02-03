@@ -47,7 +47,7 @@ export interface OwnProps {
   showFantomPieces?: boolean;
   showKingAttack?: boolean;
   forceMoveWithClick?: boolean;
-  getAllowedMoves?(): BoardPossibleMove[];
+  getAllowedMoves?(): Generator<BoardPossibleMove>;
 }
 
 type Props = OwnProps & ReturnType<typeof mapStateToProps>;
@@ -79,7 +79,7 @@ class Boards extends React.Component<Props> {
     }
   }
 
-  getAllowedMoves(): BoardPossibleMove[] {
+  *getAllowedMoves(): Generator<BoardPossibleMove> {
     const {
       game,
       selectedPiece,
@@ -87,17 +87,16 @@ class Boards extends React.Component<Props> {
     } = this.props;
 
     if (getAllowedMoves) {
-      return getAllowedMoves();
+      yield* getAllowedMoves();
+
+      return;
     }
 
     if (!selectedPiece) {
-      return [];
+      return;
     }
 
-    return game.getAllowedMoves(selectedPiece).map((move) => ({
-      ...move,
-      realSquare: move.square
-    }));
+    yield* game.getAllowedMoves(selectedPiece).map((move) => ({ ...move, realSquare: move.square }));
   }
 
   getSquareParams(square: Square): CenterSquareParams {
@@ -162,9 +161,9 @@ class Boards extends React.Component<Props> {
       return selectPiece(null);
     }
 
-    const allowedMoves = this.getAllowedMoves().filter(({ square: allowedSquare }) => Game.areSquaresEqual(square, allowedSquare));
+    const allowedMove = this.getAllowedMoves().find(({ square: allowedSquare }) => Game.areSquaresEqual(square, allowedSquare));
 
-    if (!allowedMoves.length && !forceMoveWithClick) {
+    if (!allowedMove && !forceMoveWithClick) {
       const pieceInSquare = game.getBoardPiece(square);
 
       if (!pieceInSquare || playerColor !== pieceInSquare.color) {
@@ -226,7 +225,7 @@ class Boards extends React.Component<Props> {
         : squareSize
     ) * 0.25);
     const literalMargin = literalFontSize / 3;
-    const allowedMoves = this.getAllowedMoves();
+    const allowedMoves = this.getAllowedMoves().toArray();
     const visibleSquares = isDarkChess && darkChessMode ? game.getVisibleSquares(darkChessMode) : [];
     const boardPieces = pieces.filter(Game.isBoardPiece);
     const isHiddenSquare = (square: Square): boolean => (

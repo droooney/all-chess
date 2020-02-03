@@ -199,37 +199,35 @@ export default class Game extends React.Component<Props, State> {
     });
   };
 
-  getAllowedMoves = (): BoardPossibleMove[] => {
+  getAllowedMoves = function* (this: Game): Generator<BoardPossibleMove, any, any> {
     const {
       selectedPiece
     } = this.state;
 
     if (!selectedPiece) {
-      return [];
+      return;
     }
 
-    const allowedMoves = this.game!.getAllowedMoves(selectedPiece).map((move) => ({
-      ...move,
-      realSquare: move.square
-    }));
+    const allowedMoves = this.game!
+      .getAllowedMoves(selectedPiece)
+      .map((move) => ({ ...move, realSquare: move.square }))
+      .toArray();
+
+    yield* allowedMoves;
 
     // add own rooks as castling move targets
     if (!this.game!.is960) {
-      [...allowedMoves].forEach(({ square, castling }) => {
-        if (castling) {
-          allowedMoves.push({
-            square: castling.rook.location,
-            realSquare: square,
-            capture: null,
-            castling,
-            isPawnPromotion: false
-          });
+      for (const move of allowedMoves) {
+        if (move.castling) {
+          yield {
+            ...move,
+            square: move.castling.rook.location,
+            realSquare: move.square
+          };
         }
-      });
+      }
     }
-
-    return allowedMoves;
-  };
+  }.bind(this);
 
   makeMove = (square: Square, isDndMove: boolean) => {
     const {
@@ -244,22 +242,22 @@ export default class Game extends React.Component<Props, State> {
       return;
     }
 
-    const allowedMoves = this.getAllowedMoves().filter(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
+    const allowedMove = this.getAllowedMoves().find(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
 
     this.selectPiece(null);
 
-    if (!allowedMoves.length) {
+    if (!allowedMove) {
       return;
     }
 
     const move = {
       from: selectedPiece.location,
-      to: allowedMoves[0].realSquare
+      to: allowedMove.realSquare
     };
 
     this.selectPiece(null);
 
-    if (allowedMoves.some(({ isPawnPromotion }) => isPawnPromotion)) {
+    if (allowedMove.isPawnPromotion) {
       this.setState({
         promotionModalVisible: true,
         promotionMove: move
@@ -298,7 +296,7 @@ export default class Game extends React.Component<Props, State> {
       && draggedPiece.color === this.player!.color
       && (
         !GameHelper.isBoardPiece(draggedPiece)
-        || this.getAllowedMoves().every(({ square }) => !GameHelper.areSquaresEqual(draggedPiece.location, square))
+        || this.getAllowedMoves().all(({ square }) => !GameHelper.areSquaresEqual(draggedPiece.location, square))
       )
     ) {
       this.dragX = e.pageX;

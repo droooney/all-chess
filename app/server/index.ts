@@ -1,3 +1,5 @@
+import '../shared/plugins';
+
 import server from './server';
 import config from './config';
 

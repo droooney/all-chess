@@ -329,7 +329,7 @@ export class Game extends GameResultUtils implements IGame {
                 && (!fromFileLiteral || piece.location.x === fromFile)
                 && (!fromRankLiteral || piece.location.x === fromRank)
               ))
-              && game.getAllowedMoves(piece).some(({ square }) => Game.areSquaresEqual(square, toSquare))
+              && game.getAllowedMoves(piece).any(({ square }) => Game.areSquaresEqual(square, toSquare))
             );
           });
 
@@ -350,7 +350,9 @@ export class Game extends GameResultUtils implements IGame {
           to: toSquare,
           duration: 0
         };
-        const isPawnPromotion = game.getAllowedMoves(piece).some(({ isPawnPromotion }) => isPawnPromotion);
+        const isPawnPromotion = game.getAllowedMoves(piece).any(({ square, isPawnPromotion }) => (
+          isPawnPromotion && Game.areSquaresEqual(square, toSquare)
+        ));
 
         if (isPawnPromotion) {
           const promotionMatch = moveString.slice(moveSquares.length).match(PGN_PROMOTION_REGEX);

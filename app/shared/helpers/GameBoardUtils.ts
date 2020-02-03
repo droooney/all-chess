@@ -1,3 +1,5 @@
+/// <reference path="../../typings/generator.d.ts"/>
+
 import * as _ from 'lodash';
 
 import GamePieceUtils from './GamePieceUtils';
@@ -198,7 +200,9 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     return this.getPieces(forColor)
       .filter(GameBoardUtils.isBoardPiece)
       .reduce((squares, piece) => {
-        let newSquares = this.getPossibleMoves(piece, GetPossibleMovesMode.VISIBLE).map(({ square }) => square);
+        let newSquares = this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.VISIBLE)
+          .map(({ square }) => square)
+          .toArray();
 
         if (this.isAliceChess) {
           _.times(this.boardCount - 1, (board) => {
@@ -222,9 +226,18 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
   isAttackedByOpponentPiece(square: Square, opponentColor: ColorEnum): boolean {
     return this.getPieces(opponentColor).some((piece) => (
       GameBoardUtils.isBoardPiece(piece)
-      && this.getPossibleMoves(piece, GetPossibleMovesMode.ATTACKED).some(({ square: possibleSquare }) => (
+      && this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.ATTACKED).any(({ square: possibleSquare }) => (
         GameBoardUtils.areSquaresEqual(possibleSquare, square)
       ))
+    ));
+  }
+
+  isAvailableSquare(square: Square): boolean {
+    return !this.isAliceChess || _.times(this.boardCount - 1).every((board) => (
+      !this.getBoardPiece({
+        ...square,
+        board: this.getNextBoard(square.board + board)
+      })
     ));
   }
 
@@ -256,7 +269,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
   isPatrolledByFriendlyPiece(square: Square, color: ColorEnum): boolean {
     return this.getPieces(color).some((piece) => (
       GameBoardUtils.isBoardPiece(piece)
-      && this.getPossibleMoves(piece, GetPossibleMovesMode.CONTROLLED).some(({ square: sq }) => (
+      && this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.CONTROLLED).any(({ square: sq }) => (
         GameBoardUtils.areSquaresEqual(sq, square)
       ))
     ));

@@ -1,4 +1,5 @@
 import '@babel/polyfill';
+import '../shared/plugins';
 
 import * as React from 'react';
 import { render } from 'react-dom';
