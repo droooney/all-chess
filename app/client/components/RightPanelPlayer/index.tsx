@@ -6,7 +6,6 @@ import classNames from 'classnames';
 import {
   ColorEnum,
   Piece as IPiece,
-  PieceLocationEnum,
   PieceTypeEnum,
   Player,
   PocketPiece,
@@ -16,6 +15,7 @@ import {
 } from '../../../types';
 import { COLOR_NAMES } from '../../../shared/constants';
 import { Game } from '../../helpers';
+import { pocketPieces } from '../../constants';
 
 import Piece from '../Piece';
 import PlayerPocket from '../PlayerPocket';
@@ -119,18 +119,14 @@ export default class RightPanelPlayer extends React.Component<Props> {
 
             count = Math.abs(count);
 
+            const pocketPiece = pocketPieces[player.color][pieceType as PieceTypeEnum];
+
             return (
               <div className="piece-advantage" key={pieceType}>
                 <Piece
-                  piece={{
-                    color: player.color,
-                    type: pieceType as PieceTypeEnum,
-                    location: {
-                      type: PieceLocationEnum.POCKET,
-                      pieceType: pieceType as PieceTypeEnum,
-                      color: player.color
-                    }
-                  }}
+                  color={player.color}
+                  type={pocketPiece.type}
+                  location={pocketPiece.location}
                 />
                 {count > 1 && (
                   <span className="count">

@@ -1,4 +1,6 @@
-import { GameSettings } from '../../types';
+import * as _ from 'lodash';
+
+import { ColorEnum, GameSettings, PieceLocationEnum, PieceTypeEnum } from '../../types';
 
 export const GAME_DEFAULT_SETTINGS: { [key in keyof GameSettings]: GameSettings[key]; } = {
   showFantomPieces: true,
@@ -8,3 +10,15 @@ export const GAME_DEFAULT_SETTINGS: { [key in keyof GameSettings]: GameSettings[
 export const CIRCULAR_CHESS_EMPTY_CENTER_RATIO = 1 / 3;
 
 export const STANDARD_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+
+export const pocketPieces = _.mapValues(ColorEnum, (color) => (
+  _.mapValues(PieceTypeEnum, (pieceType) => ({
+    color,
+    type: pieceType,
+    location: {
+      type: PieceLocationEnum.POCKET as PieceLocationEnum.POCKET,
+      pieceType,
+      color
+    }
+  }))
+));

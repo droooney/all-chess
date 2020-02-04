@@ -11,7 +11,7 @@ interface OwnProps {
 
 type Props = OwnProps;
 
-export default class Knight extends React.Component<Props> {
+export default class Knight extends React.PureComponent<Props> {
   render() {
     const {
       color

@@ -265,11 +265,9 @@ class InfoActionsPanel extends React.Component<Props, State> {
         <i className="fa fa-retweet" />
         <div className="piece-container">
           <Piece
-            piece={{
-              color: isBlackBase ? ColorEnum.BLACK : ColorEnum.WHITE,
-              type: PieceTypeEnum.KING,
-              location: null!
-            }}
+            color={isBlackBase ? ColorEnum.BLACK : ColorEnum.WHITE}
+            type={PieceTypeEnum.KING}
+            location={null}
           />
         </div>
       </div>
@@ -316,11 +314,9 @@ class InfoActionsPanel extends React.Component<Props, State> {
           {showFantomPieces && (
             <div className="piece-container">
               <Piece
-                piece={{
-                  color: player ? player.color : ColorEnum.WHITE,
-                  type: PieceTypeEnum.KING,
-                  location: null!
-                }}
+                color={player ? player.color : ColorEnum.WHITE}
+                type={PieceTypeEnum.KING}
+                location={null}
                 className="fantom"
               />
             </div>
@@ -347,11 +343,9 @@ class InfoActionsPanel extends React.Component<Props, State> {
           {darkChessMode && (
             <div className="piece-container">
               <Piece
-                piece={{
-                  color: darkChessMode,
-                  type: PieceTypeEnum.KING,
-                  location: null!
-                }}
+                color={darkChessMode}
+                type={PieceTypeEnum.KING}
+                location={null}
               />
             </div>
           )}
@@ -366,11 +360,9 @@ class InfoActionsPanel extends React.Component<Props, State> {
           {showDarkChessHiddenPieces && (
             <div className="piece-container">
               <Piece
-                piece={{
-                  color: isBlackBase ? ColorEnum.WHITE : ColorEnum.BLACK,
-                  type: PieceTypeEnum.KING,
-                  location: null!
-                }}
+                color={isBlackBase ? ColorEnum.WHITE : ColorEnum.BLACK}
+                type={PieceTypeEnum.KING}
+                location={null}
               />
             </div>
           )}

@@ -68,6 +68,7 @@ export class Game extends GameHelper {
     return `${base} + ${increment}`;
   }
 
+  player?: Player | null;
   socket?: Socket;
   timeDiff = 0;
   moves: LocalMove[] = [];
@@ -98,6 +99,7 @@ export class Game extends GameHelper {
     this.players = game.players;
     this.currentMoveIndex = game.moves.length - 1;
     this.chat = game.chat;
+    this.player = player;
     this.socket = socket;
     this.isOngoingDarkChessGame = this.isDarkChess && this.status !== GameStatusEnum.FINISHED;
     this.showDarkChessHiddenPieces = !this.isOngoingDarkChessGame;

@@ -11,7 +11,7 @@ interface OwnProps {
 
 type Props = OwnProps;
 
-export default class Amazon extends React.Component<Props> {
+export default class Amazon extends React.PureComponent<Props> {
   render() {
     const {
       color

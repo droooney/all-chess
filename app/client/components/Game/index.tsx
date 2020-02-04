@@ -14,7 +14,7 @@ import {
   GameInitialData,
   GameStatusEnum,
   PieceLocationEnum,
-  PiecePocketLocation,
+  PieceTypeEnum,
   Player,
   PocketPiece,
   RealPiece,
@@ -33,8 +33,7 @@ import InfoActionsPanel from '../InfoActionsPanel';
 import Chat from '../Chat';
 import Boards from '../Boards';
 import GamePiece from '../GamePiece';
-import Piece from '../Piece';
-import Modal from '../Modal';
+import PromotionModal from '../PromotionModal';
 
 import './index.less';
 
@@ -235,16 +234,28 @@ export default class Game extends React.Component<Props, State> {
     } = this.state;
 
     if (!selectedPiece) {
+      this.setState({
+        isDragging: false
+      });
+
       return;
     }
 
     if (GameHelper.isBoardPiece(selectedPiece) && GameHelper.areSquaresEqual(selectedPiece.location, square)) {
+      this.setState({
+        isDragging: false,
+        selectedPiece: null
+      });
+
       return;
     }
 
     const allowedMove = this.getAllowedMoves().find(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
 
-    this.selectPiece(null);
+    this.setState({
+      isDragging: false,
+      selectedPiece: null
+    });
 
     if (!allowedMove) {
       return;
@@ -254,8 +265,6 @@ export default class Game extends React.Component<Props, State> {
       from: selectedPiece.location,
       to: allowedMove.realSquare
     };
-
-    this.selectPiece(null);
 
     if (allowedMove.isPawnPromotion) {
       this.setState({
@@ -278,15 +287,19 @@ export default class Game extends React.Component<Props, State> {
     });
   };
 
-  promoteToPiece = (location: PiecePocketLocation) => {
+  promoteToPiece = (pieceType: PieceTypeEnum) => {
     this.game!.move({
       ...this.state.promotionMove!,
-      promotion: location.pieceType
+      promotion: pieceType
     });
     this.closePromotionPopup();
   };
 
   startDraggingPiece = (e: React.MouseEvent, location: RealPieceLocation) => {
+    if (e.button !== 0) {
+      return;
+    }
+
     const draggedPiece = location.type === PieceLocationEnum.BOARD
       ? this.game!.getBoardPiece(location)
       : this.game!.getPocketPiece(location.pieceType, location.color);
@@ -327,10 +340,6 @@ export default class Game extends React.Component<Props, State> {
       return;
     }
 
-    this.setState({
-      isDragging: false
-    });
-
     if (
       !document.elementsFromPoint(e.pageX, e.pageY).some((element) => {
         try {
@@ -339,6 +348,10 @@ export default class Game extends React.Component<Props, State> {
             && GameHelper.isPocketPiece(this.state.selectedPiece)
             && (element as HTMLElement).dataset.pocketPiece === this.state.selectedPiece.location.pieceType
           ) {
+            this.setState({
+              isDragging: false
+            });
+
             return true;
           }
 
@@ -356,7 +369,10 @@ export default class Game extends React.Component<Props, State> {
         }
       })
     ) {
-      this.selectPiece(null);
+      this.setState({
+        isDragging: false,
+        selectedPiece: null
+      });
     }
   };
 
@@ -383,7 +399,6 @@ export default class Game extends React.Component<Props, State> {
           chat,
           turn,
           players,
-          validPromotions,
           isAliceChess,
           drawOffer,
           takebackRequest,
@@ -488,29 +503,12 @@ export default class Game extends React.Component<Props, State> {
               startDraggingPiece={this.startDraggingPiece}
             />
 
-            <Modal
+            <PromotionModal
+              game={this.game!}
               visible={this.state.promotionModalVisible}
               onOverlayClick={this.closePromotionPopup}
-              className="promotion-modal"
-            >
-              <div className="modal-content">
-                {validPromotions.map((pieceType) => (
-                  <Piece
-                    key={pieceType}
-                    piece={{
-                      type: pieceType,
-                      color: player ? player.color : ColorEnum.WHITE,
-                      location: {
-                        type: PieceLocationEnum.POCKET,
-                        pieceType,
-                        color: player ? player.color : ColorEnum.WHITE
-                      }
-                    }}
-                    onClick={this.promoteToPiece}
-                  />
-                ))}
-              </div>
-            </Modal>
+              promoteToPiece={this.promoteToPiece}
+            />
 
             {isDragging && selectedPiece && (
               <FixedElement>

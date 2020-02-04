@@ -88,12 +88,12 @@ export default class BoardPiece extends React.Component<Props> {
           : height - centerY
       ) - pieceSize / 2;
     } else {
-      translateX = game.adjustFileX(
-        boardsShiftX + (
-          isBlackBase
-            ? game.boardWidth - 1 - pieceX
-            : pieceX
-        )
+      const renderedFileX = game.adjustFileX(pieceX + (isBlackBase ? -boardsShiftX : boardsShiftX));
+
+      translateX = (
+        isBlackBase
+          ? game.boardWidth - 1 - renderedFileX
+          : renderedFileX
       ) * squareSize;
       translateY = (
         isBlackBase

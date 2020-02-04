@@ -4,12 +4,12 @@ import classNames from 'classnames';
 import {
   ColorEnum,
   Piece as IPiece,
-  PieceLocationEnum,
   PiecePocketLocation,
   PocketPiece,
   RealPieceLocation
 } from '../../../types';
 import { Game } from '../../helpers';
+import { pocketPieces } from '../../constants';
 
 import Piece from '../Piece';
 
@@ -57,13 +57,14 @@ export default class PlayerPocket extends React.Component<Props> {
 
     return (
       <div key="pocket" className="pocket">
-        {game.pocketPiecesUsed.map((type) => {
-          const pieces = pocket.filter(({ type: pieceType }) => pieceType === type);
+        {game.pocketPiecesUsed.map((pieceType) => {
+          const pieces = pocket.filter(({ type }) => pieceType === type);
+          const piece = pieces.length ? pieces[0] : pocketPieces[color][pieceType];
 
           return (
             <div
-              key={type}
-              data-pocket-piece={type}
+              key={pieceType}
+              data-pocket-piece={pieceType}
               className={classNames('piece-container', {
                 disabled: !pieces.length
               })}
@@ -72,7 +73,7 @@ export default class PlayerPocket extends React.Component<Props> {
             >
               {
                 selectedPiece
-                && selectedPiece.location.pieceType === type
+                && selectedPiece.location.pieceType === pieceType
                 && selectedPiece.location.color === color
                 && (
                   <div className="selected-square" />
@@ -80,16 +81,10 @@ export default class PlayerPocket extends React.Component<Props> {
               }
 
               <Piece
-                key={type}
-                piece={pieces.length ? pieces[0] : {
-                  color,
-                  type,
-                  location: {
-                    type: PieceLocationEnum.POCKET,
-                    pieceType: type,
-                    color
-                  }
-                }}
+                key={pieceType}
+                color={piece.color}
+                type={piece.type}
+                location={piece.location}
               />
 
               {!!pieces.length && (

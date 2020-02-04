@@ -1,7 +1,7 @@
 import * as React from 'react';
 import classNames from 'classnames';
 
-import Modal, { OwnProps as ModalProps } from '../Modal';
+import Modal, { ModalProps } from '../Modal';
 
 import './index.less';
 
@@ -11,13 +11,13 @@ interface Choice {
   className?: string;
 }
 
-interface OwnProps extends ModalProps {
+interface OwnProps {
   question: React.ReactNode;
   choices: Choice[];
   onChoose(key: string): void;
 }
 
-type Props = OwnProps;
+type Props = OwnProps & ModalProps;
 
 export default class Dialog extends React.Component<Props> {
   render() {

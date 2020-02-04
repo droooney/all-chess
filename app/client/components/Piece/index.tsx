@@ -2,9 +2,9 @@ import * as React from 'react';
 import classNames from 'classnames';
 
 import {
-  PieceTypeEnum,
-  RealPiece,
-  RealPieceLocation
+  ColorEnum,
+  PieceLocation,
+  PieceTypeEnum
 } from '../../../types';
 
 import King from './King';
@@ -17,8 +17,10 @@ import Bishop from './Bishop';
 import Knight from './Knight';
 import Pawn from './Pawn';
 
-interface OwnProps {
-  piece: Partial<RealPiece> & Pick<RealPiece, 'color' | 'type' | 'location'>;
+interface OwnProps<T extends PieceLocation> {
+  color: ColorEnum;
+  type: PieceTypeEnum;
+  location: T;
 
   x?: number;
   y?: number;
@@ -27,29 +29,29 @@ interface OwnProps {
   transform?: string;
   className?: string;
   style?: React.CSSProperties;
-  onClick?(location: RealPieceLocation): void;
-  onDragStart?(e: React.MouseEvent, location: RealPieceLocation): void;
+  onClick?(location: T): void;
+  onDragStart?(e: React.MouseEvent, location: T): void;
 }
 
-type Props = OwnProps;
+type Props<T extends PieceLocation> = OwnProps<T>;
 
-export default class Piece extends React.Component<Props> {
+export default class Piece<T extends PieceLocation> extends React.PureComponent<Props<T>> {
   onClick = () => {
     const {
-      piece,
+      location,
       onClick
     } = this.props;
 
-    onClick!(piece.location);
+    onClick!(location);
   };
 
   onDragStart = (e: React.MouseEvent) => {
     const {
-      piece,
+      location,
       onDragStart
     } = this.props;
 
-    onDragStart!(e, piece.location);
+    onDragStart!(e, location);
   };
 
   render() {
@@ -61,7 +63,8 @@ export default class Piece extends React.Component<Props> {
       width,
       height,
       transform,
-      piece,
+      color,
+      type,
       onClick,
       onDragStart
     } = this.props;
@@ -89,24 +92,24 @@ export default class Piece extends React.Component<Props> {
         onClick={onClick && this.onClick}
         onMouseDown={onDragStart && this.onDragStart}
       >
-        {piece.type === PieceTypeEnum.KING ? (
-          <King color={piece.color} />
-        ) : piece.type === PieceTypeEnum.AMAZON ? (
-          <Amazon color={piece.color} />
-        ) : piece.type === PieceTypeEnum.QUEEN ? (
-          <Queen color={piece.color} />
-        ) : piece.type === PieceTypeEnum.EMPRESS ? (
-          <Empress color={piece.color} />
-        ) : piece.type === PieceTypeEnum.CARDINAL ? (
-          <Cardinal color={piece.color} />
-        ) : piece.type === PieceTypeEnum.ROOK ? (
-          <Rook color={piece.color} />
-        ) : piece.type === PieceTypeEnum.BISHOP ? (
-          <Bishop color={piece.color} />
-        ) : piece.type === PieceTypeEnum.KNIGHT ? (
-          <Knight color={piece.color} />
-        ) : piece.type === PieceTypeEnum.PAWN ? (
-          <Pawn color={piece.color} />
+        {type === PieceTypeEnum.KING ? (
+          <King color={color} />
+        ) : type === PieceTypeEnum.AMAZON ? (
+          <Amazon color={color} />
+        ) : type === PieceTypeEnum.QUEEN ? (
+          <Queen color={color} />
+        ) : type === PieceTypeEnum.EMPRESS ? (
+          <Empress color={color} />
+        ) : type === PieceTypeEnum.CARDINAL ? (
+          <Cardinal color={color} />
+        ) : type === PieceTypeEnum.ROOK ? (
+          <Rook color={color} />
+        ) : type === PieceTypeEnum.BISHOP ? (
+          <Bishop color={color} />
+        ) : type === PieceTypeEnum.KNIGHT ? (
+          <Knight color={color} />
+        ) : type === PieceTypeEnum.PAWN ? (
+          <Pawn color={color} />
         ) : null}
       </svg>
     );

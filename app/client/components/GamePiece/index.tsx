@@ -21,7 +21,7 @@ interface OwnProps {
 
 type Props = OwnProps;
 
-export default class BoardPiece extends React.Component<Props> {
+export default class GamePiece extends React.Component<Props> {
   render() {
     const {
       piece,
@@ -42,10 +42,9 @@ export default class BoardPiece extends React.Component<Props> {
         <Piece
           width={pieceSize}
           height={pieceSize}
-          piece={{
-            ...piece,
-            type: piece.abilities || piece.type
-          }}
+          color={piece.color}
+          type={piece.abilities || piece.type}
+          location={piece.location}
           onClick={onClick}
           onDragStart={onDragStart}
           className={className}
@@ -63,12 +62,9 @@ export default class BoardPiece extends React.Component<Props> {
               {...originalPieceCoords}
               width={cornerPieceSize}
               height={cornerPieceSize}
-              piece={{
-                ...piece,
-                type: piece.abilities
-                  ? piece.type
-                  : piece.originalType
-              }}
+              color={piece.color}
+              type={piece.abilities ? piece.type : piece.originalType}
+              location={piece.location}
               onClick={onClick}
               onDragStart={onDragStart}
             />

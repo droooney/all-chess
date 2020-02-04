@@ -11,7 +11,7 @@ interface OwnProps {
 
 type Props = OwnProps;
 
-export default class Chat extends React.Component<Props> {
+export default class Chat extends React.PureComponent<Props> {
   chatRef = React.createRef<HTMLDivElement>();
   messageRef = React.createRef<HTMLInputElement>();
   messagesRef = React.createRef<HTMLDivElement>();

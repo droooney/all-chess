@@ -416,13 +416,13 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         rankY = this.adjustRankY(rankY + eventualIncrementY);
         fileX = newFileX;
 
-        const square = {
+        const square: Square = {
           board,
           x: fileX,
           y: rankY
         };
 
-        if (this.isNullSquare(square)) {
+        if (this.isNullSquare(square) || (fileX === pieceX && rankY === pieceY)) {
           break;
         }
 

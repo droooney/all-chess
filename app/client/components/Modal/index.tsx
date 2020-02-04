@@ -4,13 +4,13 @@ import classNames from 'classnames';
 
 import './index.less';
 
-export interface OwnProps {
+export interface ModalProps {
   visible: boolean;
   className?: string;
   onOverlayClick(): void;
 }
 
-type Props = OwnProps;
+type Props = ModalProps;
 
 const modalRoot = document.getElementById('modal-root')!;
 
