@@ -23,7 +23,7 @@ import { Game } from '../../helpers';
 import { ReduxState } from '../../store';
 
 import BoardPiece from '../BoardPiece';
-import BoardSquare from '../BoardSquare';
+import BoardSquare, { BoardSquareProps } from '../BoardSquare';
 
 import './index.less';
 
@@ -33,7 +33,7 @@ export interface OwnProps {
   selectedPiece: RealPiece | null;
   makeMove(square: Square, isDndMove: boolean): void;
   selectPiece(piece: IPiece | null): void;
-  startDraggingPiece(e: React.MouseEvent, location: RealPieceLocation): void;
+  startDraggingPiece(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
   enableClick: boolean;
   enableDnd: boolean;
   isBlackBase: boolean;
@@ -141,6 +141,7 @@ class Boards extends React.Component<Props> {
       selectedPiece,
       selectPiece,
       enableClick,
+      enableDnd,
       makeMove,
       forceMoveWithClick
     } = this.props;
@@ -164,6 +165,7 @@ class Boards extends React.Component<Props> {
     if (
       selectedPiece.location.type === PieceLocationEnum.BOARD
       && Game.areSquaresEqual(square, selectedPiece.location)
+      && !enableDnd
     ) {
       return selectPiece(null);
     }
@@ -183,7 +185,7 @@ class Boards extends React.Component<Props> {
     makeMove(square, false);
   };
 
-  onPieceDragStart = (e: React.MouseEvent, location: RealPieceLocation) => {
+  onPieceDragStart = (e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation) => {
     const {
       enableDnd,
       startDraggingPiece
@@ -225,8 +227,7 @@ class Boards extends React.Component<Props> {
       squareSize
     } = this.props;
 
-    const maximumSize = Math.max(boardOrthodoxWidth, boardOrthodoxHeight);
-    const half = maximumSize * squareSize / 2;
+    const half = boardOrthodoxWidth * squareSize / 2;
     const rOuter = boardWidth * squareSize;
     const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * squareSize;
     const literalFontSize = Math.ceil((
@@ -254,6 +255,19 @@ class Boards extends React.Component<Props> {
           opposite: isBlackBase,
           antichess: isAntichess
         })}
+        style={{
+          '--is-black-base': +isBlackBase,
+          '--board-width': boardWidth,
+          '--board-orthodox-width': boardOrthodoxWidth,
+          '--board-height': boardOrthodoxHeight,
+          '--board-orthodox-height': boardHeight,
+          '--square-size': squareSize,
+          '--square-size-px': `${squareSize}px`,
+          ..._.times(boardWidth).reduce((files, fileX) => ({
+            ...files,
+            [`--rendered-file-${fileX}`]: game.adjustFileX(fileX + (isBlackBase ? -boardsShiftX : +boardsShiftX))
+          }), {})
+        } as React.CSSProperties}
       >
         {_.times(boardCount, (board) => {
           const squares: JSX.Element[] = [];
@@ -323,9 +337,10 @@ class Boards extends React.Component<Props> {
                   ? undefined
                   : `translate(${translateX}, ${translateY})`,
                 onClick: () => this.onSquareClick(square),
-                onMouseDown: (e: React.MouseEvent) => this.onPieceDragStart(e, location)
+                onMouseDown: (e: React.MouseEvent) => this.onPieceDragStart(e, location),
+                onTouchStart: (e: React.TouchEvent) => this.onPieceDragStart(e, location)
               };
-              const baseSquareParams = {
+              const baseSquareParams: BoardSquareProps & { key: any; } = {
                 key,
                 game,
                 board,
@@ -333,7 +348,6 @@ class Boards extends React.Component<Props> {
                 rankY,
                 squareSize,
                 isBlackBase,
-                boardsShiftX,
                 onSquareClick: this.onSquareClick,
                 onPieceDragStart: this.onPieceDragStart
               };
@@ -608,8 +622,8 @@ class Boards extends React.Component<Props> {
               key={board}
               className="board"
               style={isCircularChess ? {
-                width: maximumSize * squareSize,
-                height: maximumSize * squareSize
+                width: boardOrthodoxWidth * squareSize,
+                height: boardOrthodoxWidth * squareSize
               } : {
                 width: isHexagonalChess
                   ? (boardWidth * 3 + 1) * squareSize / 2 / Math.sqrt(3)

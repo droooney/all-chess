@@ -30,7 +30,7 @@ interface OwnProps<T extends PieceLocation> {
   className?: string;
   style?: React.CSSProperties;
   onClick?(location: T): void;
-  onDragStart?(e: React.MouseEvent, location: T): void;
+  onDragStart?(e: React.MouseEvent | React.TouchEvent, location: T): void;
 }
 
 type Props<T extends PieceLocation> = OwnProps<T>;
@@ -45,7 +45,7 @@ export default class Piece<T extends PieceLocation> extends React.PureComponent<
     onClick!(location);
   };
 
-  onDragStart = (e: React.MouseEvent) => {
+  onDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     const {
       location,
       onDragStart
@@ -91,6 +91,7 @@ export default class Piece<T extends PieceLocation> extends React.PureComponent<
         transform={transform}
         onClick={onClick && this.onClick}
         onMouseDown={onDragStart && this.onDragStart}
+        onTouchStart={onDragStart && this.onDragStart}
       >
         {type === PieceTypeEnum.KING ? (
           <King color={color} />

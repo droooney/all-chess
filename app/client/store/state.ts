@@ -5,6 +5,7 @@ import {
 
 export interface CommonState {
   isMobile: boolean;
+  isTouchDevice: boolean;
 }
 
 export type UserState = ShortUser | null;

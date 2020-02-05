@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import * as React from 'react';
+import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import io = require('socket.io-client');
 import classNames from 'classnames';
@@ -25,6 +26,7 @@ import {
   GAME_VARIANT_NAMES
 } from '../../../shared/constants';
 import { Game as GameHelper } from '../../helpers';
+import { ReduxState } from '../../store';
 
 import DocumentTitle from '../DocumentTitle';
 import FixedElement from '../FixedElement';
@@ -37,7 +39,7 @@ import PromotionModal from '../PromotionModal';
 
 import './index.less';
 
-type Props = RouteComponentProps<{ gameId: string }>;
+type Props = ReturnType<typeof mapStateToProps> & RouteComponentProps<{ gameId: string }>;
 
 interface State {
   gameData: IGame | DarkChessGame | null;
@@ -51,13 +53,12 @@ interface State {
   squareSize: number;
 }
 
-export default class Game extends React.Component<Props, State> {
+class Game extends React.Component<Props, State> {
   socket?: io.Socket;
   player: Player | null = null;
   game?: GameHelper;
   draggingPieceRef = React.createRef<SVGSVGElement>();
-  dragX = 0;
-  dragY = 0;
+  dragPoint: { x: number; y: number } = { x: 0, y: 0 };
   prevMoveIndex = -1;
   state: State = {
     selectedPiece: null,
@@ -97,15 +98,19 @@ export default class Game extends React.Component<Props, State> {
       }));
     });
 
-    document.addEventListener('mousemove', this.onMouseMove);
-    document.addEventListener('mouseup', this.onMouseUp);
+    document.addEventListener('mousemove', this.dragPiece);
+    document.addEventListener('touchmove', this.dragPiece, { passive: false });
+    document.addEventListener('mouseup', this.endDraggingPiece);
+    document.addEventListener('touchend', this.endDraggingPiece);
   }
 
   componentWillUnmount() {
     this.socket!.disconnect();
 
-    document.removeEventListener('mousemove', this.onMouseMove);
-    document.removeEventListener('mouseup', this.onMouseUp);
+    document.removeEventListener('mousemove', this.dragPiece);
+    document.removeEventListener('touchmove', this.dragPiece);
+    document.removeEventListener('mouseup', this.endDraggingPiece);
+    document.removeEventListener('touchend', this.endDraggingPiece);
   }
 
   componentDidUpdate(_prevProps: Props, prevState: State): void {
@@ -241,10 +246,10 @@ export default class Game extends React.Component<Props, State> {
       return;
     }
 
+    // TODO: if dnd only this if should not be run
     if (GameHelper.isBoardPiece(selectedPiece) && GameHelper.areSquaresEqual(selectedPiece.location, square)) {
       this.setState({
-        isDragging: false,
-        selectedPiece: null
+        isDragging: false
       });
 
       return;
@@ -295,8 +300,18 @@ export default class Game extends React.Component<Props, State> {
     this.closePromotionPopup();
   };
 
-  startDraggingPiece = (e: React.MouseEvent, location: RealPieceLocation) => {
-    if (e.button !== 0) {
+  getEventPoint(e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent): { x: number; y: number; } {
+    return 'changedTouches' in e
+      ? { x: e.changedTouches[0].pageX, y: e.changedTouches[0].pageY }
+      : { x: e.pageX, y: e.pageY };
+  }
+
+  startDraggingPiece = (e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation) => {
+    const {
+      isTouchDevice
+    } = this.props;
+
+    if (e.type === 'mousedown' && (isTouchDevice || (e as React.MouseEvent).button !== 0)) {
       return;
     }
 
@@ -312,8 +327,7 @@ export default class Game extends React.Component<Props, State> {
         || this.getAllowedMoves().all(({ square }) => !GameHelper.areSquaresEqual(draggedPiece.location, square))
       )
     ) {
-      this.dragX = e.pageX;
-      this.dragY = e.pageY;
+      this.dragPoint = this.getEventPoint(e);
 
       this.setState({
         selectedPiece: draggedPiece,
@@ -322,26 +336,31 @@ export default class Game extends React.Component<Props, State> {
     }
   };
 
-  onMouseMove = (e: MouseEvent) => {
+  dragPiece = (e: MouseEvent | TouchEvent) => {
     if (!this.state.isDragging) {
       return;
     }
+
+    e.preventDefault();
 
     const pieceSize = this.game!.getPieceSize(this.state.squareSize);
 
-    this.dragX = e.pageX;
-    this.dragY = e.pageY;
+    this.dragPoint = this.getEventPoint(e);
 
-    this.draggingPieceRef.current!.transform.baseVal.getItem(0).setTranslate(this.dragX - pieceSize / 2, this.dragY - pieceSize / 2);
+    this.draggingPieceRef.current!.transform.baseVal
+      .getItem(0)
+      .setTranslate(this.dragPoint.x - pieceSize / 2, this.dragPoint.y - pieceSize / 2);
   };
 
-  onMouseUp = (e: MouseEvent) => {
+  endDraggingPiece = (e: MouseEvent | TouchEvent) => {
     if (!this.state.isDragging) {
       return;
     }
 
+    const point = this.getEventPoint(e);
+
     if (
-      !document.elementsFromPoint(e.pageX, e.pageY).some((element) => {
+      !document.elementsFromPoint(point.x, point.y).some((element) => {
         try {
           if (
             this.state.selectedPiece
@@ -514,7 +533,8 @@ export default class Game extends React.Component<Props, State> {
               <FixedElement>
                 <svg
                   ref={this.draggingPieceRef}
-                  transform={`translate(${this.dragX - pieceSize / 2}, ${this.dragY - pieceSize / 2})`}
+                  transform={`translate(${this.dragPoint.x - pieceSize / 2}, ${this.dragPoint.y - pieceSize / 2})`}
+                  style={{ pointerEvents: 'none' }}
                 >
                   <GamePiece
                     piece={selectedPiece}
@@ -544,3 +564,11 @@ export default class Game extends React.Component<Props, State> {
     );
   }
 }
+
+function mapStateToProps(state: ReduxState) {
+  return {
+    isTouchDevice: state.common.isTouchDevice
+  };
+}
+
+export default connect(mapStateToProps)(Game);

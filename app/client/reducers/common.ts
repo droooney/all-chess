@@ -7,7 +7,8 @@ import {
 import { isMobileDevice } from '../helpers';
 
 const initialState: CommonState = {
-  isMobile: isMobileDevice()
+  isMobile: isMobileDevice(),
+  isTouchDevice: 'ontouchstart' in window
 };
 
 type Action = (

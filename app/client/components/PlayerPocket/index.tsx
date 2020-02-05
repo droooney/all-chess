@@ -21,7 +21,7 @@ interface OwnProps {
   enableDnd: boolean;
   selectedPiece: PocketPiece | null;
   selectPiece(piece: IPiece | null): void;
-  startDraggingPiece(e: React.MouseEvent, location: RealPieceLocation): void;
+  startDraggingPiece(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
 }
 
 type Props = OwnProps;
@@ -70,6 +70,7 @@ export default class PlayerPocket extends React.Component<Props> {
               })}
               onClick={pieces.length && enableClick ? (() => this.onPocketPieceClick(pieces[0].location)) : undefined}
               onMouseDown={pieces.length && enableDnd ? (e) => startDraggingPiece(e, pieces[0].location) : undefined}
+              onTouchStart={pieces.length && enableDnd ? (e) => startDraggingPiece(e, pieces[0].location) : undefined}
             >
               {
                 selectedPiece

@@ -35,7 +35,7 @@ interface OwnProps {
   materialDifference: Record<PieceTypeEnum, number>;
   selectedPiece: PocketPiece | null;
   selectPiece(piece: IPiece | null): void;
-  startDraggingPiece(e: React.MouseEvent, location: RealPieceLocation): void;
+  startDraggingPiece(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
 }
 
 type Props = OwnProps;

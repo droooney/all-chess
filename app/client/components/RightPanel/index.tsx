@@ -36,7 +36,7 @@ interface OwnProps {
   lastMoveTimestamp: number;
   selectedPiece: PocketPiece | null;
   selectPiece(piece: Piece | null): void;
-  startDraggingPiece(e: React.MouseEvent, location: RealPieceLocation): void;
+  startDraggingPiece(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
 }
 
 interface State {

@@ -4,22 +4,24 @@ import { Game } from '../../helpers';
 import { PieceBoardLocation, PieceLocationEnum, RealPieceLocation, Square } from '../../../types';
 import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from '../../constants';
 
-interface OwnProps {
+export interface BoardSquareProps {
   game: Game;
   board: number;
   fileX: number;
   rankY: number;
   squareSize: number;
   isBlackBase: boolean;
-  boardsShiftX: number;
-
-  onSquareClick?(square: Square): void;
-  onPieceDragStart?(e: React.MouseEvent, location: RealPieceLocation): void;
+  onSquareClick(square: Square): void;
+  onPieceDragStart(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
 }
 
-type Props = OwnProps & (React.SVGProps<SVGPathElement> | React.SVGProps<SVGRectElement>);
+type Props = BoardSquareProps & (React.SVGProps<SVGPathElement> | React.SVGProps<SVGRectElement>);
 
 export default class BoardSquare extends React.PureComponent<Props> {
+  ifBlackBase = (value: number | string, alternate: number | string): string => {
+    return `(var(--is-black-base) * (${value}) + (1 - var(--is-black-base)) * (${alternate}))`;
+  };
+
   render() {
     const {
       game,
@@ -28,7 +30,6 @@ export default class BoardSquare extends React.PureComponent<Props> {
       rankY,
       squareSize,
       isBlackBase,
-      boardsShiftX,
       onSquareClick,
       onPieceDragStart,
       ...elemProps
@@ -52,31 +53,26 @@ export default class BoardSquare extends React.PureComponent<Props> {
       ...square,
       type: PieceLocationEnum.BOARD
     };
-    const renderedFileX = game.adjustFileX(fileX + (isBlackBase ? -boardsShiftX : +boardsShiftX));
 
-    const translateX = squareSize * (
-      isBlackBase
-        ? boardWidth - 1 - renderedFileX
-        : renderedFileX
-    );
-    const translateY = squareSize * (
-      isBlackBase
-        ? rankY
-        : boardHeight - 1 - rankY
-    );
+    const translateX = `calc(var(--square-size-px) * ${
+      this.ifBlackBase(`var(--board-width) - 1 - var(--rendered-file-${fileX})`, `var(--rendered-file-${fileX})`)
+    })`;
+    const translateY = `calc(var(--square-size-px) * ${this.ifBlackBase(rankY, boardHeight - 1 - rankY)})`;
     const baseParams = {
       'data-square': JSON.stringify(square),
-      transform: isCircularChess || isHexagonalChess
-        ? undefined
-        : `translate(${translateX}, ${translateY})`,
-      onClick: onSquareClick ? (() => onSquareClick(square)) : undefined,
-      onMouseDown: onPieceDragStart ? ((e: React.MouseEvent) => onPieceDragStart(e, location)) : undefined
+      style: {
+        transform: isCircularChess || isHexagonalChess
+          ? undefined
+          : `translate(${translateX}, ${translateY})`
+      } as React.CSSProperties,
+      onClick: () => onSquareClick(square),
+      onMouseDown: (e: React.MouseEvent) => onPieceDragStart(e, location),
+      onTouchStart: (e: React.TouchEvent) => onPieceDragStart(e, location)
     };
     let pathD = '';
 
     if (isCircularChess) {
-      const maximumSize = Math.max(boardOrthodoxWidth, boardOrthodoxHeight);
-      const half = maximumSize * squareSize / 2;
+      const half = boardOrthodoxWidth * squareSize / 2;
       const rOuter = boardWidth * squareSize;
       const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * squareSize;
       const adjustedRankY = rankY > boardOrthodoxHeight
@@ -95,8 +91,8 @@ export default class BoardSquare extends React.PureComponent<Props> {
         const y = half - r * Math.cos(angle);
 
         return isBlackBase
-          ? { x: maximumSize * squareSize - x, y }
-          : { x, y: maximumSize * squareSize - y };
+          ? { x: boardOrthodoxWidth * squareSize - x, y }
+          : { x, y: boardOrthodoxWidth * squareSize - y };
       };
       const circlePoints = [
         getCirclePoint(r, angle),
@@ -106,12 +102,12 @@ export default class BoardSquare extends React.PureComponent<Props> {
       ];
 
       pathD = `
-      M ${circlePoints[0].x},${circlePoints[0].y}
-      A ${r} ${r} 0 0 ${1 - right} ${circlePoints[1].x} ${circlePoints[1].y}
-      L ${circlePoints[2].x},${circlePoints[2].y}
-      A ${nextR} ${nextR} 0 0 ${right} ${circlePoints[3].x} ${circlePoints[3].y}
-      Z
-    `;
+        M ${circlePoints[0].x},${circlePoints[0].y}
+        A ${r} ${r} 0 0 ${1 - right} ${circlePoints[1].x} ${circlePoints[1].y}
+        L ${circlePoints[2].x},${circlePoints[2].y}
+        A ${nextR} ${nextR} 0 0 ${right} ${circlePoints[3].x} ${circlePoints[3].y}
+        Z
+      `;
     } else if (isHexagonalChess) {
       const a = squareSize / 2 / Math.sqrt(3);
       const x0 = (
@@ -139,14 +135,14 @@ export default class BoardSquare extends React.PureComponent<Props> {
       ];
 
       pathD = `
-      M ${x0},${y0}
-      l ${hexPoints[0].x},${hexPoints[0].y}
-      l ${hexPoints[1].x},${hexPoints[1].y}
-      h ${hexPoints[2].x}
-      l ${hexPoints[3].x},${hexPoints[3].y}
-      l ${hexPoints[4].x},${hexPoints[4].y}
-      Z
-    `;
+        M ${x0},${y0}
+        l ${hexPoints[0].x},${hexPoints[0].y}
+        l ${hexPoints[1].x},${hexPoints[1].y}
+        h ${hexPoints[2].x}
+        l ${hexPoints[3].x},${hexPoints[3].y}
+        l ${hexPoints[4].x},${hexPoints[4].y}
+        Z
+      `;
     }
 
     return (
