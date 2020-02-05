@@ -347,7 +347,6 @@ class Boards extends React.Component<Props> {
                 fileX,
                 rankY,
                 squareSize,
-                isBlackBase,
                 onSquareClick: this.onSquareClick,
                 onPieceDragStart: this.onPieceDragStart
               };

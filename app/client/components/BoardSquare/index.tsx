@@ -10,7 +10,6 @@ export interface BoardSquareProps {
   fileX: number;
   rankY: number;
   squareSize: number;
-  isBlackBase: boolean;
   onSquareClick(square: Square): void;
   onPieceDragStart(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
 }
@@ -18,10 +17,6 @@ export interface BoardSquareProps {
 type Props = BoardSquareProps & (React.SVGProps<SVGPathElement> | React.SVGProps<SVGRectElement>);
 
 export default class BoardSquare extends React.PureComponent<Props> {
-  ifBlackBase = (value: number | string, alternate: number | string): string => {
-    return `(var(--is-black-base) * (${value}) + (1 - var(--is-black-base)) * (${alternate}))`;
-  };
-
   render() {
     const {
       game,
@@ -29,12 +24,10 @@ export default class BoardSquare extends React.PureComponent<Props> {
       fileX,
       rankY,
       squareSize,
-      isBlackBase,
       onSquareClick,
       onPieceDragStart,
       ...elemProps
     } = this.props;
-
     const {
       isCircularChess,
       isHexagonalChess,
@@ -53,17 +46,33 @@ export default class BoardSquare extends React.PureComponent<Props> {
       ...square,
       type: PieceLocationEnum.BOARD
     };
+    const boardCenterX = (
+      isCircularChess
+        ? boardOrthodoxWidth * squareSize
+        : isHexagonalChess
+          ? (boardWidth * 3 + 1) * squareSize / 2 / Math.sqrt(3)
+          : boardWidth * squareSize
+    ) / 2;
+    const boardCenterY = (
+      isCircularChess
+        ? boardOrthodoxWidth * squareSize
+        : boardHeight * squareSize
+    ) / 2;
 
-    const translateX = `calc(var(--square-size-px) * ${
-      this.ifBlackBase(`var(--board-width) - 1 - var(--rendered-file-${fileX})`, `var(--rendered-file-${fileX})`)
-    })`;
-    const translateY = `calc(var(--square-size-px) * ${this.ifBlackBase(rankY, boardHeight - 1 - rankY)})`;
+    const translateX = `calc(var(--square-size-px) * var(--rendered-file-${fileX}))`;
+    const translateY = `calc(var(--square-size-px) * ${boardHeight - 1 - rankY})`;
     const baseParams = {
       'data-square': JSON.stringify(square),
       style: {
-        transform: isCircularChess || isHexagonalChess
-          ? undefined
-          : `translate(${translateX}, ${translateY})`
+        transform: [
+          'rotate(calc(180deg * var(--is-black-base)))',
+          ...(
+            isCircularChess || isHexagonalChess
+              ? []
+              : [`translate(${translateX}, ${translateY})`]
+          )
+        ].join(' '),
+        transformOrigin: `${boardCenterX}px ${boardCenterY}px`
       } as React.CSSProperties,
       onClick: () => onSquareClick(square),
       onMouseDown: (e: React.MouseEvent) => onPieceDragStart(e, location),
@@ -72,7 +81,6 @@ export default class BoardSquare extends React.PureComponent<Props> {
     let pathD = '';
 
     if (isCircularChess) {
-      const half = boardOrthodoxWidth * squareSize / 2;
       const rOuter = boardWidth * squareSize;
       const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * squareSize;
       const adjustedRankY = rankY > boardOrthodoxHeight
@@ -87,12 +95,10 @@ export default class BoardSquare extends React.PureComponent<Props> {
       const angle = adjustedRankY * Math.PI / 8;
       const nextAngle = (adjustedRankY + 1) * Math.PI / 8;
       const getCirclePoint = (r: number, angle: number) => {
-        const x = half - (right ? -1 : 1) * r * Math.sin(angle);
-        const y = half - r * Math.cos(angle);
+        const x = boardCenterX - (right ? -1 : 1) * r * Math.sin(angle);
+        const y = boardCenterY - r * Math.cos(angle);
 
-        return isBlackBase
-          ? { x: boardOrthodoxWidth * squareSize - x, y }
-          : { x, y: boardOrthodoxWidth * squareSize - y };
+        return { x, y: boardOrthodoxWidth * squareSize - y };
       };
       const circlePoints = [
         getCirclePoint(r, angle),
@@ -110,22 +116,10 @@ export default class BoardSquare extends React.PureComponent<Props> {
       `;
     } else if (isHexagonalChess) {
       const a = squareSize / 2 / Math.sqrt(3);
-      const x0 = (
-        isBlackBase
-          ? (boardWidth - fileX) * 3
-          : (fileX * 3) + 1
-      ) * a;
+      const x0 = (fileX * 3 + 1) * a;
       const rankAdjustmentY = 1 / 2 * Math.abs(fileX - middleFileX);
-      const y0 = (
-        isBlackBase
-          ? rankY + rankAdjustmentY
-          : boardHeight - rankY - rankAdjustmentY
-      ) * squareSize;
-      const hexPoint = (x: number, y: number) => (
-        isBlackBase
-          ? { x: -x, y }
-          : { x, y: -y }
-      );
+      const y0 = (boardHeight - rankY - rankAdjustmentY) * squareSize;
+      const hexPoint = (x: number, y: number) => ({ x, y: -y });
       const hexPoints = [
         hexPoint(-a, squareSize / 2),
         hexPoint(a, squareSize / 2),
