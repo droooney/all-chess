@@ -177,7 +177,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     }
 
     const captureAllowed = (
-      piece.location.type === PieceLocationEnum.POCKET
+      GameMovesUtils.isPocketPiece(piece)
       || !this.isPatrol
       || onlyControlled
       || onlyPossible
@@ -201,7 +201,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     const onlyVisible = mode === GetPossibleMovesMode.VISIBLE;
     const onlyPossible = mode === GetPossibleMovesMode.POSSIBLE;
 
-    if (piece.location.type === PieceLocationEnum.POCKET) {
+    if (GameMovesUtils.isPocketPiece(piece)) {
       const visibleSquares = this.isDarkChess ? this.getVisibleSquares(piece.color) : [];
 
       for (let board = 0; board < this.boardCount; board++) {
@@ -802,7 +802,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       .find(({ square }) => GameMovesUtils.areSquaresEqual(square, toLocation))!;
     const opponentPiece = possibleMove.capture && possibleMove.capture.piece;
     const isCapture = !!opponentPiece;
-    const disappearedOrMovedPieces: BoardPiece[] = [];
+    const disappearedOrMovedPieces: Piece[] = [];
     const isPawnPromotion = possibleMove.isPawnPromotion;
     const wasKing = GameMovesUtils.isKing(piece);
     const isMainPieceMovedOrDisappeared = this.isAtomic && isCapture;
@@ -856,15 +856,15 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       disappearedOrMovedPieces.push(opponentPiece);
     }
 
-    if (isMainPieceMovedOrDisappeared && !disappearedOrMovedPieces.includes(piece as BoardPiece)) {
-      disappearedOrMovedPieces.push(piece as BoardPiece);
+    if (isMainPieceMovedOrDisappeared && !disappearedOrMovedPieces.includes(piece)) {
+      disappearedOrMovedPieces.push(piece);
     }
 
     if (castlingRook) {
       disappearedOrMovedPieces.push(castlingRook);
     }
 
-    const disappearedOrMovedPiecesData = disappearedOrMovedPieces.map((piece) => (
+    const disappearedOrMovedPiecesData = (disappearedOrMovedPieces as BoardPiece[]).map((piece) => (
       _.pick(piece, ['moved', 'color', 'type', 'originalType', 'location', 'abilities'])
     ));
 
@@ -1230,13 +1230,11 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       }
 
       disappearedOrMovedPieces.forEach((disappearedOrMovedPiece) => {
-        const moved = !!disappearedOrMovedPiece.location && disappearedOrMovedPiece.location.type === PieceLocationEnum.BOARD;
-
-        if (moved) {
+        if (GameMovesUtils.isBoardPiece(disappearedOrMovedPiece)) {
           const {
             x: squareX,
             y: squareY
-          } = disappearedOrMovedPiece.location as PieceBoardLocation;
+          } = disappearedOrMovedPiece.location;
           const square = {
             x: squareX,
             y: squareY

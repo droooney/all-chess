@@ -17,7 +17,6 @@ import {
   PieceLocationEnum,
   PieceTypeEnum,
   Player,
-  PocketPiece,
   RealPiece,
   RealPieceLocation,
   Square
@@ -565,8 +564,8 @@ class Game extends React.Component<Props, State> {
               timeDiff={timeDiff}
               lastMoveTimestamp={lastMoveTimestamp}
               selectedPiece={
-                selectedPiece && selectedPiece.location.type === PieceLocationEnum.POCKET
-                  ? selectedPiece as PocketPiece
+                selectedPiece && GameHelper.isPocketPiece(selectedPiece)
+                  ? selectedPiece
                   : null
               }
               selectPiece={this.selectPiece}

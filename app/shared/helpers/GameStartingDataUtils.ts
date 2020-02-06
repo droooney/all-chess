@@ -326,7 +326,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
         if (
           piece
           && piece.color === ColorEnum.WHITE
-          && piece.location.type === PieceLocationEnum.BOARD
+          && GameStartingDataUtils.isBoardPiece(piece)
           && !GameStartingDataUtils.isKing(piece)
           && (
             !GameStartingDataUtils.isPawn(piece)

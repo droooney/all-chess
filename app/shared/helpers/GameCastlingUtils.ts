@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 
 import GameStartingDataUtils from './GameStartingDataUtils';
-import { BoardPiece, CastlingTypeEnum, ColorEnum, GameCreateOptions, PieceLocationEnum, Square } from '../../types';
+import { BoardPiece, CastlingTypeEnum, ColorEnum, GameCreateOptions, Square } from '../../types';
 
 type CastlingRookCoordinates = Record<CastlingTypeEnum, Square | null>;
 
@@ -30,7 +30,7 @@ export default abstract class GameCastlingUtils extends GameStartingDataUtils {
       const rooksOnTheCastlingRank = this.startingData.pieces.filter((piece) => (
         piece.color === color
         && GameCastlingUtils.isRook(piece)
-        && piece.location.type === PieceLocationEnum.BOARD
+        && GameCastlingUtils.isBoardPiece(piece)
         && piece.location.y === castlingRank
       )) as BoardPiece[];
 
@@ -43,7 +43,7 @@ export default abstract class GameCastlingUtils extends GameStartingDataUtils {
         const kingOnTheCastlingRank = this.startingData.pieces.find((piece) => (
           piece.color === color
           && GameCastlingUtils.isKing(piece)
-          && piece.location.type === PieceLocationEnum.BOARD
+          && GameCastlingUtils.isBoardPiece(piece)
           && piece.location.y === castlingRank
         )) as BoardPiece | undefined;
 

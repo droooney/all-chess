@@ -316,10 +316,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
   }
 
   areKingsOnTheBoard(color: ColorEnum): boolean {
-    return this.kings[color].every((king) => (
-      !!king.location
-      && king.location.type === PieceLocationEnum.BOARD
-    ));
+    return this.kings[color].every(GamePieceUtils.isBoardPiece);
   }
 
   changePieceLocation(piece: Piece, location: PieceLocation) {

@@ -305,7 +305,7 @@ export class Game extends GameResultUtils implements IGame {
         }
 
         const getToSquare = (piece: RealPiece): Square => ({
-          board: piece.location.type === PieceLocationEnum.POCKET
+          board: Game.isPocketPiece(piece)
             ? game.isAliceChess
               ? toBoard
               : 0
@@ -322,9 +322,9 @@ export class Game extends GameResultUtils implements IGame {
               piece.type === pieceType
               && ((
                 isDrop
-                && piece.location.type === PieceLocationEnum.POCKET
+                && Game.isPocketPiece(piece)
               ) || (
-                piece.location.type === PieceLocationEnum.BOARD
+                Game.isBoardPiece(piece)
                 && (!fromBoardLiteral || piece.location.board === fromBoard)
                 && (!fromFileLiteral || piece.location.x === fromFile)
                 && (!fromRankLiteral || piece.location.x === fromRank)
@@ -392,17 +392,18 @@ export class Game extends GameResultUtils implements IGame {
 
     if (isAliceChess) {
       // pieces on the same square
-      startingData.pieces.forEach(({ location }) => {
+      startingData.pieces.forEach((piece1) => {
         if (
-          location.type === PieceLocationEnum.BOARD
-          && startingData.pieces.some(({ location: pieceLocation }) => (
-            pieceLocation.type === PieceLocationEnum.BOARD
-            && location.x === pieceLocation.x
-            && location.y === pieceLocation.y
-            && location.board !== pieceLocation.board
+          Game.isBoardPiece(piece1)
+          && startingData.pieces.some((piece2) => (
+            Game.isBoardPiece(piece2)
+            && piece1.location.x === piece2.location.x
+            && piece1.location.y === piece2.location.y
           ))
         ) {
-          throw new Error(`Invalid FEN: multiple pieces on the same square (${Game.getFileLiteral(location.x) + Game.getRankLiteral(location.y)})`);
+          throw new Error(`Invalid FEN: multiple pieces on the same square (${
+            Game.getFileLiteral(piece1.location.x) + Game.getRankLiteral(piece1.location.y)
+          })`);
         }
       });
     }
@@ -454,7 +455,9 @@ export class Game extends GameResultUtils implements IGame {
               ? piece.location.y < middleFile - 1 - Math.abs(piece.location.x - middleFile)
               : piece.location.y > 6
           ) {
-            throw new Error(`Invalid FEN: pawn behind the initial pawn structure (${Game.getFileLiteral(piece.location.x) + Game.getRankLiteral(piece.location.y)})`);
+            throw new Error(`Invalid FEN: pawn behind the initial pawn structure (${
+              Game.getFileLiteral(piece.location.x) + Game.getRankLiteral(piece.location.y)
+            })`);
           }
         } else if (
           piece.location.y === (

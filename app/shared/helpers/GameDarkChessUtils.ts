@@ -23,11 +23,10 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
   getVisiblePieces(forColor: ColorEnum): Piece[] {
     const visibleSquares = this.getVisibleSquares(forColor);
 
-    return this.pieces.filter(({ color, location }) => (
-      color === forColor || (
-        !!location
-        && location.type === PieceLocationEnum.BOARD
-        && visibleSquares.some((square) => GameDarkChessUtils.areSquaresEqual(square, location))
+    return this.pieces.filter((piece) => (
+      piece.color === forColor || (
+        GameDarkChessUtils.isBoardPiece(piece)
+        && visibleSquares.some((square) => GameDarkChessUtils.areSquaresEqual(square, piece.location))
       )
     ));
   }
@@ -78,9 +77,8 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
           && visibleSquares.some((square) => GameDarkChessUtils.areSquaresEqual(square, prevPieceLocation))
         );
         const newLocationVisible = (
-          !!piece.location
-          && piece.location.type === PieceLocationEnum.BOARD
-          && visibleSquares.some((square) => GameDarkChessUtils.areSquaresEqual(square, piece.location as PieceBoardLocation))
+          GameDarkChessUtils.isBoardPiece(piece)
+          && visibleSquares.some((square) => GameDarkChessUtils.areSquaresEqual(square, piece.location))
         );
         const newId = oldPiece && (isOwnPiece || (oldLocationVisible && newLocationVisible))
           ? oldPiece.id

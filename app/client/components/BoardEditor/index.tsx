@@ -241,7 +241,7 @@ class BoardEditor extends React.Component<Props, State> {
 
     this.game.pieces = pieces;
 
-    if (selectedPiece.location.type === PieceLocationEnum.BOARD) {
+    if (Game.isBoardPiece(selectedPiece)) {
       this.game.boards[selectedPiece.location.board][selectedPiece.location.y][selectedPiece.location.x] = null;
     }
 

@@ -245,7 +245,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
       const { x, y } = startingData.possibleEnPassant.pieceLocation;
       const enPassantPiece = pieces.find((piece) => (
         GamePositionUtils.isPawn(piece)
-        && piece.location.type === PieceLocationEnum.BOARD
+        && GamePositionUtils.isBoardPiece(piece)
         && piece.location.x === x
         && piece.location.y === y
       )) as BoardPiece | undefined;
@@ -365,7 +365,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
       + (
         board === 0 && this.isPocketUsed ? (
           this.pieces
-            .filter(({ location }) => !!location && location.type === PieceLocationEnum.POCKET)
+            .filter(GamePositionUtils.isPocketPiece)
             .map((piece) => {
               const pieceLiteral = GamePositionUtils.getPieceFullAlgebraicLiteral(piece);
 

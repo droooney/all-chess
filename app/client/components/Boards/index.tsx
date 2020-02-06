@@ -166,7 +166,7 @@ class Boards extends React.Component<Props> {
     }
 
     if (
-      selectedPiece.location.type === PieceLocationEnum.BOARD
+      Game.isBoardPiece(selectedPiece)
       && Game.areSquaresEqual(square, selectedPiece.location)
       && !enableDnd
     ) {
@@ -386,7 +386,7 @@ class Boards extends React.Component<Props> {
 
               if (
                 selectedPiece
-                && selectedPiece.location.type === PieceLocationEnum.BOARD
+                && Game.isBoardPiece(selectedPiece)
                 && Game.areSquaresEqual(selectedPiece.location, square)
               ) {
                 selectedSquare = (
