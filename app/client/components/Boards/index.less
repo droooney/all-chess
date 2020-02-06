@@ -1,20 +1,17 @@
 @import (reference) '../../styles/mixins';
 
-@light-color: #eeeece;
-// @light-color: beige;
-@half-dark-color: #d8d8d8;
-@dark-color: #bbb;
-// @dark-color: silver;
+@light-color: var(--light-square-color, #eeeece);
+@half-dark-color: var(--half-square-dark-color, #d8d8d8);
+@dark-color: var(--dark-square-color, #bbb);
 
 .original-piece {
   fill: #aaa;
 }
 
 .boards {
-  grid-area: boards;
-  justify-self: center;
-
   .flex();
+
+  grid-area: boards;
 
   &.antichess {
     .board {
@@ -26,7 +23,7 @@
 
   .board {
     &:not(:last-child) {
-      margin-right: 20px;
+      margin-right: var(--boards-margin, 20px);
     }
 
     .square {
@@ -75,7 +72,7 @@
     }
 
     .literal {
-      user-select: none;
+      .user-select(none);
 
       &.light {
         fill: @light-color;

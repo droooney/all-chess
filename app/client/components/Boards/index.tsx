@@ -18,7 +18,11 @@ import {
   RealPieceLocation,
   Square
 } from '../../../types';
-import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from '../../constants';
+import {
+  ALICE_CHESS_BOARDS_MARGIN,
+  CIRCULAR_CHESS_EMPTY_CENTER_RATIO,
+  SVG_SQUARE_SIZE
+} from '../../constants';
 import { Game } from '../../helpers';
 import { ReduxState } from '../../store';
 
@@ -36,13 +40,13 @@ export interface OwnProps {
   startDraggingPiece(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
   enableClick: boolean;
   enableDnd: boolean;
+  boardsWidth: number;
   isBlackBase: boolean;
   isDragging: boolean;
   darkChessMode: ColorEnum | null;
   currentMove: DarkChessLocalMove | LocalMove | undefined;
   boardsShiftX: number;
   pieces: readonly IPiece[];
-  squareSize: number;
 
   withLiterals?: boolean;
   showFantomPieces?: boolean;
@@ -219,21 +223,31 @@ class Boards extends React.Component<Props> {
       pieces,
       withLiterals,
       currentMove,
+      boardsWidth,
       isBlackBase,
       isDragging,
       darkChessMode,
       boardsShiftX,
-      showFantomPieces,
-      squareSize
+      showFantomPieces
     } = this.props;
 
-    const half = boardOrthodoxWidth * squareSize / 2;
-    const rOuter = boardWidth * squareSize;
-    const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * squareSize;
+    const boardRenderedWidth = (boardsWidth - ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1)) / boardCount;
+    const boardViewBox = isCircularChess ? {
+      width: boardOrthodoxWidth * SVG_SQUARE_SIZE,
+      height: boardOrthodoxWidth * SVG_SQUARE_SIZE
+    } : {
+      width: isHexagonalChess
+        ? (boardWidth * 3 + 1) * SVG_SQUARE_SIZE / 2 / Math.sqrt(3)
+        : boardWidth * SVG_SQUARE_SIZE,
+      height: boardHeight * SVG_SQUARE_SIZE
+    };
+    const half = boardOrthodoxWidth * SVG_SQUARE_SIZE / 2;
+    const rOuter = boardWidth * SVG_SQUARE_SIZE;
+    const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE;
     const literalFontSize = Math.ceil((
       isCircularChess
-        ? (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO / 2) * squareSize
-        : squareSize
+        ? (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO / 2) * SVG_SQUARE_SIZE
+        : SVG_SQUARE_SIZE
     ) * 0.25);
     const literalMargin = literalFontSize / 3;
     const allowedMoves = this.getAllowedMoves().toArray();
@@ -251,22 +265,23 @@ class Boards extends React.Component<Props> {
     return (
       <div
         ref={this.boardsRef}
-        className={classNames('boards', {
-          opposite: isBlackBase,
-          antichess: isAntichess
-        })}
+        className={classNames('boards', { antichess: isAntichess })}
         style={{
           '--is-black-base': +isBlackBase,
           '--board-width': boardWidth,
           '--board-orthodox-width': boardOrthodoxWidth,
           '--board-height': boardOrthodoxHeight,
           '--board-orthodox-height': boardHeight,
-          '--square-size': squareSize,
-          '--square-size-px': `${squareSize}px`,
           ..._.times(boardWidth).reduce((files, fileX) => ({
             ...files,
             [`--rendered-file-${fileX}`]: game.adjustFileX(fileX + (isBlackBase ? -boardsShiftX : +boardsShiftX))
-          }), {})
+          }), {}),
+          '--light-square-color': '#eeeece',
+          // '--light-square-color': 'beige',
+          '--dark-square-color': '#bbb',
+          // '--dark-square-color': 'silver',
+          '--half-dark-square-color': '#d8d8d8',
+          '--boards-margin': `${ALICE_CHESS_BOARDS_MARGIN}px`
         } as React.CSSProperties}
       >
         {_.times(boardCount, (board) => {
@@ -320,12 +335,12 @@ class Boards extends React.Component<Props> {
                 return;
               }
 
-              const translateX = squareSize * (
+              const translateX = SVG_SQUARE_SIZE * (
                 isBlackBase
                   ? boardWidth - 1 - renderedFileX
                   : renderedFileX
               );
-              const translateY = squareSize * (
+              const translateY = SVG_SQUARE_SIZE * (
                 isBlackBase
                   ? rankY
                   : boardHeight - 1 - rankY
@@ -346,7 +361,6 @@ class Boards extends React.Component<Props> {
                 board,
                 fileX,
                 rankY,
-                squareSize,
                 onSquareClick: this.onSquareClick,
                 onPieceDragStart: this.onPieceDragStart
               };
@@ -454,13 +468,13 @@ class Boards extends React.Component<Props> {
                       isBlackBase
                         ? boardWidth * 3 - fileAdjustmentX
                         : fileAdjustmentX + 1
-                    ) * squareSize / 2 / Math.sqrt(3);
+                    ) * SVG_SQUARE_SIZE / 2 / Math.sqrt(3);
                     const rankAdjustmentY = 1 / 2 * Math.abs(fileX - middleFileX) + 0.17;
                     const translateY = (
                       isBlackBase
                         ? rankAdjustmentY
                         : boardHeight - rankAdjustmentY
-                    ) * squareSize;
+                    ) * SVG_SQUARE_SIZE;
 
                     transform = `translate(${translateX},${translateY})`;
                   }
@@ -474,7 +488,7 @@ class Boards extends React.Component<Props> {
                             ? `translate(${-literalMargin - literalFontSize / 2 * (fileLiteral.length)},${literalFontSize * 1.05})`
                             : isHexagonalChess
                               ? undefined
-                              : `translate(${literalMargin}, ${squareSize - literalMargin})`
+                              : `translate(${literalMargin}, ${SVG_SQUARE_SIZE - literalMargin})`
                         }
                         fontSize={literalFontSize}
                         alignmentBaseline={isHexagonalChess ? 'middle' : undefined}
@@ -512,13 +526,13 @@ class Boards extends React.Component<Props> {
                       isBlackBase
                         ? boardWidth * 3 - fileAdjustmentX
                         : fileAdjustmentX + 1
-                    ) * squareSize / 2 / Math.sqrt(3);
+                    ) * SVG_SQUARE_SIZE / 2 / Math.sqrt(3);
                     const rankAdjustmentY = rankY + 1 + 1 / 2 * Math.abs(fileX - middleFileX) - 0.2;
                     const translateY = (
                       isBlackBase
                         ? rankAdjustmentY + 0.05
                         : boardHeight - rankAdjustmentY + 0.05
-                    ) * squareSize;
+                    ) * SVG_SQUARE_SIZE;
 
                     transform = `translate(${translateX},${translateY})`;
                   }
@@ -530,7 +544,7 @@ class Boards extends React.Component<Props> {
                         transform={
                           isCircularChess || isHexagonalChess
                             ? undefined
-                            : `translate(${squareSize - literalMargin - literalFontSize / 2 * (rankLiteral.length)}, ${literalFontSize * 1.12})`
+                            : `translate(${SVG_SQUARE_SIZE - literalMargin - literalFontSize / 2 * (rankLiteral.length)}, ${literalFontSize * 1.12})`
                         }
                         fontSize={literalFontSize}
                         alignmentBaseline={isCircularChess || isHexagonalChess ? 'middle' : undefined}
@@ -558,10 +572,10 @@ class Boards extends React.Component<Props> {
                     <g {...baseParams} key={`${key}-top`}>
                       <line
                         className="center-border"
-                        transform={isBlackBase ? undefined : `translate(0, ${squareSize})`}
+                        transform={isBlackBase ? undefined : `translate(0, ${SVG_SQUARE_SIZE})`}
                         x1={0}
                         y1={0}
-                        x2={squareSize}
+                        x2={SVG_SQUARE_SIZE}
                         y2={0}
                       />
                     </g>
@@ -573,11 +587,11 @@ class Boards extends React.Component<Props> {
                     <g {...baseParams} key={`${key}-bottom`}>
                       <line
                         className="center-border"
-                        transform={isBlackBase ? undefined : `translate(0, -${squareSize})`}
+                        transform={isBlackBase ? undefined : `translate(0, -${SVG_SQUARE_SIZE})`}
                         x1={0}
-                        y1={squareSize}
-                        x2={squareSize}
-                        y2={squareSize}
+                        y1={SVG_SQUARE_SIZE}
+                        x2={SVG_SQUARE_SIZE}
+                        y2={SVG_SQUARE_SIZE}
                       />
                     </g>
                   );
@@ -588,11 +602,11 @@ class Boards extends React.Component<Props> {
                     <g {...baseParams} key={`${key}-left`}>
                       <line
                         className="center-border"
-                        transform={isBlackBase ? `translate(${squareSize}, 0)` : undefined}
+                        transform={isBlackBase ? `translate(${SVG_SQUARE_SIZE}, 0)` : undefined}
                         x1={0}
                         y1={0}
                         x2={0}
-                        y2={squareSize}
+                        y2={SVG_SQUARE_SIZE}
                       />
                     </g>
                   );
@@ -603,11 +617,11 @@ class Boards extends React.Component<Props> {
                     <g {...baseParams} key={`${key}-right`}>
                       <line
                         className="center-border"
-                        transform={isBlackBase ? `translate(-${squareSize}, 0)` : undefined}
-                        x1={squareSize}
+                        transform={isBlackBase ? `translate(-${SVG_SQUARE_SIZE}, 0)` : undefined}
+                        x1={SVG_SQUARE_SIZE}
                         y1={0}
-                        x2={squareSize}
-                        y2={squareSize}
+                        x2={SVG_SQUARE_SIZE}
+                        y2={SVG_SQUARE_SIZE}
                       />
                     </g>
                   );
@@ -620,15 +634,10 @@ class Boards extends React.Component<Props> {
             <svg
               key={board}
               className="board"
-              style={isCircularChess ? {
-                width: boardOrthodoxWidth * squareSize,
-                height: boardOrthodoxWidth * squareSize
-              } : {
-                width: isHexagonalChess
-                  ? (boardWidth * 3 + 1) * squareSize / 2 / Math.sqrt(3)
-                  : boardWidth * squareSize,
-                height: boardHeight * squareSize
+              style={{
+                width: boardRenderedWidth
               }}
+              viewBox={`0 0 ${boardViewBox.width} ${boardViewBox.height}`}
             >
               <radialGradient id="allowed-grad" r="100%" cx="50%" cy="50%">
                 <stop offset="0%" stopColor="rgba(0,255,255,0.5)" />
@@ -652,8 +661,6 @@ class Boards extends React.Component<Props> {
                   isBlackBase={isBlackBase}
                   isFantom={isFantom}
                   isFullFantom={(isFantom && !showFantomPieces) || !piece.location}
-                  boardsShiftX={boardsShiftX}
-                  squareSize={squareSize}
                   onClick={this.onSquareClick}
                   onDragStart={this.onPieceDragStart}
                 />

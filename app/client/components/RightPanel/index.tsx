@@ -95,6 +95,8 @@ export default class RightPanel extends React.Component<Props, State> {
     } = this.props;
 
     if (!e.target || !INPUT_ELEMENTS.includes((e.target as HTMLElement).tagName.toLowerCase())) {
+      e.preventDefault();
+
       if (e.key === 'ArrowLeft') {
         game.moveBack();
       } else if (e.key === 'ArrowRight') {

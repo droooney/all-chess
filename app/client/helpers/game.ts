@@ -27,7 +27,7 @@ import {
   POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS,
   POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS
 } from '../../shared/constants';
-import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from '../constants';
+import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from '../constants';
 
 type GameEvent = 'updateChat' | 'updateGame';
 
@@ -74,6 +74,9 @@ export class Game extends GameHelper {
   moves: LocalMove[] = [];
   currentMoveIndex: number;
   isOngoingDarkChessGame: boolean;
+  boardSidesRenderedRatio: number;
+  boardCenterX: number;
+  boardCenterY: number;
   darkChessMode: ColorEnum | null;
   showDarkChessHiddenPieces: boolean;
   needToCalculateMaterialDifference: boolean;
@@ -103,6 +106,23 @@ export class Game extends GameHelper {
     this.socket = socket;
     this.isOngoingDarkChessGame = this.isDarkChess && this.status !== GameStatusEnum.FINISHED;
     this.showDarkChessHiddenPieces = !this.isOngoingDarkChessGame;
+    this.boardSidesRenderedRatio = this.isCircularChess
+      ? 1
+      : this.isHexagonalChess
+        ? (this.boardWidth * 3 + 1) / 2 / Math.sqrt(3) / this.boardHeight
+        : this.boardWidth / this.boardHeight;
+    this.boardCenterX = (
+      this.isCircularChess
+        ? this.boardOrthodoxWidth * SVG_SQUARE_SIZE
+        : this.isHexagonalChess
+          ? (this.boardWidth * 3 + 1) * SVG_SQUARE_SIZE / 2 / Math.sqrt(3)
+          : this.boardWidth * SVG_SQUARE_SIZE
+    ) / 2;
+    this.boardCenterY = (
+      this.isCircularChess
+        ? this.boardOrthodoxWidth * SVG_SQUARE_SIZE
+        : this.boardHeight * SVG_SQUARE_SIZE
+    ) / 2;
     this.darkChessMode = this.isDarkChess && player ? player.color : null;
     this.needToCalculateMaterialDifference = (
       !this.isAbsorption
@@ -321,34 +341,12 @@ export class Game extends GameHelper {
     this.listeners[event].forEach((listener) => listener());
   }
 
-  getSquareSize(): number {
-    const is10by8 = this.isTwoFamilies || this.isCapablanca || this.isAmazons;
-
+  getPieceSize(): number {
     return this.isCircularChess
-      ? this.isAliceChess
-        ? is10by8
-          ? 38
-          : 45
-        : is10by8
-          ? 60
-          : 70
+      ? (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE * 0.9
       : this.isHexagonalChess
-        ? this.isAliceChess
-          ? 35
-          : 50
-        : this.isAliceChess
-          ? 45
-          : 70;
-  }
-
-  getPieceSize(squareSize?: number): number {
-    const eventualSquareSize = squareSize || this.getSquareSize();
-
-    return this.isCircularChess
-      ? (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * eventualSquareSize * 0.9
-      : this.isHexagonalChess
-        ? eventualSquareSize / 1.3
-        : eventualSquareSize;
+        ? SVG_SQUARE_SIZE / 1.3
+        : SVG_SQUARE_SIZE;
   }
 
   getUsedMoves(): AnyMove[] {

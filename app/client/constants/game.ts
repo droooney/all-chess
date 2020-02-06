@@ -7,7 +7,10 @@ export const GAME_DEFAULT_SETTINGS: { [key in keyof GameSettings]: GameSettings[
   timeControl: null
 };
 
+export const SVG_SQUARE_SIZE = 60;
 export const CIRCULAR_CHESS_EMPTY_CENTER_RATIO = 1 / 3;
+export const ALICE_CHESS_BOARDS_MARGIN = 20;
+export const GAME_GRID_GAP = 20;
 
 export const STANDARD_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 

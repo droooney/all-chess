@@ -95,6 +95,9 @@
     "webpack": "^4.41.5"
   },
   "browserslist": [
-    "chrome 70"
+    "last 5 Chrome versions",
+    "last 3 Safari versions",
+    "last 5 Firefox versions",
+    "last 3 Edge versions"
   ]
 }

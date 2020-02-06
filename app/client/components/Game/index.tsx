@@ -25,6 +25,7 @@ import {
 import {
   GAME_VARIANT_NAMES
 } from '../../../shared/constants';
+import { ALICE_CHESS_BOARDS_MARGIN, GAME_GRID_GAP } from '../../constants';
 import { Game as GameHelper } from '../../helpers';
 import { ReduxState } from '../../store';
 
@@ -46,11 +47,12 @@ interface State {
   selectedPiece: RealPiece | null;
   isBlackBase: boolean;
   showHiddenPieces: boolean;
+  boardsWidth: number;
   boardsShiftX: number;
   promotionModalVisible: boolean;
   promotionMove: BaseMove | null;
   isDragging: boolean;
-  squareSize: number;
+  gridMode: 'desktop' | 'tablet' | 'mobile';
 }
 
 class Game extends React.Component<Props, State> {
@@ -58,18 +60,19 @@ class Game extends React.Component<Props, State> {
   player: Player | null = null;
   game?: GameHelper;
   draggingPieceRef = React.createRef<SVGSVGElement>();
-  dragPoint: { x: number; y: number } = { x: 0, y: 0 };
+  draggingPieceTranslate: string = 'none';
   prevMoveIndex = -1;
   state: State = {
     selectedPiece: null,
     gameData: null,
     isBlackBase: false,
     showHiddenPieces: true,
+    boardsWidth: 0,
     boardsShiftX: 0,
     promotionModalVisible: false,
     promotionMove: null,
     isDragging: false,
-    squareSize: 0
+    gridMode: 'desktop'
   };
 
   componentDidMount() {
@@ -98,6 +101,9 @@ class Game extends React.Component<Props, State> {
       }));
     });
 
+    this.updateGridLayout();
+
+    window.addEventListener('resize', this.onWindowResize);
     document.addEventListener('mousemove', this.dragPiece);
     document.addEventListener('touchmove', this.dragPiece, { passive: false });
     document.addEventListener('mouseup', this.endDraggingPiece);
@@ -107,19 +113,14 @@ class Game extends React.Component<Props, State> {
   componentWillUnmount() {
     this.socket!.disconnect();
 
+    window.removeEventListener('resize', this.onWindowResize);
     document.removeEventListener('mousemove', this.dragPiece);
     document.removeEventListener('touchmove', this.dragPiece);
     document.removeEventListener('mouseup', this.endDraggingPiece);
     document.removeEventListener('touchend', this.endDraggingPiece);
   }
 
-  componentDidUpdate(_prevProps: Props, prevState: State): void {
-    if (!prevState.isDragging && this.state.isDragging) {
-      document.body.classList.add('dragging');
-    } else if (prevState.isDragging && !this.state.isDragging) {
-      document.body.classList.remove('dragging');
-    }
-
+  componentDidUpdate(): void {
     if (this.game) {
       if (this.prevMoveIndex !== this.game.currentMoveIndex) {
         this.selectPiece(null);
@@ -135,6 +136,65 @@ class Game extends React.Component<Props, State> {
   getStartingIsBlackBase(): boolean {
     return !!this.player && this.player.color === ColorEnum.BLACK;
   }
+
+  getEventPoint(e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent): { x: number; y: number; } {
+    return 'changedTouches' in e
+      ? { x: e.changedTouches[0].pageX, y: e.changedTouches[0].pageY }
+      : { x: e.pageX, y: e.pageY };
+  }
+
+  getDraggingPieceTranslate(e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent) {
+    const point = this.getEventPoint(e);
+    const pieceSize = this.getPieceSize();
+
+    return `translate(${point.x - pieceSize / 2}px, ${point.y - pieceSize / 2}px)`;
+  }
+
+  getPieceSize(): number {
+    return 100;
+  }
+
+  updateGridLayout() {
+    if (!this.game) {
+      return;
+    }
+
+    const {
+      scrollSize
+    } = this.props;
+    const {
+      boardCount,
+      boardSidesRenderedRatio
+    } = this.game;
+    const availableWidth = window.innerWidth - 2 * GAME_GRID_GAP - scrollSize;
+    const availableHeight = window.innerHeight - 2 * GAME_GRID_GAP - 30;
+    const maxBoardWidth = availableHeight * boardSidesRenderedRatio;
+    const maxBoardsWidth = maxBoardWidth * boardCount + ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1);
+    let gridMode: 'desktop' | 'tablet' | 'mobile';
+    let boardsWidth: number;
+
+    if (maxBoardsWidth + 2 * GAME_GRID_GAP + 300 + 300 <= availableWidth) {
+      gridMode = 'desktop';
+      boardsWidth = maxBoardWidth;
+    } else if (maxBoardsWidth + GAME_GRID_GAP + 300 <= availableWidth) {
+      gridMode = 'tablet';
+      boardsWidth = maxBoardsWidth;
+    } else {
+      gridMode = 'mobile';
+      boardsWidth = availableWidth;
+    }
+
+    console.log(availableWidth, availableHeight, maxBoardWidth, maxBoardsWidth, gridMode, boardsWidth);
+
+    this.setState({
+      boardsWidth,
+      gridMode
+    });
+  }
+
+  onWindowResize = () => {
+    this.updateGridLayout();
+  };
 
   onGameData = ({ timestamp, player, game }: GameInitialData | DarkChessGameInitialData) => {
     this.player = player;
@@ -156,9 +216,9 @@ class Game extends React.Component<Props, State> {
 
     this.setState({
       gameData: game,
-      squareSize: this.game.getSquareSize(),
       isBlackBase: this.getStartingIsBlackBase()
     });
+    this.updateGridLayout();
 
     console.log(this.game);
   };
@@ -300,12 +360,6 @@ class Game extends React.Component<Props, State> {
     this.closePromotionPopup();
   };
 
-  getEventPoint(e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent): { x: number; y: number; } {
-    return 'changedTouches' in e
-      ? { x: e.changedTouches[0].pageX, y: e.changedTouches[0].pageY }
-      : { x: e.pageX, y: e.pageY };
-  }
-
   startDraggingPiece = (e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation) => {
     const {
       isTouchDevice
@@ -327,7 +381,7 @@ class Game extends React.Component<Props, State> {
         || this.getAllowedMoves().all(({ square }) => !GameHelper.areSquaresEqual(draggedPiece.location, square))
       )
     ) {
-      this.dragPoint = this.getEventPoint(e);
+      this.draggingPieceTranslate = this.getDraggingPieceTranslate(e);
 
       this.setState({
         selectedPiece: draggedPiece,
@@ -343,13 +397,7 @@ class Game extends React.Component<Props, State> {
 
     e.preventDefault();
 
-    const pieceSize = this.game!.getPieceSize(this.state.squareSize);
-
-    this.dragPoint = this.getEventPoint(e);
-
-    this.draggingPieceRef.current!.transform.baseVal
-      .getItem(0)
-      .setTranslate(this.dragPoint.x - pieceSize / 2, this.dragPoint.y - pieceSize / 2);
+    this.draggingPieceRef.current!.style.transform = this.draggingPieceTranslate = this.getDraggingPieceTranslate(e);
   };
 
   endDraggingPiece = (e: MouseEvent | TouchEvent) => {
@@ -418,7 +466,6 @@ class Game extends React.Component<Props, State> {
           chat,
           turn,
           players,
-          isAliceChess,
           drawOffer,
           takebackRequest,
           timeControl,
@@ -431,16 +478,15 @@ class Game extends React.Component<Props, State> {
         } = this.game!;
         const {
           isBlackBase,
+          boardsWidth,
           boardsShiftX,
           selectedPiece,
           isDragging,
-          squareSize
+          gridMode
         } = this.state;
         const usedMoves = this.game!.getUsedMoves();
         const player = this.player;
-        const isBoardAtTop = isAliceChess;
         const isCurrentMoveLast = currentMoveIndex === usedMoves.length - 1;
-        const pieceSize = this.game!.getPieceSize(squareSize);
         const readOnly = (
           !player
           || player.color !== turn
@@ -449,7 +495,12 @@ class Game extends React.Component<Props, State> {
         );
 
         content = (
-          <div className={classNames('game', { 'top-boards-grid': isBoardAtTop })}>
+          <div
+            className={classNames('game', `grid-${gridMode}-style`)}
+            style={{
+              '--grid-gap': `${GAME_GRID_GAP}px`
+            } as React.CSSProperties}
+          >
 
             <InfoActionsPanel
               game={this.game!}
@@ -491,12 +542,12 @@ class Game extends React.Component<Props, State> {
               getAllowedMoves={this.getAllowedMoves}
               enableClick={!readOnly}
               enableDnd={!readOnly}
+              boardsWidth={boardsWidth}
               isBlackBase={isBlackBase}
               isDragging={isDragging}
               darkChessMode={darkChessMode}
               currentMove={usedMoves[currentMoveIndex]}
               boardsShiftX={boardsShiftX}
-              squareSize={squareSize}
             />
 
             <RightPanel
@@ -533,12 +584,11 @@ class Game extends React.Component<Props, State> {
               <FixedElement>
                 <svg
                   ref={this.draggingPieceRef}
-                  transform={`translate(${this.dragPoint.x - pieceSize / 2}, ${this.dragPoint.y - pieceSize / 2})`}
-                  style={{ pointerEvents: 'none' }}
+                  style={{ transform: this.draggingPieceTranslate }}
                 >
                   <GamePiece
                     piece={selectedPiece}
-                    pieceSize={pieceSize}
+                    pieceSize={this.getPieceSize()}
                   />
                 </svg>
               </FixedElement>
@@ -567,7 +617,8 @@ class Game extends React.Component<Props, State> {
 
 function mapStateToProps(state: ReduxState) {
   return {
-    isTouchDevice: state.common.isTouchDevice
+    isTouchDevice: state.common.isTouchDevice,
+    scrollSize: state.common.scrollSize
   };
 }
 

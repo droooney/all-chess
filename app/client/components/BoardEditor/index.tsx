@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 
-import { Game } from '../../helpers';
+import { Game as GameHelper, Game } from '../../helpers';
 import { Game as BaseGame } from '../../../shared/helpers';
 import {
   BoardPiece,
@@ -31,8 +31,7 @@ interface State {
 
 class BoardEditor extends React.Component<Props, State> {
   draggingPieceRef = React.createRef<SVGSVGElement>();
-  dragX = 0;
-  dragY = 0;
+  draggingPieceTranslate: string = 'none';
   game = this.getStandardGame();
   queryChangedFromOutside = true;
   state: State = {
@@ -51,13 +50,17 @@ class BoardEditor extends React.Component<Props, State> {
 
     setTimeout(this.replaceQuery, 0);
 
-    document.addEventListener('mousemove', this.onMouseMove);
-    document.addEventListener('mouseup', this.onMouseUp);
+    document.addEventListener('mousemove', this.dragPiece);
+    document.addEventListener('touchmove', this.dragPiece, { passive: false });
+    document.addEventListener('mouseup', this.endDraggingPiece);
+    document.addEventListener('touchend', this.endDraggingPiece);
   }
 
   componentWillUnmount() {
-    document.removeEventListener('mousemove', this.onMouseMove);
-    document.removeEventListener('mouseup', this.onMouseUp);
+    document.removeEventListener('mousemove', this.dragPiece);
+    document.removeEventListener('touchmove', this.dragPiece);
+    document.removeEventListener('mouseup', this.endDraggingPiece);
+    document.removeEventListener('touchend', this.endDraggingPiece);
   }
 
   componentDidUpdate(prevProps: Props, prevState: State): void {
@@ -83,6 +86,19 @@ class BoardEditor extends React.Component<Props, State> {
     }
 
     this.queryChangedFromOutside = true;
+  }
+
+  getEventPoint(e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent): { x: number; y: number; } {
+    return 'changedTouches' in e
+      ? { x: e.changedTouches[0].pageX, y: e.changedTouches[0].pageY }
+      : { x: e.pageX, y: e.pageY };
+  }
+
+  getDraggingPieceTranslate(e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent) {
+    const point = this.getEventPoint(e);
+    const pieceSize = this.getPieceSize();
+
+    return `translate(${point.x - pieceSize / 2}px, ${point.y - pieceSize / 2}px)`;
   }
 
   getStandardGame(): Game {
@@ -141,12 +157,8 @@ class BoardEditor extends React.Component<Props, State> {
     };
   }
 
-  getSquareSize(): number {
-    return this.game.getSquareSize() * 0.75;
-  }
-
   getPieceSize() {
-    return this.game.getPieceSize(this.getSquareSize());
+    return 100;
   }
 
   replaceQuery = () => {
@@ -177,8 +189,7 @@ class BoardEditor extends React.Component<Props, State> {
       : this.game.getPocketPiece(location.pieceType, location.color);
 
     if (draggedPiece) {
-      this.dragX = e.pageX;
-      this.dragY = e.pageY;
+      this.draggingPieceTranslate = this.getDraggingPieceTranslate(e);
 
       this.setState({
         selectedPiece: draggedPiece,
@@ -193,14 +204,23 @@ class BoardEditor extends React.Component<Props, State> {
     } = this.state;
 
     if (!selectedPiece) {
+      this.setState({
+        isDragging: false
+      });
+
       return;
     }
 
+    // TODO: if dnd only this if should not be run
     if (
       Game.isBoardPiece(selectedPiece)
       && square
       && Game.areSquaresEqual(selectedPiece.location, square)
     ) {
+      this.setState({
+        isDragging: false
+      });
+
       return;
     }
 
@@ -234,40 +254,42 @@ class BoardEditor extends React.Component<Props, State> {
       type: PieceLocationEnum.BOARD
     };
 
-    this.selectPiece(null);
+    this.setState({
+      isDragging: false,
+      selectedPiece: null
+    });
     this.replaceQuery();
   };
 
-  onMouseMove = (e: MouseEvent) => {
+  dragPiece = (e: MouseEvent | TouchEvent) => {
     if (!this.state.isDragging) {
       return;
     }
 
-    const pieceSize = this.getPieceSize();
+    e.preventDefault();
 
-    this.dragX = e.pageX;
-    this.dragY = e.pageY;
-
-    this.draggingPieceRef.current!.transform.baseVal.getItem(0).setTranslate(this.dragX - pieceSize / 2, this.dragY - pieceSize / 2);
+    this.draggingPieceRef.current!.style.transform = this.draggingPieceTranslate = this.getDraggingPieceTranslate(e);
   };
 
-  onMouseUp = (e: MouseEvent) => {
+  endDraggingPiece = (e: MouseEvent | TouchEvent) => {
     if (!this.state.isDragging) {
       return;
     }
 
-    this.setState({
-      isDragging: false
-    });
+    const point = this.getEventPoint(e);
 
     if (
-      !document.elementsFromPoint(e.pageX, e.pageY).some((element) => {
+      !document.elementsFromPoint(point.x, point.y).some((element) => {
         try {
           if (
             this.state.selectedPiece
-            && Game.isPocketPiece(this.state.selectedPiece)
+            && GameHelper.isPocketPiece(this.state.selectedPiece)
             && (element as HTMLElement).dataset.pocketPiece === this.state.selectedPiece.location.pieceType
           ) {
+            this.setState({
+              isDragging: false
+            });
+
             return true;
           }
 
@@ -285,7 +307,10 @@ class BoardEditor extends React.Component<Props, State> {
         }
       })
     ) {
-      this.makeMove(null);
+      this.setState({
+        isDragging: false,
+        selectedPiece: null
+      });
     }
   };
 
@@ -294,8 +319,6 @@ class BoardEditor extends React.Component<Props, State> {
       selectedPiece,
       isDragging
     } = this.state;
-    const squareSize = this.getSquareSize();
-    const pieceSize = this.getPieceSize();
 
     return (
       <div className="route board-editor-route">
@@ -311,11 +334,11 @@ class BoardEditor extends React.Component<Props, State> {
           makeMove={this.makeMove}
           enableClick={false}
           enableDnd
+          boardsWidth={400}
           darkChessMode={null}
           isBlackBase={false}
           isDragging={isDragging}
           currentMove={undefined}
-          squareSize={squareSize}
           boardsShiftX={0}
           pieces={this.game.pieces}
           showKingAttack={false}
@@ -327,11 +350,11 @@ class BoardEditor extends React.Component<Props, State> {
           <FixedElement>
             <svg
               ref={this.draggingPieceRef}
-              transform={`translate(${this.dragX - pieceSize / 2}, ${this.dragY - pieceSize / 2})`}
+              style={{ transform: this.draggingPieceTranslate }}
             >
               <GamePiece
                 piece={selectedPiece}
-                pieceSize={pieceSize}
+                pieceSize={this.getPieceSize()}
               />
             </svg>
           </FixedElement>

@@ -4,11 +4,12 @@ import {
 
   SetIsMobileAction
 } from '../actions';
-import { isMobileDevice } from '../helpers';
+import { getScrollSize, isMobileDevice } from '../helpers';
 
 const initialState: CommonState = {
   isMobile: isMobileDevice(),
-  isTouchDevice: 'ontouchstart' in window
+  isTouchDevice: 'ontouchstart' in window,
+  scrollSize: getScrollSize()
 };
 
 type Action = (

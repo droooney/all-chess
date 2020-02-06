@@ -2,14 +2,13 @@ import * as React from 'react';
 
 import { Game } from '../../helpers';
 import { PieceBoardLocation, PieceLocationEnum, RealPieceLocation, Square } from '../../../types';
-import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from '../../constants';
+import { SVG_SQUARE_SIZE, CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from '../../constants';
 
 export interface BoardSquareProps {
   game: Game;
   board: number;
   fileX: number;
   rankY: number;
-  squareSize: number;
   onSquareClick(square: Square): void;
   onPieceDragStart(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
 }
@@ -23,7 +22,6 @@ export default class BoardSquare extends React.PureComponent<Props> {
       board,
       fileX,
       rankY,
-      squareSize,
       onSquareClick,
       onPieceDragStart,
       ...elemProps
@@ -46,33 +44,21 @@ export default class BoardSquare extends React.PureComponent<Props> {
       ...square,
       type: PieceLocationEnum.BOARD
     };
-    const boardCenterX = (
-      isCircularChess
-        ? boardOrthodoxWidth * squareSize
-        : isHexagonalChess
-          ? (boardWidth * 3 + 1) * squareSize / 2 / Math.sqrt(3)
-          : boardWidth * squareSize
-    ) / 2;
-    const boardCenterY = (
-      isCircularChess
-        ? boardOrthodoxWidth * squareSize
-        : boardHeight * squareSize
-    ) / 2;
 
-    const translateX = `calc(var(--square-size-px) * var(--rendered-file-${fileX}))`;
-    const translateY = `calc(var(--square-size-px) * ${boardHeight - 1 - rankY})`;
+    const translateX = `calc(${SVG_SQUARE_SIZE}px * var(--rendered-file-${fileX}, ${fileX}))`;
+    const translateY = `calc(${SVG_SQUARE_SIZE}px * ${boardHeight - 1 - rankY})`;
     const baseParams = {
       'data-square': JSON.stringify(square),
       style: {
         transform: [
-          'rotate(calc(180deg * var(--is-black-base)))',
+          'rotate(calc(180deg * var(--is-black-base, 0)))',
           ...(
             isCircularChess || isHexagonalChess
               ? []
               : [`translate(${translateX}, ${translateY})`]
           )
         ].join(' '),
-        transformOrigin: `${boardCenterX}px ${boardCenterY}px`
+        transformOrigin: `${game.boardCenterX}px ${game.boardCenterY}px`
       } as React.CSSProperties,
       onClick: () => onSquareClick(square),
       onMouseDown: (e: React.MouseEvent) => onPieceDragStart(e, location),
@@ -81,8 +67,8 @@ export default class BoardSquare extends React.PureComponent<Props> {
     let pathD = '';
 
     if (isCircularChess) {
-      const rOuter = boardWidth * squareSize;
-      const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * squareSize;
+      const rOuter = boardWidth * SVG_SQUARE_SIZE;
+      const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE;
       const adjustedRankY = rankY > boardOrthodoxHeight
         ? boardHeight - 1 - rankY
         : rankY;
@@ -95,10 +81,10 @@ export default class BoardSquare extends React.PureComponent<Props> {
       const angle = adjustedRankY * Math.PI / 8;
       const nextAngle = (adjustedRankY + 1) * Math.PI / 8;
       const getCirclePoint = (r: number, angle: number) => {
-        const x = boardCenterX - (right ? -1 : 1) * r * Math.sin(angle);
-        const y = boardCenterY - r * Math.cos(angle);
+        const x = game.boardCenterX - (right ? -1 : 1) * r * Math.sin(angle);
+        const y = game.boardCenterY - r * Math.cos(angle);
 
-        return { x, y: boardOrthodoxWidth * squareSize - y };
+        return { x, y: boardOrthodoxWidth * SVG_SQUARE_SIZE - y };
       };
       const circlePoints = [
         getCirclePoint(r, angle),
@@ -115,17 +101,17 @@ export default class BoardSquare extends React.PureComponent<Props> {
         Z
       `;
     } else if (isHexagonalChess) {
-      const a = squareSize / 2 / Math.sqrt(3);
+      const a = SVG_SQUARE_SIZE / 2 / Math.sqrt(3);
       const x0 = (fileX * 3 + 1) * a;
       const rankAdjustmentY = 1 / 2 * Math.abs(fileX - middleFileX);
-      const y0 = (boardHeight - rankY - rankAdjustmentY) * squareSize;
+      const y0 = (boardHeight - rankY - rankAdjustmentY) * SVG_SQUARE_SIZE;
       const hexPoint = (x: number, y: number) => ({ x, y: -y });
       const hexPoints = [
-        hexPoint(-a, squareSize / 2),
-        hexPoint(a, squareSize / 2),
+        hexPoint(-a, SVG_SQUARE_SIZE / 2),
+        hexPoint(a, SVG_SQUARE_SIZE / 2),
         hexPoint(2 * a, 0),
-        hexPoint(a, -squareSize / 2),
-        hexPoint(-a, -squareSize / 2)
+        hexPoint(a, -SVG_SQUARE_SIZE / 2),
+        hexPoint(-a, -SVG_SQUARE_SIZE / 2)
       ];
 
       pathD = `
@@ -148,8 +134,8 @@ export default class BoardSquare extends React.PureComponent<Props> {
         />
       ) : (
         <rect
-          width={squareSize}
-          height={squareSize}
+          width={SVG_SQUARE_SIZE}
+          height={SVG_SQUARE_SIZE}
           {...baseParams}
           {...elemProps as React.SVGProps<SVGRectElement>}
         />

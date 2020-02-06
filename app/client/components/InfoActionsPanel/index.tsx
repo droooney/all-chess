@@ -203,7 +203,8 @@ class InfoActionsPanel extends React.Component<Props, State> {
     const boardsString = game.isAliceChess
       ? 'boards'
       : 'board';
-    const buttons: JSX.Element[] = [];
+    const gameplayButtons: JSX.Element[] = [];
+    const gameDisplayButtons: JSX.Element[] = [];
     const takebackMoveLink = !!takebackRequest && (
       isBasicTakeback
         ? ''
@@ -219,7 +220,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
     );
 
     if (!result && player) {
-      buttons.push(
+      gameplayButtons.push(
         <div
           key="resign"
           className="button"
@@ -255,7 +256,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
       );
     }
 
-    buttons.push(
+    gameDisplayButtons.push(
       <div
         key="flip-board"
         className="button"
@@ -274,7 +275,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
     );
 
     if (game.isCylinderChess) {
-      buttons.push(
+      gameDisplayButtons.push(
         <div
           key="shift-board-left"
           className="button"
@@ -303,7 +304,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
     }
 
     if (game.isAliceChess) {
-      buttons.push(
+      gameDisplayButtons.push(
         <div
           key="show-fantom-pieces"
           className={classNames('button', { enabled: showFantomPieces })}
@@ -326,7 +327,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
     }
 
     if (game.isDarkChess && result) {
-      buttons.push(
+      gameDisplayButtons.push(
         <div
           key="change-dark-chess-mode"
           className="button"
@@ -403,8 +404,13 @@ class InfoActionsPanel extends React.Component<Props, State> {
           )}
 
           <div className="actions">
+            {!!gameplayButtons.length && (
+              <div className="buttons">
+                {gameplayButtons}
+              </div>
+            )}
             <div className="buttons">
-              {buttons}
+              {gameDisplayButtons}
             </div>
             {player && takebackRequest && !result && (
               <div className="action">

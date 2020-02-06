@@ -6,6 +6,7 @@ import {
 export interface CommonState {
   isMobile: boolean;
   isTouchDevice: boolean;
+  scrollSize: number;
 }
 
 export type UserState = ShortUser | null;

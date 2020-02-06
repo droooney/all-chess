@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import * as React from 'react';
 import classNames from 'classnames';
 
@@ -6,7 +7,7 @@ import {
   PieceBoardLocation,
   RealPieceLocation
 } from '../../../types';
-import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from '../../constants';
+import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from '../../constants';
 import { Game } from '../../helpers';
 
 import GamePiece from '../GamePiece';
@@ -17,8 +18,6 @@ interface OwnProps {
   isBlackBase: boolean;
   isFantom: boolean;
   isFullFantom: boolean;
-  boardsShiftX: number;
-  squareSize: number;
 
   onClick?(location: PieceBoardLocation): void;
   onDragStart?(e: React.MouseEvent, location: RealPieceLocation): void;
@@ -27,6 +26,26 @@ interface OwnProps {
 type Props = OwnProps;
 
 export default class BoardPiece extends React.Component<Props> {
+  prevPiece = _.cloneDeep(this.props.piece);
+
+  ifBlackBase = (value: number | string, alternate: number | string): string => {
+    return `(var(--is-black-base, 0) * (${value}) + (1 - var(--is-black-base, 0)) * (${alternate}))`;
+  };
+
+  shouldComponentUpdate(nextProps: Props): boolean {
+    return (
+      !_.isEqual(this.prevPiece, nextProps.piece)
+      || this.props.game !== nextProps.game
+      || this.props.isBlackBase !== nextProps.isBlackBase
+      || this.props.isFantom !== nextProps.isFantom
+      || this.props.isFullFantom !== nextProps.isFullFantom
+    );
+  }
+
+  componentDidUpdate() {
+    this.prevPiece = _.cloneDeep(this.props.piece);
+  }
+
   render() {
     const {
       game,
@@ -41,27 +60,25 @@ export default class BoardPiece extends React.Component<Props> {
       isBlackBase,
       isFantom,
       isFullFantom,
-      squareSize,
-      boardsShiftX,
       onClick,
       onDragStart
     } = this.props;
-    const pieceSize = game.getPieceSize(squareSize);
+    const pieceSize = game.getPieceSize();
     const pieceClassNames = classNames({
       fantom: isFantom,
       'full-fantom': isFullFantom
     });
-    let translateX: number;
-    let translateY: number;
+    let translateX: number | string;
+    let translateY: number | string;
 
     if (game.isCircularChess) {
       const maximumSize = Math.max(game.boardOrthodoxWidth, game.boardOrthodoxHeight);
       const adjustedFileX = pieceY > game.boardOrthodoxHeight
         ? game.boardOrthodoxWidth - pieceX
         : pieceX;
-      const half = maximumSize * squareSize / 2;
-      const rOuter = game.boardWidth * squareSize;
-      const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * squareSize;
+      const half = maximumSize * SVG_SQUARE_SIZE / 2;
+      const rOuter = game.boardWidth * SVG_SQUARE_SIZE;
+      const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE;
       const right = pieceY > game.boardOrthodoxHeight ? 1 : 0;
       const r = rOuter - ((right ? game.boardOrthodoxWidth - adjustedFileX : adjustedFileX) + 0.5) * rDiff;
       const angleDiff = 2 * Math.PI / game.boardHeight;
@@ -71,11 +88,11 @@ export default class BoardPiece extends React.Component<Props> {
       translateY = half + r * Math.cos(angle) - pieceSize / 2;
     } else if (game.isHexagonalChess) {
       const middleFile = 5;
-      const a = squareSize / 2 / Math.sqrt(3);
-      const width = (game.boardWidth * 3 + 1) * squareSize / 2 / Math.sqrt(3);
-      const height = game.boardHeight * squareSize;
+      const a = SVG_SQUARE_SIZE / 2 / Math.sqrt(3);
+      const width = (game.boardWidth * 3 + 1) * SVG_SQUARE_SIZE / 2 / Math.sqrt(3);
+      const height = game.boardHeight * SVG_SQUARE_SIZE;
       const centerX = (3 * pieceX + 2) * a;
-      const centerY = (pieceY + 1 / 2 * (1 + Math.abs(pieceX - middleFile))) * squareSize;
+      const centerY = (pieceY + 1 / 2 * (1 + Math.abs(pieceX - middleFile))) * SVG_SQUARE_SIZE;
 
       translateX = (
         isBlackBase
@@ -88,24 +105,22 @@ export default class BoardPiece extends React.Component<Props> {
           : height - centerY
       ) - pieceSize / 2;
     } else {
-      const renderedFileX = game.adjustFileX(pieceX + (isBlackBase ? -boardsShiftX : boardsShiftX));
-
-      translateX = (
-        isBlackBase
-          ? game.boardWidth - 1 - renderedFileX
-          : renderedFileX
-      ) * squareSize;
-      translateY = (
-        isBlackBase
-          ? pieceY
-          : game.boardHeight - 1 - pieceY
-      ) * squareSize;
+      translateX = `calc(${SVG_SQUARE_SIZE}px * ${this.ifBlackBase(
+        `${game.boardWidth - 1} - var(--rendered-file-${pieceX}, ${pieceX})`,
+        `var(--rendered-file-${pieceX}, ${pieceX})`
+      )})`;
+      translateY = `calc(${SVG_SQUARE_SIZE}px * ${this.ifBlackBase(pieceY, game.boardHeight - 1 - pieceY)})`;
     }
 
     return (
       <g
         className="piece-container"
-        transform={`translate(${translateX}, ${translateY})`}
+        style={{
+          transform: `translate(${
+            typeof translateX === 'number' ? `${translateX}px` : translateX}, ${
+            typeof translateY === 'number' ? `${translateY}px` : translateY
+          })`
+        }}
         data-square={JSON.stringify(location)}
       >
         <GamePiece

@@ -4,7 +4,7 @@ const proto = Object.getPrototypeOf(Object.getPrototypeOf((function* () {})()));
 
 Object.defineProperties(proto, {
   all: {
-    value<T>(this: Generator<T>, callback: (value: T) => any): boolean {
+    value: function all<T>(this: Generator<T>, callback: (value: T) => any): boolean {
       for (const value of this) {
         if (!callback(value)) {
           return false;
@@ -16,7 +16,7 @@ Object.defineProperties(proto, {
   },
 
   any: {
-    value<T>(this: Generator<T>, callback: (value: T) => any): boolean {
+    value: function any<T>(this: Generator<T>, callback: (value: T) => any): boolean {
       for (const value of this) {
         if (callback(value)) {
           return true;
@@ -28,7 +28,7 @@ Object.defineProperties(proto, {
   },
 
   entries: {
-    *value<T>(this: Generator<T>): Generator<[number, T]> {
+    value: function* entries<T>(this: Generator<T>): Generator<[number, T]> {
       let i = 0;
 
       for (const value of this) {
@@ -38,7 +38,7 @@ Object.defineProperties(proto, {
   },
 
   filter: {
-    *value<T>(this: Generator<T>, callback: (value: T) => any): Generator<T> {
+    value: function* filter<T>(this: Generator<T>, callback: (value: T) => any): Generator<T> {
       for (const value of this) {
         if (callback(value)) {
           yield value;
@@ -48,7 +48,7 @@ Object.defineProperties(proto, {
   },
 
   find: {
-    value<T>(this: Generator<T>, callback: (value: T) => any): T | null {
+    value: function find<T>(this: Generator<T>, callback: (value: T) => any): T | null {
       for (const value of this) {
         if (callback(value)) {
           return value;
@@ -60,7 +60,7 @@ Object.defineProperties(proto, {
   },
 
   map: {
-    *value<T, U>(this: Generator<T>, callback: (value: T) => U): Generator<U> {
+    value: function* map<T, U>(this: Generator<T>, callback: (value: T) => U): Generator<U> {
       for (const value of this) {
         yield callback(value);
       }
@@ -68,7 +68,7 @@ Object.defineProperties(proto, {
   },
 
   reduce: {
-    value<T, U>(this: Generator<T>, callback: (v: U, value: T) => U, initialValue: U): U {
+    value: function reduce<T, U>(this: Generator<T>, callback: (v: U, value: T) => U, initialValue: U): U {
       let val = initialValue;
 
       for (const value of this) {
@@ -80,7 +80,7 @@ Object.defineProperties(proto, {
   },
 
   take: {
-    value<T>(this: Generator<T>, index: number): T | null {
+    value: function take<T>(this: Generator<T>, index: number): T | null {
       for (const [i, value] of this.entries()) {
         if (i === index) {
           return value;
@@ -92,7 +92,7 @@ Object.defineProperties(proto, {
   },
 
   toArray: {
-    value<T>(this: Generator<T>): T[] {
+    value: function toArray<T>(this: Generator<T>): T[] {
       return [...this];
     }
   }
