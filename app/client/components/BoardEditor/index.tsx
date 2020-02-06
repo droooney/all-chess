@@ -334,7 +334,6 @@ class BoardEditor extends React.Component<Props, State> {
           makeMove={this.makeMove}
           enableClick={false}
           enableDnd
-          boardsWidth={400}
           darkChessMode={null}
           isBlackBase={false}
           isDragging={isDragging}

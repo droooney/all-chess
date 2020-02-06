@@ -2,6 +2,7 @@
 
 .game-rules-example {
   display: grid;
+  align-items: center;
   margin: 20px 0;
 
   .boards {
@@ -33,10 +34,12 @@
   .desktop({
     grid-template:
       "boards moves-panel" auto
-      "description moves-panel" auto ~"/" auto auto;
+      "description moves-panel" auto ~"/" 2fr 1fr;
+    grid-column-gap: 20px;
+    padding: 0 10%;
 
     .moves-panel {
-      margin-left: 20px;
+      min-height: 150px;
     }
   });
 }

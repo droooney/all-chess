@@ -367,7 +367,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
 
   isParalysed(piece: RealPiece): boolean {
     return (
-      piece.location.type === PieceLocationEnum.BOARD
+      GamePieceUtils.isBoardPiece(piece)
       && this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.POSSIBLE).any(({ square }) => {
         const pieceInSquare = this.getBoardPiece(square);
 

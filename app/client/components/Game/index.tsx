@@ -498,6 +498,7 @@ class Game extends React.Component<Props, State> {
           <div
             className={classNames('game', `grid-${gridMode}-style`)}
             style={{
+              '--boards-width': `${boardsWidth}px`,
               '--grid-gap': `${GAME_GRID_GAP}px`
             } as React.CSSProperties}
           >
@@ -542,7 +543,6 @@ class Game extends React.Component<Props, State> {
               getAllowedMoves={this.getAllowedMoves}
               enableClick={!readOnly}
               enableDnd={!readOnly}
-              boardsWidth={boardsWidth}
               isBlackBase={isBlackBase}
               isDragging={isDragging}
               darkChessMode={darkChessMode}

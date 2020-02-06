@@ -96,15 +96,7 @@ export default class Chess960GameRules extends React.Component {
 
         <GameRulesExample
           id="2"
-          description={
-            <React.Fragment>
-              Example 2. The white king and rook
-              <br />
-              end up on previously empty squares.
-              <br />
-              The black king and rook swap places.
-            </React.Fragment>
-          }
+          description="Example 2. The white king and rook end up on previously empty squares. The black king and rook swap places."
           variants={[GameVariantEnum.CHESS_960]}
           fen="nnrkrqbb/pppppppp/8/8/8/8/PPPPPPPP/NNRKRQBB w KQkq - 0 1"
           moves="1. f4 Nb6 2. Bxb6 axb6 3. Qf3 Nc6 4. O-O O-O-O"
@@ -113,15 +105,7 @@ export default class Chess960GameRules extends React.Component {
 
         <GameRulesExample
           id="3"
-          description={
-            <React.Fragment>
-              Example 3. The white king ends up on
-              <br />
-              the rook&apos;s initial square.
-              <br />
-              The black king doesn&apos;t move during castling.
-            </React.Fragment>
-          }
+          description="Example 3. The white king ends up on the rook's initial square. he black king doesn't move during castling."
           variants={[GameVariantEnum.CHESS_960]}
           fen="bbrnnqkr/pppppppp/8/8/8/8/PPPPPPPP/BBRNNQKR w KQkq - 0 1"
           moves="1. e4 e5 2. Qd3 Nd6 3. Nf3 Nc6 4. Ne3 Qe7 5. O-O-O O-O"
@@ -130,17 +114,7 @@ export default class Chess960GameRules extends React.Component {
 
         <GameRulesExample
           id="4"
-          description={
-            <React.Fragment>
-              Example 4. The white rook doesn&apos;t
-              <br />
-              move during castling.
-              <br />
-              The black rook ends up on the
-              <br />
-              king&apos;s initial square.
-            </React.Fragment>
-          }
+          description="Example 4. The white rook doesn't move during castling. The black rook ends up on the king's initial square."
           variants={[GameVariantEnum.CHESS_960]}
           fen="bbnrnkqr/pppppppp/8/8/8/8/PPPPPPPP/BBNRNKQR w KQkq - 0 1"
           moves="1. Ncd3 f5 2. Nf3 Qf7 3. O-O-O O-O"
@@ -166,19 +140,8 @@ export default class Chess960GameRules extends React.Component {
 
         <GameRulesExample
           id="5"
-          description={
-            <React.Fragment>
-              Example 5. The white queen captures the
-              <br />
-              black queen, it returns to the &quot;initial&quot; square.
-              <br />
-              The black rook captures the white queen, but
-              <br />
-              its &quot;initial&quot; square is occupied by the bishop,
-              <br />
-              so the queen remains captured.
-            </React.Fragment>
-          }
+          description="Example 5. The white queen captures the black queen, it returns to the &quot;initial&quot; square.
+The black rook captures the white queen, but its &quot;initial&quot; square is occupied by the bishop, so the queen remains captured."
           variants={[GameVariantEnum.CHESS_960, GameVariantEnum.CIRCE]}
           fen="bnr1kqrn/ppppb2p/5pp1/4P3/4P3/6P1/PPPP3P/BNRBKQRN b KQkq - 1 7"
           moves="7... fxe5 8. Qxf8+ Rxf8"

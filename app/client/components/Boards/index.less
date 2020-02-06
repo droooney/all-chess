@@ -1,5 +1,8 @@
 @import (reference) '../../styles/mixins';
 
+@board-count: var(--board-count, 1);
+@board-margin: var(--boards-margin, 20px);
+
 @light-color: var(--light-square-color, #eeeece);
 @half-dark-color: var(--half-square-dark-color, #d8d8d8);
 @dark-color: var(--dark-square-color, #bbb);
@@ -12,6 +15,7 @@
   .flex();
 
   grid-area: boards;
+  width: var(--boards-width);
 
   &.antichess {
     .board {
@@ -22,8 +26,10 @@
   }
 
   .board {
+    width: calc((100% - (@board-count - 1) * @board-margin) / @board-count);
+
     &:not(:last-child) {
-      margin-right: var(--boards-margin, 20px);
+      margin-right: @board-margin;
     }
 
     .square {

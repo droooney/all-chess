@@ -95,7 +95,7 @@ export default class RightPanel extends React.Component<Props, State> {
     } = this.props;
 
     if (!e.target || !INPUT_ELEMENTS.includes((e.target as HTMLElement).tagName.toLowerCase())) {
-      e.preventDefault();
+      let preventDefault = true;
 
       if (e.key === 'ArrowLeft') {
         game.moveBack();
@@ -105,6 +105,12 @@ export default class RightPanel extends React.Component<Props, State> {
         game.navigateToMove(-1);
       } else if (e.key === 'ArrowDown') {
         game.navigateToMove(game.getUsedMoves().length - 1);
+      } else {
+        preventDefault = false;
+      }
+
+      if (preventDefault) {
+        e.preventDefault();
       }
     }
   };

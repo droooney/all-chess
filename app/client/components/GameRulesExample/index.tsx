@@ -15,7 +15,7 @@ import './index.less';
 
 interface OwnProps {
   id: string;
-  description: string | JSX.Element;
+  description: string;
   variants: GameVariantEnum[];
   boardCount: number;
   boardWidth: number;
@@ -78,7 +78,6 @@ export default class GameRulesExample extends React.Component<Props> {
           makeMove={() => {}}
           enableClick={false}
           enableDnd={false}
-          boardsWidth={0}
           darkChessMode={null}
           isBlackBase={false}
           isDragging={false}

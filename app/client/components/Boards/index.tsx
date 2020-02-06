@@ -40,7 +40,6 @@ export interface OwnProps {
   startDraggingPiece(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
   enableClick: boolean;
   enableDnd: boolean;
-  boardsWidth: number;
   isBlackBase: boolean;
   isDragging: boolean;
   darkChessMode: ColorEnum | null;
@@ -216,6 +215,8 @@ class Boards extends React.Component<Props> {
         boardHeight,
         boardOrthodoxWidth,
         boardOrthodoxHeight,
+        boardCenterX,
+        boardCenterY,
         middleFileX,
         middleRankY
       },
@@ -223,7 +224,6 @@ class Boards extends React.Component<Props> {
       pieces,
       withLiterals,
       currentMove,
-      boardsWidth,
       isBlackBase,
       isDragging,
       darkChessMode,
@@ -231,17 +231,6 @@ class Boards extends React.Component<Props> {
       showFantomPieces
     } = this.props;
 
-    const boardRenderedWidth = (boardsWidth - ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1)) / boardCount;
-    const boardViewBox = isCircularChess ? {
-      width: boardOrthodoxWidth * SVG_SQUARE_SIZE,
-      height: boardOrthodoxWidth * SVG_SQUARE_SIZE
-    } : {
-      width: isHexagonalChess
-        ? (boardWidth * 3 + 1) * SVG_SQUARE_SIZE / 2 / Math.sqrt(3)
-        : boardWidth * SVG_SQUARE_SIZE,
-      height: boardHeight * SVG_SQUARE_SIZE
-    };
-    const half = boardOrthodoxWidth * SVG_SQUARE_SIZE / 2;
     const rOuter = boardWidth * SVG_SQUARE_SIZE;
     const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE;
     const literalFontSize = Math.ceil((
@@ -268,6 +257,7 @@ class Boards extends React.Component<Props> {
         className={classNames('boards', { antichess: isAntichess })}
         style={{
           '--is-black-base': +isBlackBase,
+          '--board-count': boardCount,
           '--board-width': boardWidth,
           '--board-orthodox-width': boardOrthodoxWidth,
           '--board-height': boardOrthodoxHeight,
@@ -461,7 +451,7 @@ class Boards extends React.Component<Props> {
                   if (isCircularChess) {
                     const r = rOuter - (fileX + 1) * rDiff;
 
-                    transform = `translate(${half},${half + r})`;
+                    transform = `translate(${boardCenterX},${boardCenterY + r})`;
                   } else if (isHexagonalChess) {
                     const fileAdjustmentX = fileX * 3 + 0.25;
                     const translateX = (
@@ -516,8 +506,8 @@ class Boards extends React.Component<Props> {
                     const angleDiff = 2 * Math.PI / boardHeight;
                     const angle = (rankY + 1) * angleDiff + (isBlackBase ? Math.PI : 0) - Math.PI / 80;
                     const r = rOuter - rDiff * 0.25;
-                    const translateX = half - r * Math.sin(angle);
-                    const translateY = half + r * Math.cos(angle);
+                    const translateX = boardCenterX - r * Math.sin(angle);
+                    const translateY = boardCenterY + r * Math.cos(angle);
 
                     transform = `translate(${translateX},${translateY})`;
                   } else if (isHexagonalChess) {
@@ -634,10 +624,7 @@ class Boards extends React.Component<Props> {
             <svg
               key={board}
               className="board"
-              style={{
-                width: boardRenderedWidth
-              }}
-              viewBox={`0 0 ${boardViewBox.width} ${boardViewBox.height}`}
+              viewBox={`0 0 ${2 * boardCenterX} ${2 * boardCenterY}`}
             >
               <radialGradient id="allowed-grad" r="100%" cx="50%" cy="50%">
                 <stop offset="0%" stopColor="rgba(0,255,255,0.5)" />
