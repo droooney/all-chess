@@ -338,6 +338,7 @@ class BoardEditor extends React.Component<Props, State> {
           isBlackBase={false}
           isDragging={isDragging}
           currentMove={undefined}
+          boardToShow="all"
           boardsShiftX={0}
           pieces={this.game.pieces}
           showKingAttack={false}
@@ -349,7 +350,10 @@ class BoardEditor extends React.Component<Props, State> {
           <FixedElement>
             <svg
               ref={this.draggingPieceRef}
-              style={{ transform: this.draggingPieceTranslate }}
+              style={{
+                pointerEvents: 'none',
+                transform: this.draggingPieceTranslate
+              }}
             >
               <GamePiece
                 piece={selectedPiece}

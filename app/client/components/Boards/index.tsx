@@ -42,6 +42,7 @@ export interface OwnProps {
   enableDnd: boolean;
   isBlackBase: boolean;
   isDragging: boolean;
+  boardToShow: number | 'all';
   darkChessMode: ColorEnum | null;
   currentMove: DarkChessLocalMove | LocalMove | undefined;
   boardsShiftX: number;
@@ -227,6 +228,7 @@ class Boards extends React.Component<Props> {
       isBlackBase,
       isDragging,
       darkChessMode,
+      boardToShow,
       boardsShiftX,
       showFantomPieces
     } = this.props;
@@ -258,6 +260,7 @@ class Boards extends React.Component<Props> {
         style={{
           '--is-black-base': +isBlackBase,
           '--board-count': boardCount,
+          '--shown-board-count': boardToShow === 'all' ? boardCount : 1,
           '--board-width': boardWidth,
           '--board-orthodox-width': boardOrthodoxWidth,
           '--board-height': boardOrthodoxHeight,
@@ -275,6 +278,10 @@ class Boards extends React.Component<Props> {
         } as React.CSSProperties}
       >
         {_.times(boardCount, (board) => {
+          if (boardToShow !== 'all' && board !== boardToShow) {
+            return;
+          }
+
           const squares: JSX.Element[] = [];
           const currentMoveSquares: JSX.Element[] = [];
           const allowedSquares: JSX.Element[] = [];

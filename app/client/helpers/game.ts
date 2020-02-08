@@ -160,6 +160,8 @@ export class Game extends GameHelper {
 
         if (moveIndex >= this.moves.length) {
           this.onMoveMade(move, false);
+
+          navigator.vibrate(200);
         } else if (moveIndex === this.moves.length - 1) {
           const lastMove = _.last(this.moves)!;
 
@@ -173,6 +175,8 @@ export class Game extends GameHelper {
         this.lastMoveTimestamp = lastMoveTimestamp;
 
         this.onMoveMade(move, true);
+
+        navigator.vibrate(200);
       });
 
       socket.on('updatePlayers', (players) => {

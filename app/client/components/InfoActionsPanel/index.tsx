@@ -31,6 +31,7 @@ export interface OwnProps {
   isBlackBase: boolean;
   isNoMovesMade: boolean;
   isCurrentMoveLast: boolean;
+  boardToShow: number | 'all';
   drawOffer: ColorEnum | null;
   takebackRequest: TakebackRequest | null;
   isBasicTakeback: boolean;
@@ -39,6 +40,7 @@ export interface OwnProps {
   player: Player | null;
   boardsShiftX: number;
   flipBoard(): void;
+  switchBoard(): void;
   changeDarkChessMode(): void;
   toggleShowDarkChessHiddenPieces(): void;
   setBoardsShiftX(boardsShiftX: number): void;
@@ -148,6 +150,10 @@ class InfoActionsPanel extends React.Component<Props, State> {
     this.props.flipBoard();
   };
 
+  switchBoard = () => {
+    this.props.switchBoard();
+  };
+
   toggleShowFantomPieces = () => {
     const {
       dispatch,
@@ -193,6 +199,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
       isBlackBase,
       isNoMovesMade,
       isCurrentMoveLast,
+      boardToShow,
       drawOffer,
       takebackRequest,
       darkChessMode,
@@ -212,9 +219,9 @@ class InfoActionsPanel extends React.Component<Props, State> {
           ? ' up to the start of the game'
           : (
             <React.Fragment>
-              {' '}up to move <a href="javascript:void(0)" onClick={this.navigateToTakebackRequestMove}>
+              {' '}up to move <span className="takeback-move-link" onClick={this.navigateToTakebackRequestMove}>
                 {game.getUsedMoves()[takebackRequest.moveIndex].figurine}
-              </a>
+              </span>
             </React.Fragment>
           )
     );
@@ -273,6 +280,19 @@ class InfoActionsPanel extends React.Component<Props, State> {
         </div>
       </div>
     );
+
+    if (game.isAliceChess && boardToShow !== 'all') {
+      gameDisplayButtons.push(
+        <div
+          key="switch-board"
+          className="button"
+          title={`Switch to board ${game.getNextBoard(boardToShow) + 1}`}
+          onClick={this.switchBoard}
+        >
+          {boardToShow + 1}
+        </div>
+      );
+    }
 
     if (game.isCylinderChess) {
       gameDisplayButtons.push(

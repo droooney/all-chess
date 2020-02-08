@@ -24,7 +24,13 @@ import {
 import {
   GAME_VARIANT_NAMES
 } from '../../../shared/constants';
-import { ALICE_CHESS_BOARDS_MARGIN, GAME_GRID_GAP } from '../../constants';
+import {
+  ALICE_CHESS_BOARDS_MARGIN,
+  GAME_GRID_GAP,
+  LEFT_DESKTOP_PANEL_WIDTH,
+  RIGHT_DESKTOP_PANEL_WIDTH,
+  TABLET_PANEL_WIDTH
+} from '../../constants';
 import { Game as GameHelper } from '../../helpers';
 import { ReduxState } from '../../store';
 
@@ -47,6 +53,7 @@ interface State {
   isBlackBase: boolean;
   showHiddenPieces: boolean;
   boardsWidth: number;
+  boardToShow: 'all' | number;
   boardsShiftX: number;
   promotionModalVisible: boolean;
   promotionMove: BaseMove | null;
@@ -67,6 +74,7 @@ class Game extends React.Component<Props, State> {
     isBlackBase: false,
     showHiddenPieces: true,
     boardsWidth: 0,
+    boardToShow: 'all',
     boardsShiftX: 0,
     promotionModalVisible: false,
     promotionMove: null,
@@ -138,8 +146,8 @@ class Game extends React.Component<Props, State> {
 
   getEventPoint(e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent): { x: number; y: number; } {
     return 'changedTouches' in e
-      ? { x: e.changedTouches[0].pageX, y: e.changedTouches[0].pageY }
-      : { x: e.pageX, y: e.pageY };
+      ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY }
+      : { x: e.clientX, y: e.clientY };
   }
 
   getDraggingPieceTranslate(e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent) {
@@ -162,31 +170,86 @@ class Game extends React.Component<Props, State> {
       scrollSize
     } = this.props;
     const {
+      boardToShow: currentBoardToShow
+    } = this.state;
+    const {
       boardCount,
       boardSidesRenderedRatio
     } = this.game;
-    const availableWidth = window.innerWidth - 2 * GAME_GRID_GAP - scrollSize;
-    const availableHeight = window.innerHeight - 2 * GAME_GRID_GAP - 30;
-    const maxBoardWidth = availableHeight * boardSidesRenderedRatio;
-    const maxBoardsWidth = maxBoardWidth * boardCount + ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1);
+    const availableDesktopWidth = window.innerWidth - 2 * GAME_GRID_GAP - scrollSize;
+    const availableTabletWidth = window.innerWidth - 2 * GAME_GRID_GAP - scrollSize;
+    const availableMobileWidth = window.innerWidth - scrollSize;
+    const availableDesktopHeight = window.innerHeight - 2 * GAME_GRID_GAP - 30;
+    const availableTabletHeight = window.innerHeight - 2 * GAME_GRID_GAP - 30;
+    // const availableMobileHeight = window.innerHeight - 2 * GAME_GRID_GAP - 30;
+    const maxAvailableDesktopWidth = (
+      availableDesktopWidth
+      - LEFT_DESKTOP_PANEL_WIDTH
+      - RIGHT_DESKTOP_PANEL_WIDTH
+      - 2 * GAME_GRID_GAP
+    );
+    const maxDesktopBoardWidth = availableDesktopHeight * boardSidesRenderedRatio;
+    const maxDesktopBoardsWidth = maxDesktopBoardWidth * boardCount + ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1);
+    const numberBoardToShow = currentBoardToShow !== 'all' && currentBoardToShow;
     let gridMode: 'desktop' | 'tablet' | 'mobile';
     let boardsWidth: number;
+    let boardToShow: 'all' | number;
 
-    if (maxBoardsWidth + 2 * GAME_GRID_GAP + 300 + 300 <= availableWidth) {
+    if (maxDesktopBoardsWidth <= maxAvailableDesktopWidth) {
       gridMode = 'desktop';
-      boardsWidth = maxBoardWidth;
-    } else if (maxBoardsWidth + GAME_GRID_GAP + 300 <= availableWidth) {
-      gridMode = 'tablet';
-      boardsWidth = maxBoardsWidth;
+      boardsWidth = maxDesktopBoardsWidth;
+      boardToShow = 'all';
     } else {
-      gridMode = 'mobile';
-      boardsWidth = availableWidth;
-    }
+      const maxHeight = (maxAvailableDesktopWidth - ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1)) / boardCount / boardSidesRenderedRatio;
 
-    console.log(availableWidth, availableHeight, maxBoardWidth, maxBoardsWidth, gridMode, boardsWidth);
+      if (maxHeight >= availableDesktopHeight * 0.75) {
+        gridMode = 'desktop';
+        boardsWidth = maxAvailableDesktopWidth;
+        boardToShow = 'all';
+      } else {
+        const maxAvailableTabletWidth = (
+          availableTabletWidth
+          - TABLET_PANEL_WIDTH
+          - GAME_GRID_GAP
+        );
+        const maxTabletBoardWidth = availableTabletHeight * boardSidesRenderedRatio;
+        const maxTabletBoardsWidth = maxDesktopBoardWidth * boardCount + ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1);
+
+        if (maxTabletBoardsWidth <= maxAvailableTabletWidth) {
+          gridMode = 'tablet';
+          boardsWidth = maxTabletBoardsWidth;
+          boardToShow = 'all';
+        } else {
+          const maxHeight = (maxAvailableTabletWidth - ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1)) / boardCount / boardSidesRenderedRatio;
+
+          if (maxHeight >= availableTabletHeight * 0.75) {
+            gridMode = 'tablet';
+            boardsWidth = maxAvailableTabletWidth;
+            boardToShow = 'all';
+          } else if (maxTabletBoardWidth <= maxAvailableTabletWidth) {
+            gridMode = 'tablet';
+            boardsWidth = maxTabletBoardWidth;
+            boardToShow = numberBoardToShow || 0;
+          } else {
+            const maxHeight = maxAvailableTabletWidth / boardSidesRenderedRatio;
+
+            if (maxHeight >= availableTabletHeight * 0.75) {
+              gridMode = 'tablet';
+              boardsWidth = maxAvailableTabletWidth;
+              boardToShow = numberBoardToShow || 0;
+            } else {
+              gridMode = 'mobile';
+              boardsWidth = availableMobileWidth;
+              boardToShow = numberBoardToShow || 0;
+            }
+          }
+        }
+      }
+    }
 
     this.setState({
       boardsWidth,
+      boardToShow,
       gridMode
     });
   }
@@ -236,6 +299,14 @@ class Game extends React.Component<Props, State> {
     this.setState(({ isBlackBase, boardsShiftX }) => ({
       isBlackBase: !isBlackBase,
       boardsShiftX: -boardsShiftX
+    }));
+  };
+
+  switchBoard = () => {
+    this.setState(({ boardToShow }) => ({
+      boardToShow: boardToShow === 'all'
+        ? 'all'
+        : this.game!.getNextBoard(boardToShow)
     }));
   };
 
@@ -478,6 +549,7 @@ class Game extends React.Component<Props, State> {
         const {
           isBlackBase,
           boardsWidth,
+          boardToShow,
           boardsShiftX,
           selectedPiece,
           isDragging,
@@ -498,7 +570,10 @@ class Game extends React.Component<Props, State> {
             className={classNames('game', `grid-${gridMode}-style`)}
             style={{
               '--boards-width': `${boardsWidth}px`,
-              '--grid-gap': `${GAME_GRID_GAP}px`
+              '--grid-gap': `${GAME_GRID_GAP}px`,
+              '--left-desktop-panel-width': `${LEFT_DESKTOP_PANEL_WIDTH}px`,
+              '--right-desktop-panel-width': `${RIGHT_DESKTOP_PANEL_WIDTH}px`,
+              '--tablet-panel-width': `${TABLET_PANEL_WIDTH}px`
             } as React.CSSProperties}
           >
 
@@ -509,6 +584,7 @@ class Game extends React.Component<Props, State> {
               isBlackBase={isBlackBase}
               isNoMovesMade={usedMoves.length === 0}
               isCurrentMoveLast={isCurrentMoveLast}
+              boardToShow={boardToShow}
               drawOffer={drawOffer}
               takebackRequest={takebackRequest}
               isBasicTakeback={!!takebackRequest && takebackRequest.moveIndex === usedMoves.length - 2}
@@ -517,6 +593,7 @@ class Game extends React.Component<Props, State> {
               player={player}
               boardsShiftX={boardsShiftX}
               flipBoard={this.flipBoard}
+              switchBoard={this.switchBoard}
               changeDarkChessMode={this.changeDarkChessMode}
               toggleShowDarkChessHiddenPieces={this.toggleShowDarkChessHiddenPieces}
               setBoardsShiftX={this.setBoardsShiftX}
@@ -544,6 +621,7 @@ class Game extends React.Component<Props, State> {
               enableDnd={!readOnly}
               isBlackBase={isBlackBase}
               isDragging={isDragging}
+              boardToShow={boardToShow}
               darkChessMode={darkChessMode}
               currentMove={usedMoves[currentMoveIndex]}
               boardsShiftX={boardsShiftX}
@@ -583,7 +661,10 @@ class Game extends React.Component<Props, State> {
               <FixedElement>
                 <svg
                   ref={this.draggingPieceRef}
-                  style={{ transform: this.draggingPieceTranslate }}
+                  style={{
+                    pointerEvents: 'none',
+                    transform: this.draggingPieceTranslate
+                  }}
                 >
                   <GamePiece
                     piece={selectedPiece}

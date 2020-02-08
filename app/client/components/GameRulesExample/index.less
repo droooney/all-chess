@@ -22,9 +22,10 @@
 
   .not-desktop({
     grid-template:
-      "boards" auto
+      "boards     " auto
       "description" auto
-      "moves-panel" auto ~"/" 100%;
+      "moves-panel" auto
+      ~"/" 100%;
 
     .moves-panel {
       width: 100%;
@@ -33,8 +34,9 @@
 
   .desktop({
     grid-template:
-      "boards moves-panel" auto
-      "description moves-panel" auto ~"/" 2fr 1fr;
+      "boards      moves-panel" auto
+      "description moves-panel" auto
+      ~"/" 2fr 1fr;
     grid-column-gap: 20px;
     padding: 0 10%;
 

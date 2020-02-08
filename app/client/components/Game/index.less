@@ -90,6 +90,11 @@
           .flex();
 
           text-align: center;
+
+          .takeback-move-link {
+            color: green;
+            cursor: pointer;
+          }
         }
 
         .fa-check,
@@ -314,14 +319,15 @@
     &.grid-desktop-style {
       grid-template:
         "info-actions boards right-panel" min-content
-        "chat boards right-panel" fit-content(0) ~"/" 300px auto 300px;
+        "chat         boards right-panel" fit-content(0)
+        ~"/" var(--left-desktop-panel-width, 300px) auto var(--right-desktop-panel-width, 300px);
     }
 
     &.grid-tablet-style {
       grid-template:
-        "boards info-actions" min-content
-        "boards right-panel" auto
-        "chat chat" fit-content(0) ~"/" auto 300px;
+        "boards right-panel " auto
+        "chat   info-actions" fit-content(0)
+        ~"/" auto var(--tablet-panel-width, 300px);
 
       .boards {
         align-items: flex-start;
@@ -330,10 +336,12 @@
 
     &.grid-mobile-style {
       grid-template:
-        "boards" auto
+        "boards      " auto
         "info-actions" 180px
-        "right-panel" auto
-        "chat" fit-content(0) ~"/" 100%;
+        "right-panel " auto
+        "chat        " fit-content(0)
+        ~"/" 100%;
+      padding: 0;
     }
   }
 }
