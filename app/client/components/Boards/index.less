@@ -84,6 +84,8 @@
     .literal {
       .user-select(none);
 
+      pointer-events: none;
+
       &.light {
         fill: @light-color;
       }
@@ -115,6 +117,7 @@
     cursor: pointer;
 
     .piece {
+      pointer-events: none;
       opacity: 1;
       transition: opacity 0.2s ease-in;
 

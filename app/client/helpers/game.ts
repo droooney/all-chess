@@ -15,6 +15,7 @@ import {
   Piece,
   Player,
   RevertableMove,
+  Square,
   TimeControl,
   TimeControlEnum
 } from '../../types';
@@ -161,7 +162,9 @@ export class Game extends GameHelper {
         if (moveIndex >= this.moves.length) {
           this.onMoveMade(move, false);
 
-          navigator.vibrate(200);
+          if ('vibrate' in navigator) {
+            navigator.vibrate(200);
+          }
         } else if (moveIndex === this.moves.length - 1) {
           const lastMove = _.last(this.moves)!;
 
@@ -176,7 +179,9 @@ export class Game extends GameHelper {
 
         this.onMoveMade(move, true);
 
-        navigator.vibrate(200);
+        if ('vibrate' in navigator) {
+          navigator.vibrate(200);
+        }
       });
 
       socket.on('updatePlayers', (players) => {
@@ -345,12 +350,32 @@ export class Game extends GameHelper {
     this.listeners[event].forEach((listener) => listener());
   }
 
+  getLiteralColor(square: Square): 'light' | 'dark' | 'half-dark' {
+    return this.getSquareColor(square) === 'light'
+      ? 'dark'
+      : 'light';
+  }
+
   getPieceSize(): number {
     return this.isCircularChess
       ? (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE * 0.9
       : this.isHexagonalChess
         ? SVG_SQUARE_SIZE / 1.3
         : SVG_SQUARE_SIZE;
+  }
+
+  getSquareColor(square: Square): 'light' | 'dark' | 'half-dark' {
+    if (this.isHexagonalChess) {
+      const x = this.middleFileX - Math.abs(square.x - this.middleFileX);
+
+      return (square.y + x) % 3 === 2
+        ? 'light'
+        : (square.y + x) % 3 === 1
+          ? 'half-dark'
+          : 'dark';
+    }
+
+    return (square.y + square.x) % 2 ? 'light' : 'dark';
   }
 
   getUsedMoves(): AnyMove[] {

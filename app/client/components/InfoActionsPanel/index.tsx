@@ -266,7 +266,11 @@ class InfoActionsPanel extends React.Component<Props, State> {
     gameDisplayButtons.push(
       <div
         key="flip-board"
-        className="button"
+        className={classNames('button', {
+          enabled: !player || player.color === ColorEnum.WHITE
+            ? isBlackBase
+            : !isBlackBase
+        })}
         title={`Flip the ${boardsString}`}
         onClick={this.flipBoard}
       >

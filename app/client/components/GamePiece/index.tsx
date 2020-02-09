@@ -2,9 +2,7 @@ import * as React from 'react';
 import classNames from 'classnames';
 
 import {
-  PieceBoardLocation,
-  RealPiece,
-  RealPieceLocation
+  RealPiece
 } from '../../../types';
 
 import Piece from '../Piece';
@@ -15,8 +13,6 @@ interface OwnProps {
 
   className?: string;
   originalPieceClassName?: string;
-  onClick?(location: PieceBoardLocation): void;
-  onDragStart?(e: React.MouseEvent, location: RealPieceLocation): void;
 }
 
 type Props = OwnProps;
@@ -27,9 +23,7 @@ export default class GamePiece extends React.Component<Props> {
       piece,
       pieceSize,
       className,
-      originalPieceClassName,
-      onClick,
-      onDragStart
+      originalPieceClassName
     } = this.props;
     const cornerPieceSize = pieceSize * 2 / 7;
     const originalPieceCoords = {
@@ -45,8 +39,6 @@ export default class GamePiece extends React.Component<Props> {
           color={piece.color}
           type={piece.abilities || piece.type}
           location={piece.location}
-          onClick={onClick}
-          onDragStart={onDragStart}
           className={className}
         />
 
@@ -65,8 +57,6 @@ export default class GamePiece extends React.Component<Props> {
               color={piece.color}
               type={piece.abilities ? piece.type : piece.originalType}
               location={piece.location}
-              onClick={onClick}
-              onDragStart={onDragStart}
             />
           </React.Fragment>
         )}

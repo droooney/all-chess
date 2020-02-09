@@ -346,14 +346,20 @@
   }
 }
 
-.promotion-modal .modal-content {
-  .flex();
+.promotion-modal {
+  display: block;
 
-  .piece {
-    width: 70px;
-    height: 70px;
-    cursor: pointer;
-    border: 2px solid black;
+  .modal-content {
+    position: absolute;
+
+    .promotion-pieces {
+      .flex-col();
+
+      .piece {
+        cursor: pointer;
+        border: 2px solid black;
+      }
+    }
   }
 }
 

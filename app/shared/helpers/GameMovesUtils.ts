@@ -114,12 +114,6 @@ const HEX_ROOK_MOVE_INCREMENTS: readonly [number, number][] = [
   [1, 1]
 ];
 
-const DEFAULT_MOVE = {
-  capture: null,
-  castling: null,
-  isPawnPromotion: false
-};
-
 export default abstract class GameMovesUtils extends GamePositionUtils {
   moves: RevertableMove[] = [];
   pliesCount: number = 0;
@@ -234,8 +228,10 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
                 && !this.getBoardPiece(square)
               ) {
                 yield {
-                  ...DEFAULT_MOVE,
-                  square
+                  square,
+                  capture: null,
+                  castling: null,
+                  isPawnPromotion: false
                 };
               }
             }
@@ -431,8 +427,10 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         if (pieceInSquare && pieceInSquare.color === pieceColor) {
           if (!forMove && !onlyPossible) {
             yield {
-              ...DEFAULT_MOVE,
-              square
+              square,
+              capture: null,
+              castling: null,
+              isPawnPromotion: false
             };
           }
 
@@ -444,12 +442,13 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         }
 
         yield {
-          ...DEFAULT_MOVE,
           square,
-          capture: pieceInSquare ? {
+          capture: pieceInSquare && {
             piece: pieceInSquare,
             enPassant: false
-          } : null
+          },
+          castling: null,
+          isPawnPromotion: false
         };
 
         if (pieceInSquare) {
@@ -464,8 +463,10 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
 
     if (onlyVisible) {
       yield {
-        ...DEFAULT_MOVE,
-        square: { board, x: pieceX, y: pieceY }
+        square: { board, x: pieceX, y: pieceY },
+        capture: null,
+        castling: null,
+        isPawnPromotion: false
       };
     }
 
@@ -558,8 +559,9 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
 
         if (!pieceInSquare || onlyVisible) {
           yield {
-            ...DEFAULT_MOVE,
             square,
+            capture: null,
+            castling: null,
             isPawnPromotion: getIsPawnPromotion(square)
           };
 
@@ -590,8 +592,10 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
 
             if (!pieceInSquare || onlyVisible) {
               yield {
-                ...DEFAULT_MOVE,
-                square
+                square,
+                capture: null,
+                castling: null,
+                isPawnPromotion: false
               };
             }
           }
@@ -631,7 +635,6 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             || isCapture
           ) {
             yield {
-              ...DEFAULT_MOVE,
               square,
               capture: isCapture ? isEnPassant ? {
                 piece: this.getBoardPiece(this.possibleEnPassant!.pieceLocation)!,
@@ -640,6 +643,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
                 piece: pieceInSquare!,
                 enPassant: false
               } : null,
+              castling: null,
               isPawnPromotion: (!isCapture || !this.isFrankfurt) && getIsPawnPromotion(square)
             };
           }
@@ -735,7 +739,6 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         const isKingSideRook = rookLocation.x - pieceX > 0;
 
         yield {
-          ...DEFAULT_MOVE,
           square: {
             board,
             x: this.is960
@@ -745,7 +748,9 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
                 : 2,
             y: pieceY
           },
-          castling: { rook: rook! }
+          capture: null,
+          castling: { rook: rook! },
+          isPawnPromotion: false
         };
       }
     }

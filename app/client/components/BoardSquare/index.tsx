@@ -49,6 +49,9 @@ export default class BoardSquare extends React.PureComponent<Props> {
     const translateY = `calc(${SVG_SQUARE_SIZE}px * ${boardHeight - 1 - rankY})`;
     const baseParams = {
       'data-square': JSON.stringify(square),
+      'data-board': square.board,
+      'data-file-x': square.x,
+      'data-rank-y': square.y,
       style: {
         transform: [
           'rotate(calc(180deg * var(--is-black-base, 0)))',
@@ -59,7 +62,7 @@ export default class BoardSquare extends React.PureComponent<Props> {
           )
         ].join(' '),
         transformOrigin: `${game.boardCenterX}px ${game.boardCenterY}px`
-      } as React.CSSProperties,
+      },
       onClick: () => onSquareClick(square),
       onMouseDown: (e: React.MouseEvent) => onPieceDragStart(e, location),
       onTouchStart: (e: React.TouchEvent) => onPieceDragStart(e, location)

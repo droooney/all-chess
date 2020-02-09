@@ -30,6 +30,7 @@ export default class PlayerPocket extends React.Component<Props> {
   onPocketPieceClick(location: PiecePocketLocation) {
     const {
       game,
+      enableDnd,
       selectPiece,
       selectedPiece
     } = this.props;
@@ -37,6 +38,7 @@ export default class PlayerPocket extends React.Component<Props> {
     if (
       selectedPiece
       && selectedPiece.location.pieceType === location.pieceType
+      && !enableDnd
     ) {
       selectPiece(null);
     } else {
@@ -68,9 +70,9 @@ export default class PlayerPocket extends React.Component<Props> {
               className={classNames('piece-container', {
                 disabled: !pieces.length
               })}
-              onClick={pieces.length && enableClick ? (() => this.onPocketPieceClick(pieces[0].location)) : undefined}
-              onMouseDown={pieces.length && enableDnd ? (e) => startDraggingPiece(e, pieces[0].location) : undefined}
-              onTouchStart={pieces.length && enableDnd ? (e) => startDraggingPiece(e, pieces[0].location) : undefined}
+              onClick={pieces.length && enableClick ? (() => this.onPocketPieceClick(piece.location)) : undefined}
+              onMouseDown={pieces.length && enableDnd ? (e) => startDraggingPiece(e, piece.location) : undefined}
+              onTouchStart={pieces.length && enableDnd ? (e) => startDraggingPiece(e, piece.location) : undefined}
             >
               {
                 selectedPiece

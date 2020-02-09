@@ -162,8 +162,8 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
   getCenterSquareParams(square: Square): CenterSquareParams | null {
     const leftCenterX = Math.round(this.boardWidth / 2) - 1;
     const rightCenterX = leftCenterX + 1;
-    const topCenterY = Math.round(this.boardHeight / 2) - 1;
-    const bottomCenterY = topCenterY + 1;
+    const topCenterY = Math.round(this.boardHeight / 2);
+    const bottomCenterY = topCenterY - 1;
     const {
       x: squareX,
       y: squareY

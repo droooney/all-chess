@@ -158,7 +158,19 @@ class Game extends React.Component<Props, State> {
   }
 
   getPieceSize(): number {
-    return 100;
+    const {
+      boardsWidth,
+      boardToShow
+    } = this.state;
+    const {
+      boardCount,
+      boardCenterX
+    } = this.game!;
+    const boardWidth = boardToShow === 'all'
+      ? (boardsWidth - (boardCount - 1) * ALICE_CHESS_BOARDS_MARGIN) / boardCount
+      : boardsWidth;
+
+    return this.game!.getPieceSize() * boardWidth / (2 * boardCenterX);
   }
 
   updateGridLayout() {
@@ -564,6 +576,7 @@ class Game extends React.Component<Props, State> {
           || status !== GameStatusEnum.ONGOING
           || !isCurrentMoveLast
         );
+        const pieceSize = this.getPieceSize();
 
         content = (
           <div
@@ -653,6 +666,9 @@ class Game extends React.Component<Props, State> {
             <PromotionModal
               game={this.game!}
               visible={this.state.promotionModalVisible}
+              square={this.state.promotionMove && this.state.promotionMove.to}
+              pieceSize={pieceSize}
+              isBlackBase={isBlackBase}
               onOverlayClick={this.closePromotionPopup}
               promoteToPiece={this.promoteToPiece}
             />
@@ -668,7 +684,7 @@ class Game extends React.Component<Props, State> {
                 >
                   <GamePiece
                     piece={selectedPiece}
-                    pieceSize={this.getPieceSize()}
+                    pieceSize={pieceSize}
                   />
                 </svg>
               </FixedElement>
