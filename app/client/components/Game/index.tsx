@@ -166,9 +166,12 @@ class Game extends React.Component<Props, State> {
       boardCount,
       boardCenterX
     } = this.game!;
-    const boardWidth = boardToShow === 'all'
-      ? (boardsWidth - (boardCount - 1) * ALICE_CHESS_BOARDS_MARGIN) / boardCount
-      : boardsWidth;
+    const boardWidth = Math.max(
+      boardToShow === 'all'
+        ? (boardsWidth - (boardCount - 1) * ALICE_CHESS_BOARDS_MARGIN) / boardCount
+        : boardsWidth,
+      0
+    );
 
     return this.game!.getPieceSize() * boardWidth / (2 * boardCenterX);
   }
