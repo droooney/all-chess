@@ -6,6 +6,7 @@ interface Generator<T, TReturn, TNext> {
   find(callback: (value: T) => any): T | null;
   map<U>(callback: (value: T) => U): Generator<U, TReturn, TNext>;
   reduce<U>(callback: (v: U, value: T) => U, initialValue: U): U;
+  slice(start?: number, end?: number): Generator<T, TReturn, TNext>;
   take(index: number): T | null;
   toArray(): Array<T>;
 }

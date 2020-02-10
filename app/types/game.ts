@@ -42,6 +42,8 @@ export type StandardPiece = (
   | PieceTypeEnum.PAWN
 );
 
+export type MovementType = PieceTypeEnum.KNIGHT | PieceTypeEnum.BISHOP | PieceTypeEnum.ROOK;
+
 export enum ColorEnum {
   WHITE = 'WHITE',
   BLACK = 'BLACK'

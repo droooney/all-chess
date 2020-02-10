@@ -11,6 +11,7 @@ import {
   GameResult,
   GetPossibleMovesMode,
   Move,
+  MovementType,
   Piece,
   PieceBoardLocation,
   PieceLocationEnum,
@@ -251,177 +252,14 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     const opponentColor = GameMovesUtils.getOppositeColor(pieceColor);
     const traverseDirection = function* (
       this: GameMovesUtils,
-      movementType: (
-        PieceTypeEnum.KNIGHT
-        | PieceTypeEnum.BISHOP
-        | PieceTypeEnum.ROOK
-      ),
+      movementType: MovementType,
       incrementY: number,
       incrementX: number,
       stopAfter: number
     ): Generator<PossibleMove> {
-      let rankY = pieceY;
-      let fileX = pieceX;
       let iterations = 0;
 
-      while (true) {
-        const newFileX = this.adjustFileX(fileX + incrementX);
-        let eventualIncrementY = incrementY;
-
-        if (this.isHexagonalChess) {
-          if (movementType === PieceTypeEnum.ROOK) {
-            if ((
-              incrementX === -1
-              && incrementY === -1
-              && fileX > this.middleFileX
-            ) || (
-              incrementX === +1
-              && incrementY === +1
-              && fileX >= this.middleFileX
-            )) {
-              eventualIncrementY = 0;
-            } else if ((
-              incrementX === -1
-              && incrementY === 0
-              && fileX > this.middleFileX
-            ) || (
-              incrementX === +1
-              && incrementY === 0
-              && fileX >= this.middleFileX
-            )) {
-              eventualIncrementY = -incrementX;
-            }
-          } else if (movementType === PieceTypeEnum.BISHOP) {
-            if (
-              (incrementX === +2 || incrementX === -2)
-              && (fileX - this.middleFileX) * incrementX < 0
-              && (newFileX - this.middleFileX) * incrementX > 0
-            ) {
-              eventualIncrementY = 0;
-            } else if ((
-              incrementX === -2
-              && incrementY === -1
-              && fileX > this.middleFileX
-            ) || (
-              incrementX === +2
-              && incrementY === +1
-              && fileX >= this.middleFileX
-            )) {
-              eventualIncrementY = -incrementY;
-            } else if ((
-              incrementX === -1
-              && incrementY === -2
-              && fileX > this.middleFileX
-            ) || (
-              incrementX === +1
-              && incrementY === +2
-              && fileX >= this.middleFileX
-            )) {
-              eventualIncrementY = incrementX;
-            } else if ((
-              incrementX === -1
-              && incrementY === +1
-              && fileX > this.middleFileX
-            ) || (
-              incrementX === +1
-              && incrementY === -1
-              && fileX >= this.middleFileX
-            )) {
-              eventualIncrementY = 2 * incrementY;
-            }
-          } else {
-            // eslint-disable-next-line no-lonely-if
-            if (
-              (incrementX === +3 || incrementX === -3)
-              && (fileX - this.middleFileX) * incrementX < 0
-              && (newFileX - this.middleFileX) * incrementX > 0
-            ) {
-              eventualIncrementY = incrementY - (
-                incrementX === +3
-                  ? newFileX - this.middleFileX
-                  : this.middleFileX - fileX
-              );
-            } else if ((
-              incrementX === -3
-              && fileX > this.middleFileX
-            ) || (
-              incrementX === +3
-              && fileX >= this.middleFileX
-            )) {
-              eventualIncrementY = incrementX === +3
-                ? incrementY - 3
-                : incrementY + 3;
-            } else if (
-              (incrementX === +2 || incrementX === -2)
-              && (incrementY === +3 || incrementY === -3)
-              && (fileX - this.middleFileX) * incrementX < 0
-              && (newFileX - this.middleFileX) * incrementX > 0
-            ) {
-              eventualIncrementY = incrementX;
-            } else if ((
-              incrementX === -2
-              && incrementY === -3
-              && fileX > this.middleFileX
-            ) || (
-              incrementX === +2
-              && incrementY === +3
-              && fileX >= this.middleFileX
-            )) {
-              eventualIncrementY = incrementY / 3;
-            } else if (
-              (incrementX === +2 || incrementX === -2)
-              && (incrementY === +1 || incrementY === -1)
-              && (fileX - this.middleFileX) * incrementX < 0
-              && (newFileX - this.middleFileX) * incrementX > 0
-            ) {
-              eventualIncrementY = incrementY * 2;
-            } else if ((
-              incrementX === -2
-              && incrementY === +1
-              && fileX > this.middleFileX
-            ) || (
-              incrementX === +2
-              && incrementY === -1
-              && fileX >= this.middleFileX
-            )) {
-              eventualIncrementY = incrementY * 3;
-            } else if ((
-              incrementX === -1
-              && incrementY === -3
-              && fileX > this.middleFileX
-            ) || (
-              incrementX === +1
-              && incrementY === +3
-              && fileX >= this.middleFileX
-            )) {
-              eventualIncrementY = incrementX * 2;
-            } else if ((
-              incrementX === -1
-              && incrementY === +2
-              && fileX > this.middleFileX
-            ) || (
-              incrementX === +1
-              && incrementY === -2
-              && fileX >= this.middleFileX
-            )) {
-              eventualIncrementY = -incrementX * 3;
-            }
-          }
-        }
-
-        rankY = this.adjustRankY(rankY + eventualIncrementY);
-        fileX = newFileX;
-
-        const square: Square = {
-          board,
-          x: fileX,
-          y: rankY
-        };
-
-        if (this.isNullSquare(square) || (fileX === pieceX && rankY === pieceY)) {
-          break;
-        }
-
+      for (const square of this.traverseDirection(piece.location, movementType, incrementY, incrementX)) {
         const pieceInSquare = this.getBoardPiece(square);
 
         if (pieceInSquare && pieceInSquare.color === pieceColor) {
@@ -434,11 +272,11 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             };
           }
 
-          break;
+          return;
         }
 
         if (isKing && forMove && !this.isLeftInCheckAllowed && this.isAttackedByOpponentPiece(square, opponentColor)) {
-          break;
+          return;
         }
 
         yield {
@@ -452,11 +290,11 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         };
 
         if (pieceInSquare) {
-          break;
+          return;
         }
 
         if (++iterations === stopAfter) {
-          break;
+          return;
         }
       }
     }.bind(this);
@@ -482,9 +320,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     const isKnight = GameMovesUtils.isKnight(piece);
 
     if (isKingMove || isAmazon || isQueen || isEmpress || isRook) {
-      const stopAfter = isKingMove && !isAmazon && !isQueen && !isEmpress && !isRook
-        ? 1
-        : Infinity;
+      const stopAfter = isKingMove ? 1 : Infinity;
 
       for (const [incrementY, incrementX] of this.isHexagonalChess ? HEX_ROOK_MOVE_INCREMENTS : ROOK_MOVE_INCREMENTS) {
         yield* traverseDirection(PieceTypeEnum.ROOK, incrementY, incrementX, stopAfter);
@@ -492,9 +328,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     }
 
     if (isKingMove || isAmazon || isQueen || isCardinal || isBishop) {
-      const stopAfter = isKingMove && !isAmazon && !isQueen && !isCardinal && !isBishop
-        ? 1
-        : Infinity;
+      const stopAfter = isKingMove ? 1 : Infinity;
 
       for (const [incrementY, incrementX] of this.isHexagonalChess ? HEX_BISHOP_MOVE_INCREMENTS : BISHOP_MOVE_INCREMENTS) {
         yield* traverseDirection(PieceTypeEnum.BISHOP, incrementY, incrementX, stopAfter);
@@ -1388,5 +1222,176 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     super.setupStartingData();
 
     this.pliesCount = this.startingMoveIndex;
+  }
+
+  *traverseDirection(startSquare: Square, movementType: MovementType, incrementY: number, incrementX: number): Generator<Square> {
+    const {
+      board,
+      x: startX,
+      y: startY
+    } = startSquare;
+    let fileX = startX;
+    let rankY = startY;
+
+    while (true) {
+      const newFileX = this.adjustFileX(fileX + incrementX);
+      let eventualIncrementY = incrementY;
+
+      if (this.isHexagonalChess) {
+        if (movementType === PieceTypeEnum.ROOK) {
+          if ((
+            incrementX === -1
+            && incrementY === -1
+            && fileX > this.middleFileX
+          ) || (
+            incrementX === +1
+            && incrementY === +1
+            && fileX >= this.middleFileX
+          )) {
+            eventualIncrementY = 0;
+          } else if ((
+            incrementX === -1
+            && incrementY === 0
+            && fileX > this.middleFileX
+          ) || (
+            incrementX === +1
+            && incrementY === 0
+            && fileX >= this.middleFileX
+          )) {
+            eventualIncrementY = -incrementX;
+          }
+        } else if (movementType === PieceTypeEnum.BISHOP) {
+          if (
+            (incrementX === +2 || incrementX === -2)
+            && (fileX - this.middleFileX) * incrementX < 0
+            && (newFileX - this.middleFileX) * incrementX > 0
+          ) {
+            eventualIncrementY = 0;
+          } else if ((
+            incrementX === -2
+            && incrementY === -1
+            && fileX > this.middleFileX
+          ) || (
+            incrementX === +2
+            && incrementY === +1
+            && fileX >= this.middleFileX
+          )) {
+            eventualIncrementY = -incrementY;
+          } else if ((
+            incrementX === -1
+            && incrementY === -2
+            && fileX > this.middleFileX
+          ) || (
+            incrementX === +1
+            && incrementY === +2
+            && fileX >= this.middleFileX
+          )) {
+            eventualIncrementY = incrementX;
+          } else if ((
+            incrementX === -1
+            && incrementY === +1
+            && fileX > this.middleFileX
+          ) || (
+            incrementX === +1
+            && incrementY === -1
+            && fileX >= this.middleFileX
+          )) {
+            eventualIncrementY = 2 * incrementY;
+          }
+        } else {
+          // eslint-disable-next-line no-lonely-if
+          if (
+            (incrementX === +3 || incrementX === -3)
+            && (fileX - this.middleFileX) * incrementX < 0
+            && (newFileX - this.middleFileX) * incrementX > 0
+          ) {
+            eventualIncrementY = incrementY - (
+              incrementX === +3
+                ? newFileX - this.middleFileX
+                : this.middleFileX - fileX
+            );
+          } else if ((
+            incrementX === -3
+            && fileX > this.middleFileX
+          ) || (
+            incrementX === +3
+            && fileX >= this.middleFileX
+          )) {
+            eventualIncrementY = incrementX === +3
+              ? incrementY - 3
+              : incrementY + 3;
+          } else if (
+            (incrementX === +2 || incrementX === -2)
+            && (incrementY === +3 || incrementY === -3)
+            && (fileX - this.middleFileX) * incrementX < 0
+            && (newFileX - this.middleFileX) * incrementX > 0
+          ) {
+            eventualIncrementY = incrementX;
+          } else if ((
+            incrementX === -2
+            && incrementY === -3
+            && fileX > this.middleFileX
+          ) || (
+            incrementX === +2
+            && incrementY === +3
+            && fileX >= this.middleFileX
+          )) {
+            eventualIncrementY = incrementY / 3;
+          } else if (
+            (incrementX === +2 || incrementX === -2)
+            && (incrementY === +1 || incrementY === -1)
+            && (fileX - this.middleFileX) * incrementX < 0
+            && (newFileX - this.middleFileX) * incrementX > 0
+          ) {
+            eventualIncrementY = incrementY * 2;
+          } else if ((
+            incrementX === -2
+            && incrementY === +1
+            && fileX > this.middleFileX
+          ) || (
+            incrementX === +2
+            && incrementY === -1
+            && fileX >= this.middleFileX
+          )) {
+            eventualIncrementY = incrementY * 3;
+          } else if ((
+            incrementX === -1
+            && incrementY === -3
+            && fileX > this.middleFileX
+          ) || (
+            incrementX === +1
+            && incrementY === +3
+            && fileX >= this.middleFileX
+          )) {
+            eventualIncrementY = incrementX * 2;
+          } else if ((
+            incrementX === -1
+            && incrementY === +2
+            && fileX > this.middleFileX
+          ) || (
+            incrementX === +1
+            && incrementY === -2
+            && fileX >= this.middleFileX
+          )) {
+            eventualIncrementY = -incrementX * 3;
+          }
+        }
+      }
+
+      rankY = this.adjustRankY(rankY + eventualIncrementY);
+      fileX = newFileX;
+
+      const square: Square = {
+        board,
+        x: fileX,
+        y: rankY
+      };
+
+      if (this.isNullSquare(square) || (fileX === startX && rankY === startY)) {
+        return;
+      }
+
+      yield square;
+    }
   }
 }

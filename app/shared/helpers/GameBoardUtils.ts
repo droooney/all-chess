@@ -11,6 +11,7 @@ import {
   GameCreateOptions,
   GameVariantEnum,
   GetPossibleMovesMode,
+  MovementType,
   Square
 } from '../../types';
 
@@ -115,6 +116,8 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
   static getRankNumber(rankLiteral: string): number {
     return (Number(rankLiteral) || 0) - 1;
   }
+
+  abstract traverseDirection(startSquare: Square, movementType: MovementType, incrementY: number, incrementX: number): Generator<Square>;
 
   boards: Boards = [];
   boardCount: number;

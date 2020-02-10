@@ -79,6 +79,22 @@ Object.defineProperties(proto, {
     }
   },
 
+  slice: {
+    value: function* slice<T>(this: Generator<T>, start: number = 0, end: number = Infinity): Generator<T> {
+      for (const [i, value] of this.entries()) {
+        if (i < start) {
+          continue;
+        }
+
+        if (i >= end) {
+          return;
+        }
+
+        yield value;
+      }
+    }
+  },
+
   take: {
     value: function take<T>(this: Generator<T>, index: number): T | null {
       for (const [i, value] of this.entries()) {
