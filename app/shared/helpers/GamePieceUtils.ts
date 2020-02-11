@@ -8,6 +8,7 @@ import {
   GameCreateOptions,
   GameKings,
   GetPossibleMovesMode,
+  MovementType,
   NonExistentPiece,
   Piece,
   PieceLocation,
@@ -254,8 +255,36 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
     };
   }
 
+  static hasMovement(piece: Piece, movementType: MovementType) {
+    return (
+      movementType === PieceTypeEnum.ROOK
+        ? GamePieceUtils.isRookLike(piece)
+        : movementType === PieceTypeEnum.BISHOP
+          ? GamePieceUtils.isBishopLike(piece)
+          : GamePieceUtils.isKnightLike(piece)
+    );
+  }
+
+  static isBishopLike(piece: Piece): boolean {
+    return (
+      GamePieceUtils.isAmazon(piece)
+      || GamePieceUtils.isQueen(piece)
+      || GamePieceUtils.isCardinal(piece)
+      || GamePieceUtils.isBishop(piece)
+    );
+  }
+
   static isBoardPiece(piece: Piece): piece is BoardPiece {
     return GamePieceUtils.isRealPiece(piece) && piece.location.type === PieceLocationEnum.BOARD;
+  }
+
+  static isKnightLike(piece: Piece): boolean {
+    return (
+      GamePieceUtils.isAmazon(piece)
+      || GamePieceUtils.isEmpress(piece)
+      || GamePieceUtils.isCardinal(piece)
+      || GamePieceUtils.isKnight(piece)
+    );
   }
 
   static isNonExistentPiece(piece: Piece): piece is NonExistentPiece {
@@ -275,6 +304,15 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
 
   static isRealPiece(piece: Piece): piece is RealPiece {
     return !!piece.location;
+  }
+
+  static isRookLike(piece: Piece): boolean {
+    return (
+      GamePieceUtils.isAmazon(piece)
+      || GamePieceUtils.isQueen(piece)
+      || GamePieceUtils.isEmpress(piece)
+      || GamePieceUtils.isRook(piece)
+    );
   }
 
   static isKing = (piece: Piece): boolean => GamePieceUtils.isPiece(piece, PieceTypeEnum.KING);
