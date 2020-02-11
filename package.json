@@ -4,6 +4,11 @@
   "scripts": {
     "postinstall": "ts-node scripts/change-sequelize-cli-extension"
   },
+  "alias": {
+    "client": "./app/client",
+    "server": "./app/server",
+    "shared": "./app/server"
+  },
   "dependencies": {
     "@babel/polyfill": "^7.7.0",
     "@material-ui/core": "^4.9.0",

@@ -4,22 +4,20 @@ import { Redirect, Router, Switch } from 'react-router-dom';
 import { ThemeProvider } from '@material-ui/styles';
 import { createBrowserHistory } from 'history';
 
-import lightTheme from '../../themes/light';
-import { DispatchProps, ReduxState } from '../../store';
-import { setIsMobile } from '../../actions';
-import { isMobileDevice } from '../../helpers';
+import lightTheme from 'client/themes/light';
+import { setIsMobile } from 'client/actions';
+import { DispatchProps, ReduxState } from 'client/store';
+import { isMobileDevice } from 'client/helpers';
 
-import Route from '../Route';
-
-import Header from '../Header';
-
-import Home from '../Home';
-import BoardEditor from '../BoardEditor';
-import GamesRules from '../GamesRules';
-import Login from '../Login';
-import Register from '../Register';
-import Games from '../Games';
-import Game from '../Game';
+import Route from 'client/components/Route';
+import Header from 'client/components/Header';
+import Home from 'client/components/Home';
+import BoardEditor from 'client/components/BoardEditor';
+import Register from 'client/components/Register';
+import Games from 'client/components/Games';
+import Login from 'client/components/Login';
+import GamesRules from 'client/components/GamesRules';
+import Game from 'client/components/Game';
 
 import './index.less';
 
@@ -49,23 +47,21 @@ class App extends React.Component<Props> {
       <ThemeProvider theme={lightTheme}>
         <Router history={history}>
           <div className="route route-root">
-
-            <Header />
+            <Header/>
 
             <main>
               <Switch>
-                <Route exact strict path="/" component={Home} />
-                <Route strict path="/editor" component={BoardEditor} />
-                <Route strict path="/rules/:gameLink?" component={GamesRules} />
-                <Route exact strict path="/login" component={Login} />
-                <Route exact strict path="/register" component={Register} />
-                <Route exact strict path="/games" component={Games} />
-                <Route exact strict path="/games/:gameId" component={Game} />
-                <Redirect to="/" />
+                <Route exact strict path="/" component={Home}/>
+                <Route strict path="/editor" component={BoardEditor}/>
+                <Route strict path="/rules/:gameLink?" component={GamesRules}/>
+                <Route exact strict path="/login" component={Login}/>
+                <Route exact strict path="/register" component={Register}/>
+                <Route exact strict path="/games" component={Games}/>
+                <Route exact strict path="/games/:gameId" component={Game}/>
+                <Redirect to="/"/>
               </Switch>
             </main>
           </div>
-
         </Router>
       </ThemeProvider>
     );
