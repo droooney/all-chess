@@ -340,7 +340,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
   protected constructor(options: GameCreateOptions) {
     super(options);
 
-    if (this.isCapablanca || this.isAmazons) {
+    if (this.isCapablanca) {
       this.validPromotions = CAPABLANCA_VALID_PROMOTIONS;
       this.pocketPiecesUsed = CAPABLANCA_POCKET;
     }

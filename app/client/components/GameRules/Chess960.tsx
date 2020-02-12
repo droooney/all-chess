@@ -62,8 +62,8 @@ export default class Chess960GameRules extends React.Component {
           <br />
           - all the squares between the king&apos;s initial and final position
           (including the initial and final squares) are not under attack
-          (except when combined with a variant in which there are no checks, i.e. <GameVariantLink variant={GameVariantEnum.ATOMIC} />,
-          {' '}<GameVariantLink variant={GameVariantEnum.MONSTER_CHESS} /> or <GameVariantLink variant={GameVariantEnum.DARK_CHESS} />)
+          (except when combined with a variant in which there are no checks, i.e. <GameVariantLink variant={GameVariantEnum.ATOMIC} /> or
+          {' '}<GameVariantLink variant={GameVariantEnum.DARK_CHESS} />)
           <br />
           - all the squares between the king&apos;s initial position and final position
           and all the squares between the castling rook&apos;s initial and final position are empty (with the exception of these two pieces)

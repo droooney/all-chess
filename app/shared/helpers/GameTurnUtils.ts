@@ -8,26 +8,12 @@ export default abstract class GameTurnUtils extends GameVariantsUtils {
       : ColorEnum.WHITE;
   }
 
-  abstract pliesCount: number;
-  abstract pliesPerMove: number;
   abstract startingData: StartingData;
 
   turn: ColorEnum = ColorEnum.WHITE;
 
-  getNextTurn(): ColorEnum {
-    return this.pliesCount % this.pliesPerMove === this.pliesPerMove - 2
-      ? ColorEnum.BLACK
-      : ColorEnum.WHITE;
-  }
-
   getOpponentColor(): ColorEnum {
     return GameTurnUtils.getOppositeColor(this.turn);
-  }
-
-  getPrevTurn(): ColorEnum {
-    return this.pliesCount % this.pliesPerMove === 0
-      ? ColorEnum.BLACK
-      : ColorEnum.WHITE;
   }
 
   setupStartingData() {

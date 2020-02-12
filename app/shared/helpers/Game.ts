@@ -169,7 +169,7 @@ export class Game extends GameResultUtils implements IGame {
       pgnTags
     });
 
-    if (!game.isLeftInCheckAllowed && game.isInCheck(game.getPrevTurn())) {
+    if (!game.isLeftInCheckAllowed && game.isInCheck(game.getOpponentColor())) {
       throw new Error('Invalid FEN: the king is in check');
     }
 
@@ -216,8 +216,8 @@ export class Game extends GameResultUtils implements IGame {
 
         // move index including dots
         if (shouldBeMoveIndex) {
-          const moveIndex = Math.floor(game.pliesCount / game.pliesPerMove) + 1;
-          const moveIndexString = (startingData.startingMoveIndex && !wasMoveIndex) || game.pliesCount % game.pliesPerMove !== 0
+          const moveIndex = Math.floor(game.pliesCount / 2) + 1;
+          const moveIndexString = (startingData.startingMoveIndex && !wasMoveIndex) || game.pliesCount % 2 !== 0
             ? `${moveIndex}...`
             : `${moveIndex}.`;
 
@@ -373,7 +373,7 @@ export class Game extends GameResultUtils implements IGame {
         game.registerMove(move);
 
         movesString = movesString.slice(moveString.length);
-        shouldBeMoveIndex = game.pliesCount % game.pliesPerMove === 0;
+        shouldBeMoveIndex = game.pliesCount % 2 === 0;
       }
     }
 
@@ -479,7 +479,7 @@ export class Game extends GameResultUtils implements IGame {
       variants
     });
 
-    if (game.isInCheck(game.getPrevTurn())) {
+    if (game.isInCheck(game.getOpponentColor())) {
       throw new Error('Invalid FEN: king may be captured');
     }
 
@@ -520,19 +520,16 @@ export class Game extends GameResultUtils implements IGame {
   }
 
   changePlayerTime() {
-    if (this.moves.length > this.pliesPerMove && this.timeControl) {
-      const prevTurn = this.getPrevTurn();
-      const isPlayerChanged = this.turn !== prevTurn;
+    if (this.moves.length > 2 && this.timeControl) {
+      const prevTurn = this.getOpponentColor();
       const player = this.players[prevTurn];
       const { duration } = _.last(this.moves)!;
 
       if (this.isOngoing()) {
         if (this.timeControl.type === TimeControlEnum.TIMER) {
-          player.time! -= duration - (isPlayerChanged ? this.timeControl.increment : 0);
-        } else if (isPlayerChanged) {
-          player.time = this.timeControl.base;
+          player.time! -= duration - this.timeControl.increment;
         } else {
-          player.time! -= duration;
+          player.time = this.timeControl.base;
         }
       } else {
         player.time! -= duration;

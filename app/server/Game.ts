@@ -438,12 +438,7 @@ export default class Game extends GameHelper {
       move.promotion = promotion;
     }
 
-    const prevTurn = this.turn;
-
     this.registerAnyMove(move);
-
-    const isPlayerChanged = this.turn !== prevTurn;
-
     this.changePlayerTime();
 
     this.lastMoveTimestamp = newTimestamp;
@@ -471,15 +466,13 @@ export default class Game extends GameHelper {
       this.updatePlayers();
     }
 
-    if (isPlayerChanged) {
-      this.setTimeout();
-    }
+    this.setTimeout();
   }
 
   setTimeout() {
     if (
       this.isOngoing()
-      && this.moves.length >= this.pliesPerMove
+      && this.moves.length >= 2
       && this.timeControl
     ) {
       const player = this.players[this.turn];
@@ -516,23 +509,19 @@ export default class Game extends GameHelper {
 
   unregisterLastMove() {
     const move = _.last(this.moves)!;
-    const prevTurn = this.turn;
-    const needToUpdateTime = this.moves.length > this.pliesPerMove;
+    const needToUpdateTime = this.moves.length > 2;
 
     move.revertMove();
 
     this.moves.pop();
 
     const player = this.players[this.turn];
-    const isPlayerChanged = this.turn !== prevTurn;
 
     if (this.timeControl && needToUpdateTime) {
       if (this.timeControl.type === TimeControlEnum.TIMER) {
-        player.time! += move.duration - (isPlayerChanged ? this.timeControl.increment : 0);
-      } else if (isPlayerChanged) {
-        player.time = this.timeControl.base;
+        player.time! += move.duration - this.timeControl.increment;
       } else {
-        player.time! += move.duration;
+        player.time = this.timeControl.base;
       }
     }
 

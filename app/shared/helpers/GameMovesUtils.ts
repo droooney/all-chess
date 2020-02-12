@@ -15,7 +15,6 @@ import {
   BoardPiece,
   CastlingTypeEnum,
   ColorEnum,
-  GameCreateOptions,
   GameResult,
   GetPossibleMovesMode,
   Move,
@@ -68,17 +67,10 @@ const ATOMIC_SQUARE_INCREMENTS: readonly [number, number][] = [
 export default abstract class GameMovesUtils extends GamePositionUtils {
   moves: RevertableMove[] = [];
   pliesCount: number = 0;
-  pliesPerMove: number;
 
   abstract end(winner: ColorEnum | null, reason: ResultReasonEnum): void;
   abstract isDraw(): ResultReasonEnum | null;
   abstract isWin(): GameResult | null;
-
-  protected constructor(options: GameCreateOptions) {
-    super(options);
-
-    this.pliesPerMove = this.isMonsterChess ? 3 : 2;
-  }
 
   getAllowedMoves(piece: RealPiece): Generator<PossibleMove> {
     const possibleMoves = this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE);
@@ -597,7 +589,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     const castlingRook = possibleMove.castling && possibleMove.castling.rook;
 
     const prevTurn = this.turn;
-    const nextTurn = this.getNextTurn();
+    const nextTurn = this.getOpponentColor();
     const prevIsCheck = this.isCheck;
     const prevPliesWithoutCaptureOrPawnMove = this.pliesWithoutCaptureOrPawnMove;
     const prevPositionString = this.positionString;
@@ -806,10 +798,6 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       && Math.abs(toY - fromLocation.y) > 1
       && fromLocation.board === toBoard
       && (!this.isHorde || fromLocation.y !== 0)
-      && (
-        !this.isMonsterChess
-        || prevTurn !== nextTurn
-      )
     ) {
       this.possibleEnPassant = {
         enPassantSquare: {

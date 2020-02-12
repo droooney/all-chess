@@ -5,7 +5,6 @@ interface VariantsInfo {
   is960: boolean;
   isAbsorption: boolean;
   isAliceChess: boolean;
-  isAmazons: boolean;
   isAntichess: boolean;
   isAtomic: boolean;
   isCapablanca: boolean;
@@ -19,7 +18,6 @@ interface VariantsInfo {
   isHorde: boolean;
   isKingOfTheHill: boolean;
   isMadrasi: boolean;
-  isMonsterChess: boolean;
   isPatrol: boolean;
   isThreeCheck: boolean;
   isTwoFamilies: boolean;
@@ -35,7 +33,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
       is960: variants.includes(GameVariantEnum.CHESS_960),
       isAbsorption: variants.includes(GameVariantEnum.ABSORPTION),
       isAliceChess: variants.includes(GameVariantEnum.ALICE_CHESS),
-      isAmazons: variants.includes(GameVariantEnum.AMAZONS),
       isAntichess: variants.includes(GameVariantEnum.ANTICHESS),
       isAtomic: variants.includes(GameVariantEnum.ATOMIC),
       isCapablanca: variants.includes(GameVariantEnum.CAPABLANCA),
@@ -49,7 +46,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
       isHorde: variants.includes(GameVariantEnum.HORDE),
       isKingOfTheHill: variants.includes(GameVariantEnum.KING_OF_THE_HILL),
       isMadrasi: variants.includes(GameVariantEnum.MADRASI),
-      isMonsterChess: variants.includes(GameVariantEnum.MONSTER_CHESS),
       isPatrol: variants.includes(GameVariantEnum.PATROL),
       isThreeCheck: variants.includes(GameVariantEnum.THREE_CHECK),
       isTwoFamilies: variants.includes(GameVariantEnum.TWO_FAMILIES)
@@ -61,7 +57,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
       is960,
       isAbsorption,
       isAliceChess,
-      isAmazons,
       isAntichess,
       isAtomic,
       isCapablanca,
@@ -75,7 +70,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
       isHorde,
       isKingOfTheHill,
       isMadrasi,
-      isMonsterChess,
       isPatrol,
       isThreeCheck,
       isTwoFamilies
@@ -85,27 +79,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
       !isKingOfTheHill
       || isAntichess
       || !isDarkChess
-    ) && (
-      !isMonsterChess
-      || (
-        !isCrazyhouse
-        && !isKingOfTheHill
-        && !isAtomic
-        && !isCirce
-        && !isPatrol
-        && !isMadrasi
-        && !isAliceChess
-        && !isHorde
-        && !isDarkChess
-        && !isAntichess
-        && !isAbsorption
-        && !isFrankfurt
-        && !isCapablanca
-        && !isAmazons
-        && !isThreeCheck
-        && !isCircularChess
-        && !isHexagonalChess
-      )
     ) && (
       !isHorde
       || (
@@ -120,7 +93,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isAntichess
         && !isAbsorption
         && !isFrankfurt
-        && !isAmazons
         && !isThreeCheck
         // TODO: add support for horde + hex
         && !isHexagonalChess
@@ -129,10 +101,10 @@ export default class GameVariantsUtils extends GameCommonUtils {
       !isAtomic
       || (
         !isDarkChess
-        && !isAmazons
         // TODO: add support for hex + atomic
         && !isHexagonalChess
         && !isAliceChess
+        && !isCrazyhouse
       )
     ) && (
       !isAntichess
@@ -141,7 +113,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isCirce
         && !isPatrol
         && !isMadrasi
-        && !isAmazons
         && !isThreeCheck
       )
     ) && (
@@ -152,7 +123,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isCirce
         && !isMadrasi
         && !isFrankfurt
-        && !isAmazons
       )
     ) && (
       !isFrankfurt
@@ -160,26 +130,11 @@ export default class GameVariantsUtils extends GameCommonUtils {
         // TODO: add support for frankfurt + crazyhouse
         !isCrazyhouse
         && !isAtomic
-        && !isAmazons
       )
     ) && (
       !isTwoFamilies
       || (
         !isCapablanca
-        && !isAmazons
-      )
-    ) && (
-      !isAmazons
-      || (
-        !isCapablanca
-        && !isKingOfTheHill
-        && !isThreeCheck
-        && !isCirce
-        && !isCrazyhouse
-        && !isPatrol
-        && !isMadrasi
-        && !isAliceChess
-        && !isHexagonalChess
       )
     ) && (
       !isThreeCheck
@@ -232,7 +187,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
     this.isPocketUsed = GameVariantsUtils.getIsPocketUsed(this.variants);
     this.isLeftInCheckAllowed = (
       this.isAtomic
-      || this.isMonsterChess
       || this.isDarkChess
       || this.isAntichess
     );

@@ -128,9 +128,7 @@ export class Game extends GameHelper {
     this.needToCalculateMaterialDifference = (
       !this.isAbsorption
       && !this.isDarkChess
-      && !this.isMonsterChess
       && !this.isHorde
-      && !this.isAmazons
     );
 
     const moves: (Move | DarkChessMove)[] = game.moves;
@@ -523,7 +521,7 @@ export class Game extends GameHelper {
 
     this.setPieces(move.pieces);
 
-    this.turn = this.getNextTurn();
+    this.turn = this.getOpponentColor();
     this.visiblePieces[this.darkChessMode!] = move.pieces as any;
     this.pliesCount++;
 

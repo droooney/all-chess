@@ -57,10 +57,10 @@ export default class MovesPanel extends React.Component<Props> {
     const isBeforeFirstMove = currentMoveIndex === -1;
     const isAfterLastMove = currentMoveIndex === moves.length - 1;
     const startingMoveIndex = game.startingData.startingMoveIndex;
-    const startingMove = Math.floor(startingMoveIndex / game.pliesPerMove);
-    const startingMoveOffset = startingMoveIndex % game.pliesPerMove;
-    const firstMoveLeftOffset = 90 / game.pliesPerMove * startingMoveOffset;
-    const restMoves = _.chunk(moves.slice(startingMoveOffset), game.pliesPerMove);
+    const startingMove = Math.floor(startingMoveIndex / 2);
+    const startingMoveOffset = startingMoveIndex % 2;
+    const firstMoveLeftOffset = 45 * startingMoveOffset;
+    const restMoves = _.chunk(moves.slice(startingMoveOffset), 2);
 
     return (
       <div className="moves-panel">
@@ -95,10 +95,10 @@ export default class MovesPanel extends React.Component<Props> {
             ...[moves.slice(0, startingMoveOffset)],
             ...restMoves
           ] : restMoves).map((moves, moveRow) => (
-            <div key={moveRow} className={`move-row moves-${game.pliesPerMove}`}>
+            <div key={moveRow} className="move-row">
               <div className="move-index">{startingMove + moveRow + 1}</div>
               {moves.map((move, turn) => {
-                const moveIndex = moveRow * game.pliesPerMove + turn - (startingMoveOffset && moveRow ? startingMoveOffset : 0);
+                const moveIndex = moveRow * 2 + turn - (startingMoveOffset && moveRow ? startingMoveOffset : 0);
                 const isCurrent = moveIndex === currentMoveIndex;
 
                 return (

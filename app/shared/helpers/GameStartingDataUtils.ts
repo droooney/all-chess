@@ -103,7 +103,6 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
       boardHeight
     } = GameStartingDataUtils.getBoardDimensions(variants);
     const {
-      isAmazons,
       isCapablanca,
       isCircularChess,
       isHorde,
@@ -148,7 +147,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
 
       if (isTwoFamilies) {
         placePiece(PieceTypeEnum.QUEEN, Math.floor((orthodoxBoardWidth - 5) * Math.random()));
-      } else if (isCapablanca || isAmazons) {
+      } else if (isCapablanca) {
         placePiece(PieceTypeEnum.EMPRESS, Math.floor((orthodoxBoardWidth - 5) * Math.random()));
         placePiece(PieceTypeEnum.CARDINAL, Math.floor((orthodoxBoardWidth - 6) * Math.random()));
       }
@@ -176,7 +175,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
       pieceTypes = randomPieceTypes as readonly PieceTypeEnum[];
     } else if (isTwoFamilies) {
       pieceTypes = TWO_FAMILIES_PIECE_PLACEMENT;
-    } else if (isCapablanca || isAmazons) {
+    } else if (isCapablanca) {
       pieceTypes = CAPABLANCA_PIECE_PLACEMENT;
     } else {
       pieceTypes = STANDARD_PIECE_PLACEMENT;
@@ -221,10 +220,6 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
 
         addPiece(PieceTypeEnum.PAWN, orthodoxBoardWidth - 2, lastPawnRank);
         addPiece(PieceTypeEnum.PAWN, orthodoxBoardWidth - 3, lastPawnRank);
-      } else if (isAmazons && color === ColorEnum.WHITE) {
-        addPiece(PieceTypeEnum.AMAZON, halfBoard - 1, 0);
-        addPiece(PieceTypeEnum.AMAZON, halfBoard, 0);
-        addPiece(PieceTypeEnum.AMAZON, halfBoard + 1, 0);
       } else {
         const pieceRankY = color === ColorEnum.WHITE ? 0 : orthodoxBoardHeight - 1;
         const pawnRankY = color === ColorEnum.WHITE ? 1 : orthodoxBoardHeight - 2;
@@ -303,41 +298,11 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
       isAntichess,
       isCircularChess,
       isCylinderChess,
-      isHexagonalChess,
-      isMonsterChess
+      isHexagonalChess
     } = GameStartingDataUtils.getVariantsInfo(variants);
-    const boardDimensions = GameStartingDataUtils.getBoardDimensions(variants);
     const startingData = isHexagonalChess
       ? GameStartingDataUtils.generateHexagonalStartingData()
       : GameStartingDataUtils.generateClassicStartingData(variants);
-
-    let pieces = [...startingData.pieces];
-
-    if (isMonsterChess) {
-      const halfWidth = Math.round(boardDimensions.boardWidth / 2);
-      const left = Math.ceil(halfWidth / 2);
-      const right = boardDimensions.boardWidth - Math.floor(halfWidth / 2);
-
-      pieces = [...pieces];
-
-      for (let i = pieces.length - 1; i >= 0; i--) {
-        const piece = pieces[i];
-
-        if (
-          piece
-          && piece.color === ColorEnum.WHITE
-          && GameStartingDataUtils.isBoardPiece(piece)
-          && !GameStartingDataUtils.isKing(piece)
-          && (
-            !GameStartingDataUtils.isPawn(piece)
-            || piece.location.x < left
-            || piece.location.x >= right
-          )
-        ) {
-          pieces.splice(i, 1);
-        }
-      }
-    }
 
     if (isAntichess || isCylinderChess || isCircularChess || isHexagonalChess) {
       startingData.possibleCastling = {
@@ -351,8 +316,6 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
         }
       };
     }
-
-    startingData.pieces = pieces;
 
     return startingData;
   }

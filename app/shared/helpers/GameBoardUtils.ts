@@ -95,7 +95,6 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
   static getBoardDimensions(variants: readonly GameVariantEnum[]): BoardDimensions {
     const {
       isAliceChess,
-      isAmazons,
       isCapablanca,
       isCircularChess,
       isHexagonalChess,
@@ -103,7 +102,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     } = GameBoardUtils.getVariantsInfo(variants);
     const dimensions: BoardDimensions = {
       boardCount: isAliceChess ? 2 : 1,
-      boardWidth: isTwoFamilies || isCapablanca || isAmazons
+      boardWidth: isTwoFamilies || isCapablanca
         ? 10
         : isHexagonalChess
           ? 11

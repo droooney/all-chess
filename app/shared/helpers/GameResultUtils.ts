@@ -29,7 +29,7 @@ export default class GameResultUtils extends GameDarkChessUtils {
     if (
       this.isAntichess
       && this.isNoPieces(this.turn)
-      && this.isNoPieces(this.getNextTurn())
+      && this.isNoPieces(this.getOpponentColor())
     ) {
       return ResultReasonEnum.NO_MORE_PIECES;
     }
@@ -57,7 +57,6 @@ export default class GameResultUtils extends GameDarkChessUtils {
     if (
       !this.isAntichess && (
         this.isKingOfTheHill
-        || this.isMonsterChess
         || this.isHorde
         || this.isDarkChess
         || this.isCrazyhouse
@@ -149,9 +148,8 @@ export default class GameResultUtils extends GameDarkChessUtils {
   }
 
   isWin(): GameResult | null {
-    const prevTurn = this.getPrevTurn();
+    const prevTurn = this.getOpponentColor();
     const currentTurn = this.turn;
-    const nextTurn = this.getNextTurn();
 
     if (this.isCheckmate()) {
       return {
@@ -176,26 +174,17 @@ export default class GameResultUtils extends GameDarkChessUtils {
       };
     }
 
-    if ((this.isMonsterChess || this.isDarkChess) && !this.isAntichess && !this.areKingsOnTheBoard(currentTurn)) {
+    if (this.isDarkChess && !this.isAntichess && !this.areKingsOnTheBoard(currentTurn)) {
       return {
         winner: prevTurn,
         reason: ResultReasonEnum.KING_CAPTURED
       };
     }
 
-    if (this.isMonsterChess && !this.areKingsOnTheBoard(nextTurn)) {
-      return {
-        winner: currentTurn,
-        reason: ResultReasonEnum.KING_CAPTURED
-      };
-    }
-
-    if ((this.isHorde || this.isAmazons) && currentTurn === ColorEnum.WHITE && this.isNoPieces(ColorEnum.WHITE)) {
+    if (this.isHorde && currentTurn === ColorEnum.WHITE && this.isNoPieces(ColorEnum.WHITE)) {
       return {
         winner: prevTurn,
-        reason: this.isHorde
-          ? ResultReasonEnum.HORDE_DESTROYED
-          : ResultReasonEnum.AMAZONS_DESTROYED
+        reason: ResultReasonEnum.HORDE_DESTROYED
       };
     }
 
@@ -213,7 +202,7 @@ export default class GameResultUtils extends GameDarkChessUtils {
       };
     }
 
-    if (this.isAntichess && this.isStalemate() && !this.isNoPieces(nextTurn)) {
+    if (this.isAntichess && this.isStalemate() && !this.isNoPieces(prevTurn)) {
       return {
         winner: currentTurn,
         reason: this.isNoPieces(currentTurn)

@@ -55,12 +55,11 @@ export default class RightPanel extends React.Component<Props, State> {
 
   componentDidMount() {
     const {
-      game,
       status,
       moves
     } = this.props;
 
-    if (moves.length >= game.pliesPerMove && status === GameStatusEnum.ONGOING) {
+    if (moves.length >= 2 && status === GameStatusEnum.ONGOING) {
       this.activateInterval();
     }
 
@@ -69,16 +68,15 @@ export default class RightPanel extends React.Component<Props, State> {
 
   componentDidUpdate(prevProps: Props) {
     const {
-      game,
       status,
       moves
     } = this.props;
 
     if (status !== GameStatusEnum.ONGOING && prevProps.status === GameStatusEnum.ONGOING) {
       this.stopInterval();
-    } else if (moves.length >= game.pliesPerMove && prevProps.moves.length < game.pliesPerMove) {
+    } else if (moves.length >= 2 && prevProps.moves.length < 2) {
       this.activateInterval();
-    } else if (moves.length < game.pliesPerMove && prevProps.moves.length >= game.pliesPerMove) {
+    } else if (moves.length < 2 && prevProps.moves.length >= 2) {
       this.stopInterval();
     }
   }
@@ -162,7 +160,7 @@ export default class RightPanel extends React.Component<Props, State> {
       startDraggingPiece
     } = this.props;
     const startingMoveIndex = game.startingData.startingMoveIndex;
-    const realTurn = (moves.length + startingMoveIndex) % game.pliesPerMove === game.pliesPerMove - 1
+    const realTurn = (moves.length + startingMoveIndex) % 2 === 1
       ? ColorEnum.BLACK
       : ColorEnum.WHITE;
     const topPlayer = isBlackBase

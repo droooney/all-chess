@@ -55,7 +55,6 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
       isCylinderChess,
       isDarkChess,
       isHexagonalChess,
-      isMonsterChess,
       isThreeCheck
     } = GamePositionUtils.getVariantsInfo(variants);
     const fenData = fen.trim().split(/\s+/);
@@ -75,11 +74,8 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
       startingMoveIndexString,
       checksCount
     ] = fenData.slice(boardCount);
-    const possibleTurnValues = isMonsterChess
-      ? ['w1', 'w2', 'b']
-      : ['w', 'b'];
 
-    if (!possibleTurnValues.includes(turnString)) {
+    if (turnString !== 'w' && turnString !== 'b') {
       throw new Error('Invalid FEN: wrong turn');
     }
 
@@ -97,10 +93,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
     }
 
     if (possibleEnPassantString !== '-') {
-      if (
-        isDarkChess
-        || (isMonsterChess && turnString === 'w2')
-      ) {
+      if (isDarkChess) {
         throw new Error('Invalid FEN: wrong en passant');
       }
 
@@ -150,9 +143,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
 
     const startingMoveIndexNumber = +startingMoveIndexString - 1;
 
-    startingData.startingMoveIndex = isMonsterChess
-      ? 3 * startingMoveIndexNumber + (turnString === 'b' ? 2 : turnString === 'w2' ? 1 : 0)
-      : 2 * startingMoveIndexNumber + (turnString === 'b' ? 1 : 0);
+    startingData.startingMoveIndex = 2 * startingMoveIndexNumber + (turnString === 'b' ? 1 : 0);
 
     let id = 0;
     const pieces: RealPiece[] = [];
@@ -282,6 +273,8 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
     return startingData;
   }
 
+  abstract pliesCount: number;
+
   checksCount: ChecksCount = {
     [ColorEnum.WHITE]: 0,
     [ColorEnum.BLACK]: 0
@@ -299,7 +292,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
     const turnFen = this.getFenTurn();
     const enPassantFen = this.getFenEnPassant();
     const pliesCountFen = this.pliesWithoutCaptureOrPawnMove;
-    const moveIndexFen = Math.floor(this.pliesCount / this.pliesPerMove) + 1;
+    const moveIndexFen = Math.floor(this.pliesCount / 2) + 1;
     const checksCountFen = this.getFenChecksCount();
 
     return `${piecesFen} ${turnFen} ${castlingFen} ${enPassantFen} ${pliesCountFen} ${moveIndexFen}${checksCountFen}`;
@@ -440,11 +433,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
   }
 
   getFenTurn(): string {
-    const pliesInMove = this.pliesCount % this.pliesPerMove;
-
-    return this.isMonsterChess
-      ? pliesInMove === 0 ? 'w1' : pliesInMove === 1 ? 'w2' : 'b'
-      : this.turn === ColorEnum.WHITE ? 'w' : 'b';
+    return this.turn === ColorEnum.WHITE ? 'w' : 'b';
   }
 
   getPositionFen(): string {

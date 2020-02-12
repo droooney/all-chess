@@ -58,10 +58,12 @@
 
       .move-index {
         .flex(@justify-content: flex-start);
+        .flex-child-fixed(10%);
       }
 
       .move {
         .flex(@justify-content: flex-start);
+        .flex-child-fixed(45%);
 
         padding: 0 5px;
         cursor: pointer;
@@ -72,26 +74,6 @@
 
         &.current {
           background-color: #ccc;
-        }
-      }
-
-      &.moves-2 {
-        .move-index {
-          .flex-child-fixed(10%);
-        }
-
-        .move {
-          .flex-child-fixed(45%);
-        }
-      }
-
-      &.moves-3 {
-        .move-index {
-          .flex-child-fixed(10%);
-        }
-
-        .move {
-          .flex-child-fixed(30%);
         }
       }
     }
