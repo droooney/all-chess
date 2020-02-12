@@ -86,10 +86,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
       || isAntichess
       || !isDarkChess
     ) && (
-      !isAtomic
-      || !isAliceChess
-      || isCircularChess
-    ) && (
       !isMonsterChess
       || (
         !isCrazyhouse
@@ -136,6 +132,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isAmazons
         // TODO: add support for hex + atomic
         && !isHexagonalChess
+        && !isAliceChess
       )
     ) && (
       !isAntichess

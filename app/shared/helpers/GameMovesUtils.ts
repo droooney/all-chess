@@ -225,7 +225,13 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
           return;
         }
 
-        if (isKing && forMove && !this.isLeftInCheckAllowed && this.isAttackedByOpponentPiece(square, opponentColor)) {
+        if (
+          isKing
+          && forMove
+          && !this.isLeftInCheckAllowed
+          && !pieceInSquare
+          && this.isAttackedByOpponentPiece(square, opponentColor)
+        ) {
           return;
         }
 
