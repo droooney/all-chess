@@ -338,7 +338,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
       }
     }
 
-    for (const [incrementY, incrementX] of this.isHexagonalChess ? HEX_BISHOP_MOVE_INCREMENTS : BISHOP_MOVE_INCREMENTS) {
+    for (const [incrementY, incrementX] of this.isHexagonalChess ? HEX_KNIGHT_MOVE_INCREMENTS : KNIGHT_MOVE_INCREMENTS) {
       const pieceInDirection = findPieceInDirection(PieceTypeEnum.KNIGHT, incrementY, incrementX);
 
       if (pieceInDirection && isAttacking(pieceInDirection)) {
