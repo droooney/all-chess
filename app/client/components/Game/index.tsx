@@ -416,7 +416,9 @@ class Game extends React.Component<Props, State> {
       to: allowedMove.realSquare
     };
 
-    if (allowedMove.isPawnPromotion) {
+    if (this.game!.isPromoting(selectedPiece, allowedMove.realSquare)) {
+      // TODO: only show valid promotions for madrasi
+
       this.setState({
         promotionModalVisible: true,
         promotionMove: move

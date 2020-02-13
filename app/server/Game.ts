@@ -9,7 +9,6 @@ import {
   GameCreateOptions,
   GameStatusEnum,
   GameVariantEnum,
-  GetPossibleMovesMode,
   Move,
   PieceLocationEnum,
   Player,
@@ -413,17 +412,7 @@ export default class Game extends GameHelper {
       return;
     }
 
-    const possibleMove = this
-      .getFilteredPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE)
-      .find(({ square }) => Game.areSquaresEqual(square, toLocation));
-
-    if (!possibleMove || !this.isMoveAllowed(piece, possibleMove)) {
-      return;
-    }
-
-    const isPawnPromotion = possibleMove.isPawnPromotion;
-
-    if (isPawnPromotion && !this.validPromotions.includes(promotion!)) {
+    if (!this.isMoveAllowed(piece, toLocation, promotion!)) {
       return;
     }
 
@@ -434,7 +423,7 @@ export default class Game extends GameHelper {
       duration: newTimestamp - this.lastMoveTimestamp
     };
 
-    if (isPawnPromotion) {
+    if (promotion) {
       move.promotion = promotion;
     }
 

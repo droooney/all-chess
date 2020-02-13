@@ -446,6 +446,24 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     ));
   }
 
+  isPromotionSquare(square: Square, color: ColorEnum): boolean {
+    if (this.isCircularChess) {
+      return color === ColorEnum.WHITE
+        ? square.y === this.boardOrthodoxHeight - 1 || square.y === this.boardOrthodoxHeight
+        : square.y === 0 || square.y === this.boardHeight - 1;
+    }
+
+    return square.y === (
+      this.isHexagonalChess
+        ? color === ColorEnum.WHITE
+          ? this.boardHeight - 1 - Math.abs(square.x - this.middleFileX)
+          : 0
+        : color === ColorEnum.WHITE
+          ? this.boardHeight - 1
+          : 0
+    );
+  }
+
   resetBoards() {
     this.boards = _.times(this.boardCount, () => (
       _.times(this.boardHeight, () => (

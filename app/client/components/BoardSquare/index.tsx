@@ -9,8 +9,9 @@ export interface BoardSquareProps {
   board: number;
   fileX: number;
   rankY: number;
-  onSquareClick(square: Square): void;
-  onPieceDragStart(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
+
+  onSquareClick?(square: Square): void;
+  onPieceDragStart?(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
 }
 
 type Props = BoardSquareProps & (React.SVGProps<SVGPathElement> | React.SVGProps<SVGRectElement>);
@@ -63,9 +64,9 @@ export default class BoardSquare extends React.PureComponent<Props> {
         ].join(' '),
         transformOrigin: `${game.boardCenterX}px ${game.boardCenterY}px`
       },
-      onClick: () => onSquareClick(square),
-      onMouseDown: (e: React.MouseEvent) => onPieceDragStart(e, location),
-      onTouchStart: (e: React.TouchEvent) => onPieceDragStart(e, location)
+      onClick: onSquareClick && (() => onSquareClick(square)),
+      onMouseDown: onPieceDragStart && ((e: React.MouseEvent) => onPieceDragStart(e, location)),
+      onTouchStart: onPieceDragStart && ((e: React.TouchEvent) => onPieceDragStart(e, location))
     };
     let pathD = '';
 

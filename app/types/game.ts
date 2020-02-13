@@ -262,7 +262,6 @@ export interface PossibleMove {
   castling: null | {
     rook: BoardPiece;
   };
-  isPawnPromotion: boolean;
 }
 
 export interface BoardPossibleMove extends PossibleMove {

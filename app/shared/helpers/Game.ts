@@ -12,6 +12,7 @@ import {
   Move,
   PGNTags,
   PieceLocationEnum,
+  PieceTypeEnum,
   RealPiece,
   ResultReasonEnum,
   Square,
@@ -30,8 +31,7 @@ const DIGITS_REGEX = /^\d+$/;
 
 const PGN_TAG_REGEX = /^\[([a-z0-9]+) +"((?:[^"\\]|\\"|\\\\)*)"]$/i;
 const PGN_MOVE_REGEX = /^\S+(?=\s|$)/;
-const PGN_MOVE_SQUARES_REGEX = /^(?:([A-Z]?)(@?)([₀-₉]*)([a-w]*)(\d*)x?([₀-₉]*)([a-w])(\d+))|O-O(-O)?/;
-const PGN_PROMOTION_REGEX = /^=([A-Z])/;
+const PGN_MOVE_SQUARES_REGEX = /^(?:([A-Z]?)(@?)([₀-₉]*)([a-w]*)(\d*)x?([₀-₉]*)([a-w])(\d+)(?:=([A-Z]))?)|O-O(-O)?/;
 
 const RESULT_WIN_WHITE = '1-0';
 const RESULT_WIN_BLACK = '0-1';
@@ -256,6 +256,7 @@ export class Game extends GameResultUtils implements IGame {
           toBoardLiteral,
           toFileLiteral,
           toRankLiteral,
+          promotionPieceLiteral,
           queenSideCastling
         ] = moveSquaresMatch;
         const isDrop = !!drop;
@@ -272,6 +273,7 @@ export class Game extends GameResultUtils implements IGame {
         const fromBoard = Game.getBoardNumber(fromBoardLiteral);
         const fromFile = Game.getFileNumber(fromFileLiteral);
         const fromRank = Game.getRankNumber(fromRankLiteral);
+        const promotedPiece = promotionPieceLiteral && Game.getPieceFromLiteral(promotionPieceLiteral);
         let toBoard: number;
         let toFile: number;
         let toRank: number;
@@ -329,7 +331,7 @@ export class Game extends GameResultUtils implements IGame {
                 && (!fromFileLiteral || piece.location.x === fromFile)
                 && (!fromRankLiteral || piece.location.x === fromRank)
               ))
-              && game.getAllowedMoves(piece).any(({ square }) => Game.areSquaresEqual(square, toSquare))
+              && game.isMoveAllowed(piece, toSquare, promotedPiece ? promotedPiece.type : PieceTypeEnum.PAWN)
             );
           });
 
@@ -350,23 +352,8 @@ export class Game extends GameResultUtils implements IGame {
           to: toSquare,
           duration: 0
         };
-        const isPawnPromotion = game.getAllowedMoves(piece).any(({ square, isPawnPromotion }) => (
-          isPawnPromotion && Game.areSquaresEqual(square, toSquare)
-        ));
 
-        if (isPawnPromotion) {
-          const promotionMatch = moveString.slice(moveSquares.length).match(PGN_PROMOTION_REGEX);
-
-          if (!promotionMatch) {
-            throw new Error('Invalid PGN: wrong promotion');
-          }
-
-          const promotedPiece = Game.getPieceFromLiteral(promotionMatch[1]);
-
-          if (!promotedPiece || !game.validPromotions.includes(promotedPiece.type)) {
-            throw new Error(`Invalid PGN: wrong promotion piece (${promotionMatch[1]})`);
-          }
-
+        if (game.isPromoting(piece, toSquare) && promotedPiece) {
           move.promotion = promotedPiece.type;
         }
 

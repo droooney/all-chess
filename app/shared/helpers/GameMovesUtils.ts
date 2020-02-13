@@ -173,8 +173,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
                 yield {
                   square,
                   capture: null,
-                  castling: null,
-                  isPawnPromotion: false
+                  castling: null
                 };
               }
             }
@@ -209,8 +208,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             yield {
               square,
               capture: null,
-              castling: null,
-              isPawnPromotion: false
+              castling: null
             };
           }
 
@@ -233,8 +231,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             piece: pieceInSquare,
             enPassant: false
           },
-          castling: null,
-          isPawnPromotion: false
+          castling: null
         };
 
         if (pieceInSquare) {
@@ -251,8 +248,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       yield {
         square: { board, x: pieceX, y: pieceY },
         capture: null,
-        castling: null,
-        isPawnPromotion: false
+        castling: null
       };
     }
 
@@ -302,30 +298,6 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         x: pieceX,
         y: rankY
       };
-      const isPawnPromotion = rankY === (
-        this.isCircularChess
-          ? pieceColor === ColorEnum.WHITE
-            ? direction === 1
-              ? this.boardOrthodoxHeight - 1
-              : this.boardOrthodoxHeight
-            : direction === 1
-              ? this.boardHeight - 1
-              : 0
-          : this.isHexagonalChess
-            ? Infinity
-            : pieceColor === ColorEnum.WHITE
-              ? this.boardHeight - 1
-              : 0
-      );
-      const getIsPawnPromotion = (square: Square): boolean => (
-        this.isHexagonalChess
-          ? square.y === (
-            pieceColor === ColorEnum.WHITE
-              ? this.boardHeight - 1 - Math.abs(square.x - this.middleFileX)
-              : 0
-          )
-          : isPawnPromotion
-      );
 
       if ((forMove || onlyPossible || onlyVisible) && !this.isNullSquare(square)) {
         // 1-forward move
@@ -335,8 +307,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
           yield {
             square,
             capture: null,
-            castling: null,
-            isPawnPromotion: getIsPawnPromotion(square)
+            castling: null
           };
 
           if (
@@ -368,8 +339,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
               yield {
                 square,
                 capture: null,
-                castling: null,
-                isPawnPromotion: false
+                castling: null
               };
             }
           }
@@ -416,8 +386,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
                 piece: pieceInSquare!,
                 enPassant: false
               } : null,
-              castling: null,
-              isPawnPromotion: (!isCapture || !this.isFrankfurt) && getIsPawnPromotion(square)
+              castling: null
             };
           }
         }
@@ -522,14 +491,32 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             y: pieceY
           },
           capture: null,
-          castling: { rook: rook! },
-          isPawnPromotion: false
+          castling: { rook: rook! }
         };
       }
     }
   }
 
-  isMoveAllowed(piece: RealPiece, move: PossibleMove): boolean {
+  isMoveAllowed(piece: RealPiece, square: Square, promotion: PieceTypeEnum): boolean {
+    const possibleMove = this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE).find((move) => (
+      GameMovesUtils.areSquaresEqual(square, move.square)
+    ));
+
+    return (
+      !!possibleMove
+      && (!this.isPromoting(piece, square) || this.validPromotions.includes(promotion))
+      && this.isPossibleMoveAllowed(piece, possibleMove, promotion)
+    );
+  }
+
+  isNoMoves(): boolean {
+    return this.getPieces(this.turn).every((piece) => (
+      !this.getAllowedMoves(piece).take(0)
+    ));
+  }
+
+  // do not call with a random move
+  isPossibleMoveAllowed(piece: RealPiece, move: PossibleMove, promotion: PieceTypeEnum): boolean {
     if (this.isAntichess) {
       return !this.hasCapturePieces(piece.color) || !!move.capture;
     }
@@ -542,18 +529,12 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       from: piece.location,
       to: move.square,
       duration: 0,
-      promotion: PieceTypeEnum.QUEEN
+      promotion
     }, { checkIfAllowed: true });
 
     revertMove();
 
     return allowed;
-  }
-
-  isNoMoves(): boolean {
-    return this.getPieces(this.turn).every((piece) => (
-      !this.getAllowedMoves(piece).take(0)
-    ));
   }
 
   performMove(move: Move, options: PerformMoveOptions = {}): PerformMoveReturnValue {
@@ -581,7 +562,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     const opponentPiece = possibleMove.capture && possibleMove.capture.piece;
     const isCapture = !!opponentPiece;
     const disappearedOrMovedPieces: Piece[] = [];
-    const isPawnPromotion = possibleMove.isPawnPromotion;
+    const isPawnPromotion = this.isPromoting(piece, toLocation);
     const wasKing = GameMovesUtils.isKing(piece);
     const isMainPieceMovedOrDisappeared = this.isAtomic && isCapture;
     const isCastling = !!possibleMove.castling;

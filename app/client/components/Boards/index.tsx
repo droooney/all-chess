@@ -303,9 +303,7 @@ class Boards extends React.Component<Props> {
                 game,
                 board,
                 fileX,
-                rankY,
-                onSquareClick: this.onSquareClick,
-                onPieceDragStart: this.onPieceDragStart
+                rankY
               };
 
               if (
@@ -348,6 +346,8 @@ class Boards extends React.Component<Props> {
                   <BoardSquare
                     {...baseSquareParams}
                     className="allowed-square"
+                    onSquareClick={this.onSquareClick}
+                    onPieceDragStart={this.onPieceDragStart}
                   />
                 );
               }

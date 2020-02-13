@@ -48,15 +48,13 @@
       }
     }
 
-    .square,
     .selected-square,
     .current-move-square,
-    .allowed-square,
     .check-square,
     .hidden-square,
     .literal,
     .center-border {
-      cursor: pointer;
+      pointer-events: none;
     }
 
     .selected-square {
@@ -83,8 +81,6 @@
 
     .literal {
       .user-select(none);
-
-      pointer-events: none;
 
       &.light {
         fill: @light-color;

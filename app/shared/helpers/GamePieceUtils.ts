@@ -328,6 +328,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
   abstract boards: Boards;
 
   abstract getFilteredPossibleMoves(piece: RealPiece, move: GetPossibleMovesMode): Generator<PossibleMove>;
+  abstract isPromotionSquare(square: Square, color: ColorEnum): boolean;
 
   kings: GameKings = {
     [ColorEnum.WHITE]: [],
@@ -358,11 +359,12 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
   }
 
   changePieceLocation(piece: Piece, location: PieceLocation) {
-    if (
-      GamePieceUtils.isBoardPiece(piece)
-      && this.boards[piece.location.board][piece.location.y][piece.location.x] === piece
-    ) {
-      this.boards[piece.location.board][piece.location.y][piece.location.x] = null;
+    if (GamePieceUtils.isBoardPiece(piece)) {
+      const pieceInSquare = this.boards[piece.location.board][piece.location.y][piece.location.x];
+
+      if (pieceInSquare && pieceInSquare.id === piece.id) {
+        this.boards[piece.location.board][piece.location.y][piece.location.x] = null;
+      }
     }
 
     piece.location = location;
@@ -413,6 +415,14 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
           && pieceInSquare.abilities === piece.abilities
         );
       })
+    );
+  }
+
+  isPromoting(piece: Piece, square: Square): boolean {
+    return (
+      GamePieceUtils.isPawn(piece)
+      && this.isPromotionSquare(square, piece.color)
+      && (!this.isFrankfurt || !this.getBoardPiece(square))
     );
   }
 
