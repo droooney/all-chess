@@ -307,7 +307,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
 
         if (
           (!isKingMove && !GameBoardUtils.hasMovement(pieceInSquare, movementType))
-          || (isKingMove && iteration > 0)
+          || (isKingMove && (iteration > 0 || movementType === PieceTypeEnum.KNIGHT))
         ) {
           return;
         }
