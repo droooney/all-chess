@@ -57,6 +57,7 @@ interface State {
   boardsShiftX: number;
   promotionModalVisible: boolean;
   promotionMove: BaseMove | null;
+  validPromotions: PieceTypeEnum[];
   isDragging: boolean;
   gridMode: 'desktop' | 'tablet' | 'mobile';
 }
@@ -78,6 +79,7 @@ class Game extends React.Component<Props, State> {
     boardsShiftX: 0,
     promotionModalVisible: false,
     promotionMove: null,
+    validPromotions: [],
     isDragging: false,
     gridMode: 'desktop'
   };
@@ -417,16 +419,25 @@ class Game extends React.Component<Props, State> {
       from: selectedPiece.location,
       to: allowedMove.realSquare
     };
+    const isPawnPromotion = this.game!.isPromoting(selectedPiece, allowedMove.realSquare);
+    const validPromotions = isPawnPromotion
+      ? this.game!.validPromotions.filter((promotion) => (
+        this.game!.isMoveAllowed(selectedPiece, allowedMove.realSquare, promotion)
+      ))
+      : [];
 
-    if (this.game!.isPromoting(selectedPiece, allowedMove.realSquare)) {
-      // TODO: only show valid promotions for madrasi
-
+    if (isPawnPromotion && validPromotions.length > 1) {
       this.setState({
         promotionModalVisible: true,
-        promotionMove: move
+        promotionMove: move,
+        validPromotions
       });
     } else {
-      this.game!.move(move);
+      this.game!.move(
+        isPawnPromotion
+          ? move
+          : { ...move, promotion: validPromotions[0] }
+      );
 
       if (!this.game!.isDarkChess) {
         _.last(this.game!.moves)!.isDndMove = isDndMove;
@@ -676,6 +687,7 @@ class Game extends React.Component<Props, State> {
               square={this.state.promotionMove && this.state.promotionMove.to}
               pieceSize={pieceSize}
               isBlackBase={isBlackBase}
+              validPromotions={this.state.validPromotions}
               onOverlayClick={this.closePromotionPopup}
               promoteToPiece={this.promoteToPiece}
             />

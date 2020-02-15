@@ -13,6 +13,7 @@ interface OwnProps {
   square: Square | null;
   pieceSize: number;
   isBlackBase: boolean;
+  validPromotions: PieceTypeEnum[];
   promoteToPiece(pieceType: PieceTypeEnum): void;
 }
 
@@ -45,6 +46,7 @@ export default class PromotionModal extends React.PureComponent<Props> {
       square,
       pieceSize,
       isBlackBase,
+      validPromotions,
       promoteToPiece,
       ...modalProps
     } = this.props;
@@ -88,7 +90,7 @@ export default class PromotionModal extends React.PureComponent<Props> {
               flexDirection: reverse ? 'column-reverse' : 'column'
             }}
           >
-            {game.validPromotions.map((pieceType) => (
+            {validPromotions.map((pieceType) => (
               <Piece
                 key={pieceType}
                 width={pieceSize}

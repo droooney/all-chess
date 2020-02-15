@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 
-import { Game as GameHelper, Game } from '../../helpers';
+import { Game } from '../../helpers';
 import { Game as BaseGame } from '../../../shared/helpers';
 import {
   BoardPiece,
@@ -276,6 +276,10 @@ class BoardEditor extends React.Component<Props, State> {
       return;
     }
 
+    this.setState({
+      isDragging: false
+    });
+
     const point = this.getEventPoint(e);
 
     if (
@@ -283,13 +287,9 @@ class BoardEditor extends React.Component<Props, State> {
         try {
           if (
             this.state.selectedPiece
-            && GameHelper.isPocketPiece(this.state.selectedPiece)
+            && Game.isPocketPiece(this.state.selectedPiece)
             && (element as HTMLElement).dataset.pocketPiece === this.state.selectedPiece.location.pieceType
           ) {
-            this.setState({
-              isDragging: false
-            });
-
             return true;
           }
 
@@ -307,10 +307,7 @@ class BoardEditor extends React.Component<Props, State> {
         }
       })
     ) {
-      this.setState({
-        isDragging: false,
-        selectedPiece: null
-      });
+      this.makeMove(null);
     }
   };
 

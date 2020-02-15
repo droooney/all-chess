@@ -12,6 +12,7 @@ import {
   HEX_ROOK_MOVE_INCREMENTS
 } from './GameBoardUtils';
 import {
+  BaseMove,
   BoardPiece,
   CastlingTypeEnum,
   ColorEnum,
@@ -85,11 +86,23 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     }
 
     return possibleMoves.filter((square) => {
+      if (this.isPromoting(piece, square)) {
+        return this.validPromotions.some((promotion) => {
+          const { allowed, revertMove } = this.performMove({
+            from: piece.location,
+            to: square,
+            promotion
+          }, { checkIfAllowed: true });
+
+          revertMove();
+
+          return allowed;
+        });
+      }
+
       const { allowed, revertMove } = this.performMove({
         from: piece.location,
-        to: square,
-        duration: 0,
-        promotion: PieceTypeEnum.QUEEN
+        to: square
       }, { checkIfAllowed: true });
 
       revertMove();
@@ -482,7 +495,6 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     const { allowed, revertMove } = this.performMove({
       from: piece.location,
       to: square,
-      duration: 0,
       promotion
     }, { checkIfAllowed: true });
 
@@ -491,7 +503,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     return allowed;
   }
 
-  performMove(move: Move, options: PerformMoveOptions = {}): PerformMoveReturnValue {
+  performMove(move: BaseMove, options: PerformMoveOptions = {}): PerformMoveReturnValue {
     const {
       constructMoveLiterals = false,
       constructPositionString = false,

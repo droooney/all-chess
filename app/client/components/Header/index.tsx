@@ -49,20 +49,18 @@ class Header extends React.Component<Props> {
           </Link>
         </div>
         <div className="right-header-block">
-          {user && (
-            <Link
-              to={{
-                pathname: '/editor',
-                search: `?${qs.stringify({
-                  fen: STANDARD_FEN,
-                  variants: ''
-                })}`
-              }}
-              style={{ marginRight: 20 }}
-            >
-              Editor
-            </Link>
-          )}
+          <Link
+            to={{
+              pathname: '/editor',
+              search: `?${qs.stringify({
+                fen: STANDARD_FEN,
+                variants: ''
+              })}`
+            }}
+            style={{ marginRight: 20 }}
+          >
+            Editor
+          </Link>
           <Link to="/rules" style={{ marginRight: 20 }}>
             Rules
           </Link>
