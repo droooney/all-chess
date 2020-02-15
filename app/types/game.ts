@@ -253,18 +253,8 @@ export interface DarkChessLocalMove extends DarkChessRevertableMove {
 
 export type AnyMove = LocalMove | DarkChessLocalMove;
 
-export interface PossibleMove {
+export interface BoardPossibleMove {
   square: Square;
-  capture: null | {
-    piece: BoardPiece;
-    enPassant: boolean;
-  };
-  castling: null | {
-    rook: BoardPiece;
-  };
-}
-
-export interface BoardPossibleMove extends PossibleMove {
   realSquare: Square;
 }
 

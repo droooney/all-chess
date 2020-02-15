@@ -24,7 +24,6 @@ import {
   PieceLocationEnum,
   PiecePocketLocation,
   PieceTypeEnum,
-  PossibleMove,
   RealPiece,
   ResultReasonEnum,
   RevertableMove,
@@ -72,12 +71,12 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
   abstract isDraw(): ResultReasonEnum | null;
   abstract isWin(): GameResult | null;
 
-  getAllowedMoves(piece: RealPiece): Generator<PossibleMove> {
+  getAllowedMoves(piece: RealPiece): Generator<Square> {
     const possibleMoves = this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE);
 
     if (this.isAntichess) {
       return this.hasCapturePieces(piece.color)
-        ? possibleMoves.filter(({ capture }) => capture)
+        ? possibleMoves.filter((square) => !!this.getCapturedPiece(piece, square))
         : possibleMoves;
     }
 
@@ -85,7 +84,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       return possibleMoves;
     }
 
-    return possibleMoves.filter(({ square }) => {
+    return possibleMoves.filter((square) => {
       const { allowed, revertMove } = this.performMove({
         from: piece.location,
         to: square,
@@ -99,7 +98,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     });
   }
 
-  *getFilteredPossibleMoves(piece: RealPiece, mode: GetPossibleMovesMode): Generator<PossibleMove> {
+  *getFilteredPossibleMoves(piece: RealPiece, mode: GetPossibleMovesMode): Generator<Square> {
     const forMove = mode === GetPossibleMovesMode.FOR_MOVE;
     const onlyAttacked = mode === GetPossibleMovesMode.ATTACKED;
     const onlyControlled = mode === GetPossibleMovesMode.CONTROLLED;
@@ -126,14 +125,14 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     }
 
     yield* this.getPossibleMoves(piece, mode)
-      .filter(({ square }) => (
+      .filter((square) => (
         !this.isAliceChess || (!forMove && !onlyPossible) || this.isAvailableSquare(square)
       ))
-      .filter(({ capture }) => captureAllowed || !capture);
+      .filter((square) => captureAllowed || !this.getCapturedPiece(piece, square));
   }
 
   // do not call this anywhere except getFilteredPossibleMoves
-  *getPossibleMoves(piece: RealPiece, mode: GetPossibleMovesMode): Generator<PossibleMove> {
+  *getPossibleMoves(piece: RealPiece, mode: GetPossibleMovesMode): Generator<Square> {
     const forMove = mode === GetPossibleMovesMode.FOR_MOVE;
     const onlyVisible = mode === GetPossibleMovesMode.VISIBLE;
     const onlyPossible = mode === GetPossibleMovesMode.POSSIBLE;
@@ -170,11 +169,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
                 )
                 && !this.getBoardPiece(square)
               ) {
-                yield {
-                  square,
-                  capture: null,
-                  castling: null
-                };
+                yield square;
               }
             }
           }
@@ -197,7 +192,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       incrementY: number,
       incrementX: number,
       stopAfter: number
-    ): Generator<PossibleMove> {
+    ): Generator<Square> {
       let iterations = 0;
 
       for (const square of this.traverseDirection(piece.location, movementType, incrementY, incrementX)) {
@@ -205,11 +200,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
 
         if (pieceInSquare && pieceInSquare.color === pieceColor) {
           if (!forMove && !onlyPossible) {
-            yield {
-              square,
-              capture: null,
-              castling: null
-            };
+            yield square;
           }
 
           return;
@@ -225,14 +216,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
           return;
         }
 
-        yield {
-          square,
-          capture: pieceInSquare && {
-            piece: pieceInSquare,
-            enPassant: false
-          },
-          castling: null
-        };
+        yield square;
 
         if (pieceInSquare) {
           return;
@@ -245,11 +229,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     }.bind(this);
 
     if (onlyVisible) {
-      yield {
-        square: { board, x: pieceX, y: pieceY },
-        capture: null,
-        castling: null
-      };
+      yield { board, x: pieceX, y: pieceY };
     }
 
     const isKing = GameMovesUtils.isKing(piece);
@@ -304,11 +284,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         const pieceInSquare = this.getBoardPiece(square);
 
         if (!pieceInSquare || onlyVisible) {
-          yield {
-            square,
-            capture: null,
-            castling: null
-          };
+          yield square;
 
           if (
             !pieceInSquare && (
@@ -336,11 +312,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             const pieceInSquare = this.getBoardPiece(square);
 
             if (!pieceInSquare || onlyVisible) {
-              yield {
-                square,
-                capture: null,
-                castling: null
-              };
+              yield square;
             }
           }
         }
@@ -368,26 +340,13 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             !!this.possibleEnPassant
             && GameMovesUtils.areSquaresEqual(square, this.possibleEnPassant.enPassantSquare)
           );
-          const isCapture = (
-            (!!pieceInSquare && pieceInSquare.color !== pieceColor)
-            || isEnPassant
-          );
 
           if (
             (!forMove && !onlyPossible)
-            || isCapture
+            || (!!pieceInSquare && pieceInSquare.color !== pieceColor)
+            || isEnPassant
           ) {
-            yield {
-              square,
-              capture: isCapture ? isEnPassant ? {
-                piece: this.getBoardPiece(this.possibleEnPassant!.pieceLocation)!,
-                enPassant: true
-              } : {
-                piece: pieceInSquare!,
-                enPassant: false
-              } : null,
-              castling: null
-            };
+            yield square;
           }
         }
       }
@@ -405,17 +364,16 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     ) {
       const queenSideKing = this.kings[pieceColor][0];
       const kingSideKing = _.last(this.kings[pieceColor])!;
-      const castlingRooks = this.getCastlingRooks(pieceColor);
-      const validCastlingRooks = [castlingRooks[CastlingTypeEnum.QUEEN_SIDE], castlingRooks[CastlingTypeEnum.KING_SIDE]]
-        .filter((rook, ix) => (
+      const validCastlingRooks = _
+        .filter(this.getCastlingRooks(pieceColor), (rook, castlingSide) => (
           (
             // queen-side king and queen-side rook
-            (piece.id === queenSideKing.id && ix === 0)
+            (piece.id === queenSideKing.id && castlingSide === CastlingTypeEnum.QUEEN_SIDE)
             // king-side king and king-side rook
-            || (piece.id === kingSideKing.id && ix === 1)
+            || (piece.id === kingSideKing.id && castlingSide === CastlingTypeEnum.KING_SIDE)
           )
-          && this.startingData.possibleCastling[pieceColor][ix === 0 ? CastlingTypeEnum.QUEEN_SIDE : CastlingTypeEnum.KING_SIDE]
-          && rook
+          && this.startingData.possibleCastling[pieceColor][castlingSide]
+          && !!rook
           && rook.location.board === board
           && (!this.isMadrasi || !this.isParalysed(rook))
         ))
@@ -463,7 +421,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
           });
 
           if (this.boardCount > 1) {
-            // a piece cannot move to a square that is occupied on any other board
+            // a rook cannot move to a square that is occupied on any other board
             canRookMove = canRookMove && _.times(this.boardCount - 1).every((board) => (
               !this.getBoardPiece({
                 board: this.getNextBoard(rookLocation.board + board),
@@ -481,25 +439,21 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         const isKingSideRook = rookLocation.x - pieceX > 0;
 
         yield {
-          square: {
-            board,
-            x: this.is960
-              ? rookLocation.x
-              : isKingSideRook
-                ? this.boardWidth - 2
-                : 2,
-            y: pieceY
-          },
-          capture: null,
-          castling: { rook: rook! }
+          board,
+          x: this.is960
+            ? rookLocation.x
+            : isKingSideRook
+              ? this.boardWidth - 2
+              : 2,
+          y: pieceY
         };
       }
     }
   }
 
   isMoveAllowed(piece: RealPiece, square: Square, promotion: PieceTypeEnum): boolean {
-    const possibleMove = this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE).find((move) => (
-      GameMovesUtils.areSquaresEqual(square, move.square)
+    const possibleMove = this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE).find((sq) => (
+      GameMovesUtils.areSquaresEqual(square, sq)
     ));
 
     return (
@@ -516,9 +470,9 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
   }
 
   // do not call with a random move
-  isPossibleMoveAllowed(piece: RealPiece, move: PossibleMove, promotion: PieceTypeEnum): boolean {
+  isPossibleMoveAllowed(piece: RealPiece, square: Square, promotion: PieceTypeEnum): boolean {
     if (this.isAntichess) {
-      return !this.hasCapturePieces(piece.color) || !!move.capture;
+      return !this.hasCapturePieces(piece.color) || !!this.getCapturedPiece(piece, square);
     }
 
     if (this.isLeftInCheckAllowed && !this.isAtomic) {
@@ -527,7 +481,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
 
     const { allowed, revertMove } = this.performMove({
       from: piece.location,
-      to: move.square,
+      to: square,
       duration: 0,
       promotion
     }, { checkIfAllowed: true });
@@ -556,18 +510,15 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     const piece = fromLocation.type === PieceLocationEnum.BOARD
       ? this.getBoardPiece(fromLocation)!
       : this.getPocketPiece(fromLocation.pieceType, this.turn)!;
-    const possibleMove = this
-      .getFilteredPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE)
-      .find(({ square }) => GameMovesUtils.areSquaresEqual(square, toLocation))!;
-    const opponentPiece = possibleMove.capture && possibleMove.capture.piece;
+    const opponentPiece = this.getCapturedPiece(piece, toLocation);
     const isCapture = !!opponentPiece;
     const disappearedOrMovedPieces: Piece[] = [];
     const isPawnPromotion = this.isPromoting(piece, toLocation);
     const wasKing = GameMovesUtils.isKing(piece);
     const isMainPieceMovedOrDisappeared = this.isAtomic && isCapture;
-    const isCastling = !!possibleMove.castling;
+    const castlingRook = this.getCastlingRook(piece, toLocation);
+    const isCastling = !!castlingRook;
     const isKingSideCastling = isCastling && toX - (fromLocation as PieceBoardLocation).x > 0;
-    const castlingRook = possibleMove.castling && possibleMove.castling.rook;
 
     const prevTurn = this.turn;
     const nextTurn = this.getOpponentColor();
@@ -635,7 +586,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         algebraic += GameMovesUtils.getPieceFullAlgebraicLiteral(piece);
         figurine += GameMovesUtils.getPieceFullFigurineLiteral(piece);
 
-        const otherBoardsToDropPiece = this.getAllowedMoves(piece).any(({ square: { board, x, y } }) => (
+        const otherBoardsToDropPiece = this.getAllowedMoves(piece).any(({ board, x, y }) => (
           board !== toBoard
           && x === toX
           && y === toY
@@ -671,7 +622,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
               GameMovesUtils.isPawn(otherPawn)
               && otherPawn.id !== piece.id
               && otherPawn.location.board !== fromBoard
-              && this.getAllowedMoves(otherPawn).any(({ square: { x, y } }) => x === toX && y === toY)
+              && this.getAllowedMoves(otherPawn).any(({ x, y }) => x === toX && y === toY)
             ));
 
           if (otherPawnsOnOtherBoardsAbleToMakeMove.length) {
@@ -697,7 +648,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
               otherPiece.type === piece.type
               && otherPiece.abilities === piece.abilities
               && otherPiece.id !== piece.id
-              && this.getAllowedMoves(otherPiece).any(({ square: { x, y } }) => x === toX && y === toY)
+              && this.getAllowedMoves(otherPiece).any(({ x, y }) => x === toX && y === toY)
             ));
 
           if (otherPiecesAbleToMakeMove.length) {

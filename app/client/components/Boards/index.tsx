@@ -98,7 +98,7 @@ class Boards extends React.Component<Props> {
       return;
     }
 
-    yield* game.getAllowedMoves(selectedPiece).map((move) => ({ ...move, realSquare: move.square }));
+    yield* game.getAllowedMoves(selectedPiece).map((square) => ({ square, realSquare: square }));
   }
 
   isInCheck(square: Square): boolean {

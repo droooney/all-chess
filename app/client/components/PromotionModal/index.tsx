@@ -24,7 +24,7 @@ export default class PromotionModal extends React.PureComponent<Props> {
   }
 
   componentWillUnmount() {
-    window.addEventListener('resize', this.onWindowResize);
+    window.removeEventListener('resize', this.onWindowResize);
   }
 
   onWindowResize = () => {

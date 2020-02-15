@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 
 import GameStartingDataUtils from './GameStartingDataUtils';
-import { BoardPiece, CastlingTypeEnum, ColorEnum, GameCreateOptions, Square } from '../../types';
+import { BoardPiece, CastlingTypeEnum, ColorEnum, GameCreateOptions, RealPiece, Square } from '../../types';
 
 type CastlingRookCoordinates = Record<CastlingTypeEnum, Square | null>;
 
@@ -15,6 +15,32 @@ export default abstract class GameCastlingUtils extends GameStartingDataUtils {
       [ColorEnum.WHITE]: this.getCastlingRookCoordinates(ColorEnum.WHITE),
       [ColorEnum.BLACK]: this.getCastlingRookCoordinates(ColorEnum.BLACK)
     };
+  }
+
+  getCastlingRook(piece: RealPiece, square: Square): BoardPiece | null {
+    if (!GameCastlingUtils.isBoardPiece(piece) || !GameCastlingUtils.isKing(piece)) {
+      return null;
+    }
+
+    if (this.is960) {
+      const pieceInSquare = this.getBoardPiece(square);
+
+      return (
+        pieceInSquare && GameCastlingUtils.isRook(pieceInSquare) && pieceInSquare.color === piece.color
+          ? pieceInSquare
+          : null
+      );
+    }
+
+    if (Math.abs(piece.location.x - square.x) < 2) {
+      return null;
+    }
+
+    return _.find(this.getCastlingRooks(piece.color), (rook, castlingSide) => (
+      !!rook
+      && this.startingData.possibleCastling[piece.color][castlingSide as CastlingTypeEnum]
+      && Math.sign(rook.location.x - piece.location.x) === Math.sign(square.x - piece.location.x)
+    )) || null;
   }
 
   getCastlingRookCoordinates(color: ColorEnum): CastlingRookCoordinates {
@@ -31,6 +57,7 @@ export default abstract class GameCastlingUtils extends GameStartingDataUtils {
         piece.color === color
         && GameCastlingUtils.isRook(piece)
         && GameCastlingUtils.isBoardPiece(piece)
+        && !piece.abilities
         && piece.location.y === castlingRank
       )) as BoardPiece[];
 

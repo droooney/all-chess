@@ -15,7 +15,7 @@ import {
   PieceLocationEnum,
   PieceTypeEnum,
   PocketPiece,
-  PossibleMove,
+  PossibleEnPassant,
   RealPiece,
   Square,
   StandardPiece,
@@ -326,8 +326,9 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
   static isPawn = (piece: Piece): boolean => GamePieceUtils.isPiece(piece, PieceTypeEnum.PAWN);
 
   abstract boards: Boards;
+  abstract possibleEnPassant: PossibleEnPassant | null = null;
 
-  abstract getFilteredPossibleMoves(piece: RealPiece, move: GetPossibleMovesMode): Generator<PossibleMove>;
+  abstract getFilteredPossibleMoves(piece: RealPiece, move: GetPossibleMovesMode): Generator<Square>;
   abstract isPromotionSquare(square: Square, color: ColorEnum): boolean;
 
   kings: GameKings = {
@@ -374,14 +375,37 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
     }
   }
 
+  getBoardPiece(square: Square): BoardPiece | null {
+    return this.boards[square.board][square.y][square.x];
+  }
+
+  getCapturedPiece(piece: RealPiece, square: Square): BoardPiece | null {
+    const pieceInSquare = this.getBoardPiece(square);
+
+    if (pieceInSquare) {
+      return pieceInSquare.color === piece.color
+        ? null
+        : pieceInSquare;
+    }
+
+    if (
+      GamePieceUtils.isPawn(piece)
+      && GamePieceUtils.isBoardPiece(piece)
+      && this.possibleEnPassant
+      && square.board === this.possibleEnPassant.enPassantSquare.board
+      && square.y === this.possibleEnPassant.enPassantSquare.y
+      && square.x === this.possibleEnPassant.enPassantSquare.x
+    ) {
+      return this.getBoardPiece(this.possibleEnPassant.pieceLocation);
+    }
+
+    return null;
+  }
+
   getPieces(playerColor: ColorEnum): RealPiece[] {
     return this.pieces
       .filter(GamePieceUtils.isRealPiece)
       .filter(({ color }) => color === playerColor);
-  }
-
-  getBoardPiece(square: Square): BoardPiece | null {
-    return this.boards[square.board][square.y][square.x];
   }
 
   getPocketPiece(type: PieceTypeEnum, color: ColorEnum): PocketPiece | null {
@@ -394,7 +418,9 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
 
   hasCapturePieces(color: ColorEnum): boolean {
     return this.getPieces(color).some((piece) => (
-      this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE).any(({ capture }) => !!capture)
+      this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE).any((square) => (
+        !!this.getCapturedPiece(piece, square)
+      ))
     ));
   }
 
@@ -405,7 +431,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
   isParalysed(piece: RealPiece): boolean {
     return (
       GamePieceUtils.isBoardPiece(piece)
-      && this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.POSSIBLE).any(({ square }) => {
+      && this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.POSSIBLE).any((square) => {
         const pieceInSquare = this.getBoardPiece(square);
 
         return (

@@ -359,7 +359,7 @@ class Game extends React.Component<Props, State> {
 
     const allowedMoves = this.game!
       .getAllowedMoves(selectedPiece)
-      .map((move) => ({ ...move, realSquare: move.square }))
+      .map((square) => ({ square, realSquare: square }))
       .toArray();
 
     yield* allowedMoves;
@@ -367,10 +367,12 @@ class Game extends React.Component<Props, State> {
     // add own rooks as castling move targets
     if (!this.game!.is960) {
       for (const move of allowedMoves) {
-        if (move.castling) {
+        const castlingRook = this.game!.getCastlingRook(selectedPiece, move.square);
+
+        if (castlingRook) {
           yield {
             ...move,
-            square: move.castling.rook.location,
+            square: castlingRook.location,
             realSquare: move.square
           };
         }

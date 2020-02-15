@@ -260,9 +260,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     return this.getPieces(forColor)
       .filter(GameBoardUtils.isBoardPiece)
       .reduce((squares, piece) => {
-        let newSquares = this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.VISIBLE)
-          .map(({ square }) => square)
-          .toArray();
+        let newSquares = this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.VISIBLE).toArray();
 
         if (this.isAliceChess) {
           _.times(this.boardCount - 1, (board) => {
@@ -440,7 +438,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
   isPatrolledByFriendlyPiece(square: Square, color: ColorEnum): boolean {
     return this.getPieces(color).some((piece) => (
       GameBoardUtils.isBoardPiece(piece)
-      && this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.CONTROLLED).any(({ square: sq }) => (
+      && this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.CONTROLLED).any((sq) => (
         GameBoardUtils.areSquaresEqual(sq, square)
       ))
     ));
