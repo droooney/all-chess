@@ -5,7 +5,6 @@
 
   width: 100%;
   padding: 0 0 10px;
-  margin: 10px 0;
   border-top: 2px solid #888;
   border-bottom: 2px solid #888;
 
@@ -53,7 +52,7 @@
     .move-row {
       .flex-stretch(@justify-content: flex-start);
 
-      height: 25px;
+      min-height: 25px;
       width: 100%;
 
       .move-index {
@@ -66,6 +65,7 @@
         .flex-child-fixed(45%);
 
         padding: 0 5px;
+        word-break: break-word;
         cursor: pointer;
 
         &:hover {

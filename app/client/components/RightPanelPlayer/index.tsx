@@ -67,7 +67,7 @@ export default class RightPanelPlayer extends React.Component<Props> {
       const days = duration.days();
       const hours = duration.hours();
 
-      return `${days} ${days === 1 ? 'day' : 'days'}${hours ? ` ${hours} ${hours === 1 ? 'hour' : 'hours'}` : ''}`;
+      return `${days}d${hours ? ` ${hours}h` : ''}`;
     }
 
     const minutes = _.padStart(`${duration.minutes()}`, 2, '0');

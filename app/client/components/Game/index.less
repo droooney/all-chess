@@ -1,6 +1,9 @@
 @import (reference) '../../styles/mixins';
 
 @grid-gap: var(--grid-gap, 20px);
+@left-panel-width: var(--left-desktop-panel-width, 300px);
+@right-panel-width: var(--right-desktop-panel-width, 300px);
+@tablet-panel-width: var(--tablet-panel-width, 300px);
 
 .route.game-route {
   .flex-col(@justify-content: center);
@@ -11,8 +14,11 @@
 
   .game {
     display: grid;
-    grid-gap: @grid-gap;
     padding: @grid-gap;
+
+    .boards {
+      align-items: flex-start;
+    }
 
     .info-actions-panel {
       grid-area: info-actions;
@@ -23,8 +29,6 @@
         }
 
         padding: 3px 8px;
-        max-height: 100px;
-        overflow-y: auto;
 
         .variant {
           font-weight: bold;
@@ -186,12 +190,12 @@
         .pocket {
           .flex();
 
-          height: 40px;
+          width: 100%;
 
           .piece-container {
+            .flex();
+
             position: relative;
-            width: 40px;
-            height: 40px;
             cursor: pointer;
             background-color: lightskyblue;
 
@@ -210,11 +214,7 @@
             }
 
             .piece {
-              position: absolute;
-              top: 0;
-              left: 0;
               width: 100%;
-              height: 100%;
               z-index: 2;
             }
 
@@ -313,25 +313,24 @@
         min-height: 100px;
         max-height: 250px;
         flex: 1 1 auto;
+        margin: 20px 0;
       }
     }
 
     &.grid-desktop-style {
       grid-template:
-        "info-actions boards right-panel" min-content
-        "chat         boards right-panel" fit-content(0)
-        ~"/" var(--left-desktop-panel-width, 300px) auto var(--right-desktop-panel-width, 300px);
+        "info-actions . boards . right-panel" min-content
+        ".            . boards . right-panel" @grid-gap
+        "chat         . boards . right-panel" fit-content(0)
+        ~"/" @left-panel-width @grid-gap auto @grid-gap @right-panel-width;
     }
 
     &.grid-tablet-style {
       grid-template:
-        "boards right-panel " auto
-        "chat   info-actions" fit-content(0)
-        ~"/" auto var(--tablet-panel-width, 300px);
-
-      .boards {
-        align-items: flex-start;
-      }
+        "boards . right-panel " auto
+        ".      . .           " @grid-gap
+        "chat   . info-actions" fit-content(0)
+        ~"/" auto @grid-gap @tablet-panel-width;
     }
 
     &.grid-mobile-style {

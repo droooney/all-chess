@@ -11,8 +11,7 @@ import {
   Player,
   PocketPiece,
   RealPieceLocation,
-  TimeControl,
-  TimeControlEnum
+  TimeControl
 } from '../../../types';
 import { Game } from '../../helpers';
 import { PIECES_WORTH } from '../../../shared/constants';
@@ -45,8 +44,6 @@ interface State {
 
 type Props = OwnProps;
 
-const INPUT_ELEMENTS = ['input', 'textarea'];
-
 export default class RightPanel extends React.Component<Props, State> {
   timeControlInterval?: number;
   state = {
@@ -62,8 +59,6 @@ export default class RightPanel extends React.Component<Props, State> {
     if (moves.length >= 2 && status === GameStatusEnum.ONGOING) {
       this.activateInterval();
     }
-
-    document.addEventListener('keydown', this.onKeyDown);
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -83,35 +78,7 @@ export default class RightPanel extends React.Component<Props, State> {
 
   componentWillUnmount() {
     clearInterval(this.timeControlInterval);
-
-    document.removeEventListener('keydown', this.onKeyDown);
   }
-
-  onKeyDown = (e: KeyboardEvent) => {
-    const {
-      game
-    } = this.props;
-
-    if (!e.target || !INPUT_ELEMENTS.includes((e.target as HTMLElement).tagName.toLowerCase())) {
-      let preventDefault = true;
-
-      if (e.key === 'ArrowLeft') {
-        game.moveBack();
-      } else if (e.key === 'ArrowRight') {
-        game.moveForward();
-      } else if (e.key === 'ArrowUp') {
-        game.navigateToMove(-1);
-      } else if (e.key === 'ArrowDown') {
-        game.navigateToMove(game.getUsedMoves().length - 1);
-      } else {
-        preventDefault = false;
-      }
-
-      if (preventDefault) {
-        e.preventDefault();
-      }
-    }
-  };
 
   adjustServerTime(serverTime: number): number {
     return serverTime + this.props.timeDiff;
@@ -122,16 +89,13 @@ export default class RightPanel extends React.Component<Props, State> {
       status,
       timeControl
     } = this.props;
-    const refreshInterval = timeControl && timeControl.type === TimeControlEnum.TIMER
-      ? 100
-      : 60 * 1000;
 
     this.setState({
       intervalActivated: true
     });
 
     if (status === GameStatusEnum.ONGOING && timeControl) {
-      this.timeControlInterval = setInterval(() => this.forceUpdate(), refreshInterval) as any;
+      this.timeControlInterval = setInterval(() => this.forceUpdate(), 100) as any;
     }
   }
 

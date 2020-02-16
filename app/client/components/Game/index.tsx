@@ -27,9 +27,12 @@ import {
 import {
   ALICE_CHESS_BOARDS_MARGIN,
   GAME_GRID_GAP,
-  LEFT_DESKTOP_PANEL_WIDTH,
-  RIGHT_DESKTOP_PANEL_WIDTH,
-  TABLET_PANEL_WIDTH
+  MIN_LEFT_DESKTOP_PANEL_WIDTH,
+  MAX_LEFT_DESKTOP_PANEL_WIDTH,
+  MIN_RIGHT_DESKTOP_PANEL_WIDTH,
+  MAX_RIGHT_DESKTOP_PANEL_WIDTH,
+  MIN_TABLET_PANEL_WIDTH,
+  MAX_TABLET_PANEL_WIDTH
 } from '../../constants';
 import { Game as GameHelper } from '../../helpers';
 import { ReduxState } from '../../store';
@@ -60,7 +63,12 @@ interface State {
   validPromotions: PieceTypeEnum[];
   isDragging: boolean;
   gridMode: 'desktop' | 'tablet' | 'mobile';
+  leftDesktopPanelWidth: number;
+  rightDesktopPanelWidth: number;
+  tabletPanelWidth: number;
 }
+
+const INPUT_ELEMENTS = ['input', 'textarea'];
 
 class Game extends React.Component<Props, State> {
   socket?: io.Socket;
@@ -81,7 +89,10 @@ class Game extends React.Component<Props, State> {
     promotionMove: null,
     validPromotions: [],
     isDragging: false,
-    gridMode: 'desktop'
+    gridMode: 'desktop',
+    leftDesktopPanelWidth: 0,
+    rightDesktopPanelWidth: 0,
+    tabletPanelWidth: 0
   };
 
   componentDidMount() {
@@ -117,6 +128,7 @@ class Game extends React.Component<Props, State> {
     document.addEventListener('touchmove', this.dragPiece, { passive: false });
     document.addEventListener('mouseup', this.endDraggingPiece);
     document.addEventListener('touchend', this.endDraggingPiece);
+    document.addEventListener('keydown', this.onKeyDown);
   }
 
   componentWillUnmount() {
@@ -127,6 +139,7 @@ class Game extends React.Component<Props, State> {
     document.removeEventListener('touchmove', this.dragPiece);
     document.removeEventListener('mouseup', this.endDraggingPiece);
     document.removeEventListener('touchend', this.endDraggingPiece);
+    document.removeEventListener('keydown', this.onKeyDown);
   }
 
   componentDidUpdate(): void {
@@ -201,8 +214,8 @@ class Game extends React.Component<Props, State> {
     // const availableMobileHeight = window.innerHeight - 2 * GAME_GRID_GAP - 30;
     const maxAvailableDesktopWidth = (
       availableDesktopWidth
-      - LEFT_DESKTOP_PANEL_WIDTH
-      - RIGHT_DESKTOP_PANEL_WIDTH
+      - MIN_LEFT_DESKTOP_PANEL_WIDTH
+      - MIN_RIGHT_DESKTOP_PANEL_WIDTH
       - 2 * GAME_GRID_GAP
     );
     const maxDesktopBoardWidth = availableDesktopHeight * boardSidesRenderedRatio;
@@ -211,22 +224,39 @@ class Game extends React.Component<Props, State> {
     let gridMode: 'desktop' | 'tablet' | 'mobile';
     let boardsWidth: number;
     let boardToShow: 'all' | number;
+    let leftDesktopPanelWidth: number;
+    let rightDesktopPanelWidth: number;
+    let tabletPanelWidth: number;
 
     if (maxDesktopBoardsWidth <= maxAvailableDesktopWidth) {
       gridMode = 'desktop';
       boardsWidth = maxDesktopBoardsWidth;
       boardToShow = 'all';
+      leftDesktopPanelWidth = Math.min(
+        MAX_LEFT_DESKTOP_PANEL_WIDTH,
+        MIN_LEFT_DESKTOP_PANEL_WIDTH + (maxAvailableDesktopWidth - maxDesktopBoardsWidth)
+        * MAX_LEFT_DESKTOP_PANEL_WIDTH / (MAX_LEFT_DESKTOP_PANEL_WIDTH + MAX_RIGHT_DESKTOP_PANEL_WIDTH)
+      );
+      rightDesktopPanelWidth = Math.min(
+        MAX_LEFT_DESKTOP_PANEL_WIDTH,
+        MIN_LEFT_DESKTOP_PANEL_WIDTH + (maxAvailableDesktopWidth - maxDesktopBoardsWidth)
+        * MAX_LEFT_DESKTOP_PANEL_WIDTH / (MAX_LEFT_DESKTOP_PANEL_WIDTH + MAX_RIGHT_DESKTOP_PANEL_WIDTH)
+      );
+      tabletPanelWidth = 0;
     } else {
       const maxHeight = (maxAvailableDesktopWidth - ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1)) / boardCount / boardSidesRenderedRatio;
 
-      if (maxHeight >= availableDesktopHeight * 0.75) {
+      if (maxHeight >= availableDesktopHeight * 0.9) {
         gridMode = 'desktop';
         boardsWidth = maxAvailableDesktopWidth;
         boardToShow = 'all';
+        leftDesktopPanelWidth = MIN_LEFT_DESKTOP_PANEL_WIDTH;
+        rightDesktopPanelWidth = MIN_RIGHT_DESKTOP_PANEL_WIDTH;
+        tabletPanelWidth = 0;
       } else {
         const maxAvailableTabletWidth = (
           availableTabletWidth
-          - TABLET_PANEL_WIDTH
+          - MIN_TABLET_PANEL_WIDTH
           - GAME_GRID_GAP
         );
         const maxTabletBoardWidth = availableTabletHeight * boardSidesRenderedRatio;
@@ -236,6 +266,12 @@ class Game extends React.Component<Props, State> {
           gridMode = 'tablet';
           boardsWidth = maxTabletBoardsWidth;
           boardToShow = 'all';
+          leftDesktopPanelWidth = 0;
+          rightDesktopPanelWidth = 0;
+          tabletPanelWidth = Math.min(
+            MAX_TABLET_PANEL_WIDTH,
+            MIN_TABLET_PANEL_WIDTH + (maxAvailableTabletWidth - maxTabletBoardsWidth)
+          );
         } else {
           const maxHeight = (maxAvailableTabletWidth - ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1)) / boardCount / boardSidesRenderedRatio;
 
@@ -243,10 +279,19 @@ class Game extends React.Component<Props, State> {
             gridMode = 'tablet';
             boardsWidth = maxAvailableTabletWidth;
             boardToShow = 'all';
+            leftDesktopPanelWidth = 0;
+            rightDesktopPanelWidth = 0;
+            tabletPanelWidth = MIN_TABLET_PANEL_WIDTH;
           } else if (maxTabletBoardWidth <= maxAvailableTabletWidth) {
             gridMode = 'tablet';
             boardsWidth = maxTabletBoardWidth;
             boardToShow = numberBoardToShow || 0;
+            leftDesktopPanelWidth = 0;
+            rightDesktopPanelWidth = 0;
+            tabletPanelWidth = Math.min(
+              MAX_TABLET_PANEL_WIDTH,
+              MIN_TABLET_PANEL_WIDTH + (maxAvailableTabletWidth - maxTabletBoardWidth)
+            );
           } else {
             const maxHeight = maxAvailableTabletWidth / boardSidesRenderedRatio;
 
@@ -254,10 +299,16 @@ class Game extends React.Component<Props, State> {
               gridMode = 'tablet';
               boardsWidth = maxAvailableTabletWidth;
               boardToShow = numberBoardToShow || 0;
+              leftDesktopPanelWidth = 0;
+              rightDesktopPanelWidth = 0;
+              tabletPanelWidth = MIN_TABLET_PANEL_WIDTH;
             } else {
               gridMode = 'mobile';
               boardsWidth = availableMobileWidth;
               boardToShow = numberBoardToShow || 0;
+              leftDesktopPanelWidth = 0;
+              rightDesktopPanelWidth = 0;
+              tabletPanelWidth = 0;
             }
           }
         }
@@ -267,12 +318,46 @@ class Game extends React.Component<Props, State> {
     this.setState({
       boardsWidth,
       boardToShow,
-      gridMode
+      gridMode,
+      leftDesktopPanelWidth,
+      rightDesktopPanelWidth,
+      tabletPanelWidth
     });
   }
 
   onWindowResize = () => {
     this.updateGridLayout();
+  };
+
+  onKeyDown = (e: KeyboardEvent) => {
+    const {
+      boardToShow
+    } = this.state;
+    const game = this.game;
+
+    if (game && (!e.target || !INPUT_ELEMENTS.includes((e.target as HTMLElement).tagName.toLowerCase()))) {
+      let preventDefault = true;
+
+      if (e.key === 'ArrowLeft') {
+        game.moveBack();
+      } else if (e.key === 'ArrowRight') {
+        game.moveForward();
+      } else if (e.key === 'ArrowUp') {
+        game.navigateToMove(-1);
+      } else if (e.key === 'ArrowDown') {
+        game.navigateToMove(game.getUsedMoves().length - 1);
+      } else if (e.key === '1' || e.key === '2') {
+        if (boardToShow !== 'all') {
+          this.switchBoard(+e.key - 1);
+        }
+      } else {
+        preventDefault = false;
+      }
+
+      if (preventDefault) {
+        e.preventDefault();
+      }
+    }
   };
 
   onGameData = ({ timestamp, player, game }: GameInitialData | DarkChessGameInitialData) => {
@@ -319,12 +404,10 @@ class Game extends React.Component<Props, State> {
     }));
   };
 
-  switchBoard = () => {
-    this.setState(({ boardToShow }) => ({
-      boardToShow: boardToShow === 'all'
-        ? 'all'
-        : this.game!.getNextBoard(boardToShow)
-    }));
+  switchBoard = (boardToShow: number) => {
+    this.setState({
+      boardToShow
+    });
   };
 
   changeDarkChessMode = () => {
@@ -602,9 +685,9 @@ class Game extends React.Component<Props, State> {
             style={{
               '--boards-width': `${boardsWidth}px`,
               '--grid-gap': `${GAME_GRID_GAP}px`,
-              '--left-desktop-panel-width': `${LEFT_DESKTOP_PANEL_WIDTH}px`,
-              '--right-desktop-panel-width': `${RIGHT_DESKTOP_PANEL_WIDTH}px`,
-              '--tablet-panel-width': `${TABLET_PANEL_WIDTH}px`
+              '--left-desktop-panel-width': `${this.state.leftDesktopPanelWidth}px`,
+              '--right-desktop-panel-width': `${this.state.rightDesktopPanelWidth}px`,
+              '--tablet-panel-width': `${this.state.tabletPanelWidth}px`
             } as React.CSSProperties}
           >
 

@@ -40,7 +40,7 @@ export interface OwnProps {
   player: Player | null;
   boardsShiftX: number;
   flipBoard(): void;
-  switchBoard(): void;
+  switchBoard(boardToShow: number): void;
   changeDarkChessMode(): void;
   toggleShowDarkChessHiddenPieces(): void;
   setBoardsShiftX(boardsShiftX: number): void;
@@ -151,7 +151,15 @@ class InfoActionsPanel extends React.Component<Props, State> {
   };
 
   switchBoard = () => {
-    this.props.switchBoard();
+    const {
+      game,
+      boardToShow,
+      switchBoard
+    } = this.props;
+
+    if (boardToShow !== 'all') {
+      switchBoard(game.getNextBoard(boardToShow));
+    }
   };
 
   toggleShowFantomPieces = () => {
