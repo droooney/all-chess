@@ -1,25 +1,52 @@
-.desktop (@rules) {
+.desktop(@rules) {
   @media screen and (min-width: 801px) {
     @rules();
   }
 }
 
-.not-desktop (@rules) {
+.not-desktop(@rules) {
   @media screen and (max-width: 800px) {
     @rules();
   }
 }
 
-.mobile (@rules) {
+.mobile(@rules) {
   @media screen and (max-width: 500px) {
     @rules();
   }
 }
 
-.not-mobile (@rules) {
+.not-mobile(@rules) {
   @media screen and (min-width: 501px) {
     @rules();
   }
+}
+
+.scrollbar(@rules) {
+  &::-webkit-scrollbar {
+    @rules();
+  }
+}
+
+.supports-hover(@rules) {
+  @media (hover: hover) {
+    @rules();
+  }
+}
+
+.hover(@rules) {
+  .supports-hover({
+    &:hover {
+      @rules();
+    }
+  });
+}
+
+.ellipsis {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .flex(@justify-content: center, @align-items: center, @flex-direction: row) {

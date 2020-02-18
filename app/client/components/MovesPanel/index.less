@@ -4,7 +4,6 @@
   .flex-col-stretch();
 
   width: 100%;
-  padding: 0 0 10px;
   border-top: 2px solid #888;
   border-bottom: 2px solid #888;
 
@@ -12,7 +11,6 @@
     .flex-child-fixed();
     .flex();
 
-    margin-bottom: 10px;
     border-bottom: 2px solid #888;
 
     .move-icon {
@@ -56,13 +54,13 @@
       width: 100%;
 
       .move-index {
-        .flex(@justify-content: flex-start);
-        .flex-child-fixed(10%);
+        .flex();
+        .flex-child-fixed(12%);
       }
 
       .move {
         .flex(@justify-content: flex-start);
-        .flex-child-fixed(45%);
+        .flex-child-fixed(44%);
 
         padding: 0 5px;
         word-break: break-word;

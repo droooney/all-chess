@@ -63,13 +63,7 @@ class BoardEditor extends React.Component<Props, State> {
     document.removeEventListener('touchend', this.endDraggingPiece);
   }
 
-  componentDidUpdate(prevProps: Props, prevState: State): void {
-    if (!prevState.isDragging && this.state.isDragging) {
-      document.body.classList.add('dragging');
-    } else if (prevState.isDragging && !this.state.isDragging) {
-      document.body.classList.remove('dragging');
-    }
-
+  componentDidUpdate(prevProps: Props): void {
     if (
       this.props.location.search !== prevProps.location.search
       && this.queryChangedFromOutside

@@ -177,8 +177,10 @@ export class Game extends GameHelper {
 
         this.onMoveMade(move, true);
 
-        if ('vibrate' in navigator) {
-          navigator.vibrate(200);
+        if (!this.player || this.player.color === this.turn) {
+          if ('vibrate' in navigator) {
+            navigator.vibrate(200);
+          }
         }
       });
 

@@ -4,6 +4,8 @@ import classNames from 'classnames';
 
 import { ChatMessage } from '../../../types';
 
+import Input from '../Input';
+
 interface OwnProps {
   chat: ChatMessage[];
   sendMessage(message: string): void;
@@ -11,10 +13,17 @@ interface OwnProps {
 
 type Props = OwnProps;
 
-export default class Chat extends React.PureComponent<Props> {
+interface State {
+  message: string;
+}
+
+export default class Chat extends React.PureComponent<Props, State> {
   chatRef = React.createRef<HTMLDivElement>();
   messageRef = React.createRef<HTMLInputElement>();
   messagesRef = React.createRef<HTMLDivElement>();
+  state: State = {
+    message: ''
+  };
 
   componentDidMount() {
     const messages = this.messagesRef.current!;
@@ -41,10 +50,22 @@ export default class Chat extends React.PureComponent<Props> {
 
   onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      this.props.sendMessage(this.messageRef.current!.value);
+      const message = this.state.message.trim();
 
-      this.messageRef.current!.value = '';
+      if (message) {
+        this.props.sendMessage(message);
+
+        this.setState({
+          message: ''
+        });
+      }
     }
+  };
+
+  onMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    this.setState({
+      message: e.target.value
+    });
   };
 
   render() {
@@ -73,11 +94,13 @@ export default class Chat extends React.PureComponent<Props> {
             );
           })}
         </div>
-        <input
-          ref={this.messageRef}
-          placeholder="Send message"
-          onKeyDown={this.onKeyDown}
+        <Input
           className="new-message-input"
+          placeholder="Type a message"
+          disableUnderline
+          value={this.state.message}
+          onChange={this.onMessageChange}
+          onKeyDown={this.onKeyDown}
         />
       </div>
     );

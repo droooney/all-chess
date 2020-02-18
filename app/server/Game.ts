@@ -335,11 +335,15 @@ export default class Game extends GameHelper {
 
         if (user) {
           socket.on('addChatMessage', (message) => {
-            if (message && typeof message === 'string' && message.length < 256) {
-              this.addChatMessage({
-                login: user.login,
-                message
-              });
+            if (typeof message === 'string') {
+              message = message.trim();
+
+              if (message && message.length < 256) {
+                this.addChatMessage({
+                  login: user.login,
+                  message
+                });
+              }
             }
           });
         }
@@ -451,10 +455,7 @@ export default class Game extends GameHelper {
       });
     }
 
-    if (!this.isOngoing()) {
-      this.updatePlayers();
-    }
-
+    this.updatePlayers();
     this.setTimeout();
   }
 

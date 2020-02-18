@@ -1,9 +1,11 @@
 @import (reference) '../../styles/mixins';
 
 @grid-gap: var(--grid-gap, 20px);
-@left-panel-width: var(--left-desktop-panel-width, 300px);
-@right-panel-width: var(--right-desktop-panel-width, 300px);
+@left-desktop-panel-width: var(--left-desktop-panel-width, 300px);
+@right-desktop-panel-width: var(--right-desktop-panel-width, 300px);
+@right-panel-width: var(--right-panel-width, 300px);
 @tablet-panel-width: var(--tablet-panel-width, 300px);
+@pocket-size: var(--pocket-size, 5);
 
 .route.game-route {
   .flex-col(@justify-content: center);
@@ -16,12 +18,9 @@
     display: grid;
     padding: @grid-gap;
 
-    .boards {
-      align-items: flex-start;
-    }
-
-    .info-actions-panel {
-      grid-area: info-actions;
+    .game-info {
+      grid-area: game-info;
+      padding: 8px 3px;
 
       .variants {
         .variants-header {
@@ -36,11 +35,82 @@
         }
       }
 
-      .actions {
+      .result, .time-control {
+        margin-left: 18px;
+      }
+    }
+
+    .chat {
+      .flex-col-stretch();
+
+      grid-area: chat;
+      min-height: 200px;
+      padding: 3px 8px;
+
+      .header {
+        .flex-child-fixed();
+        .flex();
+
+        padding: 5px 0;
+        border-bottom: 1px solid black;
+      }
+
+      .messages {
+        .flex-child();
+
+        width: 100%;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 10px;
+
+        .message {
+          display: flex;
+          width: 100%;
+          margin-bottom: 4px;
+
+          .login {
+            font-weight: bold;
+            margin-right: 10px;
+            color: green;
+          }
+
+          .content {
+            word-wrap: break-word;
+            width: calc(100% - 30px);
+          }
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+
+          &.system {
+            .login {
+              color: red;
+            }
+          }
+        }
+      }
+
+      .new-message-input {
+        .flex-child-fixed();
+      }
+    }
+
+    .game-content {
+      display: grid;
+      grid-area: game-content;
+
+      .boards {
+        align-items: flex-start;
+      }
+
+      .game-actions {
         .flex-col-stretch();
 
+        grid-area: actions;
+
         .buttons {
-          @button-size: 40px;
+          @button-size: 30px;
 
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));;
@@ -53,7 +123,7 @@
             line-height: @button-size;
             width: @button-size;
             height: @button-size;
-            font-size: 25px;
+            font-size: 20px;
             cursor: pointer;
             background-color: rgba(0,0,0,0);
 
@@ -116,84 +186,20 @@
         }
       }
 
-      .result, .time-control {
-        margin-left: 18px;
-      }
-    }
-
-    .chat {
-      .flex-col-stretch();
-
-      grid-area: chat;
-      min-height: 200px;
-      border: 1px solid black;
-
-      .header {
-        .flex-child-fixed();
-        .flex();
-
-        padding: 5px 0;
-        border-bottom: 1px solid black;
-      }
-
-      .messages {
-        .flex-child();
-
-        width: 100%;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-        padding: 10px;
-
-        .message {
-          display: flex;
-          width: 100%;
-          margin-bottom: 4px;
-
-          .login {
-            font-weight: bold;
-            margin-right: 10px;
-            color: green;
-          }
-
-          .content {
-            word-wrap: break-word;
-            width: calc(100% - 30px);
-          }
-
-          &:last-child {
-            margin-bottom: 0;
-          }
-
-          &.system {
-            .login {
-              color: red;
-            }
-          }
-        }
-      }
-
-      .new-message-input {
-        .flex-child-fixed();
-      }
-    }
-
-    .right-panel {
-      .flex-col(@align-items: flex-start);
-
-      grid-area: right-panel;
-      justify-self: center;
-      width: 100%;
-
-      .player {
-        .flex-col(@align-items: flex-start);
+      .game-player {
+        display: grid;
+        justify-items: start;
+        padding: 3px 8px;
 
         .pocket {
           .flex();
 
+          grid-area: pocket;
           width: 100%;
 
           .piece-container {
             .flex();
+            .flex-child();
 
             position: relative;
             cursor: pointer;
@@ -238,6 +244,7 @@
         .material-advantage {
           .flex();
 
+          grid-area: material;
           height: 20px;
 
           .piece-advantage {
@@ -262,15 +269,17 @@
         }
 
         .login {
+          .ellipsis();
+
+          grid-area: login;
           font-size: 16px;
         }
 
         .timer {
-          padding: 6px 8px;
-          margin: 5px 0;
+          grid-area: timer-or-turn;
+          padding: 3px 8px;
           font-size: 30px;
           font-weight: bold;
-          background-color: #f5f5f5;
 
           &.correspondence {
             font-size: 24px;
@@ -286,7 +295,10 @@
         }
 
         .turn {
-          margin: 5px 0;
+          .ellipsis();
+
+          grid-area: timer-or-turn;
+          padding: 3px 0;
         }
 
         &.active {
@@ -296,51 +308,187 @@
         }
 
         &.top {
-          .pocket {
-            margin-top: 5px;
-          }
+          grid-area: top-player;
         }
 
         &:not(.top) {
-          .pocket {
-            margin-bottom: 5px;
-          }
+          grid-area: bottom-player;
         }
       }
 
       .moves-panel {
-        height: auto;
+        grid-area: moves;
         min-height: 100px;
-        max-height: 250px;
-        flex: 1 1 auto;
-        margin: 20px 0;
+        padding: 3px 8px 0;
       }
     }
 
     &.grid-desktop-style {
+      --right-panel-width: @right-desktop-panel-width;
+
       grid-template:
-        "info-actions . boards . right-panel" min-content
-        ".            . boards . right-panel" @grid-gap
-        "chat         . boards . right-panel" fit-content(0)
-        ~"/" @left-panel-width @grid-gap auto @grid-gap @right-panel-width;
+        "game-info . game-content" min-content
+        ".         . game-content" @grid-gap
+        "chat      . game-content" fit-content(0)
+        ~"/" @left-desktop-panel-width @grid-gap auto;
     }
 
     &.grid-tablet-style {
+      --right-panel-width: @tablet-panel-width;
+
       grid-template:
-        "boards . right-panel " auto
-        ".      . .           " @grid-gap
-        "chat   . info-actions" fit-content(0)
+        "game-content game-content game-content" auto
+        ".            .            .           " @grid-gap
+        "chat         .            game-info   " fit-content(0)
         ~"/" auto @grid-gap @tablet-panel-width;
+    }
+
+    &.grid-desktop-style,
+    &.grid-tablet-style {
+      .game-info,
+      .chat,
+      .boards,
+      .game-player,
+      .moves-panel,
+      .game-actions {
+        position: relative;
+        background-color: #fffaf1;
+
+        &:after {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          z-index: -1;
+          box-shadow: 0 0 10px 2px rgba(0,0,0,0.2);
+        }
+      }
+
+      .moves-panel {
+        border-top: none;
+      }
+
+      .game-content {
+        --moves-max-size: 150px;
+
+        @media (max-height: 600px) {
+          --moves-max-size: max-content;
+        }
+
+        grid-template:
+          "boards . top-player   " auto
+          "boards . .            " @grid-gap
+          "boards . moves        " minmax(auto, var(--moves-max-size))
+          "boards . actions      " max-content
+          "boards . .            " @grid-gap
+          "boards . bottom-player" auto
+          ~"/" auto @grid-gap @right-panel-width;
+
+        .game-player {
+          @section-gap: 5px;
+
+          --material-row: "." 0;
+          --pocket-row: "." 0;
+
+          &.top {
+            &.with-material {
+              --material-row:
+                "material" max-content
+                ".       " @section-gap;
+            }
+
+            &.with-pocket {
+              --pocket-row:
+                "pocket" auto
+                ".     " @section-gap;
+            }
+
+            grid-template:
+              var(--material-row)
+              var(--pocket-row)
+              "timer-or-turn" auto
+              ".            " @section-gap
+              "login        " auto
+              ~"/" 100%;
+            align-self: end;
+          }
+
+          &:not(.top) {
+            &.with-material {
+              --material-row:
+                ".       " @section-gap
+                "material" max-content;
+            }
+
+            &.with-pocket {
+              --pocket-row:
+                ".     " @section-gap
+                "pocket" auto;
+            }
+
+            grid-template:
+              "login        " auto
+              ".            " @section-gap
+              "timer-or-turn" auto
+              var(--pocket-row)
+              var(--material-row)
+              ~"/" 100%;
+            align-self: start;
+          }
+        }
+      }
     }
 
     &.grid-mobile-style {
       grid-template:
-        "boards      " auto
-        "info-actions" 180px
-        "right-panel " auto
+        "game-content" auto
+        "game-info   " max-content
         "chat        " fit-content(0)
         ~"/" 100%;
       padding: 0;
+
+      .game-content {
+        grid-template:
+          "top-player   " auto
+          "boards       " auto
+          "bottom-player" auto
+          "actions      " max-content
+          "moves        " 100px
+          ~"/" 100%;
+      }
+
+      .game-player {
+        @section-gap: 5px;
+
+        padding: 10px 8px;
+
+        --material-row: ". . ." 0;
+
+        &:not(.with-pocket) {
+          &.with-material {
+            --material-row: "material . timer-or-turn" max-content;
+          }
+
+          grid-template:
+            "login . timer-or-turn" max-content
+            var(--material-row)
+            ~"/" 1fr @section-gap auto;
+        }
+
+        &.with-pocket {
+          &.with-material {
+            --material-row: "material material material" max-content;
+          }
+
+          grid-template:
+            "login         . pocket" max-content
+            "timer-or-turn . pocket" auto
+            var(--material-row)
+            ~"/" calc(100% - 10% * @pocket-size - @section-gap) @section-gap calc(10% * @pocket-size);
+        }
+      }
     }
   }
 }

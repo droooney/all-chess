@@ -22,7 +22,8 @@ import {
   Square
 } from '../../../types';
 import {
-  GAME_VARIANT_NAMES
+  GAME_VARIANT_NAMES,
+  PIECES_WORTH
 } from '../../../shared/constants';
 import {
   ALICE_CHESS_BOARDS_MARGIN,
@@ -39,8 +40,10 @@ import { ReduxState } from '../../store';
 
 import DocumentTitle from '../DocumentTitle';
 import FixedElement from '../FixedElement';
-import RightPanel from '../RightPanel';
-import InfoActionsPanel from '../InfoActionsPanel';
+import GamePlayer from '../GamePlayer';
+import GameInfo from '../GameInfo';
+import GameActions from '../GameActions';
+import MovesPanel from 'client/components/MovesPanel';
 import Chat from '../Chat';
 import Boards from '../Boards';
 import GamePiece from '../GamePiece';
@@ -246,7 +249,7 @@ class Game extends React.Component<Props, State> {
     } else {
       const maxHeight = (maxAvailableDesktopWidth - ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1)) / boardCount / boardSidesRenderedRatio;
 
-      if (maxHeight >= availableDesktopHeight * 0.9) {
+      if (maxHeight >= availableDesktopHeight * 0.8) {
         gridMode = 'desktop';
         boardsWidth = maxAvailableDesktopWidth;
         boardToShow = 'all';
@@ -275,7 +278,7 @@ class Game extends React.Component<Props, State> {
         } else {
           const maxHeight = (maxAvailableTabletWidth - ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1)) / boardCount / boardSidesRenderedRatio;
 
-          if (maxHeight >= availableTabletHeight * 0.75) {
+          if (maxHeight >= availableTabletHeight * 0.8) {
             gridMode = 'tablet';
             boardsWidth = maxAvailableTabletWidth;
             boardToShow = 'all';
@@ -295,7 +298,7 @@ class Game extends React.Component<Props, State> {
           } else {
             const maxHeight = maxAvailableTabletWidth / boardSidesRenderedRatio;
 
-            if (maxHeight >= availableTabletHeight * 0.75) {
+            if (maxHeight >= availableTabletHeight * 0.8) {
               gridMode = 'tablet';
               boardsWidth = maxAvailableTabletWidth;
               boardToShow = numberBoardToShow || 0;
@@ -653,6 +656,9 @@ class Game extends React.Component<Props, State> {
           takebackRequest,
           timeControl,
           result,
+          startingMoveIndex,
+          isCircularChess,
+          isHexagonalChess,
           darkChessMode,
           showDarkChessHiddenPieces,
           lastMoveTimestamp,
@@ -677,7 +683,43 @@ class Game extends React.Component<Props, State> {
           || status !== GameStatusEnum.ONGOING
           || !isCurrentMoveLast
         );
+        const enableClick = !readOnly;
+        const enableDnd = !readOnly;
         const pieceSize = this.getPieceSize();
+        const realTurn = (usedMoves.length + startingMoveIndex) % 2 === 1
+          ? ColorEnum.BLACK
+          : ColorEnum.WHITE;
+        const topPlayer = isBlackBase
+          ? players[ColorEnum.WHITE]
+          : players[ColorEnum.BLACK];
+        const bottomPlayer = isBlackBase
+          ? players[ColorEnum.BLACK]
+          : players[ColorEnum.WHITE];
+        const adjustedLastMoveTimestamp = lastMoveTimestamp - timeDiff;
+        const materialDifference: Record<PieceTypeEnum, number> = {} as any;
+        let allMaterialDifference = 0;
+
+        if (this.game!.needToCalculateMaterialDifference) {
+          _.forEach(PieceTypeEnum, (pieceType) => {
+            const getPiecesCount = (color: ColorEnum): number => (
+              pieces.filter((piece) => (
+                GameHelper.isRealPiece(piece)
+                && (piece.abilities || piece.type) === pieceType
+                && piece.color === color
+              )).length
+            );
+
+            const diff = materialDifference[pieceType] = getPiecesCount(ColorEnum.WHITE) - getPiecesCount(ColorEnum.BLACK);
+
+            allMaterialDifference += diff * PIECES_WORTH[
+              isCircularChess
+                ? 'circular'
+                : isHexagonalChess
+                  ? 'hexagonal'
+                  : 'orthodox'
+            ][pieceType];
+          });
+        }
 
         content = (
           <div
@@ -690,108 +732,144 @@ class Game extends React.Component<Props, State> {
               '--tablet-panel-width': `${this.state.tabletPanelWidth}px`
             } as React.CSSProperties}
           >
+            <div className="game-content">
+              <GameActions
+                game={this.game!}
+                result={result}
+                players={players}
+                isBlackBase={isBlackBase}
+                isNoMovesMade={usedMoves.length === 0}
+                isCurrentMoveLast={isCurrentMoveLast}
+                boardToShow={boardToShow}
+                drawOffer={drawOffer}
+                takebackRequest={takebackRequest}
+                isBasicTakeback={!!takebackRequest && takebackRequest.moveIndex === usedMoves.length - 2}
+                darkChessMode={darkChessMode}
+                showDarkChessHiddenPieces={showDarkChessHiddenPieces}
+                player={player}
+                boardsShiftX={boardsShiftX}
+                flipBoard={this.flipBoard}
+                switchBoard={this.switchBoard}
+                changeDarkChessMode={this.changeDarkChessMode}
+                toggleShowDarkChessHiddenPieces={this.toggleShowDarkChessHiddenPieces}
+                setBoardsShiftX={this.setBoardsShiftX}
+              />
 
-            <InfoActionsPanel
+              <Boards
+                game={this.game!}
+                pieces={pieces}
+                player={player}
+                selectedPiece={
+                  selectedPiece
+                    ? selectedPiece
+                    : null
+                }
+                makeMove={this.makeMove}
+                selectPiece={this.selectPiece}
+                startDraggingPiece={this.startDraggingPiece}
+                getAllowedMoves={this.getAllowedMoves}
+                enableClick={enableClick}
+                enableDnd={enableDnd}
+                isBlackBase={isBlackBase}
+                isDragging={isDragging}
+                boardToShow={boardToShow}
+                darkChessMode={darkChessMode}
+                currentMove={usedMoves[currentMoveIndex]}
+                boardsShiftX={boardsShiftX}
+              />
+
+              <GamePlayer
+                game={this.game!}
+                player={topPlayer}
+                playingPlayer={player}
+                pieces={pieces}
+                moves={usedMoves}
+                timeControl={timeControl}
+                realTurn={realTurn}
+                status={status}
+                adjustedLastMoveTimestamp={adjustedLastMoveTimestamp}
+                enableClick={enableClick && !!player && topPlayer.login === player.login}
+                enableDnd={enableDnd && !!player && topPlayer.login === player.login}
+                isTop
+                allMaterialDifference={allMaterialDifference}
+                materialDifference={materialDifference}
+                selectedPiece={
+                  selectedPiece && selectedPiece.color === topPlayer.color && GameHelper.isPocketPiece(selectedPiece)
+                    ? selectedPiece
+                    : null
+                }
+                selectPiece={this.selectPiece}
+                startDraggingPiece={this.startDraggingPiece}
+              />
+
+              <GamePlayer
+                game={this.game!}
+                player={bottomPlayer}
+                playingPlayer={player}
+                pieces={pieces}
+                moves={usedMoves}
+                timeControl={timeControl}
+                realTurn={realTurn}
+                status={status}
+                adjustedLastMoveTimestamp={adjustedLastMoveTimestamp}
+                enableClick={enableClick && !!player && bottomPlayer.login === player.login}
+                enableDnd={enableDnd && !!player && bottomPlayer.login === player.login}
+                isTop={false}
+                allMaterialDifference={allMaterialDifference}
+                materialDifference={materialDifference}
+                selectedPiece={
+                  selectedPiece && selectedPiece.color === bottomPlayer.color && GameHelper.isPocketPiece(selectedPiece)
+                    ? selectedPiece
+                    : null
+                }
+                selectPiece={this.selectPiece}
+                startDraggingPiece={this.startDraggingPiece}
+              />
+
+              <MovesPanel
+                game={this.game!}
+                currentMoveIndex={currentMoveIndex}
+                moves={usedMoves}
+              />
+
+              <PromotionModal
+                game={this.game!}
+                visible={this.state.promotionModalVisible}
+                square={this.state.promotionMove && this.state.promotionMove.to}
+                pieceSize={pieceSize}
+                isBlackBase={isBlackBase}
+                validPromotions={this.state.validPromotions}
+                onOverlayClick={this.closePromotionPopup}
+                promoteToPiece={this.promoteToPiece}
+              />
+
+              {isDragging && selectedPiece && (
+                <FixedElement>
+                  <svg
+                    ref={this.draggingPieceRef}
+                    style={{
+                      pointerEvents: 'none',
+                      transform: this.draggingPieceTranslate
+                    }}
+                  >
+                    <GamePiece
+                      piece={selectedPiece}
+                      pieceSize={pieceSize}
+                    />
+                  </svg>
+                </FixedElement>
+              )}
+            </div>
+
+            <GameInfo
               game={this.game!}
               result={result}
-              players={players}
-              isBlackBase={isBlackBase}
-              isNoMovesMade={usedMoves.length === 0}
-              isCurrentMoveLast={isCurrentMoveLast}
-              boardToShow={boardToShow}
-              drawOffer={drawOffer}
-              takebackRequest={takebackRequest}
-              isBasicTakeback={!!takebackRequest && takebackRequest.moveIndex === usedMoves.length - 2}
-              darkChessMode={darkChessMode}
-              showDarkChessHiddenPieces={showDarkChessHiddenPieces}
-              player={player}
-              boardsShiftX={boardsShiftX}
-              flipBoard={this.flipBoard}
-              switchBoard={this.switchBoard}
-              changeDarkChessMode={this.changeDarkChessMode}
-              toggleShowDarkChessHiddenPieces={this.toggleShowDarkChessHiddenPieces}
-              setBoardsShiftX={this.setBoardsShiftX}
             />
 
             <Chat
               chat={chat}
               sendMessage={this.sendMessage}
             />
-
-            <Boards
-              game={this.game!}
-              pieces={pieces}
-              player={player}
-              selectedPiece={
-                selectedPiece
-                  ? selectedPiece
-                  : null
-              }
-              makeMove={this.makeMove}
-              selectPiece={this.selectPiece}
-              startDraggingPiece={this.startDraggingPiece}
-              getAllowedMoves={this.getAllowedMoves}
-              enableClick={!readOnly}
-              enableDnd={!readOnly}
-              isBlackBase={isBlackBase}
-              isDragging={isDragging}
-              boardToShow={boardToShow}
-              darkChessMode={darkChessMode}
-              currentMove={usedMoves[currentMoveIndex]}
-              boardsShiftX={boardsShiftX}
-            />
-
-            <RightPanel
-              game={this.game!}
-              players={players}
-              player={player}
-              pieces={pieces}
-              currentMoveIndex={currentMoveIndex}
-              timeControl={timeControl}
-              moves={usedMoves}
-              enableClick={!readOnly}
-              enableDnd={!readOnly}
-              isBlackBase={isBlackBase}
-              status={status}
-              timeDiff={timeDiff}
-              lastMoveTimestamp={lastMoveTimestamp}
-              selectedPiece={
-                selectedPiece && GameHelper.isPocketPiece(selectedPiece)
-                  ? selectedPiece
-                  : null
-              }
-              selectPiece={this.selectPiece}
-              startDraggingPiece={this.startDraggingPiece}
-            />
-
-            <PromotionModal
-              game={this.game!}
-              visible={this.state.promotionModalVisible}
-              square={this.state.promotionMove && this.state.promotionMove.to}
-              pieceSize={pieceSize}
-              isBlackBase={isBlackBase}
-              validPromotions={this.state.validPromotions}
-              onOverlayClick={this.closePromotionPopup}
-              promoteToPiece={this.promoteToPiece}
-            />
-
-            {isDragging && selectedPiece && (
-              <FixedElement>
-                <svg
-                  ref={this.draggingPieceRef}
-                  style={{
-                    pointerEvents: 'none',
-                    transform: this.draggingPieceTranslate
-                  }}
-                >
-                  <GamePiece
-                    piece={selectedPiece}
-                    pieceSize={pieceSize}
-                  />
-                </svg>
-              </FixedElement>
-            )}
-
           </div>
         );
       }

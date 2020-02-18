@@ -14,13 +14,11 @@ import {
   TakebackRequest
 } from '../../../types';
 import {
-  COLOR_NAMES,
-  RESULT_REASON_NAMES
+  COLOR_NAMES
 } from '../../../shared/constants';
 import { Game } from '../../helpers';
 import { DispatchProps, ReduxState } from '../../store';
 
-import GameVariantLink from '../GameVariantLink';
 import Piece from '../Piece';
 import Dialog from '../Dialog';
 
@@ -52,7 +50,7 @@ interface State {
 
 type Props = OwnProps & ReturnType<typeof mapStateToProps> & DispatchProps;
 
-class InfoActionsPanel extends React.Component<Props, State> {
+class GameActions extends React.Component<Props, State> {
   state: State = {
     resignModalVisible: false
   };
@@ -218,8 +216,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
     const boardsString = game.isAliceChess
       ? 'boards'
       : 'board';
-    const gameplayButtons: JSX.Element[] = [];
-    const gameDisplayButtons: JSX.Element[] = [];
+    const buttons: JSX.Element[] = [];
     const takebackMoveLink = !!takebackRequest && (
       isBasicTakeback
         ? ''
@@ -235,7 +232,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
     );
 
     if (!result && player) {
-      gameplayButtons.push(
+      buttons.push(
         <div
           key="resign"
           className="button"
@@ -271,7 +268,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
       );
     }
 
-    gameDisplayButtons.push(
+    buttons.push(
       <div
         key="flip-board"
         className={classNames('button', {
@@ -294,7 +291,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
     );
 
     if (game.isAliceChess && boardToShow !== 'all') {
-      gameDisplayButtons.push(
+      buttons.push(
         <div
           key="switch-board"
           className="button"
@@ -307,7 +304,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
     }
 
     if (game.isCylinderChess) {
-      gameDisplayButtons.push(
+      buttons.push(
         <div
           key="shift-board-left"
           className="button"
@@ -336,7 +333,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
     }
 
     if (game.isAliceChess) {
-      gameDisplayButtons.push(
+      buttons.push(
         <div
           key="show-fantom-pieces"
           className={classNames('button', { enabled: showFantomPieces })}
@@ -359,7 +356,7 @@ class InfoActionsPanel extends React.Component<Props, State> {
     }
 
     if (game.isDarkChess && result) {
-      gameDisplayButtons.push(
+      buttons.push(
         <div
           key="change-dark-chess-mode"
           className="button"
@@ -405,111 +402,76 @@ class InfoActionsPanel extends React.Component<Props, State> {
 
     return (
       <React.Fragment>
-
-        <div className="info-actions-panel">
-
-          <div className="time-control">
-            Time control: {Game.getTimeControlString(game.timeControl)}
-          </div>
-
-          <div className="variants">
-            <span className="variants-header">
-              Variants:
-            </span>
-            {game.variants.length ? game.variants.map((variant, ix) => (
-              <React.Fragment key={variant}>
-                {' '}
-                <GameVariantLink
-                  variant={variant}
-                  className="variant"
-                />
-                {ix === game.variants.length - 1 ? '' : ','}
-              </React.Fragment>
-            )) : ' none'}
-          </div>
-
-          {result && (
-            <div className="result">
-              {result.winner ? `${COLOR_NAMES[result.winner]} won` : 'Draw'}
-              {` (${RESULT_REASON_NAMES[result.reason]})`}
+        <div className="game-actions">
+          {!!buttons.length && (
+            <div className="buttons">
+              {buttons}
             </div>
           )}
-
-          <div className="actions">
-            {!!gameplayButtons.length && (
-              <div className="buttons">
-                {gameplayButtons}
-              </div>
-            )}
-            <div className="buttons">
-              {gameDisplayButtons}
+          {player && takebackRequest && !result && (
+            <div className="action">
+              {
+                player.color === takebackRequest.player ? (
+                  <React.Fragment>
+                    <span>
+                      You requested a takeback{takebackMoveLink}
+                    </span>
+                    <i
+                      className="fa fa-times"
+                      title="Cancel"
+                      onClick={this.cancelTakeback}
+                    />
+                  </React.Fragment>
+                ) : (
+                  <React.Fragment>
+                    <span>
+                      {COLOR_NAMES[takebackRequest.player]} requested a takeback{takebackMoveLink}
+                    </span>
+                    <i
+                      className="fa fa-check"
+                      title="Accept"
+                      onClick={this.acceptTakeback}
+                    />
+                    <i
+                      className="fa fa-times"
+                      title="Decline"
+                      onClick={this.declineTakeback}
+                    />
+                  </React.Fragment>
+                )
+              }
             </div>
-            {player && takebackRequest && !result && (
-              <div className="action">
-                {
-                  player.color === takebackRequest.player ? (
-                    <React.Fragment>
-                      <span>
-                        You requested a takeback{takebackMoveLink}
-                      </span>
-                      <i
-                        className="fa fa-times"
-                        title="Cancel"
-                        onClick={this.cancelTakeback}
-                      />
-                    </React.Fragment>
-                  ) : (
-                    <React.Fragment>
-                      <span>
-                        {COLOR_NAMES[takebackRequest.player]} requested a takeback{takebackMoveLink}
-                      </span>
-                      <i
-                        className="fa fa-check"
-                        title="Accept"
-                        onClick={this.acceptTakeback}
-                      />
-                      <i
-                        className="fa fa-times"
-                        title="Decline"
-                        onClick={this.declineTakeback}
-                      />
-                    </React.Fragment>
-                  )
-                }
-              </div>
-            )}
-            {player && drawOffer && !result && (
-              <div className="action">
-                {
-                  player.color === drawOffer ? (
-                    <React.Fragment>
-                      You offered a draw
-                      <i
-                        className="fa fa-times"
-                        title="Cancel"
-                        onClick={this.cancelDraw}
-                      />
-                    </React.Fragment>
-                  ) : (
-                    <React.Fragment>
-                      {COLOR_NAMES[drawOffer]} offered a draw
-                      <i
-                        className="fa fa-check"
-                        title="Accept"
-                        onClick={this.acceptDraw}
-                      />
-                      <i
-                        className="fa fa-times"
-                        title="Decline"
-                        onClick={this.declineDraw}
-                      />
-                    </React.Fragment>
-                  )
-                }
-              </div>
-            )}
-          </div>
-
+          )}
+          {player && drawOffer && !result && (
+            <div className="action">
+              {
+                player.color === drawOffer ? (
+                  <React.Fragment>
+                    You offered a draw
+                    <i
+                      className="fa fa-times"
+                      title="Cancel"
+                      onClick={this.cancelDraw}
+                    />
+                  </React.Fragment>
+                ) : (
+                  <React.Fragment>
+                    {COLOR_NAMES[drawOffer]} offered a draw
+                    <i
+                      className="fa fa-check"
+                      title="Accept"
+                      onClick={this.acceptDraw}
+                    />
+                    <i
+                      className="fa fa-times"
+                      title="Decline"
+                      onClick={this.declineDraw}
+                    />
+                  </React.Fragment>
+                )
+              }
+            </div>
+          )}
         </div>
 
         <Dialog
@@ -522,7 +484,6 @@ class InfoActionsPanel extends React.Component<Props, State> {
           ]}
           onChoose={this.resign}
         />
-
       </React.Fragment>
     );
   }
@@ -534,4 +495,4 @@ function mapStateToProps(state: ReduxState) {
   };
 }
 
-export default connect(mapStateToProps)(InfoActionsPanel);
+export default connect(mapStateToProps)(GameActions);

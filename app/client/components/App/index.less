@@ -8,18 +8,49 @@
   font-size: 14px;
   font-family: "Trebuchet MS", Helvetica, sans-serif;
   letter-spacing: 0.025em;
+
+  .supports-hover({
+    * {
+      .scrollbar({
+        &,
+        &-track,
+        &-thumb {
+          width: 8px;
+        }
+
+        &-track {
+          background-color: transparent;
+        }
+
+        &-thumb {
+          border-radius: 5px;
+          background-color: transparent;
+        }
+      });
+
+      &:hover {
+        .scrollbar({
+          &-thumb {
+            background-color: rgba(0,0,0,0.3);
+          }
+        });
+      }
+    }
+  });
 }
 
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-}
 
-body.dragging {
-  .user-select(none);
-
-  overflow: hidden;
+  .supports-hover({
+    .scrollbar({
+      &-thumb {
+        background-color: rgba(0,0,0,0.3) !important;
+      }
+    });
+  });
 }
 
 * {
