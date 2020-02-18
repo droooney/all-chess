@@ -408,14 +408,12 @@ class GameActions extends React.Component<Props, State> {
               {buttons}
             </div>
           )}
-          {player && takebackRequest && !result && (
+          {player && !result && (
             <div className="action">
               {
-                player.color === takebackRequest.player ? (
+                takebackRequest ? player.color === takebackRequest.player ? (
                   <React.Fragment>
-                    <span>
-                      You requested a takeback{takebackMoveLink}
-                    </span>
+                    You requested a takeback{takebackMoveLink}
                     <i
                       className="fa fa-times"
                       title="Cancel"
@@ -438,14 +436,14 @@ class GameActions extends React.Component<Props, State> {
                       onClick={this.declineTakeback}
                     />
                   </React.Fragment>
-                )
+                ) : '\u00a0'
               }
             </div>
           )}
-          {player && drawOffer && !result && (
+          {player && !result && (
             <div className="action">
               {
-                player.color === drawOffer ? (
+                drawOffer ? player.color === drawOffer ? (
                   <React.Fragment>
                     You offered a draw
                     <i
@@ -468,7 +466,7 @@ class GameActions extends React.Component<Props, State> {
                       onClick={this.declineDraw}
                     />
                   </React.Fragment>
-                )
+                ) : '\u00a0'
               }
             </div>
           )}
