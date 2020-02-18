@@ -80,6 +80,9 @@ export default class GameVariantsUtils extends GameCommonUtils {
       || isAntichess
       || !isDarkChess
     ) && (
+      !isCirce
+      || !is960
+    ) && (
       !isHorde
       || (
         !isKingOfTheHill
