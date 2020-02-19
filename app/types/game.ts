@@ -15,6 +15,21 @@ export interface Square {
   readonly y: number;
 }
 
+export interface Arrow {
+  type: 'arrow';
+  id: number;
+  from: Square;
+  to: Square;
+}
+
+export interface Circle {
+  type: 'circle';
+  id: number;
+  square: Square;
+}
+
+export type DrawnSymbol = Arrow | Circle;
+
 export interface Player extends User {
   color: ColorEnum;
   time: number | null;

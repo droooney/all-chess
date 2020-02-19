@@ -33,7 +33,6 @@ export default class BoardSquare extends React.PureComponent<Props> {
       boardWidth,
       boardHeight,
       boardOrthodoxWidth,
-      boardOrthodoxHeight,
       middleFileX
     } = game;
     const square: Square = {
@@ -73,19 +72,12 @@ export default class BoardSquare extends React.PureComponent<Props> {
     if (isCircularChess) {
       const rOuter = boardWidth * SVG_SQUARE_SIZE;
       const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE;
-      const adjustedRankY = rankY > boardOrthodoxHeight
-        ? boardHeight - 1 - rankY
-        : rankY;
-      const adjustedFileX = rankY > boardOrthodoxHeight
-        ? boardOrthodoxWidth - fileX
-        : fileX;
-      const right = rankY > boardOrthodoxHeight ? 1 : 0;
-      const r = rOuter - (right ? boardOrthodoxWidth - adjustedFileX : adjustedFileX) * rDiff;
+      const r = rOuter - fileX * rDiff;
       const nextR = r - rDiff;
-      const angle = adjustedRankY * Math.PI / 8;
-      const nextAngle = (adjustedRankY + 1) * Math.PI / 8;
+      const angle = rankY * 2 * Math.PI / game.boardHeight;
+      const nextAngle = (rankY + 1) * 2 * Math.PI / game.boardHeight;
       const getCirclePoint = (r: number, angle: number) => {
-        const x = game.boardCenterX - (right ? -1 : 1) * r * Math.sin(angle);
+        const x = game.boardCenterX - r * Math.sin(angle);
         const y = game.boardCenterY - r * Math.cos(angle);
 
         return { x, y: boardOrthodoxWidth * SVG_SQUARE_SIZE - y };
@@ -99,9 +91,9 @@ export default class BoardSquare extends React.PureComponent<Props> {
 
       pathD = `
         M ${circlePoints[0].x},${circlePoints[0].y}
-        A ${r} ${r} 0 0 ${1 - right} ${circlePoints[1].x} ${circlePoints[1].y}
+        A ${r} ${r} 0 0 1 ${circlePoints[1].x} ${circlePoints[1].y}
         L ${circlePoints[2].x},${circlePoints[2].y}
-        A ${nextR} ${nextR} 0 0 ${right} ${circlePoints[3].x} ${circlePoints[3].y}
+        A ${nextR} ${nextR} 0 0 0 ${circlePoints[3].x} ${circlePoints[3].y}
         Z
       `;
     } else if (isHexagonalChess) {

@@ -45,7 +45,7 @@ export default class BoardLiterals extends React.PureComponent<Props> {
 
     _.times(boardHeight, (rankY) => {
       _.times(boardWidth, (fileX) => {
-        const renderedFileX = game.adjustFileX(fileX + (isBlackBase ? -boardsShiftX : boardsShiftX));
+        const renderedFileX = game.adjustFileX(fileX + boardsShiftX);
         const square = {
           board,
           x: fileX,

@@ -62,13 +62,9 @@ export default class BoardPiece extends React.Component<Props> {
     let translateY: string;
 
     if (game.isCircularChess) {
-      const adjustedFileX = pieceY > game.boardOrthodoxHeight
-        ? game.boardOrthodoxWidth - pieceX
-        : pieceX;
       const rOuter = game.boardWidth * SVG_SQUARE_SIZE;
       const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE;
-      const right = pieceY > game.boardOrthodoxHeight ? 1 : 0;
-      const r = rOuter - ((right ? game.boardOrthodoxWidth - adjustedFileX : adjustedFileX) + 0.5) * rDiff;
+      const r = rOuter - (pieceX + 0.5) * rDiff;
       const angleDiff = 2 * Math.PI / game.boardHeight;
       const angle = (pieceY + 0.5) * angleDiff;
 

@@ -11,6 +11,7 @@ import {
   ColorEnum,
   DarkChessGame,
   DarkChessGameInitialData,
+  DrawnSymbol,
   Game as IGame,
   GameInitialData,
   GameStatusEnum,
@@ -56,6 +57,9 @@ type Props = ReturnType<typeof mapStateToProps> & RouteComponentProps<{ gameId: 
 interface State {
   gameData: IGame | DarkChessGame | null;
   selectedPiece: RealPiece | null;
+  drawingSymbolStart: Square | null;
+  drawingSymbol: DrawnSymbol | null;
+  drawnSymbols: DrawnSymbol[];
   isBlackBase: boolean;
   showHiddenPieces: boolean;
   boardsWidth: number;
@@ -80,8 +84,12 @@ class Game extends React.Component<Props, State> {
   draggingPieceRef = React.createRef<SVGSVGElement>();
   draggingPieceTranslate: string = 'none';
   prevMoveIndex = -1;
+  drawnSymbolId = 0;
   state: State = {
     selectedPiece: null,
+    drawingSymbolStart: null,
+    drawingSymbol: null,
+    drawnSymbols: [],
     gameData: null,
     isBlackBase: false,
     showHiddenPieces: true,
@@ -127,10 +135,10 @@ class Game extends React.Component<Props, State> {
     this.updateGridLayout();
 
     window.addEventListener('resize', this.onWindowResize);
-    document.addEventListener('mousemove', this.dragPiece);
-    document.addEventListener('touchmove', this.dragPiece, { passive: false });
-    document.addEventListener('mouseup', this.endDraggingPiece);
-    document.addEventListener('touchend', this.endDraggingPiece);
+    document.addEventListener('mousemove', this.drag);
+    document.addEventListener('touchmove', this.drag, { passive: false });
+    document.addEventListener('mouseup', this.endDrag);
+    document.addEventListener('touchend', this.endDrag);
     document.addEventListener('keydown', this.onKeyDown);
   }
 
@@ -138,24 +146,44 @@ class Game extends React.Component<Props, State> {
     this.socket!.disconnect();
 
     window.removeEventListener('resize', this.onWindowResize);
-    document.removeEventListener('mousemove', this.dragPiece);
-    document.removeEventListener('touchmove', this.dragPiece);
-    document.removeEventListener('mouseup', this.endDraggingPiece);
-    document.removeEventListener('touchend', this.endDraggingPiece);
+    document.removeEventListener('mousemove', this.drag);
+    document.removeEventListener('touchmove', this.drag);
+    document.removeEventListener('mouseup', this.endDrag);
+    document.removeEventListener('touchend', this.endDrag);
     document.removeEventListener('keydown', this.onKeyDown);
   }
 
   componentDidUpdate(): void {
     if (this.game) {
       if (this.prevMoveIndex !== this.game.currentMoveIndex) {
-        this.selectPiece(null);
         this.setState({
-          isDragging: false
+          selectedPiece: null,
+          isDragging: false,
+          drawingSymbolStart: null,
+          drawingSymbol: null,
+          drawnSymbols: []
         });
       }
 
       this.prevMoveIndex = this.game.currentMoveIndex;
     }
+  }
+
+  addOrRemoveDrawnSymbol(drawnSymbol: DrawnSymbol, drawnSymbols: DrawnSymbol[]): DrawnSymbol[] {
+    const existingIndex = drawnSymbols.findIndex((symbol) => (
+      drawnSymbol.type === 'circle'
+      && symbol.type === 'circle'
+      && GameHelper.areSquaresEqual(drawnSymbol.square, symbol.square)
+    ) || (
+      drawnSymbol.type === 'arrow'
+      && symbol.type === 'arrow'
+      && GameHelper.areSquaresEqual(drawnSymbol.from, symbol.from)
+      && GameHelper.areSquaresEqual(drawnSymbol.to, symbol.to)
+    ));
+
+    return existingIndex === -1
+      ? [...drawnSymbols, drawnSymbol]
+      : [...drawnSymbols.slice(0, existingIndex), ...drawnSymbols.slice(existingIndex + 1)];
   }
 
   getStartingIsBlackBase(): boolean {
@@ -192,6 +220,15 @@ class Game extends React.Component<Props, State> {
     );
 
     return this.game!.getPieceSize() * boardWidth / (2 * boardCenterX);
+  }
+
+  isAbleToMove(): boolean {
+    return (
+      !!this.player
+      && this.player.color === this.game!.turn
+      && this.game!.status === GameStatusEnum.ONGOING
+      && this.game!.currentMoveIndex === this.game!.getUsedMoves().length - 1
+    );
   }
 
   updateGridLayout() {
@@ -396,14 +433,14 @@ class Game extends React.Component<Props, State> {
 
   selectPiece = (selectedPiece: RealPiece | null) => {
     this.setState({
-      selectedPiece
+      selectedPiece,
+      drawnSymbols: []
     });
   };
 
   flipBoard = () => {
-    this.setState(({ isBlackBase, boardsShiftX }) => ({
-      isBlackBase: !isBlackBase,
-      boardsShiftX: -boardsShiftX
+    this.setState(({ isBlackBase }) => ({
+      isBlackBase: !isBlackBase
     }));
   };
 
@@ -546,12 +583,82 @@ class Game extends React.Component<Props, State> {
     this.closePromotionPopup();
   };
 
-  startDraggingPiece = (e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation) => {
+  onSquareClick = (square: Square) => {
+    const {
+      selectedPiece
+    } = this.state;
+    const enableDnd = true;
+
+    if (!this.isAbleToMove()) {
+      this.setState({
+        drawnSymbols: []
+      });
+
+      return;
+    }
+
+    const playerColor = this.player ? this.player.color : null;
+
+    if (!selectedPiece) {
+      const pieceInSquare = this.game!.getBoardPiece(square);
+
+      if (!pieceInSquare || playerColor !== pieceInSquare.color) {
+        return;
+      }
+
+      return this.selectPiece(pieceInSquare);
+    }
+
+    if (
+      GameHelper.isBoardPiece(selectedPiece)
+      && GameHelper.areSquaresEqual(square, selectedPiece.location)
+      && !enableDnd
+    ) {
+      return this.selectPiece(null);
+    }
+
+    const allowedMove = this.getAllowedMoves().find(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
+
+    if (!allowedMove) {
+      const pieceInSquare = this.game!.getBoardPiece(square);
+
+      if (!pieceInSquare || playerColor !== pieceInSquare.color) {
+        return this.selectPiece(null);
+      }
+
+      return this.selectPiece(pieceInSquare);
+    }
+
+    this.makeMove(square, false);
+  };
+
+  startDrag = (e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation) => {
     const {
       isTouchDevice
     } = this.props;
 
-    if (e.type === 'mousedown' && (isTouchDevice || (e as React.MouseEvent).button !== 0)) {
+    if (
+      e.type === 'mousedown'
+      && !isTouchDevice
+      && (e as React.MouseEvent).button === 2
+      && location.type === PieceLocationEnum.BOARD
+    ) {
+      e.preventDefault();
+
+      this.setState({
+        isDragging: true,
+        drawingSymbolStart: location,
+        drawingSymbol: {
+          type: 'circle',
+          id: ++this.drawnSymbolId,
+          square: location
+        }
+      });
+
+      return;
+    }
+
+    if ((e.type === 'mousedown' && (isTouchDevice || (e as React.MouseEvent).button !== 0)) || !this.isAbleToMove()) {
       return;
     }
 
@@ -571,23 +678,92 @@ class Game extends React.Component<Props, State> {
 
       this.setState({
         selectedPiece: draggedPiece,
+        drawnSymbols: [],
         isDragging: true
+      });
+    } else {
+      this.setState({
+        drawnSymbols: []
       });
     }
   };
 
-  dragPiece = (e: MouseEvent | TouchEvent) => {
+  drag = (e: MouseEvent | TouchEvent) => {
     if (!this.state.isDragging) {
       return;
     }
 
-    e.preventDefault();
+    if (this.state.drawingSymbolStart) {
+      const point = this.getEventPoint(e);
+      let square: Square | null = null;
 
-    this.draggingPieceRef.current!.style.transform = this.draggingPieceTranslate = this.getDraggingPieceTranslate(e);
+      document.elementsFromPoint(point.x, point.y).some((element) => {
+        try {
+          const squareJSON = (element as HTMLElement).dataset.square;
+
+          if (!squareJSON) {
+            return false;
+          }
+
+          square = JSON.parse(squareJSON);
+
+          return true;
+        } catch (err) {
+          return false;
+        }
+      });
+
+      this.setState(({ drawingSymbolStart, drawingSymbol }) => {
+        if (!drawingSymbolStart) {
+          return null;
+        }
+
+        const newDrawingSymbol: DrawnSymbol | null | false = square && drawingSymbolStart.board === square.board && (
+          GameHelper.areSquaresEqual(drawingSymbolStart, square)
+            ? { type: 'circle', id: this.drawnSymbolId, square: drawingSymbolStart }
+            : { type: 'arrow', id: this.drawnSymbolId, from: drawingSymbolStart, to: square }
+        );
+
+        if (
+          (!drawingSymbol && !newDrawingSymbol)
+          || (drawingSymbol && newDrawingSymbol && drawingSymbol.type === 'circle' && newDrawingSymbol.type === 'circle')
+          || (
+            drawingSymbol
+            && newDrawingSymbol
+            && drawingSymbol.type === 'arrow'
+            && newDrawingSymbol.type === 'arrow'
+            && GameHelper.areSquaresEqual(drawingSymbol.to, newDrawingSymbol.to)
+          )
+        ) {
+          return null;
+        }
+
+        return {
+          drawingSymbol: newDrawingSymbol || null
+        };
+      });
+    } else {
+      e.preventDefault();
+
+      this.draggingPieceRef.current!.style.transform = this.draggingPieceTranslate = this.getDraggingPieceTranslate(e);
+    }
   };
 
-  endDraggingPiece = (e: MouseEvent | TouchEvent) => {
+  endDrag = (e: MouseEvent | TouchEvent) => {
     if (!this.state.isDragging) {
+      return;
+    }
+
+    if (this.state.drawingSymbolStart) {
+      this.setState(({ drawingSymbol, drawnSymbols }) => ({
+        isDragging: false,
+        drawingSymbolStart: null,
+        drawingSymbol: null,
+        drawnSymbols: drawingSymbol
+          ? this.addOrRemoveDrawnSymbol(drawingSymbol, drawnSymbols)
+          : drawnSymbols
+      }));
+
       return;
     }
 
@@ -650,7 +826,6 @@ class Game extends React.Component<Props, State> {
           status,
           pieces,
           chat,
-          turn,
           players,
           drawOffer,
           takebackRequest,
@@ -677,12 +852,7 @@ class Game extends React.Component<Props, State> {
         const usedMoves = this.game!.getUsedMoves();
         const player = this.player;
         const isCurrentMoveLast = currentMoveIndex === usedMoves.length - 1;
-        const readOnly = (
-          !player
-          || player.color !== turn
-          || status !== GameStatusEnum.ONGOING
-          || !isCurrentMoveLast
-        );
+        const readOnly = !this.isAbleToMove();
         const enableClick = !readOnly;
         const enableDnd = !readOnly;
         const pieceSize = this.getPieceSize();
@@ -764,12 +934,16 @@ class Game extends React.Component<Props, State> {
                     ? selectedPiece
                     : null
                 }
-                makeMove={this.makeMove}
-                selectPiece={this.selectPiece}
-                startDraggingPiece={this.startDraggingPiece}
+                drawnSymbols={
+                  this.state.drawingSymbol
+                    ? [...this.state.drawnSymbols, this.state.drawingSymbol]
+                    : this.state.drawnSymbols
+                }
+                onSquareClick={this.onSquareClick}
+                startDraggingPiece={this.startDrag}
                 getAllowedMoves={this.getAllowedMoves}
-                enableClick={enableClick}
-                enableDnd={enableDnd}
+                enableClick={true}
+                enableDnd={true}
                 isBlackBase={isBlackBase}
                 isDragging={isDragging}
                 boardToShow={boardToShow}
@@ -799,7 +973,7 @@ class Game extends React.Component<Props, State> {
                     : null
                 }
                 selectPiece={this.selectPiece}
-                startDraggingPiece={this.startDraggingPiece}
+                startDraggingPiece={this.startDrag}
               />
 
               <GamePlayer
@@ -823,7 +997,7 @@ class Game extends React.Component<Props, State> {
                     : null
                 }
                 selectPiece={this.selectPiece}
-                startDraggingPiece={this.startDraggingPiece}
+                startDraggingPiece={this.startDrag}
               />
 
               <MovesPanel

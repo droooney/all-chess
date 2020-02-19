@@ -8,6 +8,7 @@ import {
   BoardPossibleMove,
   ColorEnum,
   DarkChessLocalMove,
+  DrawnSymbol as IDrawnSymbol,
   LocalMove,
   Piece as IPiece,
   PieceLocationEnum,
@@ -25,6 +26,7 @@ import BoardLiterals from '../BoardLiterals';
 import BoardPiece from '../BoardPiece';
 import BoardSquare, { BoardSquareProps } from '../BoardSquare';
 import BoardSquares from '../BoardSquares';
+import DrawnSymbol from '../DrawnSymbol';
 
 import './index.less';
 
@@ -32,8 +34,8 @@ export interface OwnProps {
   game: Game;
   player: Player | null;
   selectedPiece: RealPiece | null;
-  makeMove(square: Square, isDndMove: boolean): void;
-  selectPiece(piece: IPiece | null): void;
+  drawnSymbols: IDrawnSymbol[];
+  onSquareClick(square: Square): void;
   startDraggingPiece(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
   enableClick: boolean;
   enableDnd: boolean;
@@ -125,53 +127,15 @@ class Boards extends React.Component<Props> {
 
   onSquareClick = (square: Square) => {
     const {
-      game,
-      player,
-      selectedPiece,
-      selectPiece,
       enableClick,
-      enableDnd,
-      makeMove,
-      forceMoveWithClick
+      onSquareClick
     } = this.props;
 
     if (!enableClick) {
       return;
     }
 
-    const playerColor = player ? player.color : null;
-
-    if (!selectedPiece) {
-      const pieceInSquare = game.getBoardPiece(square);
-
-      if (!pieceInSquare || playerColor !== pieceInSquare.color) {
-        return;
-      }
-
-      return selectPiece(pieceInSquare);
-    }
-
-    if (
-      Game.isBoardPiece(selectedPiece)
-      && Game.areSquaresEqual(square, selectedPiece.location)
-      && !enableDnd
-    ) {
-      return selectPiece(null);
-    }
-
-    const allowedMove = this.getAllowedMoves().find(({ square: allowedSquare }) => Game.areSquaresEqual(square, allowedSquare));
-
-    if (!allowedMove && !forceMoveWithClick) {
-      const pieceInSquare = game.getBoardPiece(square);
-
-      if (!pieceInSquare || playerColor !== pieceInSquare.color) {
-        return selectPiece(null);
-      }
-
-      return selectPiece(pieceInSquare);
-    }
-
-    makeMove(square, false);
+    onSquareClick(square);
   };
 
   onPieceDragStart = (e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation) => {
@@ -204,6 +168,7 @@ class Boards extends React.Component<Props> {
         boardCenterY
       },
       selectedPiece,
+      drawnSymbols,
       pieces,
       withLiterals,
       currentMove,
@@ -241,15 +206,17 @@ class Boards extends React.Component<Props> {
           '--board-orthodox-height': boardHeight,
           ..._.times(boardWidth).reduce((files, fileX) => ({
             ...files,
-            [`--rendered-file-${fileX}`]: game.adjustFileX(fileX + (isBlackBase ? -boardsShiftX : +boardsShiftX))
+            [`--rendered-file-${fileX}`]: game.adjustFileX(fileX + boardsShiftX)
           }), {}),
           '--light-square-color': '#eeeece',
           // '--light-square-color': 'beige',
           '--dark-square-color': '#bbb',
           // '--dark-square-color': 'silver',
           '--half-dark-square-color': '#d8d8d8',
+          '--symbol-color': '#080',
           '--boards-margin': `${ALICE_CHESS_BOARDS_MARGIN}px`
         } as React.CSSProperties}
+        onContextMenu={(e) => e.preventDefault()}
       >
         {_.times(boardCount, (board) => {
           if (boardToShow !== 'all' && board !== boardToShow) {
@@ -378,14 +345,27 @@ class Boards extends React.Component<Props> {
               className="board"
               viewBox={`0 0 ${2 * boardCenterX} ${2 * boardCenterY}`}
             >
-              <radialGradient id="allowed-grad" r="100%" cx="50%" cy="50%">
-                <stop offset="0%" stopColor="rgba(0,255,255,0.5)" />
-                <stop offset="100%" stopColor="rgba(0,0,0,0)" />
-              </radialGradient>
-              <radialGradient id="check-grad" r="80%" cx="50%" cy="50%">
-                <stop offset="0%" stopColor="red" />
-                <stop offset="100%" stopColor="rgba(0,0,0,0)" />
-              </radialGradient>
+              <defs>
+                <radialGradient id="allowed-grad" r="100%" cx="50%" cy="50%">
+                  <stop offset="0%" stopColor="rgba(0,255,255,0.5)" />
+                  <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+                </radialGradient>
+                <radialGradient id="check-grad" r="80%" cx="50%" cy="50%">
+                  <stop offset="0%" stopColor="red" />
+                  <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+                </radialGradient>
+                <marker
+                  id="arrow-marker"
+                  viewBox="0 0 10 8"
+                  orient="auto"
+                  markerWidth={5}
+                  markerHeight={4}
+                  refX={7}
+                  refY={4}
+                >
+                  <path d="M0,0 V8 L10,4 Z" className="arrow-marker" />
+                </marker>
+              </defs>
               <BoardSquares
                 game={game}
                 board={board}
@@ -417,6 +397,14 @@ class Boards extends React.Component<Props> {
               {isKingOfTheHill && (
                 <BoardCenterSquares game={game} />
               )}
+              {drawnSymbols.map((symbol) => (
+                <DrawnSymbol
+                  key={symbol.id}
+                  game={game}
+                  symbol={symbol}
+                  boardsShiftX={boardsShiftX}
+                />
+              ))}
             </svg>
           );
         })}

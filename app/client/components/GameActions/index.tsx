@@ -186,11 +186,12 @@ class GameActions extends React.Component<Props, State> {
 
   shiftBoard = (incrementX: number) => {
     const {
+      isBlackBase,
       boardsShiftX,
       setBoardsShiftX
     } = this.props;
 
-    setBoardsShiftX(boardsShiftX + incrementX);
+    setBoardsShiftX(boardsShiftX + (isBlackBase ? -incrementX : incrementX));
   };
 
   normalizeBoardsShift = () => {

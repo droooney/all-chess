@@ -6,6 +6,7 @@
 @light-color: var(--light-square-color, #eeeece);
 @half-dark-color: var(--half-square-dark-color, #d8d8d8);
 @dark-color: var(--dark-square-color, #bbb);
+@symbol-color: var(--symbol-color, #080);
 
 .original-piece {
   fill: #aaa;
@@ -53,6 +54,7 @@
     .check-square,
     .hidden-square,
     .literal,
+    .drawn-symbol,
     .center-border {
       pointer-events: none;
     }
@@ -103,6 +105,15 @@
       stroke: black;
       stroke-width: 3;
       stroke-linecap: square;
+    }
+
+    .drawn-symbol {
+      stroke: @symbol-color;
+      opacity: 0.7;
+    }
+
+    .arrow-marker {
+      fill: @symbol-color;
     }
   }
 

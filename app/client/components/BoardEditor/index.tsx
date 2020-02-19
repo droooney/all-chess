@@ -192,6 +192,18 @@ class BoardEditor extends React.Component<Props, State> {
     }
   };
 
+  onSquareClick = (square: Square) => {
+    const {
+      selectedPiece
+    } = this.state;
+
+    if (selectedPiece) {
+      this.makeMove(square);
+    } else {
+      this.selectPiece(this.game.getBoardPiece(square));
+    }
+  };
+
   makeMove = (square: Square | null) => {
     const {
       selectedPiece
@@ -313,17 +325,16 @@ class BoardEditor extends React.Component<Props, State> {
 
     return (
       <div className="route board-editor-route">
-
         <DocumentTitle value="AllChess - Board editor" />
 
         <Boards
           game={this.game}
           player={null}
           selectedPiece={selectedPiece}
-          selectPiece={this.selectPiece}
+          drawnSymbols={[]}
+          onSquareClick={this.onSquareClick}
           startDraggingPiece={this.startDraggingPiece}
-          makeMove={this.makeMove}
-          enableClick={false}
+          enableClick
           enableDnd
           darkChessMode={null}
           isBlackBase={false}
@@ -353,7 +364,6 @@ class BoardEditor extends React.Component<Props, State> {
             </svg>
           </FixedElement>
         )}
-
       </div>
     );
   }
