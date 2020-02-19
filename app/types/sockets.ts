@@ -15,6 +15,7 @@ import {
 
 declare global {
   interface SocketIOServerEventWithDataMap {
+    gamePing: number;
     gameList: GameMinimalData[];
     moveMade: {
       move: Move;
@@ -49,6 +50,7 @@ declare global {
   );
 
   interface SocketIOClientEventWithDataMap {
+    gamePong: number;
     makeMove: BaseMove;
     createGame: GameCreateSettings;
     addChatMessage: string;

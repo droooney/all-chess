@@ -78,14 +78,26 @@ export default class Game extends GameHelper {
     return super.validateVariants(variants);
   }
 
+  isTimer: boolean;
   timerTimeout?: number;
+  pingTimeout?: number;
   io: Namespace;
   lastMoveTimestamp: number = Date.now();
+  pingTimestamps = new Set<number>();
+  playerPingTimes: Record<ColorEnum, number[]> = {
+    [ColorEnum.WHITE]: [],
+    [ColorEnum.BLACK]: []
+  };
 
   constructor(io: Namespace, options: GameCreateOptions) {
     super(options);
 
     this.io = io;
+    this.isTimer = !!this.timeControl && this.timeControl.type === TimeControlEnum.TIMER;
+
+    if (this.isTimer) {
+      setInterval(this.pingPlayers, 1000);
+    }
 
     io.use(async (socket, next) => {
       try {
@@ -134,6 +146,38 @@ export default class Game extends GameHelper {
           const {
             color: playerColor
           } = player!;
+
+          socket.on('gamePong', (timestamp) => {
+            if (
+              !this.isTimer
+              || typeof timestamp !== 'number'
+              || socket.pingResponded.has(timestamp)
+            ) {
+              return;
+            }
+
+            const now = Date.now();
+
+            if (now - timestamp >= 15 * 1000) {
+              return;
+            }
+
+            for (const timestamp of socket.pingResponded) {
+              if (now - timestamp >= 15 * 1000) {
+                socket.pingResponded.delete(timestamp);
+              }
+            }
+
+            socket.pingResponded.add(timestamp);
+
+            const pingTimes = this.playerPingTimes[playerColor];
+
+            pingTimes.push(now - timestamp);
+
+            if (pingTimes.length > 10) {
+              pingTimes.shift();
+            }
+          });
 
           socket.on('resign', () => {
             if (this.isOngoing()) {
@@ -248,7 +292,7 @@ export default class Game extends GameHelper {
               return;
             }
 
-            this.clearTimeout();
+            this.clearTimerTimeout();
 
             while (this.takebackRequest.moveIndex < this.moves.length - 1) {
               this.unregisterLastMove();
@@ -313,6 +357,7 @@ export default class Game extends GameHelper {
         }
 
         socket.player = player;
+        socket.pingResponded = new Set();
 
         const timestamp = Date.now();
 
@@ -361,7 +406,11 @@ export default class Game extends GameHelper {
     this.io.emit('newChatMessage', chatMessage);
   }
 
-  clearTimeout() {
+  clearPingTimeout() {
+    clearTimeout(this.pingTimeout);
+  }
+
+  clearTimerTimeout() {
     clearTimeout(this.timerTimeout);
   }
 
@@ -394,7 +443,8 @@ export default class Game extends GameHelper {
       }, 0);
     }
 
-    this.clearTimeout();
+    this.clearPingTimeout();
+    this.clearTimerTimeout();
   }
 
   move(player: Player, moveForServer: BaseMove) {
@@ -431,8 +481,13 @@ export default class Game extends GameHelper {
       move.promotion = promotion;
     }
 
+    const pingTimes = this.playerPingTimes[player.color];
+    const averagePing = pingTimes.length
+      ? Math.round(this.playerPingTimes[player.color].reduce((sum, ping) => sum + ping, 0) / pingTimes.length)
+      : 0;
+
     this.registerAnyMove(move);
-    this.changePlayerTime();
+    this.changePlayerTime(averagePing);
 
     this.lastMoveTimestamp = newTimestamp;
 
@@ -459,6 +514,20 @@ export default class Game extends GameHelper {
     this.setTimeout();
   }
 
+  pingPlayers = () => {
+    const now = Date.now();
+
+    for (const timestamp of this.pingTimestamps) {
+      if (now - timestamp >= 15 * 1000) {
+        this.pingTimestamps.delete(timestamp);
+      }
+    }
+
+    this.pingTimestamps.add(now);
+
+    this.io.emit('gamePing', now);
+  };
+
   setTimeout() {
     if (
       this.isOngoing()
@@ -467,7 +536,7 @@ export default class Game extends GameHelper {
     ) {
       const player = this.players[this.turn];
 
-      this.clearTimeout();
+      this.clearTimerTimeout();
 
       this.timerTimeout = setTimeout(() => {
         this.end(this.getOpponentColor(), ResultReasonEnum.TIME_RAN_OUT);

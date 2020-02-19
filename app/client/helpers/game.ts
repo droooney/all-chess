@@ -154,6 +154,12 @@ export class Game extends GameHelper {
     }
 
     if (socket) {
+      socket.on('gamePing', (timestamp) => {
+        socket.emit('gamePong', timestamp);
+
+        this.timeDiff = Date.now() - timestamp;
+      });
+
       socket.on('moveMade', ({ move, moveIndex, lastMoveTimestamp }) => {
         this.lastMoveTimestamp = lastMoveTimestamp;
 

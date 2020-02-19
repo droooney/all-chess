@@ -506,11 +506,12 @@ export class Game extends GameResultUtils implements IGame {
     this.setupStartingData();
   }
 
-  changePlayerTime() {
+  changePlayerTime(averagePing: number = 0) {
     if (this.moves.length > 2 && this.timeControl) {
       const prevTurn = this.getOpponentColor();
       const player = this.players[prevTurn];
-      const { duration } = _.last(this.moves)!;
+      const actualDuration = _.last(this.moves)!.duration;
+      const duration = Math.max(actualDuration / 2, actualDuration - averagePing / 2);
 
       if (this.isOngoing()) {
         if (this.timeControl.type === TimeControlEnum.TIMER) {

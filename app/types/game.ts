@@ -4,6 +4,7 @@ import { User } from './user';
 
 declare module 'socket.io' {
   interface Socket {
+    pingResponded: Set<number>;
     player: Player | null;
   }
 }
