@@ -68,6 +68,10 @@ export default class GamePlayer extends React.Component<Props, State> {
     }
   }
 
+  componentWillUnmount() {
+    clearInterval(this.timeControlInterval);
+  }
+
   componentDidUpdate(prevProps: Props) {
     const {
       status,

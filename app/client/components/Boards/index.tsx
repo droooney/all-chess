@@ -34,6 +34,7 @@ export interface OwnProps {
   game: Game;
   player: Player | null;
   selectedPiece: RealPiece | null;
+  allowedMoves: BoardPossibleMove[];
   drawnSymbols: IDrawnSymbol[];
   onSquareClick(square: Square): void;
   startDraggingPiece(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
@@ -50,7 +51,6 @@ export interface OwnProps {
   withLiterals?: boolean;
   showFantomPieces?: boolean;
   showKingAttack?: boolean;
-  forceMoveWithClick?: boolean;
   getAllowedMoves?(): Generator<BoardPossibleMove>;
 }
 
@@ -59,8 +59,7 @@ type Props = OwnProps & ReturnType<typeof mapStateToProps>;
 class Boards extends React.Component<Props> {
   static defaultProps = {
     withLiterals: true,
-    showKingAttack: true,
-    forceMoveWithClick: false
+    showKingAttack: true
   };
 
   boardsRef = React.createRef<HTMLDivElement>();
@@ -70,10 +69,6 @@ class Boards extends React.Component<Props> {
       prevProps.isBlackBase !== this.props.isBlackBase
       || prevProps.isDragging !== this.props.isDragging
       || prevProps.game !== this.props.game
-      || (
-        this.props.currentMove
-        && this.props.currentMove.isDndMove
-      )
     ) {
       this.boardsRef.current!.classList.add('no-transition');
 
@@ -81,26 +76,6 @@ class Boards extends React.Component<Props> {
         this.boardsRef.current!.classList.remove('no-transition');
       }, 0);
     }
-  }
-
-  *getAllowedMoves(): Generator<BoardPossibleMove> {
-    const {
-      game,
-      selectedPiece,
-      getAllowedMoves
-    } = this.props;
-
-    if (getAllowedMoves) {
-      yield* getAllowedMoves();
-
-      return;
-    }
-
-    if (!selectedPiece) {
-      return;
-    }
-
-    yield* game.getAllowedMoves(selectedPiece).map((square) => ({ square, realSquare: square }));
   }
 
   isInCheck(square: Square): boolean {
@@ -168,6 +143,7 @@ class Boards extends React.Component<Props> {
         boardCenterY
       },
       selectedPiece,
+      allowedMoves,
       drawnSymbols,
       pieces,
       withLiterals,
@@ -180,8 +156,13 @@ class Boards extends React.Component<Props> {
       showFantomPieces
     } = this.props;
 
-    const allowedMoves = this.getAllowedMoves().toArray();
-    const visibleSquares = isDarkChess && darkChessMode ? game.getVisibleSquares(darkChessMode) : [];
+    const visibleSquares = isDarkChess && darkChessMode
+      ? currentMove && 'prevVisibleSquares' in currentMove
+        ? game.getVisibleSquares(darkChessMode).filter((square) => currentMove.prevVisibleSquares!.some((sq) => (
+          Game.areSquaresEqual(square, sq)
+        )))
+        : game.getVisibleSquares(darkChessMode)
+      : [];
     const boardPieces = pieces.filter(Game.isBoardPiece);
     const isHiddenSquare = (square: Square): boolean => (
       !!darkChessMode

@@ -57,6 +57,7 @@ type Props = ReturnType<typeof mapStateToProps> & RouteComponentProps<{ gameId: 
 interface State {
   gameData: IGame | DarkChessGame | null;
   selectedPiece: RealPiece | null;
+  allowedMoves: BoardPossibleMove[];
   drawingSymbolStart: Square | null;
   drawingSymbol: DrawnSymbol | null;
   drawnSymbols: DrawnSymbol[];
@@ -87,6 +88,7 @@ class Game extends React.Component<Props, State> {
   drawnSymbolId = 0;
   state: State = {
     selectedPiece: null,
+    allowedMoves: [],
     drawingSymbolStart: null,
     drawingSymbol: null,
     drawnSymbols: [],
@@ -434,6 +436,9 @@ class Game extends React.Component<Props, State> {
   selectPiece = (selectedPiece: RealPiece | null) => {
     this.setState({
       selectedPiece,
+      allowedMoves: selectedPiece
+        ? this.getAllowedMoves(selectedPiece).toArray()
+        : [],
       drawnSymbols: []
     });
   };
@@ -473,15 +478,7 @@ class Game extends React.Component<Props, State> {
     });
   };
 
-  getAllowedMoves = function* (this: Game): Generator<BoardPossibleMove, any, any> {
-    const {
-      selectedPiece
-    } = this.state;
-
-    if (!selectedPiece) {
-      return;
-    }
-
+  getAllowedMoves = function* (this: Game, selectedPiece: RealPiece): Generator<BoardPossibleMove, any, any> {
     const allowedMoves = this.game!
       .getAllowedMoves(selectedPiece)
       .map((square) => ({ square, realSquare: square }))
@@ -505,9 +502,10 @@ class Game extends React.Component<Props, State> {
     }
   }.bind(this);
 
-  makeMove = (square: Square, isDndMove: boolean) => {
+  makeMove = (square: Square) => {
     const {
-      selectedPiece
+      selectedPiece,
+      allowedMoves
     } = this.state;
 
     if (!selectedPiece) {
@@ -527,11 +525,12 @@ class Game extends React.Component<Props, State> {
       return;
     }
 
-    const allowedMove = this.getAllowedMoves().find(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
+    const allowedMove = allowedMoves.find(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
 
     this.setState({
       isDragging: false,
-      selectedPiece: null
+      selectedPiece: null,
+      allowedMoves: []
     });
 
     if (!allowedMove) {
@@ -561,10 +560,6 @@ class Game extends React.Component<Props, State> {
           ? move
           : { ...move, promotion: validPromotions[0] }
       );
-
-      if (!this.game!.isDarkChess) {
-        _.last(this.game!.moves)!.isDndMove = isDndMove;
-      }
     }
   };
 
@@ -585,7 +580,8 @@ class Game extends React.Component<Props, State> {
 
   onSquareClick = (square: Square) => {
     const {
-      selectedPiece
+      selectedPiece,
+      allowedMoves
     } = this.state;
     const enableDnd = true;
 
@@ -617,7 +613,7 @@ class Game extends React.Component<Props, State> {
       return this.selectPiece(null);
     }
 
-    const allowedMove = this.getAllowedMoves().find(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
+    const allowedMove = allowedMoves.find(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
 
     if (!allowedMove) {
       const pieceInSquare = this.game!.getBoardPiece(square);
@@ -629,7 +625,7 @@ class Game extends React.Component<Props, State> {
       return this.selectPiece(pieceInSquare);
     }
 
-    this.makeMove(square, false);
+    this.makeMove(square);
   };
 
   startDrag = (e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation) => {
@@ -646,6 +642,8 @@ class Game extends React.Component<Props, State> {
       e.preventDefault();
 
       this.setState({
+        selectedPiece: null,
+        allowedMoves: [],
         isDragging: true,
         drawingSymbolStart: location,
         drawingSymbol: {
@@ -671,13 +669,14 @@ class Game extends React.Component<Props, State> {
       && draggedPiece.color === this.player!.color
       && (
         !GameHelper.isBoardPiece(draggedPiece)
-        || this.getAllowedMoves().all(({ square }) => !GameHelper.areSquaresEqual(draggedPiece.location, square))
+        || this.state.allowedMoves.every(({ square }) => !GameHelper.areSquaresEqual(draggedPiece.location, square))
       )
     ) {
       this.draggingPieceTranslate = this.getDraggingPieceTranslate(e);
 
       this.setState({
         selectedPiece: draggedPiece,
+        allowedMoves: this.getAllowedMoves(draggedPiece).toArray(),
         drawnSymbols: [],
         isDragging: true
       });
@@ -790,7 +789,7 @@ class Game extends React.Component<Props, State> {
             return false;
           }
 
-          this.makeMove(JSON.parse(squareJSON), true);
+          this.makeMove(JSON.parse(squareJSON));
 
           return true;
         } catch (err) {
@@ -800,7 +799,8 @@ class Game extends React.Component<Props, State> {
     ) {
       this.setState({
         isDragging: false,
-        selectedPiece: null
+        selectedPiece: null,
+        allowedMoves: []
       });
     }
   };
@@ -934,6 +934,7 @@ class Game extends React.Component<Props, State> {
                     ? selectedPiece
                     : null
                 }
+                allowedMoves={this.state.allowedMoves}
                 drawnSymbols={
                   this.state.drawingSymbol
                     ? [...this.state.drawnSymbols, this.state.drawingSymbol]
@@ -941,7 +942,6 @@ class Game extends React.Component<Props, State> {
                 }
                 onSquareClick={this.onSquareClick}
                 startDraggingPiece={this.startDrag}
-                getAllowedMoves={this.getAllowedMoves}
                 enableClick={true}
                 enableDnd={true}
                 isBlackBase={isBlackBase}

@@ -331,6 +331,7 @@ class BoardEditor extends React.Component<Props, State> {
           game={this.game}
           player={null}
           selectedPiece={selectedPiece}
+          allowedMoves={[]}
           drawnSymbols={[]}
           onSquareClick={this.onSquareClick}
           startDraggingPiece={this.startDraggingPiece}
@@ -344,8 +345,6 @@ class BoardEditor extends React.Component<Props, State> {
           boardsShiftX={0}
           pieces={this.game.pieces}
           showKingAttack={false}
-          forceMoveWithClick
-          getAllowedMoves={function* () {}}
         />
 
         {isDragging && selectedPiece && (

@@ -246,7 +246,7 @@ export interface RevertableMove extends ExtendedMove {
 }
 
 export interface LocalMove extends RevertableMove {
-  isDndMove?: boolean;
+
 }
 
 export interface DarkChessMove {
@@ -256,7 +256,7 @@ export interface DarkChessMove {
   duration: number;
   algebraic: string;
   figurine: string;
-  pieces: Piece[];
+  pieces: readonly Piece[];
 }
 
 export interface DarkChessRevertableMove extends DarkChessMove {
@@ -264,7 +264,7 @@ export interface DarkChessRevertableMove extends DarkChessMove {
 }
 
 export interface DarkChessLocalMove extends DarkChessRevertableMove {
-  isDndMove?: false;
+  prevVisibleSquares?: Square[];
 }
 
 export type AnyMove = LocalMove | DarkChessLocalMove;

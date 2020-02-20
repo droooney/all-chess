@@ -498,6 +498,7 @@ export default class Game extends GameHelper {
         if (socketPlayer) {
           socket.emit('darkChessMoveMade', {
             move: _.last(this.colorMoves[socketPlayer.color])!,
+            moveIndex: this.moves.length - 1,
             lastMoveTimestamp: this.lastMoveTimestamp
           });
         }

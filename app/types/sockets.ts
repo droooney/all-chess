@@ -24,6 +24,7 @@ declare global {
     };
     darkChessMoveMade: {
       move: DarkChessMove;
+      moveIndex: number;
       lastMoveTimestamp: number;
     };
     drawOffered: ColorEnum;
