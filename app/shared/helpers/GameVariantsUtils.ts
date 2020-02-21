@@ -133,6 +133,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
         // TODO: add support for frankfurt + crazyhouse
         !isCrazyhouse
         && !isAtomic
+        && !isCirce
       )
     ) && (
       !isTwoFamilies
@@ -149,8 +150,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
       !isCircularChess
       || (
         !isCylinderChess
-        // TODO: add support for circular + circe
-        && !isCirce
         && !isKingOfTheHill
         && !isHexagonalChess
       )

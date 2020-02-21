@@ -845,32 +845,58 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         const pieceRankY = color === ColorEnum.WHITE
           ? 0
           : this.boardHeight - 1;
+        const circularChessQueenSideRankY = color === ColorEnum.WHITE
+          ? 0
+          : this.boardOrthodoxHeight - 1;
+        const circularChessKingSideRankY = color === ColorEnum.WHITE
+          ? this.boardHeight - 1
+          : this.boardOrthodoxHeight;
 
         if (GameMovesUtils.isQueen(disappearedOrMovedPiece)) {
           newSquare = {
             x: this.isCapablanca
               ? 4
-              : !this.isTwoFamilies || oldSquare.x < this.boardWidth / 2
-                ? 3
-                : 5,
-            y: pieceRankY
+              : this.isCircularChess
+                ? !this.isTwoFamilies || oldSquare.y < this.boardOrthodoxHeight
+                  ? 3
+                  : 4
+                : !this.isTwoFamilies || oldSquare.x < this.boardWidth / 2
+                  ? 3
+                  : 5,
+            y: this.isCircularChess
+              ? !this.isTwoFamilies || oldSquare.y < this.boardOrthodoxHeight
+                ? circularChessQueenSideRankY
+                : circularChessKingSideRankY
+              : pieceRankY
           };
         } else if (GameMovesUtils.isEmpress(disappearedOrMovedPiece)) {
           newSquare = {
             x: 3,
-            y: pieceRankY
+            y: this.isCircularChess
+              ? circularChessQueenSideRankY
+              : pieceRankY
           };
         } else if (GameMovesUtils.isCardinal(disappearedOrMovedPiece)) {
           newSquare = {
-            x: 6,
-            y: pieceRankY
+            x: this.isCircularChess ? 3 : 6,
+            y: this.isCircularChess
+              ? circularChessKingSideRankY
+              : pieceRankY
           };
         } else if (GameMovesUtils.isPawn(disappearedOrMovedPiece)) {
           newSquare = {
             x: oldSquare.x,
-            y: color === ColorEnum.WHITE
-              ? 1
-              : this.boardHeight - 2
+            y: this.isCircularChess
+              ? color === ColorEnum.WHITE
+                ? oldSquare.y < this.boardOrthodoxHeight
+                  ? 1
+                  : this.boardHeight - 2
+                : oldSquare.y < this.boardOrthodoxHeight
+                  ? this.boardOrthodoxHeight - 2
+                  : this.boardOrthodoxHeight + 1
+              : color === ColorEnum.WHITE
+                ? 1
+                : this.boardHeight - 2
           };
         } else if (
           GameMovesUtils.isRook(disappearedOrMovedPiece)
@@ -883,11 +909,21 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             : GameMovesUtils.isKnight(disappearedOrMovedPiece)
               ? [1, this.boardWidth - 2]
               : [2, this.boardWidth - 3];
-          const fileX = choicesX.find((fileX) => (fileX + pieceRankY) % 2 === squareColor)!;
+          const circularFileX = GameMovesUtils.isRook(disappearedOrMovedPiece)
+            ? 0
+            : GameMovesUtils.isKnight(disappearedOrMovedPiece)
+              ? 1
+              : 2;
 
           newSquare = {
-            x: fileX,
-            y: pieceRankY
+            x: this.isCircularChess
+              ? circularFileX
+              : choicesX.find((fileX) => (fileX + pieceRankY) % 2 === squareColor)!,
+            y: this.isCircularChess
+              ? (circularFileX + circularChessQueenSideRankY) % 2 === squareColor
+                ? circularChessQueenSideRankY
+                : circularChessKingSideRankY
+              : pieceRankY
           };
         }
 

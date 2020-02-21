@@ -1,7 +1,6 @@
 import * as React from 'react';
 
 import { GameVariantEnum } from '../../../types';
-import { GAME_VARIANT_NAMES } from '../../../shared/constants';
 
 import GameRulesExample from '../GameRulesExample';
 import GameVariantLink from '../GameVariantLink';
@@ -10,7 +9,6 @@ export default class Chess960GameRules extends React.Component {
   render() {
     return (
       <React.Fragment>
-
         <h2 id="overview">
           Overview
         </h2>
@@ -126,28 +124,8 @@ export default class Chess960GameRules extends React.Component {
         </h2>
 
         <p>
-          Chess 960 is a neutral variant so it may be combined with all variants.
+          Chess 960 is a neutral variant so it may be combined with almost all variants, except <GameVariantLink variant={GameVariantEnum.CIRCE} />.
         </p>
-
-        <h3 id="combinations-circe">
-          {GAME_VARIANT_NAMES[GameVariantEnum.CIRCE]}
-        </h3>
-
-        <p>
-          When played in combination with <GameVariantLink variant={GameVariantEnum.CIRCE} />, there is an exception to the usual Circe game:
-          when captured, the pieces don&apos;t return to their initial squares, but rather to the starting squares of the same game but without Chess 960.
-        </p>
-
-        <GameRulesExample
-          id="5"
-          description="Example 5. The white queen captures the black queen, it returns to the &quot;initial&quot; square.
-The black rook captures the white queen, but its &quot;initial&quot; square is occupied by the bishop, so the queen remains captured."
-          variants={[GameVariantEnum.CHESS_960, GameVariantEnum.CIRCE]}
-          fen="bnr1kqrn/ppppb2p/5pp1/4P3/4P3/6P1/PPPP3P/BNRBKQRN b KQkq - 1 7"
-          moves="7... fxe5 8. Qxf8+ Rxf8"
-          startingMoveIndex={0}
-        />
-
       </React.Fragment>
     );
   }
