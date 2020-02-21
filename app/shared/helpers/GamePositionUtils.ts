@@ -52,6 +52,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
     const isPocketUsed = GamePositionUtils.getIsPocketUsed(variants);
     const {
       isAntichess,
+      isCircularChess,
       isCylinderChess,
       isDarkChess,
       isHexagonalChess,
@@ -126,7 +127,13 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
         pieceLocation: {
           board: 0,
           x: file,
-          y: startingData.turn === ColorEnum.WHITE ? boardHeight - 4 : 3
+          y: startingData.turn === ColorEnum.WHITE
+            ? isCircularChess && rank >= boardHeight / 2
+              ? rank + 1
+              : rank - 1
+            : isCircularChess && rank >= boardHeight / 2
+              ? rank - 1
+              : rank + 1
         }
       };
     }
@@ -233,12 +240,11 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
     }
 
     if (startingData.possibleEnPassant) {
-      const { x, y } = startingData.possibleEnPassant.pieceLocation;
+      const enPassantPieceLocation = startingData.possibleEnPassant.pieceLocation;
       const enPassantPiece = pieces.find((piece) => (
         GamePositionUtils.isPawn(piece)
         && GamePositionUtils.isBoardPiece(piece)
-        && piece.location.x === x
-        && piece.location.y === y
+        && GamePositionUtils.areSquaresEqual(piece.location, enPassantPieceLocation, false)
       )) as BoardPiece | undefined;
 
       if (!enPassantPiece) {
@@ -248,7 +254,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
       startingData.possibleEnPassant = {
         enPassantSquare: {
           ...startingData.possibleEnPassant.enPassantSquare,
-          board: (enPassantPiece.location.board + boardCount - 1) % boardCount
+          board: enPassantPiece.location.board
         },
         pieceLocation: {
           ...startingData.possibleEnPassant.pieceLocation,

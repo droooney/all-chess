@@ -7,6 +7,7 @@ import classNames from 'classnames';
 
 import {
   BaseMove,
+  BoardPiece,
   BoardPossibleMove,
   ColorEnum,
   DarkChessGame,
@@ -58,6 +59,7 @@ type Props = ReturnType<typeof mapStateToProps> & RouteComponentProps<{ gameId: 
 interface State {
   gameData: IGame | DarkChessGame | null;
   selectedPiece: RealPiece | null;
+  selectedPieceBoard: number;
   allowedMoves: BoardPossibleMove[];
   drawingSymbolStart: Square | null;
   drawingSymbol: DrawnSymbol | null;
@@ -90,6 +92,7 @@ class Game extends React.Component<Props, State> {
   drawnSymbolId = 0;
   state: State = {
     selectedPiece: null,
+    selectedPieceBoard: 0,
     allowedMoves: [],
     drawingSymbolStart: null,
     drawingSymbol: null,
@@ -184,17 +187,24 @@ class Game extends React.Component<Props, State> {
     const existingIndex = drawnSymbols.findIndex((symbol) => (
       drawnSymbol.type === 'circle'
       && symbol.type === 'circle'
-      && GameHelper.areSquaresEqual(drawnSymbol.square, symbol.square)
+      && GameHelper.areSquaresEqual(drawnSymbol.square, symbol.square, false)
     ) || (
       drawnSymbol.type === 'arrow'
       && symbol.type === 'arrow'
-      && GameHelper.areSquaresEqual(drawnSymbol.from, symbol.from)
-      && GameHelper.areSquaresEqual(drawnSymbol.to, symbol.to)
+      && GameHelper.areSquaresEqual(drawnSymbol.from, symbol.from, false)
+      && GameHelper.areSquaresEqual(drawnSymbol.to, symbol.to, false)
     ));
 
     return existingIndex === -1
       ? [...drawnSymbols, drawnSymbol]
       : [...drawnSymbols.slice(0, existingIndex), ...drawnSymbols.slice(existingIndex + 1)];
+  }
+
+  getBoardPiece(square: Square): BoardPiece | null | false {
+    return this.game!.getBoardPiece(square) || (
+      this.props.showFantomPieces
+      && this.game!.getBoardPiece({ ...square, board: this.game!.getPrevBoard(square.board) })
+    );
   }
 
   getStartingIsBlackBase(): boolean {
@@ -436,7 +446,7 @@ class Game extends React.Component<Props, State> {
         && this.game!.turn === this.player.color
       ) {
         this.setState({
-          allowedMoves: this.getAllowedMoves(this.state.selectedPiece).toArray()
+          allowedMoves: this.getAllowedMoves(this.state.selectedPiece, this.state.selectedPieceBoard).toArray()
         });
       } else {
         this.forceUpdate();
@@ -456,11 +466,12 @@ class Game extends React.Component<Props, State> {
     this.socket!.emit('addChatMessage', message);
   };
 
-  selectPiece = (selectedPiece: RealPiece | null) => {
+  selectPiece = (selectedPiece: RealPiece | null, selectedPieceBoard: number = 0) => {
     this.setState({
       selectedPiece,
+      selectedPieceBoard,
       allowedMoves: selectedPiece
-        ? this.getAllowedMoves(selectedPiece).toArray()
+        ? this.getAllowedMoves(selectedPiece, selectedPieceBoard).toArray()
         : [],
       drawnSymbols: []
     });
@@ -501,7 +512,7 @@ class Game extends React.Component<Props, State> {
     });
   };
 
-  getAllowedMoves = function* (this: Game, selectedPiece: RealPiece): Generator<BoardPossibleMove, any, any> {
+  getAllowedMoves = function* (this: Game, selectedPiece: RealPiece, selectedPieceBoard: number): Generator<BoardPossibleMove, any, any> {
     if (!this.player) {
       return;
     }
@@ -509,20 +520,33 @@ class Game extends React.Component<Props, State> {
     const moves = this.player.color === this.game!.turn
       ? this.game!.getAllowedMoves(selectedPiece)
       : this.game!.getPossibleMoves(selectedPiece, GetPossibleMovesMode.PREMOVES);
-    const allowedMoves = moves.map((square) => ({ square, realSquare: square })).toArray();
+    const allowedMoves = moves
+      .map((square) => ({
+        square: {
+          ...square,
+          board: GameHelper.isPocketPiece(selectedPiece)
+            ? square.board
+            : selectedPieceBoard
+        },
+        realSquare: square
+      }))
+      .toArray();
 
     yield* allowedMoves;
 
     // add own rooks as castling move targets
     if (!this.game!.is960) {
       for (const move of allowedMoves) {
-        const castlingRook = this.game!.getCastlingRook(selectedPiece, move.square);
+        const castlingRook = this.game!.getCastlingRook(selectedPiece, move.realSquare);
 
         if (castlingRook) {
           yield {
             ...move,
-            square: castlingRook.location,
-            realSquare: move.square
+            square: {
+              ...castlingRook.location,
+              board: selectedPieceBoard
+            },
+            realSquare: move.realSquare
           };
         }
       }
@@ -532,6 +556,7 @@ class Game extends React.Component<Props, State> {
   makeMove = (square: Square) => {
     const {
       selectedPiece,
+      selectedPieceBoard,
       allowedMoves
     } = this.state;
 
@@ -544,7 +569,10 @@ class Game extends React.Component<Props, State> {
     }
 
     // TODO: if dnd only this if should not be run
-    if (GameHelper.isBoardPiece(selectedPiece) && GameHelper.areSquaresEqual(selectedPiece.location, square)) {
+    if (
+      GameHelper.isBoardPiece(selectedPiece)
+      && GameHelper.areSquaresEqual({ ...selectedPiece.location, board: selectedPieceBoard }, square)
+    ) {
       this.setState({
         isDragging: false
       });
@@ -569,7 +597,7 @@ class Game extends React.Component<Props, State> {
       return;
     }
 
-    const move = {
+    const move: BaseMove = {
       from: selectedPiece.location,
       to: allowedMove.realSquare
     };
@@ -614,6 +642,7 @@ class Game extends React.Component<Props, State> {
   onSquareClick = (square: Square) => {
     const {
       selectedPiece,
+      selectedPieceBoard,
       allowedMoves
     } = this.state;
     const enableDnd = true;
@@ -629,7 +658,7 @@ class Game extends React.Component<Props, State> {
     const playerColor = this.player ? this.player.color : null;
 
     if (!selectedPiece) {
-      const pieceInSquare = this.game!.getBoardPiece(square);
+      const pieceInSquare = this.getBoardPiece(square);
 
       if (!pieceInSquare || playerColor !== pieceInSquare.color) {
         this.game!.cancelPremoves(true);
@@ -637,12 +666,12 @@ class Game extends React.Component<Props, State> {
         return;
       }
 
-      return this.selectPiece(pieceInSquare);
+      return this.selectPiece(pieceInSquare, square.board);
     }
 
     if (
       GameHelper.isBoardPiece(selectedPiece)
-      && GameHelper.areSquaresEqual(square, selectedPiece.location)
+      && GameHelper.areSquaresEqual(square, { ...selectedPiece.location, board: selectedPieceBoard })
       && !enableDnd
     ) {
       return this.selectPiece(null);
@@ -651,7 +680,7 @@ class Game extends React.Component<Props, State> {
     const allowedMove = allowedMoves.find(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
 
     if (!allowedMove) {
-      const pieceInSquare = this.game!.getBoardPiece(square);
+      const pieceInSquare = this.getBoardPiece(square);
 
       if (!pieceInSquare || playerColor !== pieceInSquare.color) {
         this.game!.cancelPremoves(false);
@@ -659,7 +688,7 @@ class Game extends React.Component<Props, State> {
         return this.selectPiece(null);
       }
 
-      return this.selectPiece(pieceInSquare);
+      return this.selectPiece(pieceInSquare, square.board);
     }
 
     this.makeMove(square);
@@ -700,7 +729,7 @@ class Game extends React.Component<Props, State> {
     }
 
     const draggedPiece = location.type === PieceLocationEnum.BOARD
-      ? this.game!.getBoardPiece(location)
+      ? this.getBoardPiece(location)
       : this.game!.getPocketPiece(location.pieceType, location.color);
 
     if (
@@ -713,9 +742,12 @@ class Game extends React.Component<Props, State> {
     ) {
       this.draggingPieceTranslate = this.getDraggingPieceTranslate(e);
 
+      const selectedPieceBoard = location.type === PieceLocationEnum.POCKET ? 0 : location.board;
+
       this.setState({
         selectedPiece: draggedPiece,
-        allowedMoves: this.getAllowedMoves(draggedPiece).toArray(),
+        selectedPieceBoard,
+        allowedMoves: this.getAllowedMoves(draggedPiece, selectedPieceBoard).toArray(),
         drawnSymbols: [],
         isDragging: true
       });
@@ -980,6 +1012,7 @@ class Game extends React.Component<Props, State> {
                     ? selectedPiece
                     : null
                 }
+                selectedPieceBoard={this.state.selectedPieceBoard}
                 allowedMoves={this.state.allowedMoves}
                 premoves={premoves}
                 drawnSymbols={
@@ -1116,7 +1149,8 @@ class Game extends React.Component<Props, State> {
 function mapStateToProps(state: ReduxState) {
   return {
     isTouchDevice: state.common.isTouchDevice,
-    scrollSize: state.common.scrollSize
+    scrollSize: state.common.scrollSize,
+    showFantomPieces: state.gameSettings.showFantomPieces
   };
 }
 

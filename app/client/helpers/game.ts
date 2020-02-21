@@ -818,10 +818,12 @@ export class Game extends GameHelper {
         }
       });
 
-      this.changePieceLocation(piece, {
-        ...piece.location,
-        board: this.getNextBoard(piece.location.board)
-      });
+      if (fromLocation.type === PieceLocationEnum.BOARD) {
+        this.changePieceLocation(piece, {
+          ...piece.location,
+          board: this.getNextBoard(piece.location.board)
+        });
+      }
     });
   }
 

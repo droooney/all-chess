@@ -35,6 +35,7 @@ export interface OwnProps {
   game: Game;
   player: Player | null;
   selectedPiece: RealPiece | null;
+  selectedPieceBoard: number;
   allowedMoves: BoardPossibleMove[];
   premoves: Premove[];
   drawnSymbols: IDrawnSymbol[];
@@ -146,6 +147,7 @@ class Boards extends React.Component<Props> {
         boardCenterY
       },
       selectedPiece,
+      selectedPieceBoard,
       allowedMoves,
       premoves,
       drawnSymbols,
@@ -221,6 +223,7 @@ class Boards extends React.Component<Props> {
                 isDragging
                 && !!selectedPiece
                 && selectedPiece.id === piece.id
+                && board === selectedPieceBoard
               )
             }));
           let fantomPieces: { piece: IBoardPiece; isFantom: boolean; }[] = [];
@@ -262,7 +265,7 @@ class Boards extends React.Component<Props> {
               if (
                 selectedPiece
                 && Game.isBoardPiece(selectedPiece)
-                && Game.areSquaresEqual(selectedPiece.location, square)
+                && Game.areSquaresEqual({ ...selectedPiece.location, board: selectedPieceBoard }, square)
               ) {
                 selectedSquare = (
                   <BoardSquare
@@ -277,12 +280,10 @@ class Boards extends React.Component<Props> {
                   (
                     currentMove.from
                     && currentMove.from.type !== PieceLocationEnum.POCKET
-                    && currentMove.from.x === square.x
-                    && currentMove.from.y === square.y
+                    && Game.areSquaresEqual(currentMove.from, square, false)
                   ) || (
                     currentMove.to
-                    && currentMove.to.x === square.x
-                    && currentMove.to.y === square.y
+                    && Game.areSquaresEqual(currentMove.to, square, false)
                   )
                 )
               ) {
@@ -325,8 +326,8 @@ class Boards extends React.Component<Props> {
 
               premoves.forEach(({ from, to }, index) => {
                 if (
-                  (from.type === PieceLocationEnum.BOARD && Game.areSquaresEqual(from, square))
-                  || Game.areSquaresEqual(to, square)
+                  (from.type === PieceLocationEnum.BOARD && Game.areSquaresEqual(from, square, false))
+                  || Game.areSquaresEqual(to, square, false)
                 ) {
                   premoveSquares.push(
                     <BoardSquare

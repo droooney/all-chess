@@ -73,6 +73,7 @@ export default class GameRulesExample extends React.Component<Props> {
           game={this.game}
           player={null}
           selectedPiece={null}
+          selectedPieceBoard={0}
           allowedMoves={[]}
           premoves={[]}
           drawnSymbols={[]}

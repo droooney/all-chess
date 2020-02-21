@@ -84,9 +84,9 @@ export const HEX_ROOK_MOVE_INCREMENTS: readonly [number, number][] = [
 ];
 
 export default abstract class GameBoardUtils extends GamePieceUtils {
-  static areSquaresEqual(square1: Square, square2: Square): boolean {
+  static areSquaresEqual(square1: Square, square2: Square, exact: boolean = true): boolean {
     return (
-      square1.board === square2.board
+      (!exact || square1.board === square2.board)
       && square1.y === square2.y
       && square1.x === square2.x
     );

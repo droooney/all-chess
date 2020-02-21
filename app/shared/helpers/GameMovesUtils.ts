@@ -637,7 +637,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
               GameMovesUtils.isPawn(otherPawn)
               && otherPawn.id !== piece.id
               && otherPawn.location.board !== fromBoard
-              && this.getAllowedMoves(otherPawn).any(({ x, y }) => x === toX && y === toY)
+              && this.getAllowedMoves(otherPawn).any((square) => GameMovesUtils.areSquaresEqual(square, toLocation, false))
             ));
 
           if (otherPawnsOnOtherBoardsAbleToMakeMove.length) {
@@ -663,7 +663,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
               otherPiece.type === piece.type
               && otherPiece.abilities === piece.abilities
               && otherPiece.id !== piece.id
-              && this.getAllowedMoves(otherPiece).any(({ x, y }) => x === toX && y === toY)
+              && this.getAllowedMoves(otherPiece).any((square) => GameMovesUtils.areSquaresEqual(square, toLocation, false))
             ));
 
           if (otherPiecesAbleToMakeMove.length) {
@@ -743,12 +743,13 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       && fromLocation.type === PieceLocationEnum.BOARD
       && GameMovesUtils.isPawn(piece)
       && Math.abs(toY - fromLocation.y) > 1
+      // FIXME: is it possible to be different boards
       && fromLocation.board === toBoard
       && (!this.isHorde || fromLocation.y !== 0)
     ) {
       this.possibleEnPassant = {
         enPassantSquare: {
-          board: toBoard,
+          board: this.getNextBoard(toBoard),
           x: toX,
           y: Math.round((toY + fromLocation.y) / 2)
         },
