@@ -333,7 +333,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
   abstract possibleEnPassant: PossibleEnPassant | null = null;
 
   abstract getFilteredPossibleMoves(piece: RealPiece, move: GetPossibleMovesMode): Generator<Square>;
-  abstract isPromotionSquare(square: Square, color: ColorEnum): boolean;
+  abstract isLastRank(square: Square, color: ColorEnum): boolean;
 
   kings: GameKings = {
     [ColorEnum.WHITE]: [],
@@ -449,10 +449,20 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
   }
 
   isPromoting(piece: Piece, square: Square): boolean {
+    const pieceInSquare = this.getBoardPiece(square);
+
     return (
       GamePieceUtils.isPawn(piece)
-      && this.isPromotionSquare(square, piece.color)
-      && (!this.isFrankfurt || !this.getBoardPiece(square))
+      && this.isLastRank(square, piece.color)
+      && (
+        !this.isFrankfurt
+        || !pieceInSquare
+        || GamePieceUtils.isPawn(pieceInSquare)
+        || (
+          GamePieceUtils.isBoardPiece(piece)
+          && piece.location.x - square.x === 0
+        )
+      )
     );
   }
 

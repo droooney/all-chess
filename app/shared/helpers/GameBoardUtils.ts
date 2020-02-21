@@ -220,6 +220,38 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
   }
 
   getCenterSquareParams(square: Square): CenterSquareParams | null {
+    if (this.isHexagonalChess) {
+      if (square.x === this.middleFileX && square.y === this.middleRankY) {
+        return {};
+      }
+
+      if (square.x === this.middleFileX - 1 && square.y === this.middleRankY) {
+        return { topLeft: true };
+      }
+
+      if (square.x === this.middleFileX && square.y === this.middleRankY + 1) {
+        return { top: true };
+      }
+
+      if (square.x === this.middleFileX + 1 && square.y === this.middleRankY) {
+        return { topRight: true };
+      }
+
+      if (square.x === this.middleFileX - 1 && square.y === this.middleRankY - 1) {
+        return { bottomLeft: true };
+      }
+
+      if (square.x === this.middleFileX && square.y === this.middleRankY - 1) {
+        return { bottom: true };
+      }
+
+      if (square.x === this.middleFileX + 1 && square.y === this.middleRankY - 1) {
+        return { bottomRight: true };
+      }
+
+      return null;
+    }
+
     const leftCenterX = Math.round(this.boardWidth / 2) - 1;
     const rightCenterX = leftCenterX + 1;
     const topCenterY = Math.round(this.boardHeight / 2);
@@ -416,11 +448,33 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     ));
   }
 
+  isFirstRank(square: Square, color: ColorEnum): boolean {
+    return this.isLastRank(square, GameBoardUtils.getOppositeColor(color));
+  }
+
   isKingInTheCenter(color: ColorEnum): boolean {
     return this.kings[color].some((king) => (
       GameBoardUtils.isBoardPiece(king)
       && !!this.getCenterSquareParams(king.location)
     ));
+  }
+
+  isLastRank(square: Square, color: ColorEnum): boolean {
+    if (this.isCircularChess) {
+      return color === ColorEnum.WHITE
+        ? square.y === this.boardOrthodoxHeight - 1 || square.y === this.boardOrthodoxHeight
+        : square.y === 0 || square.y === this.boardHeight - 1;
+    }
+
+    return square.y === (
+      this.isHexagonalChess
+        ? color === ColorEnum.WHITE
+          ? this.boardHeight - 1 - Math.abs(square.x - this.middleFileX)
+          : 0
+        : color === ColorEnum.WHITE
+          ? this.boardHeight - 1
+          : 0
+    );
   }
 
   isNullSquare(square: Square): boolean {
@@ -442,24 +496,6 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
         GameBoardUtils.areSquaresEqual(sq, square)
       ))
     ));
-  }
-
-  isPromotionSquare(square: Square, color: ColorEnum): boolean {
-    if (this.isCircularChess) {
-      return color === ColorEnum.WHITE
-        ? square.y === this.boardOrthodoxHeight - 1 || square.y === this.boardOrthodoxHeight
-        : square.y === 0 || square.y === this.boardHeight - 1;
-    }
-
-    return square.y === (
-      this.isHexagonalChess
-        ? color === ColorEnum.WHITE
-          ? this.boardHeight - 1 - Math.abs(square.x - this.middleFileX)
-          : 0
-        : color === ColorEnum.WHITE
-          ? this.boardHeight - 1
-          : 0
-    );
   }
 
   resetBoards() {

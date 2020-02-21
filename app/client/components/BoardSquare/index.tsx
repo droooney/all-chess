@@ -32,8 +32,7 @@ export default class BoardSquare extends React.PureComponent<Props> {
       isHexagonalChess,
       boardWidth,
       boardHeight,
-      boardOrthodoxWidth,
-      middleFileX
+      boardOrthodoxWidth
     } = game;
     const square: Square = {
       board,
@@ -97,26 +96,15 @@ export default class BoardSquare extends React.PureComponent<Props> {
         Z
       `;
     } else if (isHexagonalChess) {
-      const a = SVG_SQUARE_SIZE / 2 / Math.sqrt(3);
-      const x0 = (fileX * 3 + 1) * a;
-      const rankAdjustmentY = 1 / 2 * Math.abs(fileX - middleFileX);
-      const y0 = (boardHeight - rankY - rankAdjustmentY) * SVG_SQUARE_SIZE;
-      const hexPoint = (x: number, y: number) => ({ x, y: -y });
-      const hexPoints = [
-        hexPoint(-a, SVG_SQUARE_SIZE / 2),
-        hexPoint(a, SVG_SQUARE_SIZE / 2),
-        hexPoint(2 * a, 0),
-        hexPoint(a, -SVG_SQUARE_SIZE / 2),
-        hexPoint(-a, -SVG_SQUARE_SIZE / 2)
-      ];
+      const hexPoints = game.getHexPoints(square);
 
       pathD = `
-        M ${x0},${y0}
-        l ${hexPoints[0].x},${hexPoints[0].y}
-        l ${hexPoints[1].x},${hexPoints[1].y}
-        h ${hexPoints[2].x}
-        l ${hexPoints[3].x},${hexPoints[3].y}
-        l ${hexPoints[4].x},${hexPoints[4].y}
+        M ${hexPoints.topLeft.x},${hexPoints.topLeft.y}
+        L ${hexPoints.left.x},${hexPoints.left.y}
+        L ${hexPoints.bottomLeft.x},${hexPoints.bottomLeft.y}
+        L ${hexPoints.bottomRight.x},${hexPoints.bottomRight.y}
+        L ${hexPoints.right.x},${hexPoints.right.y}
+        L ${hexPoints.topRight.x},${hexPoints.topRight.y}
         Z
       `;
     }

@@ -23,7 +23,6 @@ import {
   Piece,
   PieceBoardLocation,
   PieceLocationEnum,
-  PiecePocketLocation,
   PieceTypeEnum,
   RealPiece,
   ResultReasonEnum,
@@ -152,31 +151,27 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     const onlyPremove = mode === GetPossibleMovesMode.PREMOVES;
 
     if (GameMovesUtils.isPocketPiece(piece)) {
-      const visibleSquares = this.isDarkChess ? this.getVisibleSquares(piece.color) : [];
+      const visibleSquares = this.isDarkChess && !onlyPremove ? this.getVisibleSquares(piece.color) : [];
 
       for (let board = 0; board < this.boardCount; board++) {
         for (let rankY = 0; rankY < this.boardHeight; rankY++) {
-          if (
-            (piece.location as PiecePocketLocation).pieceType !== PieceTypeEnum.PAWN
-            || (
-              rankY !== 0
-              && rankY !== this.boardHeight - 1
+          for (let fileX = 0; fileX < this.boardWidth; fileX++) {
+            const square: Square = {
+              board,
+              x: fileX,
+              y: rankY
+            };
+
+            if (
+              !this.isNullSquare(square)
               && (
-                !this.isCircularChess || (
-                  rankY !== this.boardOrthodoxHeight - 1
-                  && rankY !== this.boardOrthodoxHeight
+                !GameMovesUtils.isPawn(piece)
+                || (
+                  !this.isFirstRank(square, piece.color)
+                  && !this.isLastRank(square, piece.color)
                 )
               )
-            )
-          ) {
-            for (let fileX = 0; fileX < this.boardWidth; fileX++) {
-              const square: Square = {
-                board,
-                x: fileX,
-                y: rankY
-              };
-
-              if (
+              && (
                 onlyPremove || (
                   (
                     !this.isDarkChess
@@ -184,9 +179,9 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
                   )
                   && !this.getBoardPiece(square)
                 )
-              ) {
-                yield square;
-              }
+              )
+            ) {
+              yield square;
             }
           }
         }

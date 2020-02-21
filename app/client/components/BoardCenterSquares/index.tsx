@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Game } from '../../helpers';
 
 import { SVG_SQUARE_SIZE } from '../../constants';
+import { Square } from '../../../types';
 
 interface OwnProps {
   game: Game;
@@ -16,15 +17,20 @@ export default class BoardSquares extends React.PureComponent<Props> {
     const {
       game,
       game: {
+        isHexagonalChess,
         boardWidth,
-        boardHeight
+        boardHeight,
+        boardCenterX,
+        boardCenterY
       }
     } = this.props;
     const centerBorders: JSX.Element[] = [];
 
     _.times(boardHeight, (rankY) => {
       _.times(boardWidth, (fileX) => {
-        const centerSquareParams = game.getCenterSquareParams({ board: 0, x: fileX, y: rankY });
+        const square: Square = { board: 0, x: fileX, y: rankY };
+        const centerSquareParams = game.getCenterSquareParams(square);
+        const hexPoints = game.getHexPoints(square);
 
         if (centerSquareParams) {
           const translateX = `calc(${SVG_SQUARE_SIZE}px * var(--rendered-file-${fileX}, ${fileX}))`;
@@ -33,37 +39,133 @@ export default class BoardSquares extends React.PureComponent<Props> {
             transform: [
               'rotate(calc(180deg * var(--is-black-base, 0)))',
               ...(
-                game.isCircularChess || game.isHexagonalChess
+                isHexagonalChess
                   ? []
                   : [`translate(${translateX}, ${translateY})`]
               )
             ].join(' '),
-            transformOrigin: `${game.boardCenterX}px ${game.boardCenterY}px`
+            transformOrigin: `${boardCenterX}px ${boardCenterY}px`
           };
 
           if (centerSquareParams.top) {
+            if (isHexagonalChess) {
+              centerBorders.push(
+                <g key={`${rankY}-${fileX}-top`} style={style}>
+                  <path
+                    className="center-border"
+                    d={`
+                      M ${hexPoints.left.x},${hexPoints.left.y}
+                      L ${hexPoints.topLeft.x},${hexPoints.topLeft.y}
+                      L ${hexPoints.topRight.x},${hexPoints.topRight.y}
+                      L ${hexPoints.right.x},${hexPoints.right.y}
+                    `}
+                  />
+                </g>
+              );
+            } else {
+              centerBorders.push(
+                <g key={`${rankY}-${fileX}-top`} style={style}>
+                  <line
+                    className="center-border"
+                    x1={0}
+                    y1={0}
+                    x2={SVG_SQUARE_SIZE}
+                    y2={0}
+                  />
+                </g>
+              );
+            }
+          }
+
+          if (centerSquareParams.topLeft && isHexagonalChess) {
             centerBorders.push(
-              <g key={`${rankY}-${fileX}-top`} style={style}>
-                <line
+              <g key={`${rankY}-${fileX}-top-left`} style={style}>
+                <path
                   className="center-border"
-                  x1={0}
-                  y1={0}
-                  x2={SVG_SQUARE_SIZE}
-                  y2={0}
+                  d={`
+                    M ${hexPoints.bottomLeft.x},${hexPoints.bottomLeft.y}
+                    L ${hexPoints.left.x},${hexPoints.left.y}
+                    L ${hexPoints.topLeft.x},${hexPoints.topLeft.y}
+                    L ${hexPoints.topRight.x},${hexPoints.topRight.y}
+                  `}
+                />
+              </g>
+            );
+          }
+
+          if (centerSquareParams.topRight && isHexagonalChess) {
+            centerBorders.push(
+              <g key={`${rankY}-${fileX}-top-right`} style={style}>
+                <path
+                  className="center-border"
+                  d={`
+                    M ${hexPoints.topLeft.x},${hexPoints.topLeft.y}
+                    L ${hexPoints.topRight.x},${hexPoints.topRight.y}
+                    L ${hexPoints.right.x},${hexPoints.right.y}
+                    L ${hexPoints.bottomRight.x},${hexPoints.bottomRight.y}
+                  `}
                 />
               </g>
             );
           }
 
           if (centerSquareParams.bottom) {
+            if (isHexagonalChess) {
+              centerBorders.push(
+                <g key={`${rankY}-${fileX}-bottom`} style={style}>
+                  <path
+                    className="center-border"
+                    d={`
+                      M ${hexPoints.left.x},${hexPoints.left.y}
+                      L ${hexPoints.bottomLeft.x},${hexPoints.bottomLeft.y}
+                      L ${hexPoints.bottomRight.x},${hexPoints.bottomRight.y}
+                      L ${hexPoints.right.x},${hexPoints.right.y}
+                    `}
+                  />
+                </g>
+              );
+            } else {
+              centerBorders.push(
+                <g key={`${rankY}-${fileX}-bottom`} style={style}>
+                  <line
+                    className="center-border"
+                    x1={0}
+                    y1={SVG_SQUARE_SIZE}
+                    x2={SVG_SQUARE_SIZE}
+                    y2={SVG_SQUARE_SIZE}
+                  />
+                </g>
+              );
+            }
+          }
+
+          if (centerSquareParams.bottomLeft && isHexagonalChess) {
             centerBorders.push(
-              <g key={`${rankY}-${fileX}-bottom`} style={style}>
-                <line
+              <g key={`${rankY}-${fileX}-bottom-left`} style={style}>
+                <path
                   className="center-border"
-                  x1={0}
-                  y1={SVG_SQUARE_SIZE}
-                  x2={SVG_SQUARE_SIZE}
-                  y2={SVG_SQUARE_SIZE}
+                  d={`
+                    M ${hexPoints.bottomRight.x},${hexPoints.bottomRight.y}
+                    L ${hexPoints.bottomLeft.x},${hexPoints.bottomLeft.y}
+                    L ${hexPoints.left.x},${hexPoints.left.y}
+                    L ${hexPoints.topLeft.x},${hexPoints.topLeft.y}
+                  `}
+                />
+              </g>
+            );
+          }
+
+          if (centerSquareParams.bottomRight && isHexagonalChess) {
+            centerBorders.push(
+              <g key={`${rankY}-${fileX}-bottom-right`} style={style}>
+                <path
+                  className="center-border"
+                  d={`
+                    M ${hexPoints.topRight.x},${hexPoints.topRight.y}
+                    L ${hexPoints.right.x},${hexPoints.right.y}
+                    L ${hexPoints.bottomRight.x},${hexPoints.bottomRight.y}
+                    L ${hexPoints.bottomLeft.x},${hexPoints.bottomLeft.y}
+                  `}
                 />
               </g>
             );

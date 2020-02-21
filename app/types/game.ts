@@ -341,7 +341,11 @@ export interface ChatMessage {
 
 export interface CenterSquareParams {
   top?: true;
+  topLeft?: true;
+  topRight?: true;
   left?: true;
   bottom?: true;
+  bottomLeft?: true;
+  bottomRight?: true;
   right?: true;
 }

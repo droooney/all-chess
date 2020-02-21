@@ -45,6 +45,20 @@ export interface InitGameOptions {
   timestamp?: number;
 }
 
+interface Point {
+  x: number;
+  y: number;
+}
+
+interface HexPoints {
+  topLeft: Point;
+  left: Point;
+  bottomLeft: Point;
+  bottomRight: Point;
+  right: Point;
+  topRight: Point;
+}
+
 export class Game extends GameHelper {
   static getGameFromPgn(pgn: string): Game {
     const game = super.getGameFromPgn(pgn);
@@ -181,7 +195,7 @@ export class Game extends GameHelper {
             !this.isOngoingDarkChessGame
             && _.isEqual(lastMove.from, move.from)
             && _.isEqual(lastMove.to, move.to)
-            // TODO: also compare promotion
+            && lastMove.promotion === move.promotion
           ) {
             lastMove.duration = move.duration;
 
@@ -419,6 +433,22 @@ export class Game extends GameHelper {
 
   emit(event: GameEvent) {
     this.listeners[event].forEach((listener) => listener());
+  }
+
+  getHexPoints(square: Square): HexPoints {
+    const a = SVG_SQUARE_SIZE / 2 / Math.sqrt(3);
+    const x0 = (square.x * 3 + 1) * a;
+    const rankAdjustmentY = 1 / 2 * Math.abs(square.x - this.middleFileX);
+    const y0 = (this.boardHeight - square.y - rankAdjustmentY) * SVG_SQUARE_SIZE;
+
+    return {
+      bottomLeft: { x: x0, y: y0 },
+      left: { x: x0 - a, y: y0 - SVG_SQUARE_SIZE / 2 },
+      topLeft: { x: x0, y: y0 - SVG_SQUARE_SIZE },
+      topRight: { x: x0 + 2 * a, y: y0 - SVG_SQUARE_SIZE },
+      right: { x: x0 + 3 * a, y: y0 - SVG_SQUARE_SIZE / 2 },
+      bottomRight: { x: x0 + 2 * a, y: y0 }
+    };
   }
 
   getLiteralColor(square: Square): 'light' | 'dark' | 'half-dark' {
@@ -686,15 +716,20 @@ export class Game extends GameHelper {
     const isCastling = !!castlingRook;
     const isKingSideCastling = isCastling && toX - (fromLocation as PieceBoardLocation).x > 0;
     const isRoyalKing = wasKing && !this.isAntichess;
-    const isCapture = !castlingRook && !!pieceInSquare && pieceInSquare.color !== piece.color;
+    const isCapture = (
+      !castlingRook
+      && !!pieceInSquare
+      && pieceInSquare.color !== piece.color
+      && fromLocation.type === PieceLocationEnum.BOARD
+      && (
+        !Game.isPawn(piece)
+        || fromLocation.x - toX !== 0
+      )
+    );
     const movedPieces: BoardPiece[] = [piece as BoardPiece];
 
     if (pieceInSquare && (!castlingRook || pieceInSquare.id !== castlingRook.id)) {
-      const goesToPocket = (
-        this.isCrazyhouse
-        && isCapture
-        && fromLocation.type === PieceLocationEnum.BOARD
-      );
+      const goesToPocket = this.isCrazyhouse && isCapture;
 
       if (goesToPocket) {
         pieceInSquare.type = pieceInSquare.originalType;
