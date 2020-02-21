@@ -1,3 +1,5 @@
+/// <reference path="../../typings/generator.d.ts"/>
+
 import * as _ from 'lodash';
 
 import GameTurnUtils from './GameTurnUtils';
@@ -164,7 +166,9 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
 
       return {
         type: PieceTypeEnum.KING,
-        abilities: absorbedPiece.type
+        abilities: GamePieceUtils.isPawn(absorbedPiece)
+          ? null
+          : absorbedPiece.type
       };
     }
 

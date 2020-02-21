@@ -18,7 +18,12 @@ export default abstract class GameCastlingUtils extends GameStartingDataUtils {
   }
 
   getCastlingRook(piece: RealPiece, square: Square): BoardPiece | null {
-    if (!GameCastlingUtils.isBoardPiece(piece) || !GameCastlingUtils.isKing(piece)) {
+    if (
+      !GameCastlingUtils.isBoardPiece(piece)
+      || !GameCastlingUtils.isKing(piece)
+      || piece.moved
+      || piece.location.y !== (piece.color === ColorEnum.WHITE ? 0 : this.boardHeight - 1)
+    ) {
       return null;
     }
 
@@ -38,6 +43,7 @@ export default abstract class GameCastlingUtils extends GameStartingDataUtils {
 
     return _.find(this.getCastlingRooks(piece.color), (rook, castlingSide) => (
       !!rook
+      && !rook.moved
       && this.startingData.possibleCastling[piece.color][castlingSide as CastlingTypeEnum]
       && Math.sign(rook.location.x - piece.location.x) === Math.sign(square.x - piece.location.x)
     )) || null;

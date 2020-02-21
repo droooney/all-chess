@@ -18,12 +18,7 @@ declare global {
     gamePing: number;
     gameList: GameMinimalData[];
     moveMade: {
-      move: Move;
-      moveIndex: number;
-      lastMoveTimestamp: number;
-    };
-    darkChessMoveMade: {
-      move: DarkChessMove;
+      move: Move | DarkChessMove;
       moveIndex: number;
       lastMoveTimestamp: number;
     };

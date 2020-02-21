@@ -332,6 +332,7 @@ class BoardEditor extends React.Component<Props, State> {
           player={null}
           selectedPiece={selectedPiece}
           allowedMoves={[]}
+          premoves={[]}
           drawnSymbols={[]}
           onSquareClick={this.onSquareClick}
           startDraggingPiece={this.startDraggingPiece}

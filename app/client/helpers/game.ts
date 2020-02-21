@@ -13,7 +13,11 @@ import {
   LocalMove,
   Move,
   Piece,
+  PieceBoardLocation,
+  PieceLocationEnum,
+  PieceTypeEnum,
   Player,
+  Premove,
   Square,
   TimeControl,
   TimeControlEnum
@@ -72,6 +76,8 @@ export class Game extends GameHelper {
   socket?: Socket;
   timeDiff = 0;
   moves: LocalMove[] = [];
+  premoves: Premove[] = [];
+  piecesBeforePremoves: readonly Piece[];
   colorMoves: Record<ColorEnum, DarkChessLocalMove[]> = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
@@ -133,6 +139,7 @@ export class Game extends GameHelper {
       && !this.isDarkChess
       && !this.isHorde
     );
+    this.piecesBeforePremoves = this.pieces;
 
     const moves: (Move | DarkChessMove)[] = game.moves;
 
@@ -166,21 +173,28 @@ export class Game extends GameHelper {
       socket.on('moveMade', ({ move, moveIndex, lastMoveTimestamp }) => {
         this.lastMoveTimestamp = lastMoveTimestamp;
 
-        if (moveIndex >= this.moves.length) {
-          this.onMoveMade(move, false);
+        if (moveIndex === this.getUsedMoves().length - 1) {
+          const lastMove = _.last(this.getUsedMoves())!;
 
-          if ('vibrate' in navigator) {
-            navigator.vibrate(200);
+          if (
+            !this.isOngoingDarkChessGame
+            && _.isEqual(lastMove.from, move.from)
+            && _.isEqual(lastMove.to, move.to)
+            // TODO: also compare promotion
+          ) {
+            lastMove.duration = move.duration;
+
+            return;
           }
-        } else if (moveIndex === this.moves.length - 1) {
-          const lastMove = _.last(this.moves)!;
 
-          lastMove.duration = move.duration;
+          if (!this.isOngoingDarkChessGame) {
+            this.cancelPremoves(false);
+          }
         }
-      });
 
-      socket.on('darkChessMoveMade', ({ move, moveIndex, lastMoveTimestamp }) => {
-        this.lastMoveTimestamp = lastMoveTimestamp;
+        if (this.premoves.length) {
+          this.setPieces(this.piecesBeforePremoves);
+        }
 
         if (moveIndex === this.getUsedMoves().length - 1) {
           this.unregisterLastMove();
@@ -191,13 +205,37 @@ export class Game extends GameHelper {
         }
 
         if (moveIndex >= this.getUsedMoves().length) {
-          this.onMoveMade(move, true);
+          this.onMoveMade(move as Move, this.isOngoingDarkChessGame as false, false);
+          this.notifyAboutNewMove();
 
-          if (this.player && this.player.color === this.turn) {
-            if ('vibrate' in navigator) {
-              navigator.vibrate(200);
+          if (!this.isOngoing()) {
+            this.cancelPremoves(false);
+          }
+
+          if (this.player && this.player.color === this.turn && this.premoves.length) {
+            const premove = this.premoves.shift()!;
+            const piece = premove.from.type === PieceLocationEnum.BOARD
+              ? this.getBoardPiece(premove.from)
+              : this.getPocketPiece(premove.from.pieceType, premove.from.color);
+
+            if (piece && this.isMoveAllowed(piece, premove.to, premove.promotion)) {
+              this.move(premove, false);
+            } else {
+              this.cancelPremoves(false);
             }
           }
+
+          if (this.premoves.length) {
+            this.piecesBeforePremoves = this.pieces;
+
+            this.setPieces(_.cloneDeep(this.pieces));
+
+            this.premoves.forEach((premove) => {
+              this.performPremove(premove);
+            });
+          }
+
+          this.updateGame();
         }
       });
 
@@ -210,6 +248,7 @@ export class Game extends GameHelper {
       socket.on('gameOver', ({ result, players }) => {
         this.players = players;
 
+        this.cancelPremoves(false);
         this.end(result.winner, result.reason);
         this.updateGame();
       });
@@ -218,6 +257,7 @@ export class Game extends GameHelper {
         this.isOngoingDarkChessGame = false;
         this.showDarkChessHiddenPieces = true;
 
+        this.cancelPremoves(false);
         this.onDarkChessMoves(moves);
         this.updateGame();
       });
@@ -264,6 +304,7 @@ export class Game extends GameHelper {
 
         const { currentMoveIndex } = this;
 
+        this.cancelPremoves(false);
         this.navigateToMove(this.getUsedMoves().length - 1, false);
 
         while (takebackRequest.moveIndex < this.getUsedMoves().length - 1) {
@@ -310,6 +351,18 @@ export class Game extends GameHelper {
   cancelDraw() {
     if (this.socket) {
       this.socket.emit('cancelDraw');
+    }
+  }
+
+  cancelPremoves(updateGame: boolean) {
+    if (this.premoves.length) {
+      this.premoves = [];
+
+      this.setPieces(this.piecesBeforePremoves);
+
+      if (updateGame) {
+        this.updateGame();
+      }
     }
   }
 
@@ -373,6 +426,22 @@ export class Game extends GameHelper {
       : 'light';
   }
 
+  getLocalVisibleSquares(color: ColorEnum): Square[] {
+    if (this.premoves.length) {
+      const pieces = this.pieces;
+
+      this.setPieces(this.piecesBeforePremoves);
+
+      const visibleSquares = this.getVisibleSquares(color);
+
+      this.setPieces(pieces);
+
+      return visibleSquares;
+    }
+
+    return this.getVisibleSquares(color);
+  }
+
   getPieceSize(): number {
     return this.isCircularChess
       ? (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE * 0.9
@@ -401,7 +470,18 @@ export class Game extends GameHelper {
       : this.moves;
   }
 
-  move(move: BaseMove) {
+  move(move: BaseMove, updateGame: boolean) {
+    if (!this.player) {
+      return;
+    }
+
+    if (this.player.color !== this.turn) {
+      this.registerPremove(move);
+      this.updateGame();
+
+      return;
+    }
+
     if (this.socket) {
       this.socket.emit('makeMove', move);
     }
@@ -438,7 +518,10 @@ export class Game extends GameHelper {
     this.lastMoveTimestamp = newTimestamp;
 
     this.changePlayerTime();
-    this.updateGame();
+
+    if (updateGame) {
+      this.updateGame();
+    }
   }
 
   moveBack(updateGame: boolean = true) {
@@ -480,6 +563,14 @@ export class Game extends GameHelper {
 
     if (updateGame) {
       this.updateGame();
+    }
+  }
+
+  notifyAboutNewMove() {
+    if (this.player && this.player.color === this.turn) {
+      if ('vibrate' in navigator) {
+        navigator.vibrate(200);
+      }
     }
   }
 
@@ -573,6 +664,103 @@ export class Game extends GameHelper {
     };
   }
 
+  performPremove(move: Premove) {
+    const {
+      from: fromLocation,
+      to: toLocation,
+      to: {
+        board: toBoard,
+        x: toX,
+        y: toY
+      },
+      promotion
+    } = move;
+    const piece = fromLocation.type === PieceLocationEnum.BOARD
+      ? this.getBoardPiece(fromLocation)!
+      : this.getPocketPiece(fromLocation.pieceType, fromLocation.color)!;
+    const pieceInSquare = this.getBoardPiece(toLocation);
+    const isPawnPromotion = this.isPromoting(piece, toLocation);
+    const wasKing = Game.isKing(piece);
+    const castlingRook = this.getCastlingRook(piece, toLocation);
+    const isCastling = !!castlingRook;
+    const isKingSideCastling = isCastling && toX - (fromLocation as PieceBoardLocation).x > 0;
+    const isRoyalKing = wasKing && !this.isAntichess;
+    const isCapture = !castlingRook && !!pieceInSquare && pieceInSquare.color !== piece.color;
+
+    if (castlingRook) {
+      this.changePieceLocation(castlingRook, {
+        type: PieceLocationEnum.BOARD,
+        board: this.getNextBoard(toBoard),
+        x: isKingSideCastling ? this.boardWidth - 3 : 3,
+        y: toY
+      });
+    } else if (pieceInSquare) {
+      const goesToPocket = (
+        this.isCrazyhouse
+        && pieceInSquare.color !== piece.color
+        && fromLocation.type === PieceLocationEnum.BOARD
+      );
+
+      if (goesToPocket) {
+        pieceInSquare.type = pieceInSquare.originalType;
+        pieceInSquare.moved = false;
+        pieceInSquare.color = piece.color;
+      }
+
+      this.changePieceLocation(
+        pieceInSquare,
+        goesToPocket
+          ? { type: PieceLocationEnum.POCKET, pieceType: pieceInSquare.originalType, color: piece.color }
+          : null
+      );
+    }
+
+    piece.moved = fromLocation.type === PieceLocationEnum.BOARD;
+    piece.type = isPawnPromotion && (!this.isFrankfurt || !isRoyalKing)
+      ? promotion!
+      : piece.type;
+    piece.originalType = this.isCrazyhouse
+      ? piece.originalType
+      : piece.type;
+    piece.abilities = this.isFrankfurt && isRoyalKing && isPawnPromotion
+      ? promotion!
+      : piece.abilities;
+
+    if (this.isAbsorption && isCapture) {
+      const {
+        type,
+        abilities
+      } = Game.getPieceTypeAfterAbsorption(piece, pieceInSquare!);
+
+      piece.type = type;
+      piece.originalType = type;
+      piece.abilities = abilities;
+    } else if (this.isFrankfurt && isCapture && (!isRoyalKing || !isPawnPromotion)) {
+      const isOpponentPieceRoyalKing = Game.isKing(pieceInSquare!) && !this.isAntichess;
+      const newPieceType = isPawnPromotion
+        ? piece.type
+        : isRoyalKing || isOpponentPieceRoyalKing
+          ? PieceTypeEnum.KING
+          : pieceInSquare!.type;
+      const newAbilities = isRoyalKing
+        ? isOpponentPieceRoyalKing
+          ? pieceInSquare!.abilities
+          : pieceInSquare!.type
+        : null;
+
+      piece.type = newPieceType;
+      piece.originalType = newPieceType;
+      piece.abilities = newAbilities;
+    }
+
+    this.changePieceLocation(piece, {
+      type: PieceLocationEnum.BOARD,
+      board: this.getNextBoard(toBoard),
+      x: toX,
+      y: toY
+    });
+  }
+
   registerLocalDarkChessMove(move: DarkChessMove) {
     const revertMove = this.performDarkChessMove(move);
 
@@ -580,6 +768,21 @@ export class Game extends GameHelper {
       ...move,
       revertMove
     });
+  }
+
+  registerPremove(move: Premove) {
+    if (!this.premoves.length) {
+      this.piecesBeforePremoves = this.pieces;
+
+      this.setPieces(_.cloneDeep(this.pieces));
+    }
+
+    this.performPremove(move);
+
+    this.premoves = [
+      ...this.premoves,
+      move
+    ];
   }
 
   requestTakeback() {

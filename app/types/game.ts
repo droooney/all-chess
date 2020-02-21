@@ -249,6 +249,10 @@ export interface LocalMove extends RevertableMove {
 
 }
 
+export interface Premove extends BaseMove {
+
+}
+
 export interface DarkChessMove {
   from: PieceLocation;
   to: Square | null;
@@ -279,7 +283,8 @@ export enum GetPossibleMovesMode {
   ATTACKED = 'ATTACKED',
   CONTROLLED = 'CONTROLLED',
   VISIBLE = 'VISIBLE',
-  POSSIBLE = 'POSSIBLE'
+  POSSIBLE = 'POSSIBLE',
+  PREMOVES = 'PREMOVES'
 }
 
 export enum GameStatusEnum {

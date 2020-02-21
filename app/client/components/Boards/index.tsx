@@ -13,6 +13,7 @@ import {
   Piece as IPiece,
   PieceLocationEnum,
   Player,
+  Premove,
   RealPiece,
   RealPieceLocation,
   Square
@@ -35,6 +36,7 @@ export interface OwnProps {
   player: Player | null;
   selectedPiece: RealPiece | null;
   allowedMoves: BoardPossibleMove[];
+  premoves: Premove[];
   drawnSymbols: IDrawnSymbol[];
   onSquareClick(square: Square): void;
   startDraggingPiece(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
@@ -69,6 +71,7 @@ class Boards extends React.Component<Props> {
       prevProps.isBlackBase !== this.props.isBlackBase
       || prevProps.isDragging !== this.props.isDragging
       || prevProps.game !== this.props.game
+      || prevProps.premoves.length !== this.props.premoves.length
     ) {
       this.boardsRef.current!.classList.add('no-transition');
 
@@ -144,6 +147,7 @@ class Boards extends React.Component<Props> {
       },
       selectedPiece,
       allowedMoves,
+      premoves,
       drawnSymbols,
       pieces,
       withLiterals,
@@ -158,10 +162,10 @@ class Boards extends React.Component<Props> {
 
     const visibleSquares = isDarkChess && darkChessMode
       ? currentMove && 'prevVisibleSquares' in currentMove
-        ? game.getVisibleSquares(darkChessMode).filter((square) => currentMove.prevVisibleSquares!.some((sq) => (
+        ? game.getLocalVisibleSquares(darkChessMode).filter((square) => currentMove.prevVisibleSquares!.some((sq) => (
           Game.areSquaresEqual(square, sq)
         )))
-        : game.getVisibleSquares(darkChessMode)
+        : game.getLocalVisibleSquares(darkChessMode)
       : [];
     const boardPieces = pieces.filter(Game.isBoardPiece);
     const isHiddenSquare = (square: Square): boolean => (
@@ -169,7 +173,7 @@ class Boards extends React.Component<Props> {
       && isDarkChess
       && visibleSquares.every((visibleSquare) => !Game.areSquaresEqual(square, visibleSquare))
     );
-    const isAllowed = (square: Square) => (
+    const isAllowed = (square: Square): boolean => (
       allowedMoves.some(({ square: allowedSquare }) => Game.areSquaresEqual(square, allowedSquare))
     );
 
@@ -208,6 +212,7 @@ class Boards extends React.Component<Props> {
           const allowedSquares: JSX.Element[] = [];
           const checkSquares: JSX.Element[] = [];
           const hiddenSquares: JSX.Element[] = [];
+          const premoveSquares: JSX.Element[] = [];
           const pieces = boardPieces
             .filter(({ location }) => location.board === board)
             .map((piece) => ({
@@ -317,6 +322,21 @@ class Boards extends React.Component<Props> {
                   />
                 );
               }
+
+              premoves.forEach(({ from, to }, index) => {
+                if (
+                  (from.type === PieceLocationEnum.BOARD && Game.areSquaresEqual(from, square))
+                  || Game.areSquaresEqual(to, square)
+                ) {
+                  premoveSquares.push(
+                    <BoardSquare
+                      {...baseSquareParams}
+                      key={`${baseSquareParams.key}-${index}`}
+                      className="premove-square"
+                    />
+                  );
+                }
+              });
             });
           });
 
@@ -375,6 +395,7 @@ class Boards extends React.Component<Props> {
                 />
               ))}
               {hiddenSquares}
+              {premoveSquares}
               {isKingOfTheHill && (
                 <BoardCenterSquares game={game} />
               )}

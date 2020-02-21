@@ -13,7 +13,7 @@ interface OwnProps {
   square: Square | null;
   pieceSize: number;
   isBlackBase: boolean;
-  validPromotions: PieceTypeEnum[];
+  validPromotions: readonly PieceTypeEnum[];
   promoteToPiece(pieceType: PieceTypeEnum): void;
 }
 

@@ -466,7 +466,7 @@ export default class Game extends GameHelper {
       return;
     }
 
-    if (!this.isMoveAllowed(piece, toLocation, promotion!)) {
+    if (!this.isMoveAllowed(piece, toLocation, promotion)) {
       return;
     }
 
@@ -496,7 +496,7 @@ export default class Game extends GameHelper {
         const socketPlayer = socket.player;
 
         if (socketPlayer) {
-          socket.emit('darkChessMoveMade', {
+          socket.emit('moveMade', {
             move: _.last(this.colorMoves[socketPlayer.color])!,
             moveIndex: this.moves.length - 1,
             lastMoveTimestamp: this.lastMoveTimestamp

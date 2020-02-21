@@ -15,6 +15,7 @@ import {
   Game as IGame,
   GameInitialData,
   GameStatusEnum,
+  GetPossibleMovesMode,
   PieceLocationEnum,
   PieceTypeEnum,
   Player,
@@ -68,7 +69,7 @@ interface State {
   boardsShiftX: number;
   promotionModalVisible: boolean;
   promotionMove: BaseMove | null;
-  validPromotions: PieceTypeEnum[];
+  validPromotions: readonly PieceTypeEnum[];
   isDragging: boolean;
   gridMode: 'desktop' | 'tablet' | 'mobile';
   leftDesktopPanelWidth: number;
@@ -85,6 +86,7 @@ class Game extends React.Component<Props, State> {
   draggingPieceRef = React.createRef<SVGSVGElement>();
   draggingPieceTranslate: string = 'none';
   prevMoveIndex = -1;
+  prevMoveCount = 0;
   drawnSymbolId = 0;
   state: State = {
     selectedPiece: null,
@@ -157,9 +159,15 @@ class Game extends React.Component<Props, State> {
 
   componentDidUpdate(): void {
     if (this.game) {
-      if (this.prevMoveIndex !== this.game.currentMoveIndex) {
+      if (
+        this.prevMoveCount - this.prevMoveIndex !== this.game.getUsedMoves().length - this.game.currentMoveIndex
+        && this.prevMoveIndex !== this.game.currentMoveIndex
+      ) {
+        this.game.cancelPremoves(false);
+
         this.setState({
           selectedPiece: null,
+          allowedMoves: [],
           isDragging: false,
           drawingSymbolStart: null,
           drawingSymbol: null,
@@ -168,6 +176,7 @@ class Game extends React.Component<Props, State> {
       }
 
       this.prevMoveIndex = this.game.currentMoveIndex;
+      this.prevMoveCount = this.game.getUsedMoves().length;
     }
   }
 
@@ -227,7 +236,8 @@ class Game extends React.Component<Props, State> {
   isAbleToMove(): boolean {
     return (
       !!this.player
-      && this.player.color === this.game!.turn
+      // TODO: replace true with premovesEnabled
+      && (this.player.color === this.game!.turn || true)
       && this.game!.status === GameStatusEnum.ONGOING
       && this.game!.currentMoveIndex === this.game!.getUsedMoves().length - 1
     );
@@ -411,6 +421,8 @@ class Game extends React.Component<Props, State> {
       currentMoveIndex: this.game && this.game.currentMoveIndex,
       timestamp
     });
+    this.prevMoveIndex = -1;
+    this.prevMoveCount = this.game.getUsedMoves().length;
 
     this.game.on('updateChat', () => {
       this.forceUpdate();
@@ -479,10 +491,14 @@ class Game extends React.Component<Props, State> {
   };
 
   getAllowedMoves = function* (this: Game, selectedPiece: RealPiece): Generator<BoardPossibleMove, any, any> {
-    const allowedMoves = this.game!
-      .getAllowedMoves(selectedPiece)
-      .map((square) => ({ square, realSquare: square }))
-      .toArray();
+    if (!this.player) {
+      return;
+    }
+
+    const moves = this.player.color === this.game!.turn
+      ? this.game!.getAllowedMoves(selectedPiece)
+      : this.game!.getPossibleMoves(selectedPiece, GetPossibleMovesMode.PREMOVES);
+    const allowedMoves = moves.map((square) => ({ square, realSquare: square })).toArray();
 
     yield* allowedMoves;
 
@@ -525,6 +541,11 @@ class Game extends React.Component<Props, State> {
       return;
     }
 
+    if (!this.player) {
+      return;
+    }
+
+    const isPremove = this.player.color !== this.game!.turn;
     const allowedMove = allowedMoves.find(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
 
     this.setState({
@@ -542,7 +563,7 @@ class Game extends React.Component<Props, State> {
       to: allowedMove.realSquare
     };
     const isPawnPromotion = this.game!.isPromoting(selectedPiece, allowedMove.realSquare);
-    const validPromotions = isPawnPromotion
+    const validPromotions = isPawnPromotion && !isPremove
       ? this.game!.validPromotions.filter((promotion) => (
         this.game!.isMoveAllowed(selectedPiece, allowedMove.realSquare, promotion)
       ))
@@ -557,8 +578,9 @@ class Game extends React.Component<Props, State> {
     } else {
       this.game!.move(
         isPawnPromotion
-          ? move
-          : { ...move, promotion: validPromotions[0] }
+          ? { ...move, promotion: isPremove ? PieceTypeEnum.QUEEN : validPromotions[0] }
+          : move,
+        true
       );
     }
   };
@@ -574,7 +596,7 @@ class Game extends React.Component<Props, State> {
     this.game!.move({
       ...this.state.promotionMove!,
       promotion: pieceType
-    });
+    }, true);
     this.closePromotionPopup();
   };
 
@@ -599,6 +621,8 @@ class Game extends React.Component<Props, State> {
       const pieceInSquare = this.game!.getBoardPiece(square);
 
       if (!pieceInSquare || playerColor !== pieceInSquare.color) {
+        this.game!.cancelPremoves(true);
+
         return;
       }
 
@@ -619,6 +643,8 @@ class Game extends React.Component<Props, State> {
       const pieceInSquare = this.game!.getBoardPiece(square);
 
       if (!pieceInSquare || playerColor !== pieceInSquare.color) {
+        this.game!.cancelPremoves(false);
+
         return this.selectPiece(null);
       }
 
@@ -640,6 +666,8 @@ class Game extends React.Component<Props, State> {
       && location.type === PieceLocationEnum.BOARD
     ) {
       e.preventDefault();
+
+      this.game!.cancelPremoves(false);
 
       this.setState({
         selectedPiece: null,
@@ -681,9 +709,11 @@ class Game extends React.Component<Props, State> {
         isDragging: true
       });
     } else {
-      this.setState({
-        drawnSymbols: []
-      });
+      this.setState(({ drawnSymbols }) => (
+        drawnSymbols.length
+          ? { drawnSymbols: [] }
+          : null
+      ));
     }
   };
 
@@ -838,7 +868,8 @@ class Game extends React.Component<Props, State> {
           showDarkChessHiddenPieces,
           lastMoveTimestamp,
           timeDiff,
-          currentMoveIndex
+          currentMoveIndex,
+          premoves
         } = this.game!;
         const {
           isBlackBase,
@@ -870,9 +901,13 @@ class Game extends React.Component<Props, State> {
         let allMaterialDifference = 0;
 
         if (this.game!.needToCalculateMaterialDifference) {
+          const actualPieces = premoves.length
+            ? this.game!.piecesBeforePremoves
+            : pieces;
+
           _.forEach(PieceTypeEnum, (pieceType) => {
             const getPiecesCount = (color: ColorEnum): number => (
-              pieces.filter((piece) => (
+              actualPieces.filter((piece) => (
                 GameHelper.isRealPiece(piece)
                 && (piece.abilities || piece.type) === pieceType
                 && piece.color === color
@@ -935,6 +970,7 @@ class Game extends React.Component<Props, State> {
                     : null
                 }
                 allowedMoves={this.state.allowedMoves}
+                premoves={premoves}
                 drawnSymbols={
                   this.state.drawingSymbol
                     ? [...this.state.drawnSymbols, this.state.drawingSymbol]
@@ -942,14 +978,15 @@ class Game extends React.Component<Props, State> {
                 }
                 onSquareClick={this.onSquareClick}
                 startDraggingPiece={this.startDrag}
-                enableClick={true}
-                enableDnd={true}
+                enableClick={!!player}
+                enableDnd={!!player}
                 isBlackBase={isBlackBase}
                 isDragging={isDragging}
                 boardToShow={boardToShow}
                 darkChessMode={darkChessMode}
                 currentMove={usedMoves[currentMoveIndex]}
                 boardsShiftX={boardsShiftX}
+                showKingAttack={!premoves.length}
               />
 
               <GamePlayer

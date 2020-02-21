@@ -53,6 +53,7 @@
     .current-move-square,
     .check-square,
     .hidden-square,
+    .premove-square,
     .literal,
     .drawn-symbol,
     .center-border {
@@ -70,6 +71,7 @@
     .allowed-square {
       // fill: url(#allowed-grad);
       fill: rgba(0,255,255,0.5);
+      cursor: pointer;
 
       &:hover {
         fill: rgba(0,207,255,0.5);
@@ -79,6 +81,10 @@
     .check-square {
       // fill: url(#check-grad);
       fill: rgba(255,0,0,0.5);
+    }
+
+    .premove-square {
+      fill: rgba(138,43,226,0.5);
     }
 
     .literal {
