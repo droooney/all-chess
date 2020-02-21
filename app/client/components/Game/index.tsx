@@ -429,7 +429,18 @@ class Game extends React.Component<Props, State> {
     });
 
     this.game.on('updateGame', () => {
-      this.forceUpdate();
+      if (
+        this.state.selectedPiece
+        && this.prevMoveCount !== this.game!.getUsedMoves().length
+        && this.player
+        && this.game!.turn === this.player.color
+      ) {
+        this.setState({
+          allowedMoves: this.getAllowedMoves(this.state.selectedPiece).toArray()
+        });
+      } else {
+        this.forceUpdate();
+      }
     });
 
     this.setState({

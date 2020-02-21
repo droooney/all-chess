@@ -4,6 +4,7 @@ import { Socket } from 'socket.io-client';
 import {
   AnyMove,
   BaseMove,
+  BoardPiece,
   ColorEnum,
   DarkChessGame,
   DarkChessLocalMove,
@@ -686,18 +687,12 @@ export class Game extends GameHelper {
     const isKingSideCastling = isCastling && toX - (fromLocation as PieceBoardLocation).x > 0;
     const isRoyalKing = wasKing && !this.isAntichess;
     const isCapture = !castlingRook && !!pieceInSquare && pieceInSquare.color !== piece.color;
+    const movedPieces: BoardPiece[] = [piece as BoardPiece];
 
-    if (castlingRook) {
-      this.changePieceLocation(castlingRook, {
-        type: PieceLocationEnum.BOARD,
-        board: this.getNextBoard(toBoard),
-        x: isKingSideCastling ? this.boardWidth - 3 : 3,
-        y: toY
-      });
-    } else if (pieceInSquare) {
+    if (pieceInSquare && (!castlingRook || pieceInSquare.id !== castlingRook.id)) {
       const goesToPocket = (
         this.isCrazyhouse
-        && pieceInSquare.color !== piece.color
+        && isCapture
         && fromLocation.type === PieceLocationEnum.BOARD
       );
 
@@ -713,6 +708,24 @@ export class Game extends GameHelper {
           ? { type: PieceLocationEnum.POCKET, pieceType: pieceInSquare.originalType, color: piece.color }
           : null
       );
+    }
+
+    if (castlingRook) {
+      const newRookLocation: PieceBoardLocation = {
+        type: PieceLocationEnum.BOARD,
+        board: toBoard,
+        x: isKingSideCastling ? this.boardWidth - 3 : 3,
+        y: toY
+      };
+      const pieceInRookLocation = this.getBoardPiece(newRookLocation);
+
+      if (pieceInRookLocation) {
+        this.changePieceLocation(pieceInRookLocation, null);
+      }
+
+      this.changePieceLocation(castlingRook, newRookLocation);
+
+      movedPieces.push(castlingRook);
     }
 
     piece.moved = fromLocation.type === PieceLocationEnum.BOARD;
@@ -755,9 +768,25 @@ export class Game extends GameHelper {
 
     this.changePieceLocation(piece, {
       type: PieceLocationEnum.BOARD,
-      board: this.getNextBoard(toBoard),
-      x: toX,
-      y: toY
+      ...toLocation
+    });
+
+    movedPieces.forEach((piece) => {
+      _.times(this.boardCount - 1, (board) => {
+        const pieceInSquare = this.getBoardPiece({
+          ...piece.location,
+          board: this.getNextBoard(piece.location.board + board)
+        });
+
+        if (pieceInSquare) {
+          this.changePieceLocation(pieceInSquare, null);
+        }
+      });
+
+      this.changePieceLocation(piece, {
+        ...piece.location,
+        board: this.getNextBoard(piece.location.board)
+      });
     });
   }
 
