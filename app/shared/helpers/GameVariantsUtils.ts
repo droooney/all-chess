@@ -80,6 +80,14 @@ export default class GameVariantsUtils extends GameCommonUtils {
       || isAntichess
       || !isDarkChess
     ) && (
+      !isHexagonalChess
+      || !is960
+      || !isTwoFamilies
+    ) && (
+      !isHexagonalChess
+      || !is960
+      || !isCapablanca
+    ) && (
       !isCirce
       || !is960
     ) && (
@@ -104,8 +112,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
       !isAtomic
       || (
         !isDarkChess
-        // TODO: add support for hex + atomic
-        && !isHexagonalChess
         && !isAliceChess
         && !isCrazyhouse
       )
@@ -156,13 +162,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
     ) && (
       !isHexagonalChess
       || (
-        // TODO: add support for hex + 960
-        !is960
-        && !isCylinderChess
-        // TODO: add support for hex + two families
-        && !isTwoFamilies
-        // TODO: add support for hex + capablanca
-        && !isCapablanca
+        !isCylinderChess
         && !isCirce
       )
     ));

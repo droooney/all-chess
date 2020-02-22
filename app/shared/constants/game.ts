@@ -199,7 +199,7 @@ export const PIECES_WORTH: Record<'orthodox' | 'circular' | 'hexagonal', Record<
     [PieceTypeEnum.EMPRESS]: 10,
     [PieceTypeEnum.CARDINAL]: 6,
     [PieceTypeEnum.ROOK]: 7,
-    [PieceTypeEnum.BISHOP]: 2,
+    [PieceTypeEnum.BISHOP]: 3,
     [PieceTypeEnum.KNIGHT]: 3,
     [PieceTypeEnum.PAWN]: 1
   }

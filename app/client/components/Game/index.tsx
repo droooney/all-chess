@@ -641,6 +641,9 @@ class Game extends React.Component<Props, State> {
 
   onSquareClick = (square: Square) => {
     const {
+      isTouchDevice
+    } = this.props;
+    const {
       selectedPiece,
       selectedPieceBoard,
       allowedMoves
@@ -661,7 +664,9 @@ class Game extends React.Component<Props, State> {
       const pieceInSquare = this.getBoardPiece(square);
 
       if (!pieceInSquare || playerColor !== pieceInSquare.color) {
-        this.game!.cancelPremoves(true);
+        if (isTouchDevice) {
+          this.game!.cancelPremoves(true);
+        }
 
         return;
       }
@@ -683,7 +688,9 @@ class Game extends React.Component<Props, State> {
       const pieceInSquare = this.getBoardPiece(square);
 
       if (!pieceInSquare || playerColor !== pieceInSquare.color) {
-        this.game!.cancelPremoves(false);
+        if (isTouchDevice) {
+          this.game!.cancelPremoves(false);
+        }
 
         return this.selectPiece(null);
       }
@@ -705,21 +712,23 @@ class Game extends React.Component<Props, State> {
       && (e as React.MouseEvent).button === 2
       && location.type === PieceLocationEnum.BOARD
     ) {
-      e.preventDefault();
+      if (this.game!.premoves.length) {
+        this.game!.cancelPremoves(true);
+      } else {
+        e.preventDefault();
 
-      this.game!.cancelPremoves(false);
-
-      this.setState({
-        selectedPiece: null,
-        allowedMoves: [],
-        isDragging: true,
-        drawingSymbolStart: location,
-        drawingSymbol: {
-          type: 'circle',
-          id: ++this.drawnSymbolId,
-          square: location
-        }
-      });
+        this.setState({
+          selectedPiece: null,
+          allowedMoves: [],
+          isDragging: true,
+          drawingSymbolStart: location,
+          drawingSymbol: {
+            type: 'circle',
+            id: ++this.drawnSymbolId,
+            square: location
+          }
+        });
+      }
 
       return;
     }

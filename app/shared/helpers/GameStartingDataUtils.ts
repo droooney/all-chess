@@ -53,24 +53,58 @@ const HEXAGONAL_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.KNIGHT,
   PieceTypeEnum.QUEEN,
-  PieceTypeEnum.BISHOP,
-  PieceTypeEnum.KING,
-  PieceTypeEnum.KNIGHT,
   PieceTypeEnum.ROOK,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.KING,
+  PieceTypeEnum.BISHOP,
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.BISHOP
+];
+
+const HEXAGONAL_TWO_FAMILIES_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
+  PieceTypeEnum.ROOK,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.KING,
+  PieceTypeEnum.ROOK,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.KING,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.QUEEN,
+  PieceTypeEnum.QUEEN
+];
+
+const HEXAGONAL_CAPABLANCA_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
+  PieceTypeEnum.ROOK,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.QUEEN,
+  PieceTypeEnum.ROOK,
+  PieceTypeEnum.KNIGHT,
+  PieceTypeEnum.KING,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.EMPRESS,
+  PieceTypeEnum.CARDINAL
 ];
 
 const HEXAGONAL_PIECE_SQUARES: readonly [number, number][] = [
   [0, 2],
   [0, 3],
   [0, 4],
-  [0, 5],
-  [0, 6],
-  [0, 7],
   [0, 8],
+  [0, 7],
+  [0, 6],
+  [0, 5],
   [1, 5],
   [2, 5]
+];
+
+const HEXAGONAL_EXTENDED_PIECE_SQUARES: readonly [number, number][] = [
+  ...HEXAGONAL_PIECE_SQUARES,
+  [1, 4],
+  [1, 6]
 ];
 
 const STANDARD_STARTING_DATA: StartingData = {
@@ -103,6 +137,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
       boardHeight
     } = GameStartingDataUtils.getBoardDimensions(variants);
     const {
+      is960,
       isCapablanca,
       isCircularChess,
       isHorde,
@@ -118,14 +153,14 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
     let id = 0;
     let pieceTypes: readonly PieceTypeEnum[];
 
-    if (variants.includes(GameVariantEnum.CHESS_960)) {
-      const randomPieceTypes: (PieceTypeEnum | null)[] = _.times(orthodoxBoardWidth, () => null!);
+    if (is960) {
+      const randomPieceTypes: (PieceTypeEnum | null)[] = _.times(orthodoxBoardWidth, () => null);
 
-      const darkColoredBishopPosition = 2 * Math.floor(halfBoard * Math.random());
-      const lightColoredBishopPosition = 2 * Math.floor(halfBoard * Math.random()) + 1;
+      const darkSquareBishopPosition = 2 * Math.floor(halfBoard * Math.random());
+      const lightSquareBishopPosition = 2 * Math.floor(halfBoard * Math.random()) + 1;
 
-      randomPieceTypes[darkColoredBishopPosition] = PieceTypeEnum.BISHOP;
-      randomPieceTypes[lightColoredBishopPosition] = PieceTypeEnum.BISHOP;
+      randomPieceTypes[darkSquareBishopPosition] = PieceTypeEnum.BISHOP;
+      randomPieceTypes[lightSquareBishopPosition] = PieceTypeEnum.BISHOP;
 
       const placePiece = (type: PieceTypeEnum, position: number) => {
         let currentPosition = 0;
@@ -252,11 +287,59 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
     };
   }
 
-  static generateHexagonalStartingData(): StartingData {
-    const pieces: RealPiece[] = [];
+  static generateHexagonalStartingData(variants: readonly GameVariantEnum[]): StartingData {
     const boardHeight = 11;
     const middleFile = 5;
+    const {
+      is960,
+      isCapablanca,
+      isTwoFamilies
+    } = GameStartingDataUtils.getVariantsInfo(variants);
     let id = 0;
+    let pieceTypes: readonly PieceTypeEnum[];
+
+    if (is960) {
+      const randomPieceTypes: (PieceTypeEnum | null)[] = HEXAGONAL_PIECE_PLACEMENT.map(() => null);
+
+      const lightSquareBishopPosition = 3 * Math.floor(3 * Math.random());
+      const darkSquareBishopPosition = 3 * Math.floor(3 * Math.random()) + 1;
+      const halfDarkSquareBishopPosition = 3 * Math.floor(3 * Math.random()) + 2;
+
+      randomPieceTypes[lightSquareBishopPosition] = PieceTypeEnum.BISHOP;
+      randomPieceTypes[darkSquareBishopPosition] = PieceTypeEnum.BISHOP;
+      randomPieceTypes[halfDarkSquareBishopPosition] = PieceTypeEnum.BISHOP;
+
+      const placePiece = (type: PieceTypeEnum, position: number) => {
+        let currentPosition = 0;
+
+        randomPieceTypes.some((piece, ix) => {
+          if (!piece && currentPosition++ === position) {
+            randomPieceTypes[ix] = type;
+
+            return true;
+          }
+
+          return false;
+        });
+      };
+
+      placePiece(PieceTypeEnum.KNIGHT, Math.floor(6 * Math.random()));
+      placePiece(PieceTypeEnum.KNIGHT, Math.floor(5 * Math.random()));
+      placePiece(PieceTypeEnum.ROOK, Math.floor(4 * Math.random()));
+      placePiece(PieceTypeEnum.ROOK, Math.floor(3 * Math.random()));
+      placePiece(PieceTypeEnum.QUEEN, Math.floor(2 * Math.random()));
+      placePiece(PieceTypeEnum.KING, 0);
+
+      pieceTypes = randomPieceTypes as PieceTypeEnum[];
+    } else if (isTwoFamilies) {
+      pieceTypes = HEXAGONAL_TWO_FAMILIES_PIECE_PLACEMENT;
+    } else if (isCapablanca) {
+      pieceTypes = HEXAGONAL_CAPABLANCA_PIECE_PLACEMENT;
+    } else {
+      pieceTypes = HEXAGONAL_PIECE_PLACEMENT;
+    }
+
+    const pieces: RealPiece[] = [];
 
     _.forEach(ColorEnum, (color) => {
       const addPiece = (type: PieceTypeEnum, x: number, y: number) => {
@@ -278,8 +361,12 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
         });
       };
 
-      HEXAGONAL_PIECE_SQUARES.forEach(([y, x], ix) => {
-        addPiece(HEXAGONAL_PIECE_PLACEMENT[ix], x, y);
+      (
+        isCapablanca || isTwoFamilies
+          ? HEXAGONAL_EXTENDED_PIECE_SQUARES
+          : HEXAGONAL_PIECE_SQUARES
+      ).forEach(([y, x], ix) => {
+        addPiece(pieceTypes[ix], x, y);
       });
 
       _.times(9, (x) => {
@@ -301,7 +388,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
       isHexagonalChess
     } = GameStartingDataUtils.getVariantsInfo(variants);
     const startingData = isHexagonalChess
-      ? GameStartingDataUtils.generateHexagonalStartingData()
+      ? GameStartingDataUtils.generateHexagonalStartingData(variants)
       : GameStartingDataUtils.generateClassicStartingData(variants);
 
     if (isAntichess || isCylinderChess || isCircularChess || isHexagonalChess) {

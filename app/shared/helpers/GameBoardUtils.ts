@@ -102,10 +102,10 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     } = GameBoardUtils.getVariantsInfo(variants);
     const dimensions: BoardDimensions = {
       boardCount: isAliceChess ? 2 : 1,
-      boardWidth: isTwoFamilies || isCapablanca
-        ? 10
-        : isHexagonalChess
-          ? 11
+      boardWidth: isHexagonalChess
+        ? 11
+        : isTwoFamilies || isCapablanca
+          ? 10
           : 8,
       boardHeight: isHexagonalChess
         ? 11

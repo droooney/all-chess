@@ -51,18 +51,6 @@ interface RegisterMoveReturnValue {
   isCapture: boolean;
 }
 
-const ATOMIC_SQUARE_INCREMENTS: readonly [number, number][] = [
-  [-1, -1],
-  [-1, 0],
-  [-1, 1],
-  [0, -1],
-  [0, 0],
-  [0, 1],
-  [1, -1],
-  [1, 0],
-  [1, 1]
-];
-
 export default abstract class GameMovesUtils extends GamePositionUtils {
   moves: RevertableMove[] = [];
   pliesCount: number = 0;
@@ -561,17 +549,23 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     };
 
     if (this.isAtomic && isCapture) {
-      const board = (fromLocation as PieceBoardLocation).board;
+      const squaresAround: (Square | null)[] = [toLocation];
 
-      ATOMIC_SQUARE_INCREMENTS.forEach(([incrementY, incrementX]) => {
-        const pieceInSquare = this.getBoardPiece({
-          board,
-          y: this.adjustRankY(toY + incrementY),
-          x: this.adjustFileX(toX + incrementX)
-        });
+      for (const [incrementY, incrementX] of this.isHexagonalChess ? HEX_ROOK_MOVE_INCREMENTS : ROOK_MOVE_INCREMENTS) {
+        squaresAround.push(this.traverseDirection(toLocation, PieceTypeEnum.ROOK, incrementY, incrementX).take(0));
+      }
 
-        if (pieceInSquare && (!GameMovesUtils.isPawn(pieceInSquare) || pieceInSquare.abilities)) {
-          disappearedOrMovedPieces.push(pieceInSquare);
+      for (const [incrementY, incrementX] of this.isHexagonalChess ? HEX_BISHOP_MOVE_INCREMENTS : BISHOP_MOVE_INCREMENTS) {
+        squaresAround.push(this.traverseDirection(toLocation, PieceTypeEnum.BISHOP, incrementY, incrementX).take(0));
+      }
+
+      squaresAround.forEach((square) => {
+        if (square) {
+          const pieceInSquare = this.getBoardPiece(square);
+
+          if (pieceInSquare && (!GameMovesUtils.isPawn(pieceInSquare) || pieceInSquare.abilities)) {
+            disappearedOrMovedPieces.push(pieceInSquare);
+          }
         }
       });
     }
