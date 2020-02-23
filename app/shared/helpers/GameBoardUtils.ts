@@ -288,6 +288,20 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     return (board + this.boardCount - 1) % this.boardCount;
   }
 
+  getSquareColor(square: Square): 'light' | 'dark' | 'half-dark' {
+    if (this.isHexagonalChess) {
+      const x = this.middleFileX - Math.abs(square.x - this.middleFileX);
+
+      return (square.y + x) % 3 === 2
+        ? 'light'
+        : (square.y + x) % 3 === 1
+          ? 'half-dark'
+          : 'dark';
+    }
+
+    return (square.y + square.x) % 2 ? 'light' : 'dark';
+  }
+
   getVisibleSquares(forColor: ColorEnum): Square[] {
     return this.getPieces(forColor)
       .filter(GameBoardUtils.isBoardPiece)

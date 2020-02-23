@@ -21,6 +21,191 @@ export default class GameResultUtils extends GameDarkChessUtils {
     this.status = GameStatusEnum.FINISHED;
   }
 
+  hasSufficientMaterialForWin(color: ColorEnum): boolean {
+    if (
+      this.isCrazyhouse
+      || this.isAbsorption
+      || this.isFrankfurt
+      || (this.isHorde && color === ColorEnum.BLACK)
+      || (
+        !this.isAntichess && (
+          this.isKingOfTheHill
+          || this.isDarkChess
+        )
+      )
+    ) {
+      return true;
+    }
+
+    const pieces = this.getBoardPieces(color);
+    const opponentPieces = this.getBoardPieces(GameResultUtils.getOppositeColor(color));
+
+    if (this.isHorde) {
+      // TODO: finish for white
+
+      return true;
+    }
+
+    if (this.isAntichess) {
+      return (
+        opponentPieces.some((piece) => !GameResultUtils.isBishop(piece))
+        || pieces.every((piece) => {
+          if (!GameResultUtils.isBishop(piece)) {
+            return true;
+          }
+
+          const squareColor = this.getSquareColor(piece.location);
+
+          return opponentPieces.some(({ location }) => this.getSquareColor(location) === squareColor);
+        })
+      );
+    }
+
+    if (pieces.length === 1) {
+      return false;
+    }
+
+    if (this.isPatrol) {
+      return true;
+    }
+
+    if (pieces.every(GameResultUtils.isKing)) {
+      return false;
+    }
+
+    if (this.isAtomic || this.isMadrasi || this.isThreeCheck) {
+      return true;
+    }
+
+    if (this.isCylinderChess || this.isCircularChess) {
+      const possibleBishopColor = this.getSquareColor(pieces[1].location);
+      let pieceCount = pieces.length;
+
+      if (
+        pieces.slice(1).every((piece) => (
+          GameResultUtils.isBishop(piece)
+          && this.getSquareColor(piece.location) === possibleBishopColor
+        ))
+      ) {
+        pieceCount = 2;
+      }
+
+      if (pieceCount >= 3) {
+        // TODO: finish this segment
+
+        return true;
+      }
+
+      const secondPiece = pieces[1];
+
+      if (
+        GameResultUtils.isAmazon(secondPiece)
+        || GameResultUtils.isQueen(secondPiece)
+        || GameResultUtils.isEmpress(secondPiece)
+        || GameResultUtils.isCardinal(secondPiece)
+        || GameResultUtils.isRook(secondPiece)
+        || GameResultUtils.isPawn(secondPiece)
+      ) {
+        return true;
+      }
+
+      if (GameResultUtils.isKnight(secondPiece)) {
+        return (
+          opponentPieces.length >= 3
+          && opponentPieces.some((piece) => (
+            GameResultUtils.isPawn(piece)
+            || GameResultUtils.isKnight(piece)
+            || GameResultUtils.isRook(piece)
+          ))
+        );
+      }
+
+      if (GameResultUtils.isBishop(secondPiece)) {
+        return (
+          opponentPieces.length > (pieces.length > 2 ? 2 : 3)
+          && opponentPieces.some((piece) => (
+            GameResultUtils.isPawn(piece)
+            || GameResultUtils.isKnight(piece)
+          ))
+        );
+      }
+
+      return true;
+    }
+
+    if (this.isHexagonalChess) {
+      return opponentPieces.length >= 2
+        ? (
+          pieces.slice(1).some((piece) => (
+            !GameResultUtils.isBishop(piece)
+            || this.getSquareColor(piece.location) !== 'half-dark'
+          ))
+          || opponentPieces.some((piece) => (
+            GameResultUtils.isBishop(piece)
+            && this.getSquareColor(piece.location) !== 'half-dark'
+          ))
+        )
+        : pieces.some((piece) => (
+          GameResultUtils.isAmazon(piece)
+          || GameResultUtils.isQueen(piece)
+          || GameResultUtils.isEmpress(piece)
+          || GameResultUtils.isCardinal(piece)
+          || GameResultUtils.isRook(piece)
+        ));
+    }
+
+    const possibleBishopColor = this.getSquareColor(pieces[1].location);
+    let pieceCount = pieces.length;
+
+    if (
+      pieces.slice(1).every((piece) => (
+        GameResultUtils.isBishop(piece)
+        && this.getSquareColor(piece.location) === possibleBishopColor
+      ))
+    ) {
+      pieceCount = 2;
+    }
+
+    if (pieceCount >= 3) {
+      return true;
+    }
+
+    const secondPiece = pieces[1];
+
+    if (
+      GameResultUtils.isAmazon(secondPiece)
+      || GameResultUtils.isQueen(secondPiece)
+      || GameResultUtils.isEmpress(secondPiece)
+      || GameResultUtils.isCardinal(secondPiece)
+      || GameResultUtils.isRook(secondPiece)
+      || GameResultUtils.isPawn(secondPiece)
+    ) {
+      return true;
+    }
+
+    if (GameResultUtils.isKnight(secondPiece)) {
+      return opponentPieces.some((piece) => (
+        GameResultUtils.isPawn(piece)
+        || GameResultUtils.isKnight(piece)
+        || GameResultUtils.isBishop(piece)
+        || GameResultUtils.isRook(piece)
+      ));
+    }
+
+    if (GameResultUtils.isBishop(secondPiece)) {
+      const bishopColor = this.getSquareColor(secondPiece.location);
+
+      return opponentPieces.some((piece) => (
+        GameResultUtils.isPawn(piece)
+        || GameResultUtils.isKnight(piece)
+        || (GameResultUtils.isBishop(piece) && this.getSquareColor(piece.location) === bishopColor)
+        || GameResultUtils.isCardinal(piece)
+      ));
+    }
+
+    return true;
+  }
+
   isCheckmate(): boolean {
     return this.isCheck && this.isNoMoves();
   }
@@ -38,7 +223,10 @@ export default class GameResultUtils extends GameDarkChessUtils {
       return ResultReasonEnum.STALEMATE;
     }
 
-    if (this.isInsufficientMaterial()) {
+    if (
+      !this.hasSufficientMaterialForWin(ColorEnum.WHITE)
+      && !this.hasSufficientMaterialForWin(ColorEnum.BLACK)
+    ) {
       return ResultReasonEnum.INSUFFICIENT_MATERIAL;
     }
 
@@ -51,92 +239,6 @@ export default class GameResultUtils extends GameDarkChessUtils {
     }
 
     return null;
-  }
-
-  isInsufficientMaterial(): boolean {
-    if (
-      !this.isAntichess && (
-        this.isKingOfTheHill
-        || this.isHorde
-        || this.isDarkChess
-        || this.isCrazyhouse
-      )
-    ) {
-      return false;
-    }
-
-    // TODO: add support for absorption/frankfurt
-
-    const whitePieces = this.getPieces(ColorEnum.WHITE);
-    const blackPieces = this.getPieces(ColorEnum.BLACK);
-    const pieces = _
-      .sortBy([
-        whitePieces,
-        blackPieces
-      ], 'length')
-      .map((pieces) => (
-        pieces.filter(GameResultUtils.isBoardPiece)
-      ));
-
-    if (this.isAntichess) {
-      const possibleBishopColors = pieces.map(([piece]) => (
-        piece
-          ? piece.location.x % 2 + piece.location.y % 2
-          : 0.5
-      ));
-
-      return (
-        possibleBishopColors[0] !== possibleBishopColors[1]
-        && pieces.every((pieces, index) => (
-          pieces.every((piece) => (
-            GameResultUtils.isBishop(piece)
-            && piece.location.x % 2 + piece.location.y % 2 === possibleBishopColors[index]
-          ))
-        ))
-      );
-    }
-
-    if (
-      // king vs king
-      pieces[0].length === 1
-      && pieces[1].length === 1
-    ) {
-      return true;
-    }
-
-    if (this.isPatrol) {
-      return false;
-    }
-
-    if (
-      // kings vs kings
-      pieces[0].every(GameResultUtils.isKing)
-      && pieces[1].every(GameResultUtils.isKing)
-    ) {
-      return true;
-    }
-
-    if (this.isAtomic || this.isMadrasi || this.isThreeCheck) {
-      return false;
-    }
-
-    if (
-      // king vs king & knight
-      pieces[0].length === 1
-      && pieces[1].length === 2
-      && GameResultUtils.isKnight(pieces[1][1])
-    ) {
-      return true;
-    }
-
-    const possibleBishopColor = pieces[1][1].location.x % 2 + pieces[1][1].location.y % 2;
-
-    return pieces.every((pieces) => (
-      pieces.slice(1).every((piece) => (
-        GameResultUtils.isBishop(piece)
-        && piece.location.x % 2 + piece.location.y % 2 === possibleBishopColor
-      ))
-    ));
   }
 
   isOngoing(): boolean {

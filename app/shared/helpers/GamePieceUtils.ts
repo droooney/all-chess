@@ -383,6 +383,13 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
     return this.boards[square.board][square.y][square.x];
   }
 
+  getBoardPieces(playerColor: ColorEnum): BoardPiece[] {
+    return this.pieces.filter((piece) => (
+      GamePieceUtils.isBoardPiece(piece)
+      && piece.color === playerColor
+    )) as BoardPiece[];
+  }
+
   getCapturedPiece(piece: RealPiece, square: Square): BoardPiece | null {
     const pieceInSquare = this.getBoardPiece(square);
 

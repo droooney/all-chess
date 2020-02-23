@@ -301,7 +301,7 @@ export default class Game extends GameHelper {
             this.takebackRequest = null;
             this.lastMoveTimestamp = Date.now();
 
-            this.setTimeout();
+            this.setTimerTimeout();
 
             this.addChatMessage({
               login: null,
@@ -421,11 +421,12 @@ export default class Game extends GameHelper {
     if (
       reason === ResultReasonEnum.RESIGN
       || reason === ResultReasonEnum.AGREED_TO_DRAW
-      || reason === ResultReasonEnum.TIME_RAN_OUT
+      || reason === ResultReasonEnum.TIMEOUT
+      || reason === ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT
     ) {
       const player = this.players[this.turn];
 
-      if (reason === ResultReasonEnum.TIME_RAN_OUT) {
+      if (reason === ResultReasonEnum.TIMEOUT || reason === ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT) {
         player.time = 0;
       } else if (this.timeControl && this.timerTimeout) {
         player.time! -= Date.now() - this.lastMoveTimestamp;
@@ -512,7 +513,7 @@ export default class Game extends GameHelper {
     }
 
     this.updatePlayers();
-    this.setTimeout();
+    this.setTimerTimeout();
   }
 
   pingPlayers = () => {
@@ -529,7 +530,7 @@ export default class Game extends GameHelper {
     this.io.emit('gamePing', now);
   };
 
-  setTimeout() {
+  setTimerTimeout() {
     if (
       this.isOngoing()
       && this.moves.length >= 2
@@ -540,7 +541,17 @@ export default class Game extends GameHelper {
       this.clearTimerTimeout();
 
       this.timerTimeout = setTimeout(() => {
-        this.end(this.getOpponentColor(), ResultReasonEnum.TIME_RAN_OUT);
+        const opponentColor = this.getOpponentColor();
+        const hasSufficientMaterial = this.hasSufficientMaterialForWin(opponentColor);
+
+        this.end(
+          hasSufficientMaterial
+            ? opponentColor
+            : null,
+          hasSufficientMaterial
+            ? ResultReasonEnum.TIMEOUT
+            : ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT
+        );
       }, player.time!) as any;
     }
   }

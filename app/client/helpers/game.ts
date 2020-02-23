@@ -233,7 +233,7 @@ export class Game extends GameHelper {
               ? this.getBoardPiece(premove.from)
               : this.getPocketPiece(premove.from.pieceType, premove.from.color);
 
-            if (piece && this.isMoveAllowed(piece, premove.to, premove.promotion)) {
+            if (piece && piece.color === this.player.color && this.isMoveAllowed(piece, premove.to, premove.promotion)) {
               this.move(premove, false);
             } else {
               this.cancelPremoves(false);
@@ -479,20 +479,6 @@ export class Game extends GameHelper {
       : this.isHexagonalChess
         ? SVG_SQUARE_SIZE / 1.3
         : SVG_SQUARE_SIZE;
-  }
-
-  getSquareColor(square: Square): 'light' | 'dark' | 'half-dark' {
-    if (this.isHexagonalChess) {
-      const x = this.middleFileX - Math.abs(square.x - this.middleFileX);
-
-      return (square.y + x) % 3 === 2
-        ? 'light'
-        : (square.y + x) % 3 === 1
-          ? 'half-dark'
-          : 'dark';
-    }
-
-    return (square.y + square.x) % 2 ? 'light' : 'dark';
   }
 
   getUsedMoves(): AnyMove[] {
