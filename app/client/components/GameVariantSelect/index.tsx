@@ -11,12 +11,17 @@ import Select from '../Select';
 
 interface OwnProps {
   variants: GameVariantEnum[];
+  disabledVariants: GameVariantEnum[];
   onVariantsChange(variants: GameVariantEnum[]): void;
 }
 
 type Props = OwnProps;
 
-class GameVariantList extends React.Component<Props> {
+class GameVariantSelect extends React.Component<Props> {
+  static defaultProps = {
+    disabledVariants: []
+  };
+
   onVariantChange = (e: React.ChangeEvent<{ value: unknown; }>) => {
     const {
       onVariantsChange
@@ -27,9 +32,10 @@ class GameVariantList extends React.Component<Props> {
     );
   };
 
-  render(): React.ReactNode {
+  render() {
     const {
-      variants: selectedVariants
+      variants: selectedVariants,
+      disabledVariants
     } = this.props;
     const variants = _.map(GameVariantEnum, (variant) => {
       const enabled = selectedVariants.includes(variant);
@@ -37,7 +43,10 @@ class GameVariantList extends React.Component<Props> {
       return {
         variant,
         enabled,
-        allowed: enabled || Game.validateVariants([...selectedVariants, variant])
+        allowed: (
+          !disabledVariants.includes(variant)
+          && (enabled || Game.validateVariants([...selectedVariants, variant]))
+        )
       };
     });
 
@@ -73,4 +82,4 @@ class GameVariantList extends React.Component<Props> {
   }
 }
 
-export default GameVariantList;
+export default GameVariantSelect;

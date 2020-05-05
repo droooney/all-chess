@@ -33,7 +33,7 @@ class GameVariantList extends React.Component<Props> {
     );
   };
 
-  render(): React.ReactNode {
+  render() {
     const variants = _.map(GameVariantEnum, (variant) => {
       const enabled = this.props.variants.includes(variant);
 

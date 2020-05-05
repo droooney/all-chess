@@ -281,7 +281,7 @@ class Games extends React.Component<Props, State> {
                 </div>
               )}
 
-              {timeControl && timeControl.type === TimeControlEnum.TIMER && (
+              {timeControl?.type === TimeControlEnum.TIMER && (
                 <div>
                   Increment in seconds per turn:{' '}
                   <Select
@@ -303,6 +303,11 @@ class Games extends React.Component<Props, State> {
                 Variants:{' '}
                 <GameVariantSelect
                   variants={variants}
+                  disabledVariants={
+                    timeControl?.type === TimeControlEnum.TIMER
+                      ? []
+                      : [GameVariantEnum.COMPENSATION_CHESS]
+                  }
                   onVariantsChange={this.onVariantsChange}
                 />
               </div>

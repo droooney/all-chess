@@ -35,6 +35,10 @@ export default class Game extends GameHelper {
     return (
       this.validateTimeControl(settings.timeControl)
       && this.validateVariants(settings.variants)
+      && (
+        settings.timeControl?.type === TimeControlEnum.TIMER
+        || !settings.variants.includes(GameVariantEnum.COMPENSATION_CHESS)
+      )
     );
   }
 
@@ -422,14 +426,17 @@ export default class Game extends GameHelper {
       reason === ResultReasonEnum.RESIGN
       || reason === ResultReasonEnum.AGREED_TO_DRAW
       || reason === ResultReasonEnum.TIMEOUT
+      || reason === ResultReasonEnum.SELF_TIMEOUT
       || reason === ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT
     ) {
       const player = this.players[this.turn];
 
-      if (reason === ResultReasonEnum.TIMEOUT || reason === ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT) {
-        player.time = 0;
-      } else if (this.timeControl && this.timerTimeout) {
-        player.time! -= Date.now() - this.lastMoveTimestamp;
+      if (reason !== ResultReasonEnum.SELF_TIMEOUT) {
+        if (reason === ResultReasonEnum.TIMEOUT || reason === ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT) {
+          player.time = 0;
+        } else if (this.timeControl && this.timerTimeout) {
+          player.time! -= Date.now() - this.lastMoveTimestamp;
+        }
       }
 
       this.io.emit('gameOver', {
@@ -489,6 +496,12 @@ export default class Game extends GameHelper {
 
     this.registerAnyMove(move);
     this.changePlayerTime(averagePing);
+
+    if (player.time === 0) {
+      this.end(this.turn, ResultReasonEnum.SELF_TIMEOUT);
+
+      return;
+    }
 
     this.lastMoveTimestamp = newTimestamp;
 
@@ -589,11 +602,7 @@ export default class Game extends GameHelper {
     const player = this.players[this.turn];
 
     if (this.timeControl && needToUpdateTime) {
-      if (this.timeControl.type === TimeControlEnum.TIMER) {
-        player.time! += move.duration - this.timeControl.increment;
-      } else {
-        player.time = this.timeControl.base;
-      }
+      player.time = move.timeBeforeMove[player.color];
     }
 
     if (this.isDarkChess) {

@@ -493,6 +493,7 @@ export class Game extends GameResultUtils implements IGame {
   drawOffer: ColorEnum | null = null;
   takebackRequest: TakebackRequest | null = null;
   lastMoveTimestamp: number = 0;
+  pawnTimeValue: number = 0;
 
   constructor(options: GameCreateOptions) {
     super(options);
@@ -504,24 +505,41 @@ export class Game extends GameResultUtils implements IGame {
     this.timeControl = options.timeControl;
 
     this.setupStartingData();
+
+    if (this.isCompensationChess && this.timeControl?.type === TimeControlEnum.TIMER) {
+      this.pawnTimeValue = this.timeControl.base / 2 / this.getPiecesWorth()[ColorEnum.WHITE];
+    }
   }
 
   changePlayerTime(averagePing: number = 0) {
     if (this.moves.length > 2 && this.timeControl) {
       const prevTurn = this.getOpponentColor();
       const player = this.players[prevTurn];
-      const actualDuration = _.last(this.moves)!.duration;
+      const {
+        duration: actualDuration,
+        prevPiecesWorth
+      } = _.last(this.moves)!;
       const duration = Math.max(actualDuration / 2, actualDuration - averagePing / 2);
 
       if (this.isOngoing()) {
         if (this.timeControl.type === TimeControlEnum.TIMER) {
           player.time! -= duration - this.timeControl.increment;
+
+          if (this.isCompensationChess) {
+            const newPiecesWorth = this.getPiecesWorth();
+            const gainedMaterial = newPiecesWorth[player.color] - prevPiecesWorth[player.color];
+            const takenMaterial = prevPiecesWorth[this.turn] - newPiecesWorth[this.turn];
+
+            player.time! -= (gainedMaterial + takenMaterial) * this.pawnTimeValue;
+          }
         } else {
           player.time = this.timeControl.base;
         }
       } else {
         player.time! -= duration;
       }
+
+      player.time = Math.max(player.time!, 0);
     }
   }
 }

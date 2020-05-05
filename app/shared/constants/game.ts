@@ -66,7 +66,8 @@ export const GAME_VARIANT_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.THREE_CHECK]: 'Three-check',
   [GameVariantEnum.CYLINDER_CHESS]: 'Cylinder chess',
   [GameVariantEnum.CIRCULAR_CHESS]: 'Circular chess',
-  [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal chess'
+  [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal chess',
+  [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation chess'
 };
 
 export const GAME_VARIANT_SHORT_NAMES: Record<GameVariantEnum, string> = {
@@ -88,7 +89,8 @@ export const GAME_VARIANT_SHORT_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.THREE_CHECK]: 'Three-check',
   [GameVariantEnum.CYLINDER_CHESS]: 'Cylinder',
   [GameVariantEnum.CIRCULAR_CHESS]: 'Circular',
-  [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal'
+  [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal',
+  [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation'
 };
 
 export const GAME_VARIANT_PGN_NAMES: Record<GameVariantEnum, string> = {
@@ -110,7 +112,8 @@ export const GAME_VARIANT_PGN_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.THREE_CHECK]: 'Three-check',
   [GameVariantEnum.CYLINDER_CHESS]: 'Cylinder',
   [GameVariantEnum.CIRCULAR_CHESS]: 'Circular',
-  [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal'
+  [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal',
+  [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation'
 };
 
 export const GAME_VARIANT_LINKS: Record<GameVariantEnum, string> = {
@@ -132,7 +135,8 @@ export const GAME_VARIANT_LINKS: Record<GameVariantEnum, string> = {
   [GameVariantEnum.THREE_CHECK]: 'three-check',
   [GameVariantEnum.CYLINDER_CHESS]: 'cylinder-chess',
   [GameVariantEnum.CIRCULAR_CHESS]: 'circular-chess',
-  [GameVariantEnum.HEXAGONAL_CHESS]: 'hexagonal-chess'
+  [GameVariantEnum.HEXAGONAL_CHESS]: 'hexagonal-chess',
+  [GameVariantEnum.COMPENSATION_CHESS]: 'compensation-chess'
 };
 
 export const RESULT_REASON_NAMES: Record<ResultReasonEnum, string> = {
@@ -145,6 +149,7 @@ export const RESULT_REASON_NAMES: Record<ResultReasonEnum, string> = {
   [ResultReasonEnum.THREE_CHECKS]: 'three checks',
   [ResultReasonEnum.STALEMATE]: 'stalemate',
   [ResultReasonEnum.TIMEOUT]: 'timeout',
+  [ResultReasonEnum.SELF_TIMEOUT]: 'timeout',
   [ResultReasonEnum.RESIGN]: 'opponent resigned',
   [ResultReasonEnum.AGREED_TO_DRAW]: 'players agreed to a draw',
   [ResultReasonEnum.INSUFFICIENT_MATERIAL]: 'insufficient material',

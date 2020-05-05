@@ -23,7 +23,11 @@ import {
   StandardPiece,
   StartingData
 } from '../../types';
-import { PIECE_LITERALS, SHORT_PIECE_NAMES } from '../constants';
+import {
+  PIECE_LITERALS,
+  PIECES_WORTH,
+  SHORT_PIECE_NAMES
+} from '../constants';
 
 interface PiecesData {
   kings: GameKings;
@@ -340,11 +344,20 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
     [ColorEnum.BLACK]: []
   };
   pieces: readonly Piece[] = [];
+  piecesWorth: Record<PieceTypeEnum, number>;
   pocketPiecesUsed: readonly PieceTypeEnum[] = STANDARD_POCKET;
   validPromotions: readonly PieceTypeEnum[] = STANDARD_VALID_PROMOTIONS;
 
   protected constructor(options: GameCreateOptions) {
     super(options);
+
+    this.piecesWorth = PIECES_WORTH[
+      this.isCircularChess
+        ? 'circular'
+        : this.isHexagonalChess
+          ? 'hexagonal'
+          : 'orthodox'
+    ];
 
     if (this.isCapablanca) {
       this.validPromotions = CAPABLANCA_VALID_PROMOTIONS;
@@ -417,6 +430,20 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
     return this.pieces
       .filter(GamePieceUtils.isRealPiece)
       .filter(({ color }) => color === playerColor);
+  }
+
+  getPiecesWorth(): Record<ColorEnum, number> {
+    return _.mapValues(ColorEnum, (color) => {
+      let sumPiecesWorth = 0;
+
+      this.getPieces(color).forEach(({ type }) => {
+        if (type !== PieceTypeEnum.KING) {
+          sumPiecesWorth += this.piecesWorth[type];
+        }
+      });
+
+      return sumPiecesWorth;
+    });
   }
 
   getPocketPiece(type: PieceTypeEnum, color: ColorEnum): PocketPiece | null {

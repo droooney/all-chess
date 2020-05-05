@@ -25,8 +25,7 @@ import {
   Square
 } from '../../../types';
 import {
-  GAME_VARIANT_NAMES,
-  PIECES_WORTH
+  GAME_VARIANT_NAMES
 } from '../../../shared/constants';
 import {
   ALICE_CHESS_BOARDS_MARGIN,
@@ -891,7 +890,7 @@ class Game extends React.Component<Props, State> {
     let content: JSX.Element | string;
     let title: string | null;
 
-    if (this.state.gameData) {
+    if (this.state.gameData && this.game) {
       const {
         status,
         variants
@@ -914,15 +913,13 @@ class Game extends React.Component<Props, State> {
           timeControl,
           result,
           startingMoveIndex,
-          isCircularChess,
-          isHexagonalChess,
           darkChessMode,
           showDarkChessHiddenPieces,
           lastMoveTimestamp,
           timeDiff,
           currentMoveIndex,
           premoves
-        } = this.game!;
+        } = this.game;
         const {
           isBlackBase,
           boardsWidth,
@@ -932,7 +929,7 @@ class Game extends React.Component<Props, State> {
           isDragging,
           gridMode
         } = this.state;
-        const usedMoves = this.game!.getUsedMoves();
+        const usedMoves = this.game.getUsedMoves();
         const player = this.player;
         const isCurrentMoveLast = currentMoveIndex === usedMoves.length - 1;
         const readOnly = !this.isAbleToMove();
@@ -948,13 +945,13 @@ class Game extends React.Component<Props, State> {
         const bottomPlayer = isBlackBase
           ? players[ColorEnum.BLACK]
           : players[ColorEnum.WHITE];
-        const adjustedLastMoveTimestamp = lastMoveTimestamp - timeDiff;
+        const adjustedLastMoveTimestamp = lastMoveTimestamp + timeDiff;
         const materialDifference: Record<PieceTypeEnum, number> = {} as any;
         let allMaterialDifference = 0;
 
-        if (this.game!.needToCalculateMaterialDifference) {
+        if (this.game.needToCalculateMaterialDifference) {
           const actualPieces = premoves.length
-            ? this.game!.piecesBeforePremoves
+            ? this.game.piecesBeforePremoves
             : pieces;
 
           _.forEach(PieceTypeEnum, (pieceType) => {
@@ -968,13 +965,7 @@ class Game extends React.Component<Props, State> {
 
             const diff = materialDifference[pieceType] = getPiecesCount(ColorEnum.WHITE) - getPiecesCount(ColorEnum.BLACK);
 
-            allMaterialDifference += diff * PIECES_WORTH[
-              isCircularChess
-                ? 'circular'
-                : isHexagonalChess
-                  ? 'hexagonal'
-                  : 'orthodox'
-            ][pieceType];
+            allMaterialDifference += diff * this.game!.piecesWorth[pieceType];
           });
         }
 
@@ -991,7 +982,7 @@ class Game extends React.Component<Props, State> {
           >
             <div className="game-content">
               <GameActions
-                game={this.game!}
+                game={this.game}
                 result={result}
                 players={players}
                 isBlackBase={isBlackBase}
@@ -1013,7 +1004,7 @@ class Game extends React.Component<Props, State> {
               />
 
               <Boards
-                game={this.game!}
+                game={this.game}
                 pieces={pieces}
                 player={player}
                 selectedPiece={
@@ -1043,7 +1034,7 @@ class Game extends React.Component<Props, State> {
               />
 
               <GamePlayer
-                game={this.game!}
+                game={this.game}
                 player={topPlayer}
                 playingPlayer={player}
                 pieces={pieces}
@@ -1067,7 +1058,7 @@ class Game extends React.Component<Props, State> {
               />
 
               <GamePlayer
-                game={this.game!}
+                game={this.game}
                 player={bottomPlayer}
                 playingPlayer={player}
                 pieces={pieces}
@@ -1091,13 +1082,13 @@ class Game extends React.Component<Props, State> {
               />
 
               <MovesPanel
-                game={this.game!}
+                game={this.game}
                 currentMoveIndex={currentMoveIndex}
                 moves={usedMoves}
               />
 
               <PromotionModal
-                game={this.game!}
+                game={this.game}
                 visible={this.state.promotionModalVisible}
                 square={this.state.promotionMove && this.state.promotionMove.to}
                 pieceSize={pieceSize}
@@ -1126,7 +1117,7 @@ class Game extends React.Component<Props, State> {
             </div>
 
             <GameInfo
-              game={this.game!}
+              game={this.game}
               result={result}
             />
 

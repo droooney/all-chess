@@ -8,9 +8,10 @@ interface VariantsInfo {
   isAntichess: boolean;
   isAtomic: boolean;
   isCapablanca: boolean;
-  isCrazyhouse: boolean;
   isCirce: boolean;
   isCircularChess: boolean;
+  isCompensationChess: boolean;
+  isCrazyhouse: boolean;
   isCylinderChess: boolean;
   isDarkChess: boolean;
   isFrankfurt: boolean;
@@ -38,6 +39,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
       isCapablanca: variants.includes(GameVariantEnum.CAPABLANCA),
       isCirce: variants.includes(GameVariantEnum.CIRCE),
       isCircularChess: variants.includes(GameVariantEnum.CIRCULAR_CHESS),
+      isCompensationChess: variants.includes(GameVariantEnum.COMPENSATION_CHESS),
       isCrazyhouse: variants.includes(GameVariantEnum.CRAZYHOUSE),
       isCylinderChess: variants.includes(GameVariantEnum.CYLINDER_CHESS),
       isDarkChess: variants.includes(GameVariantEnum.DARK_CHESS),
@@ -60,9 +62,10 @@ export default class GameVariantsUtils extends GameCommonUtils {
       isAntichess,
       isAtomic,
       isCapablanca,
-      isCrazyhouse,
       isCirce,
       isCircularChess,
+      isCompensationChess,
+      isCrazyhouse,
       isCylinderChess,
       isDarkChess,
       isFrankfurt,
@@ -88,6 +91,13 @@ export default class GameVariantsUtils extends GameCommonUtils {
       || !is960
       || !isCapablanca
     ) && (
+      !isCompensationChess
+      || !isDarkChess
+      || (
+        !isAbsorption
+        && !isFrankfurt
+      )
+    ) && (
       !isCirce
       || !is960
     ) && (
@@ -107,6 +117,8 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isThreeCheck
         // TODO: add support for horde + hex
         && !isHexagonalChess
+        // TODO: add support for horde + compensation
+        && !isCompensationChess
       )
     ) && (
       !isAtomic
@@ -123,6 +135,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isPatrol
         && !isMadrasi
         && !isThreeCheck
+        && !isCompensationChess
       )
     ) && (
       !isAbsorption

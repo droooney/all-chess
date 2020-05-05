@@ -16,6 +16,7 @@ import {
   BoardPiece,
   CastlingTypeEnum,
   ColorEnum,
+  GamePlayers,
   GameResult,
   GetPossibleMovesMode,
   Move,
@@ -52,6 +53,8 @@ interface RegisterMoveReturnValue {
 }
 
 export default abstract class GameMovesUtils extends GamePositionUtils {
+  abstract players: GamePlayers;
+
   moves: RevertableMove[] = [];
   pliesCount: number = 0;
 
@@ -1094,6 +1097,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
   }
 
   registerMove(move: Move): RegisterMoveReturnValue {
+    const prevPiecesWorth = this.getPiecesWorth();
     const {
       algebraic,
       figurine,
@@ -1109,6 +1113,11 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       ...move,
       algebraic,
       figurine,
+      prevPiecesWorth,
+      timeBeforeMove: {
+        [ColorEnum.WHITE]: this.players[ColorEnum.WHITE].time,
+        [ColorEnum.BLACK]: this.players[ColorEnum.BLACK].time
+      },
       revertMove
     });
 

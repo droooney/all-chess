@@ -223,7 +223,8 @@ export enum GameVariantEnum {
   THREE_CHECK = 'THREE_CHECK',
   CYLINDER_CHESS = 'CYLINDER_CHESS',
   CIRCULAR_CHESS = 'CIRCULAR_CHESS',
-  HEXAGONAL_CHESS = 'HEXAGONAL_CHESS'
+  HEXAGONAL_CHESS = 'HEXAGONAL_CHESS',
+  COMPENSATION_CHESS = 'COMPENSATION_CHESS',
 }
 
 export interface BaseMove {
@@ -239,6 +240,8 @@ export interface Move extends BaseMove {
 export interface ExtendedMove extends Move {
   algebraic: string;
   figurine: string;
+  prevPiecesWorth: Record<ColorEnum, number>;
+  timeBeforeMove: Record<ColorEnum, number | null>;
 }
 
 export interface RevertableMove extends ExtendedMove {
@@ -303,6 +306,7 @@ export enum ResultReasonEnum {
   THREE_CHECKS = 'THREE_CHECKS',
   STALEMATE = 'STALEMATE',
   TIMEOUT = 'TIMEOUT',
+  SELF_TIMEOUT = 'SELF_TIMEOUT',
   RESIGN = 'RESIGN',
   AGREED_TO_DRAW = 'AGREED_TO_DRAW',
   INSUFFICIENT_MATERIAL = 'INSUFFICIENT_MATERIAL',
