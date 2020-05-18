@@ -228,7 +228,7 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
       return ResultReasonEnum.INSUFFICIENT_MATERIAL;
     }
 
-    if (this.pliesWithoutCaptureOrPawnMove >= 100) {
+    if (this.pliesFor50MoveRule >= 100 && this.is50MoveRuleUsed) {
       return ResultReasonEnum.FIFTY_MOVE_RULE;
     }
 

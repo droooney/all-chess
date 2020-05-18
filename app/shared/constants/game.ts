@@ -67,7 +67,8 @@ export const GAME_VARIANT_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.CYLINDER_CHESS]: 'Cylinder chess',
   [GameVariantEnum.CIRCULAR_CHESS]: 'Circular chess',
   [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal chess',
-  [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation chess'
+  [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation chess',
+  [GameVariantEnum.RETREAT_CHESS]: 'Retreat chess'
 };
 
 export const GAME_VARIANT_SHORT_NAMES: Record<GameVariantEnum, string> = {
@@ -90,7 +91,8 @@ export const GAME_VARIANT_SHORT_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.CYLINDER_CHESS]: 'Cylinder',
   [GameVariantEnum.CIRCULAR_CHESS]: 'Circular',
   [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal',
-  [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation'
+  [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation',
+  [GameVariantEnum.RETREAT_CHESS]: 'Retreat'
 };
 
 export const GAME_VARIANT_PGN_NAMES: Record<GameVariantEnum, string> = {
@@ -113,7 +115,8 @@ export const GAME_VARIANT_PGN_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.CYLINDER_CHESS]: 'Cylinder',
   [GameVariantEnum.CIRCULAR_CHESS]: 'Circular',
   [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal',
-  [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation'
+  [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation',
+  [GameVariantEnum.RETREAT_CHESS]: 'Retreat'
 };
 
 export const GAME_VARIANT_LINKS: Record<GameVariantEnum, string> = {
@@ -136,7 +139,8 @@ export const GAME_VARIANT_LINKS: Record<GameVariantEnum, string> = {
   [GameVariantEnum.CYLINDER_CHESS]: 'cylinder-chess',
   [GameVariantEnum.CIRCULAR_CHESS]: 'circular-chess',
   [GameVariantEnum.HEXAGONAL_CHESS]: 'hexagonal-chess',
-  [GameVariantEnum.COMPENSATION_CHESS]: 'compensation-chess'
+  [GameVariantEnum.COMPENSATION_CHESS]: 'compensation-chess',
+  [GameVariantEnum.RETREAT_CHESS]: 'retreat-chess'
 };
 
 export const RESULT_REASON_NAMES: Record<ResultReasonEnum, string> = {
@@ -155,7 +159,7 @@ export const RESULT_REASON_NAMES: Record<ResultReasonEnum, string> = {
   [ResultReasonEnum.INSUFFICIENT_MATERIAL]: 'insufficient material',
   [ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT]: 'insufficient material + timeout',
   [ResultReasonEnum.THREEFOLD_REPETITION]: 'threefold repetition',
-  [ResultReasonEnum.FIFTY_MOVE_RULE]: '50 moves without pawn moves or captures'
+  [ResultReasonEnum.FIFTY_MOVE_RULE]: '50 move rule'
 };
 
 export const COLOR_NAMES: Record<ColorEnum, string> = {

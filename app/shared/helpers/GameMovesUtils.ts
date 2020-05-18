@@ -260,10 +260,10 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     }
 
     if (GameMovesUtils.isPawn(piece)) {
-      let direction: number;
+      let forwardDirection: number;
 
       if (this.isCircularChess) {
-        direction = (
+        forwardDirection = (
           pieceColor === ColorEnum.WHITE
           && pieceY < this.boardHeight / 2
         ) || (
@@ -271,10 +271,10 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
           && pieceY >= this.boardHeight / 2
         ) ? 1 : -1;
       } else {
-        direction = pieceColor === ColorEnum.WHITE ? 1 : -1;
+        forwardDirection = pieceColor === ColorEnum.WHITE ? 1 : -1;
       }
 
-      const rankY = this.adjustRankY(pieceY + direction);
+      const rankY = this.adjustRankY(pieceY + forwardDirection);
       const square = {
         board,
         x: pieceX,
@@ -288,34 +288,36 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         if (!pieceInSquare || onlyVisible || onlyPremove) {
           yield square;
 
-          if (
-            (!pieceInSquare || onlyPremove) && (
-              (
-                pieceColor === ColorEnum.WHITE
-                  ? this.isHexagonalChess
-                    ? pieceY === this.middleFileX - 1 - Math.abs(pieceX - this.middleFileX)
-                    : pieceY === 1 || (this.isCircularChess && pieceY === this.boardHeight - 2)
-                  : this.isHexagonalChess
-                    ? pieceY === this.middleRankY + 1
-                    : pieceY === this.boardOrthodoxHeight - 2 || (this.isCircularChess && pieceY === this.boardOrthodoxHeight + 1)
-              ) || (
-                pieceColor === ColorEnum.WHITE
-                && this.isHorde
-                && (pieceY === 0 || (this.isCircularChess && pieceY === this.boardHeight - 1))
-              )
-            )
-          ) {
+          if ((!pieceInSquare || onlyPremove) && this.isPawnInitialRank(piece.location, pieceColor)) {
             // 2-forward move
             const square = {
               board,
               x: pieceX,
-              y: rankY + direction
+              y: rankY + forwardDirection
             };
             const pieceInSquare = this.getBoardPiece(square);
 
             if (!pieceInSquare || onlyVisible || onlyPremove) {
               yield square;
             }
+          }
+        }
+      }
+
+      if (this.isRetreatChess) {
+        // backward move
+        const rankY = this.adjustRankY(pieceY - forwardDirection);
+        const square = {
+          board,
+          x: pieceX,
+          y: rankY
+        };
+
+        if (!this.isNullSquare(square) && !this.isPawnInitialRank(piece.location, pieceColor)) {
+          const pieceInSquare = this.getBoardPiece(square);
+
+          if (!pieceInSquare || onlyVisible || onlyPremove) {
+            yield square;
           }
         }
       }
@@ -332,7 +334,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             pieceColor === ColorEnum.BLACK
             && (pieceX - this.middleFileX) * incrementX < 0
           ))
-            ? rankY - direction
+            ? rankY - forwardDirection
             : rankY
         };
 
@@ -529,7 +531,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     const prevTurn = this.turn;
     const nextTurn = this.getOpponentColor();
     const prevIsCheck = this.isCheck;
-    const prevPliesWithoutCaptureOrPawnMove = this.pliesWithoutCaptureOrPawnMove;
+    const prevPliesFor50MoveRule = this.pliesFor50MoveRule;
     const prevPositionString = this.positionString;
     const prevPossibleEnPassant = this.possibleEnPassant;
     const prevChecksCount = this.checksCount[prevTurn];
@@ -550,6 +552,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       ),
       type: PieceLocationEnum.BOARD
     };
+    let needToReset50MoveRule = isPawnPromotion || (!this.isRetreatChess && GameMovesUtils.isPawn(piece));
 
     if (this.isAtomic && isCapture) {
       const squaresAround: (Square | null)[] = [toLocation];
@@ -627,28 +630,27 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
           y: fromY
         } = fromLocation;
 
-        if (GameMovesUtils.isPawn(piece)) {
-          const otherPawnsOnOtherBoardsAbleToMakeMove = playerPieces
-            .filter(GameMovesUtils.isBoardPiece)
-            .filter((otherPawn) => (
-              GameMovesUtils.isPawn(otherPawn)
-              && otherPawn.id !== piece.id
-              && otherPawn.location.board !== fromBoard
-              && this.getAllowedMoves(otherPawn).any((square) => GameMovesUtils.areSquaresEqual(square, toLocation, false))
-            ));
-
-          if (otherPawnsOnOtherBoardsAbleToMakeMove.length) {
-            const boardLiteral = GameMovesUtils.getBoardLiteral(fromBoard);
-
-            algebraic += boardLiteral;
-            figurine += boardLiteral;
-          }
-
+        if (piece.type === PieceTypeEnum.PAWN) {
           if (isCapture) {
             const fileLiteral = GameMovesUtils.getFileLiteral(fromX);
 
             algebraic += fileLiteral;
             figurine += fileLiteral;
+          } else if (this.isAliceChess || this.isRetreatChess) {
+            const otherPawnsAbleToMakeMove = playerPieces
+              .filter(GameMovesUtils.isBoardPiece)
+              .filter((otherPawn) => (
+                otherPawn.type === PieceTypeEnum.PAWN
+                && otherPawn.id !== piece.id
+                && this.getAllowedMoves(otherPawn).any((square) => GameMovesUtils.areSquaresEqual(square, toLocation, false))
+              ));
+
+            if (otherPawnsAbleToMakeMove.length) {
+              const rankLiteral = GameMovesUtils.getRankLiteral(fromY);
+
+              algebraic += rankLiteral;
+              figurine += rankLiteral;
+            }
           }
         } else {
           algebraic += GameMovesUtils.getPieceFullAlgebraicLiteral(piece);
@@ -728,12 +730,6 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     disappearedOrMovedPieces.forEach((disappearedOrMovedPiece) => {
       this.changePieceLocation(disappearedOrMovedPiece, null);
     });
-
-    if (GameMovesUtils.isPawn(piece) || isCapture) {
-      this.pliesWithoutCaptureOrPawnMove = 0;
-    } else {
-      this.pliesWithoutCaptureOrPawnMove++;
-    }
 
     if (
       !this.isDarkChess
@@ -820,6 +816,8 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
           pieceType,
           color: opponentColor
         });
+      } else {
+        needToReset50MoveRule = true;
       }
     };
 
@@ -1016,6 +1014,12 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       });
     }
 
+    if (needToReset50MoveRule) {
+      this.pliesFor50MoveRule = 0;
+    } else {
+      this.pliesFor50MoveRule++;
+    }
+
     this.turn = nextTurn;
     this.isCheck = this.isInCheck(nextTurn);
     this.pliesCount++;
@@ -1053,7 +1057,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       revertMove: () => {
         this.turn = prevTurn;
         this.isCheck = prevIsCheck;
-        this.pliesWithoutCaptureOrPawnMove = prevPliesWithoutCaptureOrPawnMove;
+        this.pliesFor50MoveRule = prevPliesFor50MoveRule;
         this.positionString = prevPositionString;
         this.possibleEnPassant = prevPossibleEnPassant;
         this.checksCount[prevTurn] = prevChecksCount;

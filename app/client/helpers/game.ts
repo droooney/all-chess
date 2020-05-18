@@ -19,6 +19,7 @@ import {
   PieceTypeEnum,
   Player,
   Premove,
+  ResultReasonEnum,
   Square,
   TimeControl,
   TimeControlEnum
@@ -263,7 +264,6 @@ export class Game extends GameHelper {
       socket.on('gameOver', ({ result, players }) => {
         this.players = players;
 
-        this.cancelPremoves(false);
         this.end(result.winner, result.reason);
         this.updateGame();
       });
@@ -433,6 +433,12 @@ export class Game extends GameHelper {
 
   emit(event: GameEvent) {
     this.listeners[event].forEach((listener) => listener());
+  }
+
+  end(winner: ColorEnum | null, reason: ResultReasonEnum) {
+    super.end(winner, reason);
+
+    this.cancelPremoves(false);
   }
 
   getHexPoints(square: Square): HexPoints {

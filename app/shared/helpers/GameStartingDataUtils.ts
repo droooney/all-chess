@@ -111,7 +111,7 @@ const STANDARD_STARTING_DATA: StartingData = {
   result: null,
   turn: ColorEnum.WHITE,
   startingMoveIndex: 0,
-  pliesWithoutCaptureOrPawnMove: 0,
+  pliesFor50MoveRule: 0,
   possibleEnPassant: null,
   possibleCastling: {
     [ColorEnum.WHITE]: {

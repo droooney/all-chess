@@ -20,6 +20,7 @@ interface VariantsInfo {
   isKingOfTheHill: boolean;
   isMadrasi: boolean;
   isPatrol: boolean;
+  isRetreatChess: boolean;
   isThreeCheck: boolean;
   isTwoFamilies: boolean;
 }
@@ -49,6 +50,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
       isKingOfTheHill: variants.includes(GameVariantEnum.KING_OF_THE_HILL),
       isMadrasi: variants.includes(GameVariantEnum.MADRASI),
       isPatrol: variants.includes(GameVariantEnum.PATROL),
+      isRetreatChess: variants.includes(GameVariantEnum.RETREAT_CHESS),
       isThreeCheck: variants.includes(GameVariantEnum.THREE_CHECK),
       isTwoFamilies: variants.includes(GameVariantEnum.TWO_FAMILIES)
     };
@@ -183,6 +185,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
 
   isLeftInCheckAllowed: boolean;
   isPocketUsed: boolean;
+  is50MoveRuleUsed: boolean;
 
   variants: readonly GameVariantEnum[];
 
@@ -199,5 +202,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
       || this.isDarkChess
       || this.isAntichess
     );
+    this.is50MoveRuleUsed = !this.isCrazyhouse;
   }
 }

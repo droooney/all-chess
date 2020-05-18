@@ -89,7 +89,7 @@ export interface StartingData {
   result: GameResult | null;
   turn: ColorEnum;
   startingMoveIndex: number;
-  pliesWithoutCaptureOrPawnMove: number;
+  pliesFor50MoveRule: number;
   possibleCastling: PossibleCastling;
   possibleEnPassant: PossibleEnPassant | null;
   checksCount: ChecksCount;
@@ -225,6 +225,7 @@ export enum GameVariantEnum {
   CIRCULAR_CHESS = 'CIRCULAR_CHESS',
   HEXAGONAL_CHESS = 'HEXAGONAL_CHESS',
   COMPENSATION_CHESS = 'COMPENSATION_CHESS',
+  RETREAT_CHESS = 'RETREAT_CHESS',
 }
 
 export interface BaseMove {

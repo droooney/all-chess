@@ -512,6 +512,26 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     ));
   }
 
+  isPawnInitialRank(square: Square, color: ColorEnum): boolean {
+    if (this.isHexagonalChess) {
+      return square.y === (
+        color === ColorEnum.WHITE
+          ? this.middleFileX - 1 - Math.abs(square.x - this.middleFileX)
+          : this.middleRankY + 1
+      );
+    }
+
+    if (this.isHorde && color === ColorEnum.WHITE && this.isFirstRank(square, color)) {
+      return true;
+    }
+
+    return (
+      color === ColorEnum.WHITE
+        ? square.y === 1 || (this.isCircularChess && square.y === this.boardHeight - 2)
+        : square.y === this.boardOrthodoxHeight - 2 || (this.isCircularChess && square.y === this.boardOrthodoxHeight + 1)
+    );
+  }
+
   resetBoards() {
     this.boards = _.times(this.boardCount, () => (
       _.times(this.boardHeight, () => (

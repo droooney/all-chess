@@ -368,46 +368,58 @@ class Boards extends React.Component<Props> {
                   <path d="M0,0 V8 L10,4 Z" className="arrow-marker" />
                 </marker>
               </defs>
-              <BoardSquares
-                game={game}
-                board={board}
-                onSquareClick={this.onSquareClick}
-                onPieceDragStart={this.onPieceDragStart}
-              />
-              {selectedSquare}
-              {currentMoveSquares}
-              {allowedSquares}
-              {checkSquares}
-              {withLiterals && (
-                <BoardLiterals
+              <g className="bottom-squares">
+                <BoardSquares
                   game={game}
                   board={board}
-                  boardsShiftX={boardsShiftX}
-                  isBlackBase={isBlackBase}
+                  onSquareClick={this.onSquareClick}
+                  onPieceDragStart={this.onPieceDragStart}
                 />
-              )}
-              {allPieces.map(({ piece, isFantom }) => (
-                <BoardPiece
-                  key={piece.id}
-                  game={game}
-                  piece={piece}
-                  isFantom={isFantom}
-                  isFullFantom={(isFantom && !showFantomPieces) || !piece.location}
-                />
-              ))}
-              {hiddenSquares}
-              {premoveSquares}
-              {isKingOfTheHill && (
-                <BoardCenterSquares game={game} />
-              )}
-              {drawnSymbols.map((symbol) => (
-                <DrawnSymbol
-                  key={symbol.id}
-                  game={game}
-                  symbol={symbol}
-                  boardsShiftX={boardsShiftX}
-                />
-              ))}
+                {selectedSquare}
+                {currentMoveSquares}
+                {allowedSquares}
+                {checkSquares}
+              </g>
+              <g className="literals">
+                {withLiterals && (
+                  <BoardLiterals
+                    game={game}
+                    board={board}
+                    boardsShiftX={boardsShiftX}
+                    isBlackBase={isBlackBase}
+                  />
+                )}
+              </g>
+              <g className="pieces">
+                {allPieces.map(({ piece, isFantom }) => (
+                  <BoardPiece
+                    key={piece.id}
+                    game={game}
+                    piece={piece}
+                    isFantom={isFantom}
+                    isFullFantom={(isFantom && !showFantomPieces) || !piece.location}
+                  />
+                ))}
+              </g>
+              <g className="top-squares">
+                {hiddenSquares}
+                {premoveSquares}
+              </g>
+              <g className="center-borders">
+                {isKingOfTheHill && (
+                  <BoardCenterSquares game={game} />
+                )}
+              </g>
+              <g className="symbols">
+                {drawnSymbols.map((symbol) => (
+                  <DrawnSymbol
+                    key={symbol.id}
+                    game={game}
+                    symbol={symbol}
+                    boardsShiftX={boardsShiftX}
+                  />
+                ))}
+              </g>
             </svg>
           );
         })}

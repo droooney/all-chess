@@ -46,7 +46,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
       result: null,
       turn: ColorEnum.WHITE,
       startingMoveIndex: 0,
-      pliesWithoutCaptureOrPawnMove: 0,
+      pliesFor50MoveRule: 0,
       pieces: []
     };
     const isPocketUsed = GamePositionUtils.getIsPocketUsed(variants);
@@ -61,7 +61,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
     const fenData = fen.trim().split(/\s+/);
     const boards = fenData.slice(0, boardCount);
 
-    // 5 is turn, possible castling, possible en passant, pliesWithoutCaptureOrPawnMove, startingMoveIndex
+    // 5 is turn, possible castling, possible en passant, pliesFor50MoveRule, startingMoveIndex
     // 1 for checks count in three-check
     if (fenData.length !== boardCount + 5 + (isThreeCheck ? 1 : 0)) {
       throw new Error('Invalid FEN: wrong text blocks count');
@@ -71,7 +71,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
       turnString,
       possibleCastlingString,
       possibleEnPassantString,
-      pliesWithoutCaptureOrPawnMoveString,
+      pliesFor50MoveRuleString,
       startingMoveIndexString,
       checksCount
     ] = fenData.slice(boardCount);
@@ -138,11 +138,11 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
       };
     }
 
-    if (!FEN_DIGITS_REGEX.test(pliesWithoutCaptureOrPawnMoveString)) {
+    if (!FEN_DIGITS_REGEX.test(pliesFor50MoveRuleString)) {
       throw new Error('Invalid FEN: wrong plies without capture or pawn move count');
     }
 
-    startingData.pliesWithoutCaptureOrPawnMove = +pliesWithoutCaptureOrPawnMoveString;
+    startingData.pliesFor50MoveRule = +pliesFor50MoveRuleString;
 
     if (startingMoveIndexString === '0' || !FEN_DIGITS_REGEX.test(startingMoveIndexString)) {
       throw new Error('Invalid FEN: wrong starting move index');
@@ -286,7 +286,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
     [ColorEnum.BLACK]: 0
   };
   isCheck: boolean = false;
-  pliesWithoutCaptureOrPawnMove: number = 0;
+  pliesFor50MoveRule: number = 0;
   possibleEnPassant: PossibleEnPassant | null = null;
 
   positionsMap: Record<string, number> = {};
@@ -297,7 +297,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
     const castlingFen = this.getFenPossibleCastling();
     const turnFen = this.getFenTurn();
     const enPassantFen = this.getFenEnPassant();
-    const pliesCountFen = this.pliesWithoutCaptureOrPawnMove;
+    const pliesCountFen = this.pliesFor50MoveRule;
     const moveIndexFen = Math.floor(this.pliesCount / 2) + 1;
     const checksCountFen = this.getFenChecksCount();
 
@@ -467,7 +467,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
   setupStartingData() {
     super.setupStartingData();
 
-    this.pliesWithoutCaptureOrPawnMove = this.startingData.pliesWithoutCaptureOrPawnMove;
+    this.pliesFor50MoveRule = this.startingData.pliesFor50MoveRule;
     this.possibleEnPassant = this.startingData.possibleEnPassant;
     this.positionString = this.getPositionFen();
     this.positionsMap = {};

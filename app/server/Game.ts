@@ -497,12 +497,6 @@ export default class Game extends GameHelper {
     this.registerAnyMove(move);
     this.changePlayerTime(averagePing);
 
-    if (player.time === 0) {
-      this.end(this.turn, ResultReasonEnum.SELF_TIMEOUT);
-
-      return;
-    }
-
     this.lastMoveTimestamp = newTimestamp;
 
     if (this.isDarkChess) {
@@ -523,6 +517,12 @@ export default class Game extends GameHelper {
         moveIndex: this.moves.length - 1,
         lastMoveTimestamp: this.lastMoveTimestamp
       });
+    }
+
+    if (player.time === 0) {
+      this.end(this.turn, ResultReasonEnum.SELF_TIMEOUT);
+
+      return;
     }
 
     this.updatePlayers();

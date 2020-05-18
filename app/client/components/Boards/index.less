@@ -129,9 +129,7 @@
   }
 
   .piece-container {
-    transition-property: transform;
-    transition-duration: 0.2s;
-    transition-timing-function: ease-out;
+    transition: transform 0.2s ease-out;
     cursor: pointer;
 
     .piece {
@@ -146,6 +144,10 @@
       &.full-fantom {
         opacity: 0;
       }
+    }
+
+    .original-piece {
+      pointer-events: none;
     }
   }
 
