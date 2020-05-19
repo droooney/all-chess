@@ -58,7 +58,8 @@
     .premove-square,
     .literal,
     .drawn-symbol,
-    .center-border {
+    .center-border,
+    .allowed-dot {
       pointer-events: none;
     }
 
@@ -67,28 +68,34 @@
     }
 
     .current-move-square {
-      fill: rgba(0,255,0,0.5);
+      fill: rgba(0,255,0,0.35);
     }
 
     .allowed-square {
       .user-select(none);
 
       // fill: url(#allowed-grad);
-      fill: rgba(0,255,255,0.5);
+      // fill: rgba(0,255,255,0.5);
+      fill: rgba(0,0,0,0);
       cursor: pointer;
 
       &:hover {
-        fill: rgba(0,207,255,0.5);
+        // fill: rgba(0,207,255,0.5);
+        fill: rgba(0,0,0,0.25);
       }
+    }
+
+    .allowed-dot {
+      fill: rgba(0,127,127,0.5);
     }
 
     .check-square {
       // fill: url(#check-grad);
-      fill: rgba(255,0,0,0.5);
+      fill: rgba(255,0,0,0.35);
     }
 
     .premove-square {
-      fill: rgba(138,43,226,0.5);
+      fill: rgba(138,43,226,0.35);
     }
 
     .literal {

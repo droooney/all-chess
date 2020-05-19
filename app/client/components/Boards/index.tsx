@@ -18,7 +18,7 @@ import {
   RealPieceLocation,
   Square
 } from '../../../types';
-import { ALICE_CHESS_BOARDS_MARGIN } from '../../constants';
+import { ALICE_CHESS_BOARDS_MARGIN, SVG_SQUARE_SIZE } from '../../constants';
 import { Game } from '../../helpers';
 import { ReduxState } from '../../store';
 
@@ -215,6 +215,7 @@ class Boards extends React.Component<Props> {
           const checkSquares: JSX.Element[] = [];
           const hiddenSquares: JSX.Element[] = [];
           const premoveSquares: JSX.Element[] = [];
+          const allowedDots: JSX.Element[] = [];
           const pieces = boardPieces
             .filter(({ location }) => location.board === board)
             .map((piece) => ({
@@ -296,12 +297,29 @@ class Boards extends React.Component<Props> {
               }
 
               if (isAllowed(square)) {
+                const center = game.getSquareCenter({
+                  ...square,
+                  x: game.adjustFileX(square.x + boardsShiftX)
+                });
+
                 allowedSquares.push(
                   <BoardSquare
                     {...baseSquareParams}
                     className="allowed-square"
                     onSquareClick={this.onSquareClick}
                     onPieceDragStart={this.onPieceDragStart}
+                  />
+                );
+
+                allowedDots.push(
+                  <circle
+                    key={baseSquareParams.key}
+                    className="allowed-dot"
+                    r={7 * game.getPieceSize() / SVG_SQUARE_SIZE}
+                    style={{
+                      transform: `rotate(calc(180deg * var(--is-black-base, 0))) translate(${center.x}px, ${center.y}px)`,
+                      transformOrigin: `${game.boardCenterX}px ${game.boardCenterY}px`
+                    }}
                   />
                 );
               }
@@ -400,6 +418,9 @@ class Boards extends React.Component<Props> {
                     isFullFantom={(isFantom && !showFantomPieces) || !piece.location}
                   />
                 ))}
+              </g>
+              <g className="allowed-dots">
+                {allowedDots}
               </g>
               <g className="top-squares">
                 {hiddenSquares}

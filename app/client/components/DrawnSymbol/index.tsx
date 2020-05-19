@@ -21,35 +21,10 @@ export default class DrawnSymbol extends React.Component<Props> {
       boardsShiftX
     } = this.props;
 
-    if (game.isCircularChess) {
-      const rOuter = game.boardWidth * SVG_SQUARE_SIZE;
-      const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE;
-      const r = rOuter - square.x * rDiff;
-      const centerR = r - rDiff / 2;
-      const centerAngle = (square.y + 0.5) * 2 * Math.PI / game.boardHeight;
-
-      return {
-        x: game.boardCenterX - centerR * Math.sin(centerAngle),
-        y: game.boardOrthodoxWidth * SVG_SQUARE_SIZE - (game.boardCenterY - centerR * Math.cos(centerAngle))
-      };
-    }
-
-    if (game.isHexagonalChess) {
-      const a = SVG_SQUARE_SIZE / 2 / Math.sqrt(3);
-      const x0 = (square.x * 3 + 1) * a;
-      const rankAdjustmentY = 1 / 2 * Math.abs(square.x - game.middleFileX);
-      const y0 = (game.boardHeight - square.y - rankAdjustmentY) * SVG_SQUARE_SIZE;
-
-      return {
-        x: x0 + a,
-        y: y0 - SVG_SQUARE_SIZE / 2
-      };
-    }
-
-    return {
-      x: (game.adjustFileX(square.x + boardsShiftX) + 0.5) * SVG_SQUARE_SIZE,
-      y: (game.boardHeight - square.y - 0.5) * SVG_SQUARE_SIZE
-    };
+    return game.getSquareCenter({
+      ...square,
+      x: game.adjustFileX(square.x + boardsShiftX)
+    });
   }
 
   render() {

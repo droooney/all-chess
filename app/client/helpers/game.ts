@@ -487,6 +487,38 @@ export class Game extends GameHelper {
         : SVG_SQUARE_SIZE;
   }
 
+  getSquareCenter(square: Square): { x: number; y: number; } {
+    if (this.isCircularChess) {
+      const rOuter = this.boardWidth * SVG_SQUARE_SIZE;
+      const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE;
+      const r = rOuter - square.x * rDiff;
+      const centerR = r - rDiff / 2;
+      const centerAngle = (square.y + 0.5) * 2 * Math.PI / this.boardHeight;
+
+      return {
+        x: this.boardCenterX - centerR * Math.sin(centerAngle),
+        y: this.boardOrthodoxWidth * SVG_SQUARE_SIZE - (this.boardCenterY - centerR * Math.cos(centerAngle))
+      };
+    }
+
+    if (this.isHexagonalChess) {
+      const a = SVG_SQUARE_SIZE / 2 / Math.sqrt(3);
+      const x0 = (square.x * 3 + 1) * a;
+      const rankAdjustmentY = 1 / 2 * Math.abs(square.x - this.middleFileX);
+      const y0 = (this.boardHeight - square.y - rankAdjustmentY) * SVG_SQUARE_SIZE;
+
+      return {
+        x: x0 + a,
+        y: y0 - SVG_SQUARE_SIZE / 2
+      };
+    }
+
+    return {
+      x: (square.x + 0.5) * SVG_SQUARE_SIZE,
+      y: (this.boardHeight - square.y - 0.5) * SVG_SQUARE_SIZE
+    };
+  }
+
   getUsedMoves(): AnyMove[] {
     return this.darkChessMode && !this.showDarkChessHiddenPieces
       ? this.colorMoves[this.darkChessMode]

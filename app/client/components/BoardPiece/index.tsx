@@ -44,7 +44,6 @@ export default class BoardPiece extends React.Component<Props> {
       game,
       piece,
       piece: {
-        location,
         location: {
           x: pieceX,
           y: pieceY
@@ -98,7 +97,6 @@ export default class BoardPiece extends React.Component<Props> {
         style={{
           transform: `translate(${translateX}, ${translateY})`
         }}
-        data-square={JSON.stringify(location)}
       >
         <GamePiece
           piece={piece}
