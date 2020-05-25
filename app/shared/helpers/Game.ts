@@ -484,8 +484,20 @@ export class Game extends GameResultUtils implements IGame {
   id: string;
   startingFen: string | null;
   players: GamePlayers = {
-    [ColorEnum.WHITE]: null!,
-    [ColorEnum.BLACK]: null!
+    [ColorEnum.WHITE]: {
+      id: 'white',
+      mock: true,
+      name: '',
+      color: ColorEnum.WHITE,
+      time: null
+    },
+    [ColorEnum.BLACK]: {
+      id: 'black',
+      mock: true,
+      name: '',
+      color: ColorEnum.BLACK,
+      time: null
+    }
   };
   timeControl: TimeControl;
   pgnTags: PGNTags;

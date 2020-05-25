@@ -245,7 +245,7 @@ export default class GamePlayer extends React.Component<Props, State> {
             {
               active
                 ? playingPlayer
-                  ? player.login === playingPlayer.login
+                  ? player.id === playingPlayer.id
                     ? 'Your turn'
                     : 'Waiting for the opponent'
                   : `${COLOR_NAMES[player.color]} to move`
@@ -253,8 +253,8 @@ export default class GamePlayer extends React.Component<Props, State> {
             }
           </div>
         )}
-        <div className="login">
-          {player.login}
+        <div className="name">
+          {player.name}
         </div>
       </div>
     );

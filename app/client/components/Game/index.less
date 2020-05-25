@@ -276,10 +276,10 @@
           }
         }
 
-        .login {
+        .name {
           .ellipsis();
 
-          grid-area: login;
+          grid-area: name;
           font-size: 16px;
         }
 
@@ -417,7 +417,7 @@
               var(--pocket-row)
               "timer-or-turn" auto
               ".            " @section-gap
-              "login        " auto
+              "name         " auto
               ~"/" 100%;
             align-self: end;
           }
@@ -436,7 +436,7 @@
             }
 
             grid-template:
-              "login        " auto
+              "name         " auto
               ".            " @section-gap
               "timer-or-turn" auto
               var(--pocket-row)
@@ -479,7 +479,7 @@
           }
 
           grid-template:
-            "login . timer-or-turn" max-content
+            "name . timer-or-turn" max-content
             var(--material-row)
             ~"/" 1fr @section-gap auto;
         }
@@ -490,7 +490,7 @@
           }
 
           grid-template:
-            "login         . pocket" max-content
+            "name          . pocket" max-content
             "timer-or-turn . pocket" auto
             var(--material-row)
             ~"/" calc(100% - 10% * @pocket-size - @section-gap) @section-gap calc(10% * @pocket-size);

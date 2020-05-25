@@ -174,6 +174,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         to: toLocationVisible || isCapture ? move.to : null,
         algebraic,
         figurine,
+        isCapture,
         pieces: newPieces.map((piece) => _.omit(piece, 'realId')),
         revertMove: () => {
           this.visiblePieces[color] = oldVisiblePieces;

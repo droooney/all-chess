@@ -1117,6 +1117,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       ...move,
       algebraic,
       figurine,
+      isCapture,
       prevPiecesWorth,
       timeBeforeMove: {
         [ColorEnum.WHITE]: this.players[ColorEnum.WHITE].time,

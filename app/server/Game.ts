@@ -13,7 +13,8 @@ import {
   PieceLocationEnum,
   Player,
   ResultReasonEnum,
-  TimeControlEnum
+  TimeControlEnum,
+  User
 } from '../types';
 import { sessionMiddleware } from './controllers/session';
 import { Game as GameHelper } from '../shared/helpers';
@@ -107,22 +108,21 @@ export default class Game extends GameHelper {
       try {
         await sessionMiddleware(socket.request, socket.request.res);
 
-        const user = socket.request.session
+        const user: User | null = socket.request.session
           ? socket.request.session.user || null
           : null;
 
-        const existingPlayer = (user && _.find(this.players, (player) => player && player.login === user.login)) || null;
+        const existingPlayer = (user && _.find(this.players, (player) => player.id === user.id)) || null;
         const isNewPlayer = (
           !existingPlayer
-          && user
           && this.status === GameStatusEnum.BEFORE_START
-          && _.some(this.players, (player) => !player)
+          && _.some(this.players, (player) => player.mock)
         );
         const isOngoingDarkChessGame = this.isDarkChess && this.status !== GameStatusEnum.FINISHED;
         let player: Player | null = null;
 
-        if (isNewPlayer) {
-          const otherPlayer = _.find(this.players, Boolean);
+        if (isNewPlayer && user) {
+          const otherPlayer = _.find(this.players, (player) => !player.mock);
           const color = otherPlayer
             ? Game.getOppositeColor(otherPlayer.color)
             : Math.random() > 0.5
@@ -130,7 +130,9 @@ export default class Game extends GameHelper {
               : ColorEnum.BLACK;
 
           player = {
-            ...user,
+            id: user.id,
+            mock: false,
+            name: user.login,
             color,
             time: this.timeControl && this.timeControl.base
           };

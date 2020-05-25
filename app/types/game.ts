@@ -1,7 +1,5 @@
 /// <reference path="../typings/socket.io.d.ts" />
 
-import { User } from './user';
-
 declare module 'socket.io' {
   interface Socket {
     pingResponded: Set<number>;
@@ -30,7 +28,10 @@ export interface Circle {
 
 export type DrawnSymbol = Arrow | Circle;
 
-export interface Player extends User {
+export interface Player {
+  id: number | string;
+  mock: boolean;
+  name: string;
   color: ColorEnum;
   time: number | null;
 }
@@ -239,6 +240,7 @@ export interface Move extends BaseMove {
 }
 
 export interface ExtendedMove extends Move {
+  isCapture: boolean;
   algebraic: string;
   figurine: string;
   prevPiecesWorth: Record<ColorEnum, number>;
@@ -265,6 +267,7 @@ export interface DarkChessMove {
   algebraic: string;
   figurine: string;
   pieces: readonly Piece[];
+  isCapture: boolean;
 }
 
 export interface DarkChessRevertableMove extends DarkChessMove {

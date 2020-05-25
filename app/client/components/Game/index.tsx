@@ -390,7 +390,7 @@ class Game extends React.Component<Props, State> {
     this.updateGridLayout();
   };
 
-  onKeyDown = (e: KeyboardEvent) => {
+  onKeyDown = _.throttle((e: KeyboardEvent) => {
     const {
       boardToShow
     } = this.state;
@@ -402,7 +402,7 @@ class Game extends React.Component<Props, State> {
       if (e.key === 'ArrowLeft') {
         game.moveBack();
       } else if (e.key === 'ArrowRight') {
-        game.moveForward();
+        game.moveForward(true, true);
       } else if (e.key === 'ArrowUp') {
         game.navigateToMove(-1);
       } else if (e.key === 'ArrowDown') {
@@ -419,9 +419,13 @@ class Game extends React.Component<Props, State> {
         e.preventDefault();
       }
     }
-  };
+  }, 50);
 
   onGameData = ({ timestamp, player, game }: GameInitialData | DarkChessGameInitialData) => {
+    if (this.game) {
+      this.game.removeListeners();
+    }
+
     this.player = player;
     this.game = new GameHelper({
       game,
@@ -1043,8 +1047,8 @@ class Game extends React.Component<Props, State> {
                 realTurn={realTurn}
                 status={status}
                 adjustedLastMoveTimestamp={adjustedLastMoveTimestamp}
-                enableClick={enableClick && !!player && topPlayer.login === player.login}
-                enableDnd={enableDnd && !!player && topPlayer.login === player.login}
+                enableClick={enableClick && !!player && topPlayer.id === player.id}
+                enableDnd={enableDnd && !!player && topPlayer.id === player.id}
                 isTop
                 allMaterialDifference={allMaterialDifference}
                 materialDifference={materialDifference}
@@ -1067,8 +1071,8 @@ class Game extends React.Component<Props, State> {
                 realTurn={realTurn}
                 status={status}
                 adjustedLastMoveTimestamp={adjustedLastMoveTimestamp}
-                enableClick={enableClick && !!player && bottomPlayer.login === player.login}
-                enableDnd={enableDnd && !!player && bottomPlayer.login === player.login}
+                enableClick={enableClick && !!player && bottomPlayer.id === player.id}
+                enableDnd={enableDnd && !!player && bottomPlayer.id === player.id}
                 isTop={false}
                 allMaterialDifference={allMaterialDifference}
                 materialDifference={materialDifference}

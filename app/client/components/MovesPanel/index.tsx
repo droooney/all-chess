@@ -79,7 +79,7 @@ export default class MovesPanel extends React.Component<Props> {
           </div>
           <div
             className={classNames('move-icon', { disabled: isAfterLastMove })}
-            onClick={() => game.moveForward()}
+            onClick={() => game.moveForward(true, true)}
           >
             <i className="fa fa-forward" />
           </div>

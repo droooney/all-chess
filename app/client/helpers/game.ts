@@ -35,6 +35,8 @@ import {
 } from '../../shared/constants';
 import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from '../constants';
 
+import { Sound } from './sounds';
+
 type GameEvent = 'updateChat' | 'updateGame';
 
 export interface InitGameOptions {
@@ -110,8 +112,18 @@ export class Game extends GameHelper {
     updateChat: [],
     updateGame: []
   };
+  sounds = {
+    pieceMove: new Sound('piece-move2'),
+    pieceCapture: new Sound('piece-capture4')
+  };
 
-  constructor({ game, socket, player, currentMoveIndex, timestamp }: InitGameOptions) {
+  constructor({
+    game,
+    socket,
+    player,
+    currentMoveIndex,
+    timestamp
+  }: InitGameOptions) {
     super({
       id: game.id,
       pgnTags: game.pgnTags,
@@ -429,6 +441,8 @@ export class Game extends GameHelper {
     if (this.socket) {
       this.socket.disconnect();
     }
+
+    this.removeListeners();
   }
 
   emit(event: GameEvent) {
@@ -548,7 +562,7 @@ export class Game extends GameHelper {
       const prevVisibleSquares = this.darkChessMode
         ? this.getVisibleSquares(this.darkChessMode)
         : undefined;
-      const { algebraic, figurine, revertMove } = this.performMove(move, {
+      const { algebraic, figurine, isCapture, revertMove } = this.performMove(move, {
         constructMoveLiterals: true
       });
       const pieces = _.cloneDeep(this.pieces.filter(Game.isRealPiece));
@@ -561,6 +575,7 @@ export class Game extends GameHelper {
         duration,
         algebraic,
         figurine,
+        isCapture,
         pieces
       }, true, false);
     } else {
@@ -590,10 +605,14 @@ export class Game extends GameHelper {
     }
   }
 
-  moveForward(updateGame: boolean = true) {
+  moveForward(updateGame: boolean = true, withSound: boolean = false) {
     if (this.currentMoveIndex < this.getUsedMoves().length - 1) {
       this.currentMoveIndex++;
       this.performAnyMove();
+
+      if (withSound) {
+        this.playMoveSound();
+      }
 
       if (updateGame) {
         this.updateGame();
@@ -666,8 +685,10 @@ export class Game extends GameHelper {
       ? this.colorMoves[this.darkChessMode]
       : this.moves;
     let { currentMoveIndex } = this;
+    let atTheEndOfMoves = false;
 
     if (currentMoveIndex === moves.length - 1) {
+      atTheEndOfMoves = true;
       currentMoveIndex++;
     }
 
@@ -686,6 +707,10 @@ export class Game extends GameHelper {
     this.currentMoveIndex++;
 
     this.navigateToMove(currentMoveIndex, false);
+
+    if (atTheEndOfMoves) {
+      this.playMoveSound();
+    }
 
     if (updateGame) {
       this.updateGame();
@@ -851,6 +876,20 @@ export class Game extends GameHelper {
     });
   }
 
+  playMoveSound() {
+    const move = this.isOngoingDarkChessGame && this.darkChessMode
+      ? this.colorMoves[this.darkChessMode][this.currentMoveIndex]
+      : this.moves[this.currentMoveIndex];
+
+    if (move) {
+      if (move.isCapture) {
+        this.sounds.pieceCapture.play();
+      } else {
+        this.sounds.pieceMove.play();
+      }
+    }
+  }
+
   registerLocalDarkChessMove(move: DarkChessMove) {
     const revertMove = this.performDarkChessMove(move);
 
@@ -885,6 +924,13 @@ export class Game extends GameHelper {
     if (this.socket) {
       this.socket.emit('requestTakeback', this.currentMoveIndex);
     }
+  }
+
+  removeListeners() {
+    this.listeners = {
+      updateChat: [],
+      updateGame: []
+    };
   }
 
   resign() {
