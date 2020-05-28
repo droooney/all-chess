@@ -39,7 +39,6 @@ export interface OwnProps {
   boardsShiftX: number;
   flipBoard(): void;
   switchBoard(boardToShow: number): void;
-  changeDarkChessMode(): void;
   toggleShowDarkChessHiddenPieces(): void;
   setBoardsShiftX(boardsShiftX: number): void;
 }
@@ -167,10 +166,6 @@ class GameActions extends React.Component<Props, State> {
     } = this.props;
 
     dispatch(changeSettings('showFantomPieces', !showFantomPieces));
-  };
-
-  changeDarkChessMode = () => {
-    this.props.changeDarkChessMode();
   };
 
   toggleShowDarkChessHiddenPieces = () => {
@@ -359,29 +354,6 @@ class GameActions extends React.Component<Props, State> {
     if (game.isDarkChess && result) {
       buttons.push(
         <div
-          key="change-dark-chess-mode"
-          className="button"
-          title={
-            darkChessMode
-              ? darkChessMode === ColorEnum.WHITE
-                ? `Change perspective to ${COLOR_NAMES[ColorEnum.BLACK]}`
-                : 'Remove perspective'
-              : `Change perspective to ${COLOR_NAMES[ColorEnum.WHITE]}`
-          }
-          onClick={this.changeDarkChessMode}
-        >
-          <i className="fa fa-eye" />
-          {darkChessMode && (
-            <div className="piece-container">
-              <Piece
-                color={darkChessMode}
-                type={PieceTypeEnum.KING}
-                location={null}
-              />
-            </div>
-          )}
-        </div>,
-        <div
           key="show-hidden-pieces"
           className={classNames('button', { disabled: !darkChessMode, enabled: showDarkChessHiddenPieces })}
           title={showDarkChessHiddenPieces ? 'Hide hidden pieces' : 'Show hidden pieces'}
@@ -426,16 +398,18 @@ class GameActions extends React.Component<Props, State> {
                     <span>
                       {COLOR_NAMES[takebackRequest.player]} requested a takeback{takebackMoveLink}
                     </span>
-                    <i
-                      className="fa fa-check"
-                      title="Accept"
-                      onClick={this.acceptTakeback}
-                    />
-                    <i
-                      className="fa fa-times"
-                      title="Decline"
-                      onClick={this.declineTakeback}
-                    />
+                    <span className="icons">
+                      <i
+                        className="fa fa-check"
+                        title="Accept"
+                        onClick={this.acceptTakeback}
+                      />
+                      <i
+                        className="fa fa-times"
+                        title="Decline"
+                        onClick={this.declineTakeback}
+                      />
+                    </span>
                   </React.Fragment>
                 ) : '\u00a0'
               }
@@ -456,16 +430,18 @@ class GameActions extends React.Component<Props, State> {
                 ) : (
                   <React.Fragment>
                     {COLOR_NAMES[drawOffer]} offered a draw
-                    <i
-                      className="fa fa-check"
-                      title="Accept"
-                      onClick={this.acceptDraw}
-                    />
-                    <i
-                      className="fa fa-times"
-                      title="Decline"
-                      onClick={this.declineDraw}
-                    />
+                    <span className="icons">
+                      <i
+                        className="fa fa-check"
+                        title="Accept"
+                        onClick={this.acceptDraw}
+                      />
+                      <i
+                        className="fa fa-times"
+                        title="Decline"
+                        onClick={this.declineDraw}
+                      />
+                    </span>
                   </React.Fragment>
                 ) : '\u00a0'
               }

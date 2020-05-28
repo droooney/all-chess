@@ -177,9 +177,6 @@ export default class GamePlayer extends React.Component<Props, State> {
           'with-pocket': game.isPocketUsed,
           'with-material': game.needToCalculateMaterialDifference
         })}
-        style={{
-          '--pocket-size': game.pocketPiecesUsed.length
-        } as React.CSSProperties}
       >
         {game.needToCalculateMaterialDifference && (
           <div className="material-advantage">

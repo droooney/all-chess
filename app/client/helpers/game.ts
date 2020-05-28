@@ -105,6 +105,8 @@ export class Game extends GameHelper {
   boardSidesRenderedRatio: number;
   boardCenterX: number;
   boardCenterY: number;
+  isBlackBase: boolean;
+  boardsShiftX: number;
   darkChessMode: ColorEnum | null;
   showDarkChessHiddenPieces: boolean;
   needToCalculateMaterialDifference: boolean;
@@ -161,6 +163,8 @@ export class Game extends GameHelper {
         ? this.boardOrthodoxWidth * SVG_SQUARE_SIZE
         : this.boardHeight * SVG_SQUARE_SIZE
     ) / 2;
+    this.isBlackBase = !!player && player.color === ColorEnum.BLACK;
+    this.boardsShiftX = 0;
     this.darkChessMode = this.isDarkChess && player ? player.color : null;
     this.needToCalculateMaterialDifference = (
       !this.isAbsorption
@@ -399,30 +403,26 @@ export class Game extends GameHelper {
     }
   }
 
-  changeDarkChessMode() {
-    if (this.darkChessMode === ColorEnum.BLACK) {
-      this.darkChessMode = null;
+  changeDarkChessMode(darkChessMode: ColorEnum | null) {
+    this.darkChessMode = darkChessMode;
+
+    if (darkChessMode) {
+      if (!this.showDarkChessHiddenPieces) {
+        this.setPieces(
+          this.currentMoveIndex === -1
+            ? this.startingVisiblePieces[darkChessMode]
+            : this.colorMoves[darkChessMode][this.currentMoveIndex].pieces
+        );
+      }
+    } else {
+      const wasShowingHiddenPieces = this.showDarkChessHiddenPieces;
+
       this.showDarkChessHiddenPieces = true;
 
-      this.onDarkChessMoves(this.moves);
-    } else {
-      this.darkChessMode = this.darkChessMode
-        ? ColorEnum.BLACK
-        : ColorEnum.WHITE;
-
-      if (this.showDarkChessHiddenPieces) {
-        if (this.darkChessMode === ColorEnum.BLACK) {
-          this.onDarkChessMoves(this.moves);
-        }
-      } else if (this.currentMoveIndex === -1) {
+      if (!wasShowingHiddenPieces) {
         this.onDarkChessMoves(this.moves);
-        this.setPieces(this.visiblePieces[this.darkChessMode]);
-      } else {
-        this.setPieces(this.colorMoves[this.darkChessMode][this.currentMoveIndex].pieces);
       }
     }
-
-    this.updateGame();
   }
 
   declineDraw() {
@@ -681,9 +681,7 @@ export class Game extends GameHelper {
   onMoveMade(move: DarkChessMove & { prevVisibleSquares?: Square[]; }, isDarkChessMove: true, updateGame?: boolean): void;
   onMoveMade(move: Move, isDarkChessMove: false, updateGame?: boolean): void;
   onMoveMade(move: DarkChessMove & { prevVisibleSquares?: Square[]; } | Move, isDarkChessMove: boolean, updateGame: boolean = true): void {
-    const moves = this.darkChessMode
-      ? this.colorMoves[this.darkChessMode]
-      : this.moves;
+    const moves = this.getUsedMoves();
     let { currentMoveIndex } = this;
     let atTheEndOfMoves = false;
 
@@ -877,9 +875,7 @@ export class Game extends GameHelper {
   }
 
   playMoveSound() {
-    const move = this.isOngoingDarkChessGame && this.darkChessMode
-      ? this.colorMoves[this.darkChessMode][this.currentMoveIndex]
-      : this.moves[this.currentMoveIndex];
+    const move = this.getUsedMoves()[this.currentMoveIndex];
 
     if (move) {
       if (move.isCapture) {
@@ -949,10 +945,30 @@ export class Game extends GameHelper {
     }
   }
 
+  setBoardsShiftX(boardsShiftX: number) {
+    this.boardsShiftX = boardsShiftX;
+
+    this.updateGame();
+  }
+
   setPieces(pieces: readonly Piece[]) {
     this.pieces = pieces;
 
     this.resetBoards();
+  }
+
+  toggleIsBlackBase(changeDarkChessMode: boolean) {
+    this.isBlackBase = !this.isBlackBase;
+
+    if (changeDarkChessMode && this.isDarkChess && this.status === GameStatusEnum.FINISHED) {
+      this.changeDarkChessMode(
+        this.isBlackBase
+          ? ColorEnum.BLACK
+          : ColorEnum.WHITE
+      );
+    }
+
+    this.updateGame();
   }
 
   toggleShowDarkChessHiddenPieces() {
@@ -960,11 +976,12 @@ export class Game extends GameHelper {
 
     if (this.showDarkChessHiddenPieces) {
       this.onDarkChessMoves(this.moves);
-    } else if (this.currentMoveIndex === -1) {
-      this.onDarkChessMoves(this.moves);
-      this.setPieces(this.visiblePieces[this.darkChessMode!]);
     } else {
-      this.setPieces(this.colorMoves[this.darkChessMode!][this.currentMoveIndex].pieces);
+      this.setPieces(
+        this.currentMoveIndex === -1
+          ? this.startingVisiblePieces[this.darkChessMode!]
+          : this.colorMoves[this.darkChessMode!][this.currentMoveIndex].pieces
+      );
     }
 
     this.updateGame();

@@ -63,11 +63,9 @@ interface State {
   drawingSymbolStart: Square | null;
   drawingSymbol: DrawnSymbol | null;
   drawnSymbols: DrawnSymbol[];
-  isBlackBase: boolean;
   showHiddenPieces: boolean;
   boardsWidth: number;
   boardToShow: 'all' | number;
-  boardsShiftX: number;
   promotionModalVisible: boolean;
   promotionMove: BaseMove | null;
   validPromotions: readonly PieceTypeEnum[];
@@ -97,11 +95,9 @@ class Game extends React.Component<Props, State> {
     drawingSymbol: null,
     drawnSymbols: [],
     gameData: null,
-    isBlackBase: false,
     showHiddenPieces: true,
     boardsWidth: 0,
     boardToShow: 'all',
-    boardsShiftX: 0,
     promotionModalVisible: false,
     promotionMove: null,
     validPromotions: [],
@@ -204,10 +200,6 @@ class Game extends React.Component<Props, State> {
       this.props.showFantomPieces
       && this.game!.getBoardPiece({ ...square, board: this.game!.getPrevBoard(square.board) })
     );
-  }
-
-  getStartingIsBlackBase(): boolean {
-    return !!this.player && this.player.color === ColorEnum.BLACK;
   }
 
   getEventPoint(e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent): { x: number; y: number; } {
@@ -457,8 +449,7 @@ class Game extends React.Component<Props, State> {
     });
 
     this.setState({
-      gameData: game,
-      isBlackBase: this.getStartingIsBlackBase()
+      gameData: game
     });
     this.updateGridLayout();
 
@@ -481,9 +472,7 @@ class Game extends React.Component<Props, State> {
   };
 
   flipBoard = () => {
-    this.setState(({ isBlackBase }) => ({
-      isBlackBase: !isBlackBase
-    }));
+    this.game!.toggleIsBlackBase(true);
   };
 
   switchBoard = (boardToShow: number) => {
@@ -492,27 +481,12 @@ class Game extends React.Component<Props, State> {
     });
   };
 
-  changeDarkChessMode = () => {
-    const darkChessMode = this.game!.darkChessMode;
-
-    this.setState({
-      isBlackBase: darkChessMode
-        ? darkChessMode === ColorEnum.WHITE
-          ? true
-          : this.getStartingIsBlackBase()
-        : false
-    });
-    this.game!.changeDarkChessMode();
-  };
-
   toggleShowDarkChessHiddenPieces = () => {
     this.game!.toggleShowDarkChessHiddenPieces();
   };
 
   setBoardsShiftX = (boardsShiftX: number) => {
-    this.setState({
-      boardsShiftX: this.game!.adjustFileX(boardsShiftX)
-    });
+    this.game!.setBoardsShiftX(boardsShiftX);
   };
 
   getAllowedMoves = function* (this: Game, selectedPiece: RealPiece, selectedPieceBoard: number): Generator<BoardPossibleMove, any, any> {
@@ -716,7 +690,12 @@ class Game extends React.Component<Props, State> {
       && location.type === PieceLocationEnum.BOARD
     ) {
       if (this.game!.premoves.length) {
-        this.game!.cancelPremoves(true);
+        this.game!.cancelPremoves(false);
+
+        this.setState({
+          selectedPiece: null,
+          allowedMoves: []
+        });
       } else {
         e.preventDefault();
 
@@ -917,6 +896,8 @@ class Game extends React.Component<Props, State> {
           timeControl,
           result,
           startingMoveIndex,
+          isBlackBase,
+          boardsShiftX,
           darkChessMode,
           showDarkChessHiddenPieces,
           lastMoveTimestamp,
@@ -925,10 +906,8 @@ class Game extends React.Component<Props, State> {
           premoves
         } = this.game;
         const {
-          isBlackBase,
           boardsWidth,
           boardToShow,
-          boardsShiftX,
           selectedPiece,
           isDragging,
           gridMode
@@ -981,7 +960,8 @@ class Game extends React.Component<Props, State> {
               '--grid-gap': `${GAME_GRID_GAP}px`,
               '--left-desktop-panel-width': `${this.state.leftDesktopPanelWidth}px`,
               '--right-desktop-panel-width': `${this.state.rightDesktopPanelWidth}px`,
-              '--tablet-panel-width': `${this.state.tabletPanelWidth}px`
+              '--tablet-panel-width': `${this.state.tabletPanelWidth}px`,
+              '--pocket-size': this.game.pocketPiecesUsed.length
             } as React.CSSProperties}
           >
             <div className="game-content">
@@ -1002,7 +982,6 @@ class Game extends React.Component<Props, State> {
                 boardsShiftX={boardsShiftX}
                 flipBoard={this.flipBoard}
                 switchBoard={this.switchBoard}
-                changeDarkChessMode={this.changeDarkChessMode}
                 toggleShowDarkChessHiddenPieces={this.toggleShowDarkChessHiddenPieces}
                 setBoardsShiftX={this.setBoardsShiftX}
               />

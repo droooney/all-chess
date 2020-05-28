@@ -19,6 +19,10 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
+  startingVisiblePieces: Record<ColorEnum, (Piece & { realId: number | string; })[]> = {
+    [ColorEnum.WHITE]: [],
+    [ColorEnum.BLACK]: []
+  };
 
   getVisiblePieces(forColor: ColorEnum): Piece[] {
     const visibleSquares = this.getVisibleSquares(forColor);
@@ -188,7 +192,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
 
     if (this.isDarkChess) {
       _.forEach(ColorEnum, (color) => {
-        this.visiblePieces[color] = this.getVisiblePieces(color).map((piece) => ({
+        this.visiblePieces[color] = this.startingVisiblePieces[color] = this.getVisiblePieces(color).map((piece) => ({
           ...piece,
           realId: piece.id
         }));

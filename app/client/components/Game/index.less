@@ -1,11 +1,11 @@
 @import (reference) '../../styles/mixins';
 
-@grid-gap: var(--grid-gap, 20px);
-@left-desktop-panel-width: var(--left-desktop-panel-width, 300px);
-@right-desktop-panel-width: var(--right-desktop-panel-width, 300px);
-@right-panel-width: var(--right-panel-width, 300px);
-@tablet-panel-width: var(--tablet-panel-width, 300px);
-@pocket-size: var(--pocket-size, 5);
+@grid-gap: var(--grid-gap);
+@left-desktop-panel-width: var(--left-desktop-panel-width);
+@right-desktop-panel-width: var(--right-desktop-panel-width);
+@right-panel-width: var(--right-panel-width);
+@tablet-panel-width: var(--tablet-panel-width);
+@pocket-size: var(--pocket-size);
 
 .route.game-route {
   .flex-col(@justify-content: center);
@@ -111,7 +111,7 @@
         grid-area: actions;
 
         .buttons {
-          @button-size: 30px;
+          @button-size: 40px;
 
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(@button-size, 1fr));;
@@ -124,7 +124,7 @@
             line-height: @button-size;
             width: @button-size;
             height: @button-size;
-            font-size: 18px;
+            font-size: 24px;
             cursor: pointer;
             background-color: rgba(0,0,0,0);
 
@@ -176,20 +176,24 @@
             color: green;
             cursor: pointer;
           }
-        }
 
-        .fa-check,
-        .fa-times {
-          cursor: pointer;
-          margin-left: 5px;
-        }
+          .icons {
+            white-space: nowrap;
+          }
 
-        .fa-check {
-          color: green;
-        }
+          .fa-check,
+          .fa-times {
+            cursor: pointer;
+            margin-left: 5px;
+          }
 
-        .fa-times {
-          color: red;
+          .fa-check {
+            color: green;
+          }
+
+          .fa-times {
+            color: red;
+          }
         }
       }
 
