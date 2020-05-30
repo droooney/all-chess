@@ -2,6 +2,8 @@ import { Howl } from 'howler';
 
 import { isNotUndefined } from 'client/helpers/common';
 
+import { Dictionary } from '../../types';
+
 // @ts-ignore
 import mp3Sounds from '../sounds/*/*.mp3';
 // @ts-ignore
@@ -9,7 +11,7 @@ import oggSounds from '../sounds/*/*.ogg';
 
 type SoundType = 'piece-move' | 'piece-move2' | 'piece-move3' | 'piece-capture' | 'piece-capture2' | 'piece-capture3' | 'piece-capture4';
 
-type Sounds = Partial<Record<string, { index: string; }>>;
+type Sounds = Partial<Dictionary<{ index: string; }>>;
 
 const volumes: Partial<Record<SoundType, number>> = {
   'piece-capture': 0.3

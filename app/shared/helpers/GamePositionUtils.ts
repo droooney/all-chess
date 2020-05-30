@@ -6,6 +6,7 @@ import {
   CastlingTypeEnum,
   ChecksCount,
   ColorEnum,
+  Dictionary,
   GameVariantEnum,
   PieceLocationEnum,
   PieceTypeEnum,
@@ -289,7 +290,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
   pliesFor50MoveRule: number = 0;
   possibleEnPassant: PossibleEnPassant | null = null;
 
-  positionsMap: Record<string, number> = {};
+  positionsMap: Dictionary<number> = {};
   positionString: string = '';
 
   getFen(): string {

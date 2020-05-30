@@ -2,11 +2,12 @@ import io, { games } from './io';
 import {
   pickGameMinimalData
 } from './helpers';
+import { Dictionary } from '../types';
 import { sessionMiddleware } from './controllers/session';
 import Game from './Game';
 
 const gameList: Game[] = [];
-const gameMap: Record<string, Game> = {};
+const gameMap: Dictionary<Game> = {};
 
 games.use(async (socket, next) => {
   try {

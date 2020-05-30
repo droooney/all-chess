@@ -4,13 +4,13 @@ import { connect } from 'react-redux';
 import classNames from 'classnames';
 
 import {
+  AnyMove,
   BoardPiece as IBoardPiece,
   BoardPossibleMove,
   ColorEnum,
-  DarkChessLocalMove,
   DrawnSymbol as IDrawnSymbol,
-  LocalMove,
   Piece as IPiece,
+  PieceBoardLocation,
   PieceLocationEnum,
   Player,
   Premove,
@@ -47,7 +47,7 @@ export interface OwnProps {
   isDragging: boolean;
   boardToShow: number | 'all';
   darkChessMode: ColorEnum | null;
-  currentMove: DarkChessLocalMove | LocalMove | undefined;
+  currentMoveIndex: number;
   boardsShiftX: number;
   pieces: readonly IPiece[];
 
@@ -66,6 +66,7 @@ class Boards extends React.Component<Props> {
   };
 
   boardsRef = React.createRef<HTMLDivElement>();
+  prevMoveIndexes: [number, number] = [-1, this.props.currentMoveIndex];
 
   componentDidUpdate(prevProps: Props) {
     if (
@@ -79,6 +80,10 @@ class Boards extends React.Component<Props> {
       setTimeout(() => {
         this.boardsRef.current!.classList.remove('no-transition');
       }, 0);
+    }
+
+    if (this.props.currentMoveIndex !== prevProps.currentMoveIndex) {
+      this.prevMoveIndexes = [prevProps.currentMoveIndex, this.props.currentMoveIndex];
     }
   }
 
@@ -153,7 +158,7 @@ class Boards extends React.Component<Props> {
       drawnSymbols,
       pieces,
       withLiterals,
-      currentMove,
+      currentMoveIndex,
       isBlackBase,
       isDragging,
       darkChessMode,
@@ -161,6 +166,13 @@ class Boards extends React.Component<Props> {
       boardsShiftX,
       showFantomPieces
     } = this.props;
+    const prevMoveIndex = currentMoveIndex === this.prevMoveIndexes[1]
+      ? this.prevMoveIndexes[0]
+      : this.prevMoveIndexes[1];
+    const currentMove = game.getUsedMoves()[currentMoveIndex] as AnyMove | undefined;
+    const movedPieceIds: string[] = [];
+    const capturedPieceIds: string[] = [];
+    const prevPieceLocations = game.getMovePieceLocations(prevMoveIndex);
 
     const visibleSquares = isDarkChess && darkChessMode
       ? currentMove && 'prevVisibleSquares' in currentMove
@@ -169,7 +181,6 @@ class Boards extends React.Component<Props> {
         )))
         : game.getLocalVisibleSquares(darkChessMode)
       : [];
-    const boardPieces = pieces.filter(Game.isBoardPiece);
     const isHiddenSquare = (square: Square): boolean => (
       !!darkChessMode
       && isDarkChess
@@ -178,11 +189,57 @@ class Boards extends React.Component<Props> {
     const isAllowed = (square: Square): boolean => (
       allowedMoves.some(({ square: allowedSquare }) => Game.areSquaresEqual(square, allowedSquare))
     );
+    const wasCaptured = (piece: IPiece): boolean => {
+      const prevLocation = prevPieceLocations[piece.id];
+
+      return (
+        currentMoveIndex - prevMoveIndex === 1
+        && !!prevLocation
+        && prevLocation.type === PieceLocationEnum.BOARD
+        && !piece.location
+      );
+    };
+    const piecesSelector = (ids: string[]) => ids.map((id) => `#piece-${id}`).join(',');
+
+    pieces.forEach((piece) => {
+      const prevLocation = prevPieceLocations[piece.id];
+
+      if (
+        Game.isNonExistentPiece(piece)
+        || (
+          Game.isBoardPiece(piece)
+          && prevLocation
+          && prevLocation.type === PieceLocationEnum.BOARD
+          && !Game.areSquaresEqual(piece.location, prevLocation)
+        )
+      ) {
+        movedPieceIds.push(piece.id);
+      }
+    });
+
+    const realPieces = pieces.filter(Game.isBoardPiece);
+    const capturedPieces = pieces
+      .filter(wasCaptured)
+      .map((piece) => {
+        capturedPieceIds.push(piece.id);
+
+        return {
+          ...piece,
+          location: prevPieceLocations[piece.id] as PieceBoardLocation
+        };
+      });
+    const boardPieces = [...realPieces, ...capturedPieces];
+    const movedPieceIdsSelector = piecesSelector(movedPieceIds);
+    const capturedPieceIdsSelector = piecesSelector(capturedPieceIds);
+    const movedAndCapturedPieceIdsSelector = piecesSelector(_.intersection(movedPieceIds, capturedPieceIds));
 
     return (
       <div
         ref={this.boardsRef}
-        className={classNames('boards', { antichess: isAntichess })}
+        className={classNames('boards', {
+          antichess: isAntichess,
+          'no-fantom': !showFantomPieces
+        })}
         style={{
           '--is-black-base': +isBlackBase,
           '--board-count': boardCount,
@@ -205,6 +262,28 @@ class Boards extends React.Component<Props> {
         } as React.CSSProperties}
         onContextMenu={(e) => e.preventDefault()}
       >
+        <style>
+          {movedPieceIdsSelector && (
+            `${movedPieceIdsSelector} {
+              transition-property: transform;
+            }`
+          )}
+
+          {capturedPieceIdsSelector && (
+            `${capturedPieceIdsSelector} {
+              opacity: 0;
+              transition-property: opacity;
+            }`
+          )}
+
+          {movedAndCapturedPieceIdsSelector && (
+            `${capturedPieceIdsSelector} {
+              opacity: 0;
+              transition-property: transform, opacity;
+            }`
+          )}
+        </style>
+
         {_.times(boardCount, (board) => {
           if (boardToShow !== 'all' && board !== boardToShow) {
             return;
@@ -415,7 +494,6 @@ class Boards extends React.Component<Props> {
                     game={game}
                     piece={piece}
                     isFantom={isFantom}
-                    isFullFantom={(isFantom && !showFantomPieces) || !piece.location}
                   />
                 ))}
               </g>

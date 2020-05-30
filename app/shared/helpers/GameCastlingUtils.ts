@@ -1,12 +1,20 @@
 import * as _ from 'lodash';
 
 import GameStartingDataUtils from './GameStartingDataUtils';
-import { BoardPiece, CastlingTypeEnum, ColorEnum, GameCreateOptions, RealPiece, Square } from '../../types';
+import {
+  BoardPiece,
+  CastlingTypeEnum,
+  ColorEnum,
+  EachColor,
+  GameCreateOptions,
+  RealPiece,
+  Square
+} from '../../types';
 
 type CastlingRookCoordinates = Record<CastlingTypeEnum, Square | null>;
 
 export default abstract class GameCastlingUtils extends GameStartingDataUtils {
-  castlingRookCoordinates: Record<ColorEnum, CastlingRookCoordinates>;
+  castlingRookCoordinates: EachColor<CastlingRookCoordinates>;
 
   protected constructor(options: GameCreateOptions) {
     super(options);

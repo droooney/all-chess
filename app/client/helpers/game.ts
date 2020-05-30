@@ -9,12 +9,15 @@ import {
   DarkChessGame,
   DarkChessLocalMove,
   DarkChessMove,
+  Dictionary,
+  EachColor,
   Game as IGame,
   GameStatusEnum,
   LocalMove,
   Move,
   Piece,
   PieceBoardLocation,
+  PieceLocation,
   PieceLocationEnum,
   PieceTypeEnum,
   Player,
@@ -36,6 +39,7 @@ import {
 import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from '../constants';
 
 import { Sound } from './sounds';
+import { RegisterMoveReturnValue } from 'shared/helpers/GameMovesUtils';
 
 type GameEvent = 'updateChat' | 'updateGame';
 
@@ -96,9 +100,14 @@ export class Game extends GameHelper {
   moves: LocalMove[] = [];
   premoves: Premove[] = [];
   piecesBeforePremoves: readonly Piece[];
-  colorMoves: Record<ColorEnum, DarkChessLocalMove[]> = {
+  colorMoves: EachColor<DarkChessLocalMove[]> = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
+  };
+  pieceLocations: Partial<Record<number, Dictionary<PieceLocation>>> = {};
+  colorPieceLocations: EachColor<Record<number, Dictionary<PieceLocation>>> = {
+    [ColorEnum.WHITE]: {},
+    [ColorEnum.BLACK]: {}
   };
   currentMoveIndex: number;
   isOngoingDarkChessGame: boolean;
@@ -172,6 +181,8 @@ export class Game extends GameHelper {
       && !this.isHorde
     );
     this.piecesBeforePremoves = this.pieces;
+
+    this.savePieceLocations();
 
     const moves: (Move | DarkChessMove)[] = game.moves;
 
@@ -251,7 +262,7 @@ export class Game extends GameHelper {
               : this.getPocketPiece(premove.from.pieceType, premove.from.color);
 
             if (piece && piece.color === this.player.color && this.isMoveAllowed(piece, premove.to, premove.promotion)) {
-              this.move(premove, false);
+              this.move(premove);
             } else {
               this.cancelPremoves(false);
             }
@@ -408,11 +419,7 @@ export class Game extends GameHelper {
 
     if (darkChessMode) {
       if (!this.showDarkChessHiddenPieces) {
-        this.setPieces(
-          this.currentMoveIndex === -1
-            ? this.startingVisiblePieces[darkChessMode]
-            : this.colorMoves[darkChessMode][this.currentMoveIndex].pieces
-        );
+        this.setPieces(this.getMoveVisiblePieces(this.currentMoveIndex));
       }
     } else {
       const wasShowingHiddenPieces = this.showDarkChessHiddenPieces;
@@ -493,6 +500,20 @@ export class Game extends GameHelper {
     return this.getVisibleSquares(color);
   }
 
+  getMovePieceLocations(moveIndex: number): Dictionary<PieceLocation> {
+    return (
+      this.darkChessMode && !this.showDarkChessHiddenPieces
+        ? this.colorPieceLocations[this.darkChessMode][moveIndex]
+        : this.pieceLocations[moveIndex]
+    ) || {};
+  }
+
+  getMoveVisiblePieces(moveIndex: number): readonly Piece[] {
+    return moveIndex === -1
+      ? this.startingVisiblePieces[this.darkChessMode!]
+      : this.colorMoves[this.darkChessMode!][moveIndex].pieces;
+  }
+
   getPieceSize(): number {
     return this.isCircularChess
       ? (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE * 0.9
@@ -539,14 +560,13 @@ export class Game extends GameHelper {
       : this.moves;
   }
 
-  move(move: BaseMove, updateGame: boolean) {
+  move(move: BaseMove) {
     if (!this.player) {
       return;
     }
 
     if (this.player.color !== this.turn) {
       this.registerPremove(move);
-      this.updateGame();
 
       return;
     }
@@ -588,10 +608,6 @@ export class Game extends GameHelper {
     this.lastMoveTimestamp = newTimestamp;
 
     this.changePlayerTime();
-
-    if (updateGame) {
-      this.updateGame();
-    }
   }
 
   moveBack(updateGame: boolean = true) {
@@ -666,6 +682,7 @@ export class Game extends GameHelper {
     this.moves = [];
 
     this.setupStartingData();
+    this.savePieceLocations();
 
     const { currentMoveIndex } = this;
 
@@ -886,6 +903,14 @@ export class Game extends GameHelper {
     }
   }
 
+  registerAnyMove(move: Move) {
+    super.registerAnyMove(move);
+
+    if (this.isDarkChess) {
+      this.savePieceLocations();
+    }
+  }
+
   registerLocalDarkChessMove(move: DarkChessMove) {
     const revertMove = this.performDarkChessMove(move);
 
@@ -893,6 +918,16 @@ export class Game extends GameHelper {
       ...move,
       revertMove
     });
+
+    this.savePieceLocations();
+  }
+
+  registerMove(move: Move): RegisterMoveReturnValue {
+    const returnValue = super.registerMove(move);
+
+    this.savePieceLocations();
+
+    return returnValue;
   }
 
   registerPremove(move: Premove) {
@@ -945,6 +980,30 @@ export class Game extends GameHelper {
     }
   }
 
+  savePieceLocations() {
+    const moveIndex = this.getUsedMoves().length - 1;
+    const locations = this.pieceLocations[moveIndex] = {} as Dictionary<PieceLocation>;
+
+    this.pieces.forEach(({ location, id }) => {
+      locations[id] = location;
+    });
+
+    if (this.isDarkChess) {
+      _.forEach(ColorEnum, (color) => {
+        const locations = this.colorPieceLocations[color][moveIndex] = {} as Dictionary<PieceLocation>;
+        const pieces = moveIndex === -1
+          ? this.startingVisiblePieces[color]
+          : this.colorMoves[color][moveIndex]?.pieces;
+
+        if (pieces) {
+          pieces.forEach(({ location, id }) => {
+            locations[id] = location;
+          });
+        }
+      });
+    }
+  }
+
   setBoardsShiftX(boardsShiftX: number) {
     this.boardsShiftX = boardsShiftX;
 
@@ -977,11 +1036,7 @@ export class Game extends GameHelper {
     if (this.showDarkChessHiddenPieces) {
       this.onDarkChessMoves(this.moves);
     } else {
-      this.setPieces(
-        this.currentMoveIndex === -1
-          ? this.startingVisiblePieces[this.darkChessMode!]
-          : this.colorMoves[this.darkChessMode!][this.currentMoveIndex].pieces
-      );
+      this.setPieces(this.getMoveVisiblePieces(this.currentMoveIndex));
     }
 
     this.updateGame();

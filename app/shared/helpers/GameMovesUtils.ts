@@ -31,13 +31,13 @@ import {
   Square
 } from '../../types';
 
-interface PerformMoveOptions {
+export interface PerformMoveOptions {
   constructMoveLiterals?: boolean;
   constructPositionString?: boolean;
   checkIfAllowed?: boolean;
 }
 
-interface PerformMoveReturnValue {
+export interface PerformMoveReturnValue {
   allowed: boolean;
   algebraic: string;
   figurine: string;
@@ -46,7 +46,7 @@ interface PerformMoveReturnValue {
   revertMove(): void;
 }
 
-interface RegisterMoveReturnValue {
+export interface RegisterMoveReturnValue {
   movedPiece: RealPiece;
   isWin: boolean;
   isCapture: boolean;

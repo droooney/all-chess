@@ -18,8 +18,6 @@ interface State {
 }
 
 export default class Chat extends React.PureComponent<Props, State> {
-  chatRef = React.createRef<HTMLDivElement>();
-  messageRef = React.createRef<HTMLInputElement>();
   messagesRef = React.createRef<HTMLDivElement>();
   state: State = {
     message: ''
@@ -27,13 +25,8 @@ export default class Chat extends React.PureComponent<Props, State> {
 
   componentDidMount() {
     const messages = this.messagesRef.current!;
-    const boards = document.querySelector('.board');
 
     messages.scrollTop = messages.scrollHeight - messages.clientHeight;
-
-    if (boards) {
-      this.chatRef.current!.style.maxHeight = `${boards.clientHeight - 180}px`;
-    }
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -74,7 +67,7 @@ export default class Chat extends React.PureComponent<Props, State> {
     } = this.props;
 
     return (
-      <div ref={this.chatRef} className="chat">
+      <div className="chat">
         <div className="header">
           Chat
         </div>

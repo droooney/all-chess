@@ -342,7 +342,7 @@ class BoardEditor extends React.Component<Props, State> {
           darkChessMode={null}
           isBlackBase={false}
           isDragging={isDragging}
-          currentMove={undefined}
+          currentMoveIndex={-1}
           boardToShow="all"
           boardsShiftX={0}
           pieces={this.game.pieces}

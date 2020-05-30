@@ -14,7 +14,6 @@ interface OwnProps {
   game: Game;
   piece: IBoardPiece;
   isFantom: boolean;
-  isFullFantom: boolean;
 }
 
 type Props = OwnProps;
@@ -31,7 +30,6 @@ export default class BoardPiece extends React.Component<Props> {
       !_.isEqual(this.prevPiece, nextProps.piece)
       || this.props.game !== nextProps.game
       || this.props.isFantom !== nextProps.isFantom
-      || this.props.isFullFantom !== nextProps.isFullFantom
     );
   }
 
@@ -49,13 +47,11 @@ export default class BoardPiece extends React.Component<Props> {
           y: pieceY
         }
       },
-      isFantom,
-      isFullFantom
+      isFantom
     } = this.props;
     const pieceSize = game.getPieceSize();
     const pieceClassNames = classNames({
-      fantom: isFantom,
-      'full-fantom': isFullFantom
+      fantom: isFantom
     });
     let translateX: string;
     let translateY: string;
@@ -68,10 +64,10 @@ export default class BoardPiece extends React.Component<Props> {
       const angle = (pieceY + 0.5) * angleDiff;
 
       translateX = `calc(${game.boardCenterX}px - ${r}px * ${
-        this.ifBlackBase(Math.sin(angle + Math.PI), Math.sin(angle))
+        this.ifBlackBase(-Math.sin(angle), Math.sin(angle))
       } - ${pieceSize / 2}px)`;
       translateY = `calc(${game.boardCenterY}px + ${r}px * ${
-        this.ifBlackBase(Math.cos(angle + Math.PI), Math.cos(angle))
+        this.ifBlackBase(-Math.cos(angle), Math.cos(angle))
       } - ${pieceSize / 2}px)`;
     } else if (game.isHexagonalChess) {
       const middleFile = 5;
@@ -94,6 +90,7 @@ export default class BoardPiece extends React.Component<Props> {
     return (
       <g
         className="piece-container"
+        id={`piece-${piece.id}`}
         style={{
           transform: `translate(${translateX}, ${translateY})`
         }}

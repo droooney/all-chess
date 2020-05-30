@@ -1,5 +1,7 @@
 /// <reference path="../typings/socket.io.d.ts" />
 
+import { Dictionary } from './common';
+
 declare module 'socket.io' {
   interface Socket {
     pingResponded: Set<number>;
@@ -36,7 +38,7 @@ export interface Player {
   time: number | null;
 }
 
-export type GamePlayers = Record<ColorEnum, Player>;
+export type GamePlayers = EachColor<Player>;
 
 export enum PieceTypeEnum {
   KING = 'KING',
@@ -66,14 +68,16 @@ export enum ColorEnum {
   BLACK = 'BLACK'
 }
 
+export type EachColor<T> = Record<ColorEnum, T>;
+
 export enum CastlingTypeEnum {
   KING_SIDE = 'KING_SIDE',
   QUEEN_SIDE = 'QUEEN_SIDE'
 }
 
-export type PossibleCastling = Record<ColorEnum, Record<CastlingTypeEnum, boolean>>;
+export type PossibleCastling = EachColor<Record<CastlingTypeEnum, boolean>>;
 
-export type ChecksCount = Record<ColorEnum, number>;
+export type ChecksCount = EachColor<number>;
 
 export interface BoardDimensions {
   boardCount: number;
@@ -145,7 +149,7 @@ export type PieceLocation = null | RealPieceLocation;
 
 export type Boards = (BoardPiece | null)[][][];
 
-export type GameKings = Record<ColorEnum, Piece[]>;
+export type GameKings = EachColor<Piece[]>;
 
 export interface TakebackRequest {
   player: ColorEnum;
@@ -191,7 +195,7 @@ export interface DarkChessGameInitialData {
   game: DarkChessGame;
 }
 
-export type PGNTags = Record<string, string>;
+export type PGNTags = Dictionary<string>;
 
 export interface GameCreateSettings {
   timeControl: TimeControl;
@@ -243,8 +247,8 @@ export interface ExtendedMove extends Move {
   isCapture: boolean;
   algebraic: string;
   figurine: string;
-  prevPiecesWorth: Record<ColorEnum, number>;
-  timeBeforeMove: Record<ColorEnum, number | null>;
+  prevPiecesWorth: EachColor<number>;
+  timeBeforeMove: EachColor<number | null>;
 }
 
 export interface RevertableMove extends ExtendedMove {

@@ -5,6 +5,7 @@ import {
   BaseMove,
   ChatMessage,
   ColorEnum,
+  EachColor,
   Game as IGame,
   GameCreateOptions,
   GameStatusEnum,
@@ -89,7 +90,7 @@ export default class Game extends GameHelper {
   io: Namespace;
   lastMoveTimestamp: number = Date.now();
   pingTimestamps = new Set<number>();
-  playerPingTimes: Record<ColorEnum, number[]> = {
+  playerPingTimes: EachColor<number[]> = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };

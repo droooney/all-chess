@@ -155,29 +155,6 @@ class Game extends React.Component<Props, State> {
     document.removeEventListener('keydown', this.onKeyDown);
   }
 
-  componentDidUpdate(): void {
-    if (this.game) {
-      if (
-        this.prevMoveCount - this.prevMoveIndex !== this.game.getUsedMoves().length - this.game.currentMoveIndex
-        && this.prevMoveIndex !== this.game.currentMoveIndex
-      ) {
-        this.game.cancelPremoves(false);
-
-        this.setState({
-          selectedPiece: null,
-          allowedMoves: [],
-          isDragging: false,
-          drawingSymbolStart: null,
-          drawingSymbol: null,
-          drawnSymbols: []
-        });
-      }
-
-      this.prevMoveIndex = this.game.currentMoveIndex;
-      this.prevMoveCount = this.game.getUsedMoves().length;
-    }
-  }
-
   addOrRemoveDrawnSymbol(drawnSymbol: DrawnSymbol, drawnSymbols: DrawnSymbol[]): DrawnSymbol[] {
     const existingIndex = drawnSymbols.findIndex((symbol) => (
       drawnSymbol.type === 'circle'
@@ -382,7 +359,7 @@ class Game extends React.Component<Props, State> {
     this.updateGridLayout();
   };
 
-  onKeyDown = _.throttle((e: KeyboardEvent) => {
+  onKeyDown = (e: KeyboardEvent) => {
     const {
       boardToShow
     } = this.state;
@@ -411,7 +388,7 @@ class Game extends React.Component<Props, State> {
         e.preventDefault();
       }
     }
-  }, 50);
+  };
 
   onGameData = ({ timestamp, player, game }: GameInitialData | DarkChessGameInitialData) => {
     if (this.game) {
@@ -434,11 +411,29 @@ class Game extends React.Component<Props, State> {
     });
 
     this.game.on('updateGame', () => {
+      if (!this.game) {
+        return;
+      }
+
       if (
+        this.prevMoveCount - this.prevMoveIndex !== this.game.getUsedMoves().length - this.game.currentMoveIndex
+        && this.prevMoveIndex !== this.game.currentMoveIndex
+      ) {
+        this.game.cancelPremoves(false);
+
+        this.setState({
+          selectedPiece: null,
+          allowedMoves: [],
+          isDragging: false,
+          drawingSymbolStart: null,
+          drawingSymbol: null,
+          drawnSymbols: []
+        });
+      } else if (
         this.state.selectedPiece
-        && this.prevMoveCount !== this.game!.getUsedMoves().length
+        && this.prevMoveCount !== this.game.getUsedMoves().length
         && this.player
-        && this.game!.turn === this.player.color
+        && this.game.turn === this.player.color
       ) {
         this.setState({
           allowedMoves: this.getAllowedMoves(this.state.selectedPiece, this.state.selectedPieceBoard).toArray()
@@ -446,6 +441,9 @@ class Game extends React.Component<Props, State> {
       } else {
         this.forceUpdate();
       }
+
+      this.prevMoveIndex = this.game.currentMoveIndex;
+      this.prevMoveCount = this.game.getUsedMoves().length;
     });
 
     this.setState({
@@ -563,14 +561,15 @@ class Game extends React.Component<Props, State> {
 
     const isPremove = this.player.color !== this.game!.turn;
     const allowedMove = allowedMoves.find(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
-
-    this.setState({
+    const resetGameState = {
       isDragging: false,
       selectedPiece: null,
       allowedMoves: []
-    });
+    };
 
     if (!allowedMove) {
+      this.setState(resetGameState);
+
       return;
     }
 
@@ -587,6 +586,7 @@ class Game extends React.Component<Props, State> {
 
     if (isPawnPromotion && validPromotions.length > 1) {
       this.setState({
+        ...resetGameState,
         promotionModalVisible: true,
         promotionMove: move,
         validPromotions
@@ -595,9 +595,10 @@ class Game extends React.Component<Props, State> {
       this.game!.move(
         isPawnPromotion
           ? { ...move, promotion: isPremove ? PieceTypeEnum.QUEEN : validPromotions[0] }
-          : move,
-        true
+          : move
       );
+
+      this.setState(resetGameState);
     }
   };
 
@@ -612,7 +613,8 @@ class Game extends React.Component<Props, State> {
     this.game!.move({
       ...this.state.promotionMove!,
       promotion: pieceType
-    }, true);
+    });
+
     this.closePromotionPopup();
   };
 
@@ -1011,7 +1013,7 @@ class Game extends React.Component<Props, State> {
                 isDragging={isDragging}
                 boardToShow={boardToShow}
                 darkChessMode={darkChessMode}
-                currentMove={usedMoves[currentMoveIndex]}
+                currentMoveIndex={currentMoveIndex}
                 boardsShiftX={boardsShiftX}
                 showKingAttack={!premoves.length}
               />

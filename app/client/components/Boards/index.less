@@ -136,7 +136,8 @@
   }
 
   .piece-container {
-    transition: transform 0.2s ease-out;
+    transition: 0.2s ease-out;
+    transition-property: none;
     cursor: pointer;
 
     .piece {
@@ -146,10 +147,6 @@
 
       &.fantom {
         opacity: 0.2;
-      }
-
-      &.full-fantom {
-        opacity: 0;
       }
     }
 
@@ -161,6 +158,12 @@
   &.no-transition {
     .piece-container, .piece {
       transition: none;
+    }
+  }
+
+  &.no-fantom {
+    .piece-container .piece.fantom {
+      opacity: 0;
     }
   }
 }

@@ -1,5 +1,6 @@
 import {
   ColorEnum,
+  EachColor,
   GameStatusEnum,
   GameVariantEnum,
   PieceTypeEnum,
@@ -20,7 +21,7 @@ export const SHORT_PIECE_NAMES: Record<PieceTypeEnum, string> = {
   [PieceTypeEnum.PAWN]: 'P'
 };
 
-export const PIECE_LITERALS: Record<ColorEnum, Record<StandardPiece, string>> = {
+export const PIECE_LITERALS: EachColor<Record<StandardPiece, string>> = {
   [ColorEnum.WHITE]: {
     [PieceTypeEnum.KING]: '♔',
     [PieceTypeEnum.QUEEN]: '♕',
@@ -162,7 +163,7 @@ export const RESULT_REASON_NAMES: Record<ResultReasonEnum, string> = {
   [ResultReasonEnum.FIFTY_MOVE_RULE]: '50 move rule'
 };
 
-export const COLOR_NAMES: Record<ColorEnum, string> = {
+export const COLOR_NAMES: EachColor<string> = {
   [ColorEnum.WHITE]: 'White',
   [ColorEnum.BLACK]: 'Black'
 };

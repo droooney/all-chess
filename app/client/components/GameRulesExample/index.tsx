@@ -84,7 +84,7 @@ export default class GameRulesExample extends React.Component<Props> {
           darkChessMode={null}
           isBlackBase={false}
           isDragging={false}
-          currentMove={this.game.moves[this.game.currentMoveIndex]}
+          currentMoveIndex={this.game.currentMoveIndex}
           boardToShow="all"
           boardsShiftX={0}
           pieces={this.game.pieces}

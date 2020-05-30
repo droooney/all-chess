@@ -4,6 +4,8 @@ import GameMovesUtils from './GameMovesUtils';
 import {
   ColorEnum,
   DarkChessRevertableMove,
+  Dictionary,
+  EachColor,
   Move,
   Piece,
   PieceBoardLocation,
@@ -11,15 +13,15 @@ import {
 } from '../../types';
 
 export default abstract class GameDarkChessUtils extends GameMovesUtils {
-  colorMoves: Record<ColorEnum, DarkChessRevertableMove[]> = {
+  colorMoves: EachColor<DarkChessRevertableMove[]> = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  visiblePieces: Record<ColorEnum, (Piece & { realId: number | string; })[]> = {
+  visiblePieces: EachColor<(Piece & { realId: number | string; })[]> = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  startingVisiblePieces: Record<ColorEnum, (Piece & { realId: number | string; })[]> = {
+  startingVisiblePieces: EachColor<(Piece & { realId: number | string; })[]> = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
@@ -45,7 +47,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
 
   registerDarkChessMove(move: Move) {
     const prevPieceLocations = this.pieces.map(({ location }) => location);
-    const idMap = this.pieces.reduce<Record<string, true>>((map, piece) => {
+    const idMap = this.pieces.reduce<Dictionary<true>>((map, piece) => {
       map[piece.id] = true;
 
       return map;

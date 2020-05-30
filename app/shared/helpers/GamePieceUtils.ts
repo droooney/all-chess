@@ -7,6 +7,7 @@ import {
   BoardPiece,
   Boards,
   ColorEnum,
+  EachColor,
   GameCreateOptions,
   GameKings,
   GetPossibleMovesMode,
@@ -432,7 +433,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
       .filter(({ color }) => color === playerColor);
   }
 
-  getPiecesWorth(): Record<ColorEnum, number> {
+  getPiecesWorth(): EachColor<number> {
     return _.mapValues(ColorEnum, (color) => {
       let sumPiecesWorth = 0;
 
