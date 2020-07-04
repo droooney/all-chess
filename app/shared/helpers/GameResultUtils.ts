@@ -5,7 +5,7 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
   status: GameStatusEnum = GameStatusEnum.BEFORE_START;
   result: GameResult | null;
 
-  constructor(options: GameCreateOptions) {
+  protected constructor(options: GameCreateOptions) {
     super(options);
 
     this.result = this.startingData.result;
@@ -237,6 +237,10 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
     }
 
     return null;
+  }
+
+  isFinished(): boolean {
+    return this.status === GameStatusEnum.FINISHED;
   }
 
   isOngoing(): boolean {

@@ -12,6 +12,7 @@ import {
   HEX_ROOK_MOVE_INCREMENTS
 } from './GameBoardUtils';
 import {
+  AnyMove,
   BaseMove,
   BoardPiece,
   CastlingTypeEnum,
@@ -235,18 +236,18 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     }
 
     const isKing = GameMovesUtils.isKing(piece);
-    const isKingMove = isKing && (!this.isFrankfurt || !piece.abilities);
+    const hasKingMove = isKing && (!this.isFrankfurt || !piece.abilities);
 
-    if (isKingMove || GameMovesUtils.isRookLike(piece)) {
-      const stopAfter = isKingMove ? 1 : Infinity;
+    if (hasKingMove || GameMovesUtils.isRookLike(piece)) {
+      const stopAfter = GameMovesUtils.isRookLike(piece) ? Infinity : 1;
 
       for (const [incrementY, incrementX] of this.isHexagonalChess ? HEX_ROOK_MOVE_INCREMENTS : ROOK_MOVE_INCREMENTS) {
         yield* traverseDirection(PieceTypeEnum.ROOK, incrementY, incrementX, stopAfter);
       }
     }
 
-    if (isKingMove || GameMovesUtils.isBishopLike(piece)) {
-      const stopAfter = isKingMove ? 1 : Infinity;
+    if (hasKingMove || GameMovesUtils.isBishopLike(piece)) {
+      const stopAfter = GameMovesUtils.isBishopLike(piece) ? Infinity : 1;
 
       for (const [incrementY, incrementX] of this.isHexagonalChess ? HEX_BISHOP_MOVE_INCREMENTS : BISHOP_MOVE_INCREMENTS) {
         yield* traverseDirection(PieceTypeEnum.BISHOP, incrementY, incrementX, stopAfter);
@@ -460,6 +461,10 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     }
   }
 
+  getUsedMoves(): AnyMove[] {
+    return this.moves;
+  }
+
   isMoveAllowed(piece: RealPiece, square: Square, promotion: unknown): boolean {
     const possibleMove = this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE).find((sq) => (
       GameMovesUtils.areSquaresEqual(square, sq)
@@ -552,7 +557,10 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       ),
       type: PieceLocationEnum.BOARD
     };
-    let needToReset50MoveRule = isPawnPromotion || (!this.isRetreatChess && GameMovesUtils.isPawn(piece));
+    let needToReset50MoveRule = !this.isCrazyhouse && (
+      isPawnPromotion
+      || (!this.isRetreatChess && !this.isCirce && GameMovesUtils.isPawn(piece))
+    );
 
     if (this.isAtomic && isCapture) {
       const squaresAround: (Square | null)[] = [toLocation];
@@ -866,16 +874,16 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
           };
         } else if (GameMovesUtils.isEmpress(disappearedOrMovedPiece)) {
           newSquare = {
-            x: 3,
+            x: this.isCircularChess ? 2 : 7,
             y: this.isCircularChess
-              ? circularChessQueenSideRankY
+              ? circularChessKingSideRankY
               : pieceRankY
           };
         } else if (GameMovesUtils.isCardinal(disappearedOrMovedPiece)) {
           newSquare = {
-            x: this.isCircularChess ? 3 : 6,
+            x: 2,
             y: this.isCircularChess
-              ? circularChessKingSideRankY
+              ? circularChessQueenSideRankY
               : pieceRankY
           };
         } else if (GameMovesUtils.isPawn(disappearedOrMovedPiece)) {
@@ -903,12 +911,16 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             ? [0, this.boardWidth - 1]
             : GameMovesUtils.isKnight(disappearedOrMovedPiece)
               ? [1, this.boardWidth - 2]
-              : [2, this.boardWidth - 3];
+              : this.isCapablanca
+                ? [3, this.boardWidth - 4]
+                : [2, this.boardWidth - 3];
           const circularFileX = GameMovesUtils.isRook(disappearedOrMovedPiece)
             ? 0
             : GameMovesUtils.isKnight(disappearedOrMovedPiece)
               ? 1
-              : 2;
+              : this.isCapablanca
+                ? 3
+                : 2;
 
           newSquare = {
             x: this.isCircularChess

@@ -1,5 +1,5 @@
 import GameCommonUtils from './GameCommonUtils';
-import { GameCreateOptions, GameVariantEnum } from '../../types';
+import { BoardDimensions, GameCreateOptions, GameVariantEnum } from '../../types';
 
 interface VariantsInfo {
   is960: boolean;
@@ -30,6 +30,37 @@ export default interface GameVariantsUtils extends VariantsInfo {
 } // eslint-disable-line semi
 
 export default class GameVariantsUtils extends GameCommonUtils {
+  static getBoardDimensions(variants: readonly GameVariantEnum[]): BoardDimensions {
+    const {
+      isAliceChess,
+      isCapablanca,
+      isCircularChess,
+      isHexagonalChess,
+      isTwoFamilies
+    } = GameVariantsUtils.getVariantsInfo(variants);
+    const dimensions: BoardDimensions = {
+      boardCount: isAliceChess ? 2 : 1,
+      boardWidth: isHexagonalChess
+        ? 11
+        : isTwoFamilies || isCapablanca
+          ? 10
+          : 8,
+      boardHeight: isHexagonalChess
+        ? 11
+        : 8
+    };
+
+    if (!isCircularChess) {
+      return dimensions;
+    }
+
+    return {
+      ...dimensions,
+      boardWidth: dimensions.boardWidth / 2,
+      boardHeight: dimensions.boardHeight * 2
+    };
+  }
+
   static getVariantsInfo(variants: readonly GameVariantEnum[]): VariantsInfo {
     return {
       is960: variants.includes(GameVariantEnum.CHESS_960),
@@ -87,17 +118,19 @@ export default class GameVariantsUtils extends GameCommonUtils {
     ) && (
       !isHexagonalChess
       || !is960
-      || !isTwoFamilies
-    ) && (
-      !isHexagonalChess
-      || !is960
-      || !isCapablanca
+      || (
+        !isTwoFamilies
+        && !isCapablanca
+        && !isKingOfTheHill
+      )
     ) && (
       !isCompensationChess
       || !isDarkChess
       || (
         !isAbsorption
         && !isFrankfurt
+        && !isAtomic
+        && !isCirce
       )
     ) && (
       !isCirce
@@ -138,6 +171,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isMadrasi
         && !isThreeCheck
         && !isCompensationChess
+        && !isAbsorption
       )
     ) && (
       !isAbsorption
@@ -147,6 +181,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isCirce
         && !isMadrasi
         && !isFrankfurt
+        && !isCompensationChess
       )
     ) && (
       !isFrankfurt
@@ -179,6 +214,11 @@ export default class GameVariantsUtils extends GameCommonUtils {
       || (
         !isCylinderChess
         && !isCirce
+      )
+    ) && (
+      !isCompensationChess
+      || (
+        !isCrazyhouse
       )
     ));
   }

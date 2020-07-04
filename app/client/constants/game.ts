@@ -1,6 +1,12 @@
 import * as _ from 'lodash';
 
-import { ColorEnum, GameSettings, PieceLocationEnum, PieceTypeEnum } from '../../types';
+import {
+  ColorEnum,
+  DrawnSymbolColor,
+  GameSettings,
+  PieceLocationEnum,
+  PieceTypeEnum
+} from '../../types';
 
 export const GAME_DEFAULT_SETTINGS: { [key in keyof GameSettings]: GameSettings[key]; } = {
   showFantomPieces: true,
@@ -31,3 +37,10 @@ export const pocketPieces = _.mapValues(ColorEnum, (color) => (
     }
   }))
 ));
+
+export const drawnSymbolColors: Record<DrawnSymbolColor, string> = {
+  [DrawnSymbolColor.GREEN]: '#080',
+  [DrawnSymbolColor.BLUE]: '#0bf',
+  [DrawnSymbolColor.RED]: '#f00',
+  [DrawnSymbolColor.YELLOW]: '#fc0'
+};

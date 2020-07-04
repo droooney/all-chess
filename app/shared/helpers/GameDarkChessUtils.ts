@@ -4,6 +4,7 @@ import GameMovesUtils from './GameMovesUtils';
 import {
   ColorEnum,
   DarkChessRevertableMove,
+  DarkChessVisiblePiece,
   Dictionary,
   EachColor,
   Move,
@@ -17,11 +18,11 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  visiblePieces: EachColor<(Piece & { realId: number | string; })[]> = {
+  visiblePieces: EachColor<DarkChessVisiblePiece[]> = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  startingVisiblePieces: EachColor<(Piece & { realId: number | string; })[]> = {
+  startingVisiblePieces: EachColor<DarkChessVisiblePiece[]> = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
@@ -182,6 +183,10 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         figurine,
         isCapture,
         pieces: newPieces.map((piece) => _.omit(piece, 'realId')),
+        prevPiecesWorth: this.isFrankfurt || this.isAbsorption || this.isAtomic || this.isCirce
+          ? { [ColorEnum.WHITE]: 0, [ColorEnum.BLACK]: 0 }
+          : registeredMove.prevPiecesWorth,
+        timeBeforeMove: registeredMove.timeBeforeMove,
         revertMove: () => {
           this.visiblePieces[color] = oldVisiblePieces;
         }

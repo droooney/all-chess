@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from '../../constants';
+import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, drawnSymbolColors, SVG_SQUARE_SIZE } from '../../constants';
 
 import { DrawnSymbol as IDrawnSymbol, Square } from '../../../types';
 
@@ -32,9 +32,10 @@ export default class DrawnSymbol extends React.Component<Props> {
       game,
       symbol
     } = this.props;
-    const transformStyle: React.CSSProperties = {
+    const style = {
       transform: 'rotate(calc(180deg * var(--is-black-base, 0)))',
-      transformOrigin: `${game.boardCenterX}px ${game.boardCenterY}px`
+      transformOrigin: `${game.boardCenterX}px ${game.boardCenterY}px`,
+      stroke: drawnSymbolColors[symbol.color]
     };
 
     if (symbol.type === 'circle') {
@@ -49,7 +50,7 @@ export default class DrawnSymbol extends React.Component<Props> {
           cy={center.y}
           strokeWidth={strokeWidth}
           fill="none"
-          style={transformStyle}
+          style={style}
         />
       );
     }
@@ -74,8 +75,8 @@ export default class DrawnSymbol extends React.Component<Props> {
         strokeWidth={strokeWidth}
         strokeLinecap="round"
         fill="none"
-        markerEnd="url(#arrow-marker)"
-        style={transformStyle}
+        markerEnd={`url(#arrow-marker-${symbol.color})`}
+        style={style}
       />
     );
   }

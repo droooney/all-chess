@@ -39,12 +39,12 @@ const TWO_FAMILIES_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
 const CAPABLANCA_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.KNIGHT,
-  PieceTypeEnum.BISHOP,
-  PieceTypeEnum.EMPRESS,
-  PieceTypeEnum.QUEEN,
-  PieceTypeEnum.KING,
   PieceTypeEnum.CARDINAL,
   PieceTypeEnum.BISHOP,
+  PieceTypeEnum.QUEEN,
+  PieceTypeEnum.KING,
+  PieceTypeEnum.BISHOP,
+  PieceTypeEnum.EMPRESS,
   PieceTypeEnum.KNIGHT,
   PieceTypeEnum.ROOK
 ];
@@ -85,8 +85,8 @@ const HEXAGONAL_CAPABLANCA_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.BISHOP,
-  PieceTypeEnum.EMPRESS,
-  PieceTypeEnum.CARDINAL
+  PieceTypeEnum.CARDINAL,
+  PieceTypeEnum.EMPRESS
 ];
 
 const HEXAGONAL_PIECE_SQUARES: readonly [number, number][] = [

@@ -524,34 +524,45 @@ export class Game extends GameResultUtils implements IGame {
   }
 
   changePlayerTime(averagePing: number = 0) {
-    if (this.moves.length > 2 && this.timeControl) {
+    if (this.needToChangeTime() && this.timeControl) {
       const prevTurn = this.getOpponentColor();
       const player = this.players[prevTurn];
       const {
         duration: actualDuration,
         prevPiecesWorth
-      } = _.last(this.moves)!;
+      } = _.last(this.getUsedMoves())!;
       const duration = Math.max(actualDuration / 2, actualDuration - averagePing / 2);
 
-      if (this.isOngoing()) {
-        if (this.timeControl.type === TimeControlEnum.TIMER) {
-          player.time! -= duration - this.timeControl.increment;
+      if (this.isFinished()) {
+        player.time! -= duration;
+      } else if (this.timeControl.type === TimeControlEnum.TIMER) {
+        player.time! -= duration - this.timeControl.increment;
 
-          if (this.isCompensationChess) {
-            const newPiecesWorth = this.getPiecesWorth();
-            const gainedMaterial = newPiecesWorth[player.color] - prevPiecesWorth[player.color];
-            const takenMaterial = prevPiecesWorth[this.turn] - newPiecesWorth[this.turn];
+        if (this.isCompensationChess) {
+          const newPiecesWorth = this.getPiecesWorth();
+          const gainedMaterial = newPiecesWorth[player.color] - prevPiecesWorth[player.color];
+          const takenMaterial = prevPiecesWorth[this.turn] - newPiecesWorth[this.turn];
 
-            player.time! -= (gainedMaterial + takenMaterial) * this.pawnTimeValue;
-          }
-        } else {
-          player.time = this.timeControl.base;
+          player.time! -= (gainedMaterial + takenMaterial) * this.pawnTimeValue;
         }
       } else {
-        player.time! -= duration;
+        player.time = this.timeControl.base;
       }
 
       player.time = Math.max(player.time!, 0);
+    }
+  }
+
+  needToChangeTime(): boolean {
+    return this.getUsedMoves().length > 2;
+  }
+
+  setupStartingData() {
+    super.setupStartingData();
+
+    if (this.timeControl) {
+      this.players[ColorEnum.WHITE].time = this.timeControl.base;
+      this.players[ColorEnum.BLACK].time = this.timeControl.base;
     }
   }
 }

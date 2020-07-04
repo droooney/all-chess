@@ -9,6 +9,7 @@ import {
   BoardPossibleMove,
   ColorEnum,
   DrawnSymbol as IDrawnSymbol,
+  DrawnSymbolColor,
   Piece as IPiece,
   PieceBoardLocation,
   PieceLocationEnum,
@@ -18,7 +19,7 @@ import {
   RealPieceLocation,
   Square
 } from '../../../types';
-import { ALICE_CHESS_BOARDS_MARGIN, SVG_SQUARE_SIZE } from '../../constants';
+import { ALICE_CHESS_BOARDS_MARGIN, drawnSymbolColors, SVG_SQUARE_SIZE } from '../../constants';
 import { Game } from '../../helpers';
 import { ReduxState } from '../../store';
 
@@ -70,8 +71,7 @@ class Boards extends React.Component<Props> {
 
   componentDidUpdate(prevProps: Props) {
     if (
-      prevProps.isBlackBase !== this.props.isBlackBase
-      || prevProps.isDragging !== this.props.isDragging
+      prevProps.isDragging !== this.props.isDragging
       || prevProps.game !== this.props.game
       || prevProps.premoves.length !== this.props.premoves.length
     ) {
@@ -257,7 +257,6 @@ class Boards extends React.Component<Props> {
           '--dark-square-color': '#bbb',
           // '--dark-square-color': 'silver',
           '--half-dark-square-color': '#d8d8d8',
-          '--symbol-color': '#080',
           '--boards-margin': `${ALICE_CHESS_BOARDS_MARGIN}px`
         } as React.CSSProperties}
         onContextMenu={(e) => e.preventDefault()}
@@ -453,17 +452,20 @@ class Boards extends React.Component<Props> {
                   <stop offset="0%" stopColor="red" />
                   <stop offset="100%" stopColor="rgba(0,0,0,0)" />
                 </radialGradient>
-                <marker
-                  id="arrow-marker"
-                  viewBox="0 0 10 8"
-                  orient="auto"
-                  markerWidth={5}
-                  markerHeight={4}
-                  refX={7}
-                  refY={4}
-                >
-                  <path d="M0,0 V8 L10,4 Z" className="arrow-marker" />
-                </marker>
+                {_.map(DrawnSymbolColor, (color) => (
+                  <marker
+                    key={color}
+                    id={`arrow-marker-${color}`}
+                    viewBox="0 0 10 8"
+                    orient="auto"
+                    markerWidth={5}
+                    markerHeight={4}
+                    refX={7}
+                    refY={4}
+                  >
+                    <path d="M0,0 V8 L10,4 Z" className="arrow-marker" fill={drawnSymbolColors[color]} />
+                  </marker>
+                ))}
               </defs>
               <g className="bottom-squares">
                 <BoardSquares

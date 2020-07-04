@@ -4,7 +4,6 @@ import * as _ from 'lodash';
 
 import GamePieceUtils from './GamePieceUtils';
 import {
-  BoardDimensions,
   BoardPiece,
   Boards,
   CenterSquareParams,
@@ -90,37 +89,6 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
       && square1.y === square2.y
       && square1.x === square2.x
     );
-  }
-
-  static getBoardDimensions(variants: readonly GameVariantEnum[]): BoardDimensions {
-    const {
-      isAliceChess,
-      isCapablanca,
-      isCircularChess,
-      isHexagonalChess,
-      isTwoFamilies
-    } = GameBoardUtils.getVariantsInfo(variants);
-    const dimensions: BoardDimensions = {
-      boardCount: isAliceChess ? 2 : 1,
-      boardWidth: isHexagonalChess
-        ? 11
-        : isTwoFamilies || isCapablanca
-          ? 10
-          : 8,
-      boardHeight: isHexagonalChess
-        ? 11
-        : 8
-    };
-
-    if (!isCircularChess) {
-      return dimensions;
-    }
-
-    return {
-      ...dimensions,
-      boardWidth: dimensions.boardWidth / 2,
-      boardHeight: dimensions.boardHeight * 2
-    };
   }
 
   static getBoardLiteral(board: number): string {
@@ -349,16 +317,14 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
           return;
         }
 
-        const isKingMove = GameBoardUtils.isKing(pieceInSquare) && (!this.isFrankfurt || !pieceInSquare.abilities);
+        const hasKingMove = GameBoardUtils.isKing(pieceInSquare) && (!this.isFrankfurt || !pieceInSquare.abilities);
 
-        if (
-          (!isKingMove && !GameBoardUtils.hasMovement(pieceInSquare, movementType))
-          || (isKingMove && (iteration > 0 || movementType === PieceTypeEnum.KNIGHT))
-        ) {
-          return;
-        }
-
-        return pieceInSquare;
+        return (
+          GameBoardUtils.hasMovement(pieceInSquare, movementType)
+          || (hasKingMove && iteration === 0 && movementType !== PieceTypeEnum.KNIGHT)
+        )
+          ? pieceInSquare
+          : undefined;
       }
     };
     const isAttacking = (piece: BoardPiece): boolean => (

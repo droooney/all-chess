@@ -153,12 +153,12 @@ export const RESULT_REASON_NAMES: Record<ResultReasonEnum, string> = {
   [ResultReasonEnum.NO_MORE_PIECES]: 'no more pieces',
   [ResultReasonEnum.THREE_CHECKS]: 'three checks',
   [ResultReasonEnum.STALEMATE]: 'stalemate',
-  [ResultReasonEnum.TIMEOUT]: 'timeout',
-  [ResultReasonEnum.SELF_TIMEOUT]: 'timeout',
+  [ResultReasonEnum.TIMEOUT]: 'time out',
+  [ResultReasonEnum.SELF_TIMEOUT]: 'time out',
   [ResultReasonEnum.RESIGN]: 'opponent resigned',
   [ResultReasonEnum.AGREED_TO_DRAW]: 'players agreed to a draw',
   [ResultReasonEnum.INSUFFICIENT_MATERIAL]: 'insufficient material',
-  [ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT]: 'insufficient material + timeout',
+  [ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT]: 'insufficient material + time out',
   [ResultReasonEnum.THREEFOLD_REPETITION]: 'threefold repetition',
   [ResultReasonEnum.FIFTY_MOVE_RULE]: '50 move rule'
 };

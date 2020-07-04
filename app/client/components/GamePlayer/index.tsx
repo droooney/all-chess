@@ -31,9 +31,11 @@ interface OwnProps {
   timeControl: TimeControl;
   enableClick: boolean;
   enableDnd: boolean;
+  turn: ColorEnum;
   realTurn: ColorEnum;
   status: GameStatusEnum;
-  adjustedLastMoveTimestamp: number;
+  currentMoveIndex: number;
+  lastMoveTimestamp: number;
   isTop: boolean;
   allMaterialDifference: number;
   materialDifference: Record<PieceTypeEnum, number>;
@@ -104,10 +106,19 @@ export default class GamePlayer extends React.Component<Props, State> {
 
   getTime(): number {
     const {
+      game,
       player,
-      adjustedLastMoveTimestamp,
-      realTurn
+      lastMoveTimestamp,
+      realTurn,
+      moves,
+      currentMoveIndex
     } = this.props;
+    const adjustedLastMoveTimestamp = lastMoveTimestamp + game.timeDiff;
+
+    if (currentMoveIndex !== moves.length - 1) {
+      return moves[currentMoveIndex + 1].timeBeforeMove[player.color]!;
+    }
+
     const timePassedSinceLastMove = (this.state.intervalActivated ? Date.now() : adjustedLastMoveTimestamp) - adjustedLastMoveTimestamp;
 
     return Math.max(
@@ -157,7 +168,9 @@ export default class GamePlayer extends React.Component<Props, State> {
       pieces,
       enableClick,
       enableDnd,
+      turn,
       realTurn,
+      status,
       selectedPiece,
       timeControl,
       isTop,
@@ -166,7 +179,10 @@ export default class GamePlayer extends React.Component<Props, State> {
       selectPiece,
       startDraggingPiece
     } = this.props;
-    const active = player.color === realTurn && game.isOngoing();
+    const allMaterialDiffRelativeToPlayer = player.color === ColorEnum.WHITE
+      ? allMaterialDifference
+      : -allMaterialDifference;
+    const active = player.color === realTurn && status === GameStatusEnum.ONGOING;
     const time = this.getTime();
 
     return (
@@ -210,9 +226,9 @@ export default class GamePlayer extends React.Component<Props, State> {
                 </div>
               );
             })}
-            {(player.color === ColorEnum.WHITE ? allMaterialDifference > 0 : allMaterialDifference < 0) && (
+            {allMaterialDiffRelativeToPlayer !== 0 && (
               <span className="all-material-advantage">
-                +{Math.abs(allMaterialDifference)}
+                {allMaterialDiffRelativeToPlayer > 0 ? '+' : ''}{allMaterialDiffRelativeToPlayer}
               </span>
             )}
           </div>
@@ -251,6 +267,10 @@ export default class GamePlayer extends React.Component<Props, State> {
           </div>
         )}
         <div className="name">
+          <div
+            className={classNames('color', { active: player.color === turn })}
+            style={{ backgroundColor: player.color }}
+          />
           {player.name}
         </div>
       </div>

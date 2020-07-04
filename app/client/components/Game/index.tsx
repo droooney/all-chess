@@ -13,6 +13,7 @@ import {
   DarkChessGame,
   DarkChessGameInitialData,
   DrawnSymbol,
+  DrawnSymbolColor,
   Game as IGame,
   GameInitialData,
   GameStatusEnum,
@@ -87,6 +88,8 @@ class Game extends React.Component<Props, State> {
   prevMoveIndex = -1;
   prevMoveCount = 0;
   drawnSymbolId = 0;
+  drawnSymbolColor: DrawnSymbolColor = DrawnSymbolColor.GREEN;
+  prevAllowedSquareElem: Element | null = null;
   state: State = {
     selectedPiece: null,
     selectedPieceBoard: 0,
@@ -708,6 +711,13 @@ class Game extends React.Component<Props, State> {
           drawingSymbolStart: location,
           drawingSymbol: {
             type: 'circle',
+            color: this.drawnSymbolColor = e.ctrlKey
+              ? DrawnSymbolColor.BLUE
+              : e.shiftKey
+                ? DrawnSymbolColor.RED
+                : e.altKey
+                  ? DrawnSymbolColor.YELLOW
+                  : DrawnSymbolColor.GREEN,
             id: ++this.drawnSymbolId,
             square: location
           }
@@ -733,6 +743,8 @@ class Game extends React.Component<Props, State> {
         || this.state.allowedMoves.every(({ square }) => !GameHelper.areSquaresEqual(draggedPiece.location, square))
       )
     ) {
+      e.preventDefault();
+
       this.draggingPieceTranslate = this.getDraggingPieceTranslate(e);
 
       const selectedPieceBoard = location.type === PieceLocationEnum.POCKET ? 0 : location.board;
@@ -741,6 +753,8 @@ class Game extends React.Component<Props, State> {
         selectedPiece: draggedPiece,
         selectedPieceBoard,
         allowedMoves: this.getAllowedMoves(draggedPiece, selectedPieceBoard).toArray(),
+        drawingSymbolStart: null,
+        drawingSymbol: null,
         drawnSymbols: [],
         isDragging: true
       });
@@ -758,26 +772,27 @@ class Game extends React.Component<Props, State> {
       return;
     }
 
-    if (this.state.drawingSymbolStart) {
-      const point = this.getEventPoint(e);
-      let square: Square | null = null;
+    e.preventDefault();
 
-      document.elementsFromPoint(point.x, point.y).some((element) => {
-        try {
-          const squareJSON = (element as HTMLElement).dataset.square;
+    const point = this.getEventPoint(e);
+    let squareElem: Element | null = null;
+    let square: Square | null = null;
 
-          if (!squareJSON) {
-            return false;
-          }
+    const element = document.elementFromPoint(point.x, point.y);
 
-          square = JSON.parse(squareJSON);
+    if (element && (element instanceof SVGPathElement || element instanceof SVGRectElement) && element.dataset.square) {
+      try {
+        square = JSON.parse(element.dataset.square);
 
-          return true;
-        } catch (err) {
-          return false;
+        if (element.classList.contains('allowed-square')) {
+          squareElem = element;
         }
-      });
+      } catch {
+        /* empty */
+      }
+    }
 
+    if (this.state.drawingSymbolStart) {
       this.setState(({ drawingSymbolStart, drawingSymbol }) => {
         if (!drawingSymbolStart) {
           return null;
@@ -785,8 +800,8 @@ class Game extends React.Component<Props, State> {
 
         const newDrawingSymbol: DrawnSymbol | null | false = square && drawingSymbolStart.board === square.board && (
           GameHelper.areSquaresEqual(drawingSymbolStart, square)
-            ? { type: 'circle', id: this.drawnSymbolId, square: drawingSymbolStart }
-            : { type: 'arrow', id: this.drawnSymbolId, from: drawingSymbolStart, to: square }
+            ? { type: 'circle', color: this.drawnSymbolColor, id: this.drawnSymbolId, square: drawingSymbolStart }
+            : { type: 'arrow', color: this.drawnSymbolColor, id: this.drawnSymbolId, from: drawingSymbolStart, to: square }
         );
 
         if (
@@ -808,7 +823,17 @@ class Game extends React.Component<Props, State> {
         };
       });
     } else {
-      e.preventDefault();
+      if (this.prevAllowedSquareElem !== squareElem) {
+        if (this.prevAllowedSquareElem) {
+          this.prevAllowedSquareElem.classList.remove('hover');
+        }
+
+        if (squareElem) {
+          squareElem.classList.add('hover');
+        }
+
+        this.prevAllowedSquareElem = squareElem;
+      }
 
       this.draggingPieceRef.current!.style.transform = this.draggingPieceTranslate = this.getDraggingPieceTranslate(e);
     }
@@ -840,7 +865,8 @@ class Game extends React.Component<Props, State> {
           if (
             this.state.selectedPiece
             && GameHelper.isPocketPiece(this.state.selectedPiece)
-            && (element as HTMLElement).dataset.pocketPiece === this.state.selectedPiece.location.pieceType
+            && element instanceof HTMLDivElement
+            && element.dataset.pocketPiece === this.state.selectedPiece.location.pieceType
           ) {
             this.setState({
               isDragging: false
@@ -849,7 +875,11 @@ class Game extends React.Component<Props, State> {
             return true;
           }
 
-          const squareJSON = (element as HTMLElement).dataset.square;
+          if (!(element instanceof SVGPathElement) && !(element instanceof SVGRectElement)) {
+            return false;
+          }
+
+          const squareJSON = element.dataset.square;
 
           if (!squareJSON) {
             return false;
@@ -893,6 +923,7 @@ class Game extends React.Component<Props, State> {
           pieces,
           chat,
           players,
+          turn,
           drawOffer,
           takebackRequest,
           timeControl,
@@ -903,7 +934,6 @@ class Game extends React.Component<Props, State> {
           darkChessMode,
           showDarkChessHiddenPieces,
           lastMoveTimestamp,
-          timeDiff,
           currentMoveIndex,
           premoves
         } = this.game;
@@ -930,7 +960,6 @@ class Game extends React.Component<Props, State> {
         const bottomPlayer = isBlackBase
           ? players[ColorEnum.BLACK]
           : players[ColorEnum.WHITE];
-        const adjustedLastMoveTimestamp = lastMoveTimestamp + timeDiff;
         const materialDifference: Record<PieceTypeEnum, number> = {} as any;
         let allMaterialDifference = 0;
 
@@ -1025,9 +1054,11 @@ class Game extends React.Component<Props, State> {
                 pieces={pieces}
                 moves={usedMoves}
                 timeControl={timeControl}
+                turn={turn}
                 realTurn={realTurn}
                 status={status}
-                adjustedLastMoveTimestamp={adjustedLastMoveTimestamp}
+                currentMoveIndex={currentMoveIndex}
+                lastMoveTimestamp={lastMoveTimestamp}
                 enableClick={enableClick && !!player && topPlayer.id === player.id}
                 enableDnd={enableDnd && !!player && topPlayer.id === player.id}
                 isTop
@@ -1049,9 +1080,11 @@ class Game extends React.Component<Props, State> {
                 pieces={pieces}
                 moves={usedMoves}
                 timeControl={timeControl}
+                turn={turn}
                 realTurn={realTurn}
                 status={status}
-                adjustedLastMoveTimestamp={adjustedLastMoveTimestamp}
+                currentMoveIndex={currentMoveIndex}
+                lastMoveTimestamp={lastMoveTimestamp}
                 enableClick={enableClick && !!player && bottomPlayer.id === player.id}
                 enableDnd={enableDnd && !!player && bottomPlayer.id === player.id}
                 isTop={false}

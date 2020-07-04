@@ -200,7 +200,7 @@
       .game-player {
         display: grid;
         justify-items: start;
-        padding: 3px 8px;
+        padding: 10px;
 
         .pocket {
           .flex();
@@ -228,11 +228,13 @@
               height: 100%;
               background-color: rgba(115,125,105,0.5);
               z-index: 1;
+              pointer-events: none;
             }
 
             .piece {
               width: 100%;
               z-index: 2;
+              pointer-events: none;
             }
 
             .count {
@@ -248,12 +250,13 @@
               color: #fff;
               border-radius: 100%;
               z-index: 3;
+              pointer-events: none;
             }
           }
         }
 
         .material-advantage {
-          .flex();
+          .flex(@justify-content: flex-start);
 
           flex-wrap: wrap;
           grid-area: material;
@@ -276,15 +279,32 @@
 
           .all-material-advantage {
             font-weight: bold;
-            margin-left: 10px;
+            margin-left: 5px;
           }
         }
 
         .name {
+          .flex();
           .ellipsis();
 
           grid-area: name;
           font-size: 16px;
+
+          .color {
+            @color-size: 14px;
+            @border-size: 3px;
+
+            width: @color-size + 2 * @border-size;
+            height: @color-size + 2 * @border-size;
+            border-radius: 50%;
+            border: #baa @border-size solid;
+            margin-right: 5px;
+            overflow: hidden;
+
+            &.active {
+              border-color: #0c0;
+            }
+          }
         }
 
         .timer {

@@ -15,16 +15,26 @@ export interface Square {
   readonly y: number;
 }
 
-export interface Arrow {
-  type: 'arrow';
+export enum DrawnSymbolColor {
+  GREEN = 'GREEN',
+  BLUE = 'BLUE',
+  RED = 'RED',
+  YELLOW = 'YELLOW'
+}
+
+export interface BaseDrawnSymbol {
   id: number;
+  color: DrawnSymbolColor;
+}
+
+export interface Arrow extends BaseDrawnSymbol {
+  type: 'arrow';
   from: Square;
   to: Square;
 }
 
-export interface Circle {
+export interface Circle extends BaseDrawnSymbol {
   type: 'circle';
-  id: number;
   square: Square;
 }
 
@@ -43,9 +53,9 @@ export type GamePlayers = EachColor<Player>;
 export enum PieceTypeEnum {
   KING = 'KING',
   AMAZON = 'AMAZON',
+  QUEEN = 'QUEEN',
   EMPRESS = 'EMPRESS',
   CARDINAL = 'CARDINAL',
-  QUEEN = 'QUEEN',
   ROOK = 'ROOK',
   BISHOP = 'BISHOP',
   KNIGHT = 'KNIGHT',
@@ -121,6 +131,10 @@ export interface PocketPiece extends Piece {
 
 export interface NonExistentPiece extends Piece {
   location: null;
+}
+
+export interface DarkChessVisiblePiece extends Piece {
+  realId: string;
 }
 
 export type RealPiece = (
@@ -272,6 +286,8 @@ export interface DarkChessMove {
   figurine: string;
   pieces: readonly Piece[];
   isCapture: boolean;
+  prevPiecesWorth: EachColor<number>;
+  timeBeforeMove: EachColor<number | null>;
 }
 
 export interface DarkChessRevertableMove extends DarkChessMove {

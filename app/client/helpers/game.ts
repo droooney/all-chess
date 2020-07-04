@@ -146,14 +146,11 @@ export class Game extends GameHelper {
     this.drawOffer = game.drawOffer;
     this.takebackRequest = game.takebackRequest;
     this.lastMoveTimestamp = game.lastMoveTimestamp;
-    this.status = game.status;
-    this.result = game.result;
-    this.players = game.players;
     this.currentMoveIndex = game.moves.length - 1;
     this.chat = game.chat;
     this.player = player;
     this.socket = socket;
-    this.isOngoingDarkChessGame = this.isDarkChess && this.status !== GameStatusEnum.FINISHED;
+    this.isOngoingDarkChessGame = this.isDarkChess && game.status !== GameStatusEnum.FINISHED;
     this.showDarkChessHiddenPieces = !this.isOngoingDarkChessGame;
     this.boardSidesRenderedRatio = this.isCircularChess
       ? 1
@@ -198,6 +195,10 @@ export class Game extends GameHelper {
       });
     }
 
+    this.status = game.status;
+    this.result = game.result;
+    this.players = game.players;
+
     if (typeof currentMoveIndex === 'number') {
       this.navigateToMove(currentMoveIndex);
     }
@@ -227,6 +228,8 @@ export class Game extends GameHelper {
           ) {
             lastMove.duration = move.duration;
 
+            this.updateGame();
+
             return;
           }
 
@@ -251,7 +254,7 @@ export class Game extends GameHelper {
           this.onMoveMade(move as Move, this.isOngoingDarkChessGame as false, false);
           this.notifyAboutNewMove();
 
-          if (!this.isOngoing()) {
+          if (this.isFinished()) {
             this.cancelPremoves(false);
           }
 
@@ -596,7 +599,12 @@ export class Game extends GameHelper {
         algebraic,
         figurine,
         isCapture,
-        pieces
+        pieces,
+        prevPiecesWorth: this.getPiecesWorth(),
+        timeBeforeMove: {
+          [ColorEnum.WHITE]: this.players[ColorEnum.WHITE].time,
+          [ColorEnum.BLACK]: this.players[ColorEnum.BLACK].time
+        }
       }, true, false);
     } else {
       this.onMoveMade({
@@ -606,8 +614,6 @@ export class Game extends GameHelper {
     }
 
     this.lastMoveTimestamp = newTimestamp;
-
-    this.changePlayerTime();
   }
 
   moveBack(updateGame: boolean = true) {
@@ -780,20 +786,20 @@ export class Game extends GameHelper {
     const isCastling = !!castlingRook;
     const isKingSideCastling = isCastling && toX - (fromLocation as PieceBoardLocation).x > 0;
     const isRoyalKing = wasKing && !this.isAntichess;
-    const isCapture = (
+    const isAnyCapture = (
       !castlingRook
       && !!pieceInSquare
-      && pieceInSquare.color !== piece.color
       && fromLocation.type === PieceLocationEnum.BOARD
       && (
         !Game.isPawn(piece)
         || fromLocation.x - toX !== 0
       )
     );
+    const isOpponentCapture = isAnyCapture && !!pieceInSquare && pieceInSquare.color !== piece.color;
     const movedPieces: BoardPiece[] = [piece as BoardPiece];
 
     if (pieceInSquare && (!castlingRook || pieceInSquare.id !== castlingRook.id)) {
-      const goesToPocket = this.isCrazyhouse && isCapture;
+      const goesToPocket = this.isCrazyhouse && isOpponentCapture;
 
       if (goesToPocket) {
         pieceInSquare.type = pieceInSquare.originalType;
@@ -838,7 +844,7 @@ export class Game extends GameHelper {
       ? promotion!
       : piece.abilities;
 
-    if (this.isAbsorption && isCapture) {
+    if (this.isAbsorption && isAnyCapture) {
       const {
         type,
         abilities
@@ -847,7 +853,7 @@ export class Game extends GameHelper {
       piece.type = type;
       piece.originalType = type;
       piece.abilities = abilities;
-    } else if (this.isFrankfurt && isCapture && (!isRoyalKing || !isPawnPromotion)) {
+    } else if (this.isFrankfurt && isAnyCapture && (!isRoyalKing || !isPawnPromotion)) {
       const isOpponentPieceRoyalKing = Game.isKing(pieceInSquare!) && !this.isAntichess;
       const newPieceType = isPawnPromotion
         ? piece.type
@@ -919,12 +925,14 @@ export class Game extends GameHelper {
       revertMove
     });
 
+    this.changePlayerTime();
     this.savePieceLocations();
   }
 
   registerMove(move: Move): RegisterMoveReturnValue {
     const returnValue = super.registerMove(move);
 
+    this.changePlayerTime();
     this.savePieceLocations();
 
     return returnValue;
@@ -1043,6 +1051,9 @@ export class Game extends GameHelper {
   }
 
   unregisterLastMove() {
+    const move = _.last(this.getUsedMoves())!;
+    const needToUpdateTime = this.needToChangeTime();
+
     if (this.isOngoingDarkChessGame && this.darkChessMode) {
       _.last(this.colorMoves[this.darkChessMode])!.revertMove();
 
@@ -1053,6 +1064,12 @@ export class Game extends GameHelper {
       _.last(this.moves)!.revertMove();
 
       this.moves = this.moves.slice(0, -1);
+    }
+
+    const player = this.players[this.turn];
+
+    if (this.timeControl && needToUpdateTime) {
+      player.time = move.timeBeforeMove[player.color];
     }
   }
 

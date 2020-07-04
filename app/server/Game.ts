@@ -315,7 +315,6 @@ export default class Game extends GameHelper {
               message: 'Takeback request accepted'
             });
             this.io.emit('takebackAccepted', this.lastMoveTimestamp);
-            this.updatePlayers();
           });
 
           socket.on('declineTakeback', () => {
@@ -528,7 +527,6 @@ export default class Game extends GameHelper {
       return;
     }
 
-    this.updatePlayers();
     this.setTimerTimeout();
   }
 
@@ -590,13 +588,9 @@ export default class Game extends GameHelper {
     ]);
   }
 
-  updatePlayers() {
-    this.io.emit('updatePlayers', this.players);
-  }
-
   unregisterLastMove() {
     const move = _.last(this.moves)!;
-    const needToUpdateTime = this.moves.length > 2;
+    const needToUpdateTime = this.needToChangeTime();
 
     move.revertMove();
 
