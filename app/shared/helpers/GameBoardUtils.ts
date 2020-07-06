@@ -91,7 +91,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     );
   }
 
-  static areSquaresEqualCb(square1: Square, exact: boolean = true): (square: Square) => boolean {
+  static equalToSquare(square1: Square, exact: boolean = true): (square: Square) => boolean {
     return (square2) => (
       (!exact || square1.board === square2.board)
       && square1.y === square2.y
@@ -431,9 +431,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
   }
 
   isEmptySquare(square: Square): boolean {
-    return this.emptySquares.some((emptySquare) => (
-      GameBoardUtils.areSquaresEqual(square, emptySquare)
-    ));
+    return this.emptySquares.some(GameBoardUtils.equalToSquare(square));
   }
 
   isFirstRank(square: Square, color: ColorEnum): boolean {
@@ -480,9 +478,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
   isPatrolledByFriendlyPiece(square: Square, color: ColorEnum): boolean {
     return this.getPieces(color).some((piece) => (
       GameBoardUtils.isBoardPiece(piece)
-      && this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.CONTROLLED).any((sq) => (
-        GameBoardUtils.areSquaresEqual(sq, square)
-      ))
+      && this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.CONTROLLED).any(GameBoardUtils.equalToSquare(square))
     ));
   }
 

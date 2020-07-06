@@ -178,7 +178,7 @@ class Boards extends React.Component<Props> {
     const visibleSquares = isDarkChess && darkChessMode
       ? currentMove && 'prevVisibleSquares' in currentMove
         ? game.getLocalVisibleSquares(darkChessMode).filter(
-          (square) => currentMove.prevVisibleSquares!.some(Game.areSquaresEqualCb(square))
+          (square) => currentMove.prevVisibleSquares!.some(Game.equalToSquare(square))
         )
         : game.getLocalVisibleSquares(darkChessMode)
       : [];

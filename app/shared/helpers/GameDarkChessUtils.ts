@@ -33,7 +33,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
     return this.pieces.filter((piece) => (
       piece.color === forColor || (
         GameDarkChessUtils.isBoardPiece(piece)
-        && visibleSquares.some((square) => GameDarkChessUtils.areSquaresEqual(square, piece.location))
+        && visibleSquares.some(GameDarkChessUtils.equalToSquare(piece.location))
       )
     ));
   }
@@ -80,12 +80,12 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         const oldLocationVisible = (
           !!prevPieceLocation
           && prevPieceLocation.type === PieceLocationEnum.BOARD
-          && prevVisibleSquares[color].some((square) => GameDarkChessUtils.areSquaresEqual(square, prevPieceLocation))
-          && visibleSquares.some((square) => GameDarkChessUtils.areSquaresEqual(square, prevPieceLocation))
+          && prevVisibleSquares[color].some(GameDarkChessUtils.equalToSquare(prevPieceLocation))
+          && visibleSquares.some(GameDarkChessUtils.equalToSquare(prevPieceLocation))
         );
         const newLocationVisible = (
           GameDarkChessUtils.isBoardPiece(piece)
-          && visibleSquares.some((square) => GameDarkChessUtils.areSquaresEqual(square, piece.location))
+          && visibleSquares.some(GameDarkChessUtils.equalToSquare(piece.location))
         );
         const newId = oldPiece && (isOwnPiece || (oldLocationVisible && newLocationVisible))
           ? oldPiece.id
@@ -100,10 +100,10 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
       });
       const fromLocationVisible = (
         move.from.type === PieceLocationEnum.BOARD
-        && prevVisibleSquares[color].some((square) => GameDarkChessUtils.areSquaresEqual(square, move.from as PieceBoardLocation))
-        && visibleSquares.some((square) => GameDarkChessUtils.areSquaresEqual(square, move.from as PieceBoardLocation))
+        && prevVisibleSquares[color].some(GameDarkChessUtils.equalToSquare(move.from))
+        && visibleSquares.some(GameDarkChessUtils.equalToSquare(move.from))
       );
-      const toLocationVisible = visibleSquares.some((square) => GameDarkChessUtils.areSquaresEqual(square, move.to));
+      const toLocationVisible = visibleSquares.some(GameDarkChessUtils.equalToSquare(move.to));
       let algebraic = '';
       let figurine = '';
 

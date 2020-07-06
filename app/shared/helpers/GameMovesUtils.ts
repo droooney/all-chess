@@ -167,7 +167,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
                 onlyPremove || (
                   (
                     !this.isDarkChess
-                    || visibleSquares.some((visibleSquare) => GameMovesUtils.areSquaresEqual(square, visibleSquare))
+                    || visibleSquares.some(GameMovesUtils.equalToSquare(square))
                   )
                   && !this.getBoardPiece(square)
                 )
@@ -466,9 +466,8 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
   }
 
   isMoveAllowed(piece: RealPiece, square: Square, promotion: unknown): boolean {
-    const possibleMove = this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE).find((sq) => (
-      GameMovesUtils.areSquaresEqual(square, sq)
-    ));
+    const possibleMove = this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.FOR_MOVE)
+      .find(GameMovesUtils.equalToSquare(square));
 
     return (
       !!possibleMove
@@ -650,7 +649,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
               .filter((otherPawn) => (
                 otherPawn.type === PieceTypeEnum.PAWN
                 && otherPawn.id !== piece.id
-                && this.getAllowedMoves(otherPawn).any((square) => GameMovesUtils.areSquaresEqual(square, toLocation, false))
+                && this.getAllowedMoves(otherPawn).any(GameMovesUtils.equalToSquare(toLocation, false))
               ));
 
             if (otherPawnsAbleToMakeMove.length) {
@@ -670,7 +669,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
               otherPiece.type === piece.type
               && otherPiece.abilities === piece.abilities
               && otherPiece.id !== piece.id
-              && this.getAllowedMoves(otherPiece).any((square) => GameMovesUtils.areSquaresEqual(square, toLocation, false))
+              && this.getAllowedMoves(otherPiece).any(GameMovesUtils.equalToSquare(toLocation, false))
             ));
 
           if (otherPiecesAbleToMakeMove.length) {
