@@ -71,7 +71,8 @@ class Boards extends React.Component<Props> {
 
   componentDidUpdate(prevProps: Props) {
     if (
-      prevProps.isDragging !== this.props.isDragging
+      prevProps.isBlackBase !== this.props.isBlackBase
+      || prevProps.isDragging !== this.props.isDragging
       || prevProps.game !== this.props.game
       || prevProps.premoves.length !== this.props.premoves.length
     ) {
@@ -176,9 +177,9 @@ class Boards extends React.Component<Props> {
 
     const visibleSquares = isDarkChess && darkChessMode
       ? currentMove && 'prevVisibleSquares' in currentMove
-        ? game.getLocalVisibleSquares(darkChessMode).filter((square) => currentMove.prevVisibleSquares!.some((sq) => (
-          Game.areSquaresEqual(square, sq)
-        )))
+        ? game.getLocalVisibleSquares(darkChessMode).filter(
+          (square) => currentMove.prevVisibleSquares!.some(Game.areSquaresEqualCb(square))
+        )
         : game.getLocalVisibleSquares(darkChessMode)
       : [];
     const isHiddenSquare = (square: Square): boolean => (

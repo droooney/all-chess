@@ -62,6 +62,8 @@ export enum PieceTypeEnum {
   PAWN = 'PAWN'
 }
 
+export type EachPieceType<T> = Record<PieceTypeEnum, T>;
+
 export type StandardPiece = (
   PieceTypeEnum.KING
   | PieceTypeEnum.QUEEN
@@ -148,13 +150,13 @@ export enum PieceLocationEnum {
 }
 
 export interface PieceBoardLocation extends Square {
-  type: PieceLocationEnum.BOARD;
+  readonly type: PieceLocationEnum.BOARD;
 }
 
 export interface PiecePocketLocation {
-  type: PieceLocationEnum.POCKET;
-  pieceType: PieceTypeEnum;
-  color: ColorEnum;
+  readonly type: PieceLocationEnum.POCKET;
+  readonly pieceType: PieceTypeEnum;
+  readonly color: ColorEnum;
 }
 
 export type RealPieceLocation = PieceBoardLocation | PiecePocketLocation;

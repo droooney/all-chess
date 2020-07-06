@@ -1,6 +1,7 @@
 import {
   ColorEnum,
   EachColor,
+  EachPieceType,
   GameStatusEnum,
   GameVariantEnum,
   PieceTypeEnum,
@@ -9,7 +10,7 @@ import {
   TimeControlEnum
 } from '../../types';
 
-export const SHORT_PIECE_NAMES: Record<PieceTypeEnum, string> = {
+export const SHORT_PIECE_NAMES: EachPieceType<string> = {
   [PieceTypeEnum.KING]: 'K',
   [PieceTypeEnum.AMAZON]: 'A',
   [PieceTypeEnum.QUEEN]: 'Q',
@@ -180,7 +181,7 @@ export const TIME_CONTROL_NAMES: Record<TimeControlEnum, string> = {
   [TimeControlEnum.CORRESPONDENCE]: 'Correspondence'
 };
 
-export const PIECES_WORTH: Record<'orthodox' | 'circular' | 'hexagonal', Record<PieceTypeEnum, number>> = {
+export const PIECES_WORTH: Record<'orthodox' | 'circular' | 'hexagonal', EachPieceType<number>> = {
   orthodox: {
     [PieceTypeEnum.KING]: 3,
     [PieceTypeEnum.AMAZON]: 12,

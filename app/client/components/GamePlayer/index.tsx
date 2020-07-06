@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import {
   AnyMove,
   ColorEnum,
+  EachPieceType,
   GameStatusEnum,
   Piece as IPiece,
   PieceTypeEnum,
@@ -37,8 +38,9 @@ interface OwnProps {
   currentMoveIndex: number;
   lastMoveTimestamp: number;
   isTop: boolean;
+  isMaterialDiffShown: boolean;
   allMaterialDifference: number;
-  materialDifference: Record<PieceTypeEnum, number>;
+  materialDifference: EachPieceType<number>;
   selectedPiece: PocketPiece | null;
   selectPiece(piece: IPiece | null): void;
   startDraggingPiece(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
@@ -174,6 +176,7 @@ export default class GamePlayer extends React.Component<Props, State> {
       selectedPiece,
       timeControl,
       isTop,
+      isMaterialDiffShown,
       allMaterialDifference,
       materialDifference,
       selectPiece,
@@ -191,10 +194,10 @@ export default class GamePlayer extends React.Component<Props, State> {
           active,
           top: isTop,
           'with-pocket': game.isPocketUsed,
-          'with-material': game.needToCalculateMaterialDifference
+          'with-material': isMaterialDiffShown
         })}
       >
-        {game.needToCalculateMaterialDifference && (
+        {isMaterialDiffShown && (
           <div className="material-advantage">
             {_.map(materialDifference, (count, pieceType) => {
               if (game.isThreeCheck && pieceType === PieceTypeEnum.KING) {
@@ -248,8 +251,8 @@ export default class GamePlayer extends React.Component<Props, State> {
         {timeControl ? (
           <div className={classNames('timer', {
             correspondence: timeControl.type === TimeControlEnum.CORRESPONDENCE,
-            low: 6 * time <= timeControl.base,
-            critical: 12 * time <= timeControl.base
+            low: time <= timeControl.base / 6,
+            critical: time <= timeControl.base / 12
           })}>
             {this.getTimeString()}
           </div>

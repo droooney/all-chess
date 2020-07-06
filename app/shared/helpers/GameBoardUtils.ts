@@ -91,6 +91,14 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     );
   }
 
+  static areSquaresEqualCb(square1: Square, exact: boolean = true): (square: Square) => boolean {
+    return (square2) => (
+      (!exact || square1.board === square2.board)
+      && square1.y === square2.y
+      && square1.x === square2.x
+    );
+  }
+
   static getBoardLiteral(board: number): string {
     return (board + 1)
       .toString()

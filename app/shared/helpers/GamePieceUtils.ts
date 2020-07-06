@@ -8,6 +8,7 @@ import {
   Boards,
   ColorEnum,
   EachColor,
+  EachPieceType,
   GameCreateOptions,
   GameKings,
   GetPossibleMovesMode,
@@ -345,7 +346,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
     [ColorEnum.BLACK]: []
   };
   pieces: readonly Piece[] = [];
-  piecesWorth: Record<PieceTypeEnum, number>;
+  piecesWorth: EachPieceType<number>;
   pocketPiecesUsed: readonly PieceTypeEnum[] = STANDARD_POCKET;
   validPromotions: readonly PieceTypeEnum[] = STANDARD_VALID_PROMOTIONS;
 

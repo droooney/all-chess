@@ -14,6 +14,7 @@ import {
   DarkChessGameInitialData,
   DrawnSymbol,
   DrawnSymbolColor,
+  EachPieceType,
   Game as IGame,
   GameInitialData,
   GameStatusEnum,
@@ -406,7 +407,7 @@ class Game extends React.Component<Props, State> {
       currentMoveIndex: this.game && this.game.currentMoveIndex,
       timestamp
     });
-    this.prevMoveIndex = -1;
+    this.prevMoveIndex = this.game.currentMoveIndex;
     this.prevMoveCount = this.game.getUsedMoves().length;
 
     this.game.on('updateChat', () => {
@@ -931,8 +932,10 @@ class Game extends React.Component<Props, State> {
           startingMoveIndex,
           isBlackBase,
           boardsShiftX,
+          isOngoingDarkChessGame,
           darkChessMode,
           showDarkChessHiddenPieces,
+          darkChessMaterialByMove,
           lastMoveTimestamp,
           currentMoveIndex,
           premoves
@@ -957,25 +960,34 @@ class Game extends React.Component<Props, State> {
         const topPlayer = isBlackBase
           ? players[ColorEnum.WHITE]
           : players[ColorEnum.BLACK];
-        const bottomPlayer = isBlackBase
-          ? players[ColorEnum.BLACK]
-          : players[ColorEnum.WHITE];
-        const materialDifference: Record<PieceTypeEnum, number> = {} as any;
+        const usedPieces = darkChessMode && !showDarkChessHiddenPieces && !premoves.length
+          ? this.game.getMoveVisiblePieces(currentMoveIndex, darkChessMode)
+          : pieces;
+        const isMaterialDiffShown = this.game.isMaterialDiffShown();
+        const materialDifference: EachPieceType<number> = {} as any;
         let allMaterialDifference = 0;
 
-        if (this.game.needToCalculateMaterialDifference) {
+        if (isMaterialDiffShown) {
           const actualPieces = premoves.length
             ? this.game.piecesBeforePremoves
             : pieces;
 
           _.forEach(PieceTypeEnum, (pieceType) => {
-            const getPiecesCount = (color: ColorEnum): number => (
-              actualPieces.filter((piece) => (
-                GameHelper.isRealPiece(piece)
-                && (piece.abilities || piece.type) === pieceType
-                && piece.color === color
-              )).length
-            );
+            const getPiecesCount = (color: ColorEnum): number => {
+              if (isOngoingDarkChessGame) {
+                const material = darkChessMaterialByMove[color][currentMoveIndex];
+
+                return material ? material[pieceType] : 0;
+              }
+
+              return (
+                actualPieces.filter((piece) => (
+                  GameHelper.isRealPiece(piece)
+                  && (piece.abilities || piece.type) === pieceType
+                  && piece.color === color
+                )).length
+              );
+            };
 
             const diff = materialDifference[pieceType] = getPiecesCount(ColorEnum.WHITE) - getPiecesCount(ColorEnum.BLACK);
 
@@ -1019,7 +1031,7 @@ class Game extends React.Component<Props, State> {
 
               <Boards
                 game={this.game}
-                pieces={pieces}
+                pieces={usedPieces}
                 player={player}
                 selectedPiece={
                   selectedPiece
@@ -1047,57 +1059,35 @@ class Game extends React.Component<Props, State> {
                 showKingAttack={!premoves.length}
               />
 
-              <GamePlayer
-                game={this.game}
-                player={topPlayer}
-                playingPlayer={player}
-                pieces={pieces}
-                moves={usedMoves}
-                timeControl={timeControl}
-                turn={turn}
-                realTurn={realTurn}
-                status={status}
-                currentMoveIndex={currentMoveIndex}
-                lastMoveTimestamp={lastMoveTimestamp}
-                enableClick={enableClick && !!player && topPlayer.id === player.id}
-                enableDnd={enableDnd && !!player && topPlayer.id === player.id}
-                isTop
-                allMaterialDifference={allMaterialDifference}
-                materialDifference={materialDifference}
-                selectedPiece={
-                  selectedPiece && selectedPiece.color === topPlayer.color && GameHelper.isPocketPiece(selectedPiece)
-                    ? selectedPiece
-                    : null
-                }
-                selectPiece={this.selectPiece}
-                startDraggingPiece={this.startDrag}
-              />
-
-              <GamePlayer
-                game={this.game}
-                player={bottomPlayer}
-                playingPlayer={player}
-                pieces={pieces}
-                moves={usedMoves}
-                timeControl={timeControl}
-                turn={turn}
-                realTurn={realTurn}
-                status={status}
-                currentMoveIndex={currentMoveIndex}
-                lastMoveTimestamp={lastMoveTimestamp}
-                enableClick={enableClick && !!player && bottomPlayer.id === player.id}
-                enableDnd={enableDnd && !!player && bottomPlayer.id === player.id}
-                isTop={false}
-                allMaterialDifference={allMaterialDifference}
-                materialDifference={materialDifference}
-                selectedPiece={
-                  selectedPiece && selectedPiece.color === bottomPlayer.color && GameHelper.isPocketPiece(selectedPiece)
-                    ? selectedPiece
-                    : null
-                }
-                selectPiece={this.selectPiece}
-                startDraggingPiece={this.startDrag}
-              />
+              {_.map(players, (panelPlayer) => (
+                <GamePlayer
+                  key={panelPlayer.id}
+                  game={this.game!}
+                  player={panelPlayer}
+                  playingPlayer={player}
+                  pieces={pieces}
+                  moves={usedMoves}
+                  timeControl={timeControl}
+                  turn={turn}
+                  realTurn={realTurn}
+                  status={status}
+                  currentMoveIndex={currentMoveIndex}
+                  lastMoveTimestamp={lastMoveTimestamp}
+                  enableClick={enableClick && !!player && panelPlayer.id === player.id}
+                  enableDnd={enableDnd && !!player && panelPlayer.id === player.id}
+                  isTop={panelPlayer.id === topPlayer.id}
+                  isMaterialDiffShown={isMaterialDiffShown}
+                  allMaterialDifference={allMaterialDifference}
+                  materialDifference={materialDifference}
+                  selectedPiece={
+                    selectedPiece && selectedPiece.color === panelPlayer.color && GameHelper.isPocketPiece(selectedPiece)
+                      ? selectedPiece
+                      : null
+                  }
+                  selectPiece={this.selectPiece}
+                  startDraggingPiece={this.startDrag}
+                />
+              ))}
 
               <MovesPanel
                 game={this.game}

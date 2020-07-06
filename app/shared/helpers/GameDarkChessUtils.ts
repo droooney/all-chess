@@ -18,11 +18,11 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  visiblePieces: EachColor<DarkChessVisiblePiece[]> = {
+  visiblePieces: EachColor<readonly DarkChessVisiblePiece[]> = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
-  startingVisiblePieces: EachColor<DarkChessVisiblePiece[]> = {
+  startingVisiblePieces: EachColor<readonly DarkChessVisiblePiece[]> = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: []
   };
