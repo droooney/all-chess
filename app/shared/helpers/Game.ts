@@ -38,7 +38,7 @@ const RESULT_WIN_BLACK = '0-1';
 const RESULT_DRAW = '1/2-1/2';
 
 export class Game extends GameResultUtils implements IGame {
-  static getGameFromPgn(pgn: string): Game {
+  static getGameFromPgn(pgn: string, id: string): Game {
     const pgnData = pgn
       .split('\n')
       .map((string) => string.trim())
@@ -162,7 +162,7 @@ export class Game extends GameResultUtils implements IGame {
     startingData.result = result;
 
     const game = new Game({
-      id: '',
+      id,
       startingData,
       variants,
       timeControl,

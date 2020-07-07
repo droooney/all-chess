@@ -1,7 +1,7 @@
 export interface RequestOptions {
   url: string;
   method: 'get' | 'post';
-  data?: any;
+  data?: unknown;
 }
 
 export interface LoginRequestOptions extends RequestOptions {

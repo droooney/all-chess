@@ -124,15 +124,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isKingOfTheHill
       )
     ) && (
-      !isCompensationChess
-      || !isDarkChess
-      || (
-        !isAbsorption
-        && !isFrankfurt
-        && !isAtomic
-        && !isCirce
-      )
-    ) && (
       !isCirce
       || !is960
     ) && (
@@ -219,6 +210,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
       !isCompensationChess
       || (
         !isCrazyhouse
+        && !isDarkChess
       )
     ));
   }

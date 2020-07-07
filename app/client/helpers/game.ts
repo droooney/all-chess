@@ -11,7 +11,6 @@ import {
   DarkChessMove,
   Dictionary,
   EachColor,
-  EachPieceType,
   Game as IGame,
   GameStatusEnum,
   LocalMove,
@@ -68,8 +67,8 @@ interface HexPoints {
 }
 
 export class Game extends GameHelper {
-  static getGameFromPgn(pgn: string): Game {
-    const game = super.getGameFromPgn(pgn);
+  static getGameFromPgn(pgn: string, id: string): Game {
+    const game = super.getGameFromPgn(pgn, id);
 
     return new Game({ game });
   }
@@ -107,10 +106,6 @@ export class Game extends GameHelper {
   };
   pieceLocationsByMove: Partial<Record<number, Dictionary<PieceLocation>>> = {};
   colorPieceLocationsByMove: EachColor<Partial<Record<number, Dictionary<PieceLocation>>>> = {
-    [ColorEnum.WHITE]: {},
-    [ColorEnum.BLACK]: {}
-  };
-  darkChessMaterialByMove: EachColor<Partial<Record<number, EachPieceType<number>>>> = {
     [ColorEnum.WHITE]: {},
     [ColorEnum.BLACK]: {}
   };
@@ -179,7 +174,6 @@ export class Game extends GameHelper {
     this.piecesBeforePremoves = this.pieces;
 
     this.savePieceLocations();
-    this.saveDarkChessMaterial();
 
     const moves: (Move | DarkChessMove)[] = game.moves;
 
@@ -552,20 +546,11 @@ export class Game extends GameHelper {
   }
 
   isMaterialDiffShown(): boolean {
-    if (this.isAbsorption || this.isHorde) {
-      return false;
-    }
-
-    if (this.isOngoingDarkChessGame) {
-      return (
-        !this.isAbsorption
-        && !this.isFrankfurt
-        && !this.isAtomic
-        && !this.isCirce
-      );
-    }
-
-    return true;
+    return (
+      !this.isAbsorption
+      && !this.isHorde
+      && !this.isOngoingDarkChessGame
+    );
   }
 
   move(move: BaseMove) {
@@ -933,7 +918,6 @@ export class Game extends GameHelper {
 
     this.changePlayerTime();
     this.savePieceLocations();
-    this.saveDarkChessMaterial();
   }
 
   registerMove(move: Move): RegisterMoveReturnValue {
@@ -995,55 +979,6 @@ export class Game extends GameHelper {
       this.setPieces(this.visiblePieces[this.darkChessMode]);
     } else {
       this.moves[this.currentMoveIndex].revertMove();
-    }
-  }
-
-  saveDarkChessMaterial() {
-    if (!this.isMaterialDiffShown() || !this.player) {
-      return;
-    }
-
-    const moves = this.getUsedMoves();
-    const moveIndex = moves.length - 1;
-
-    if (moveIndex === -1) {
-      _.forEach(ColorEnum, (color) => {
-        this.darkChessMaterialByMove[color][moveIndex] = _.mapValues(PieceTypeEnum, (pieceType) => (
-          this.startingData.pieces.filter(
-            ({ color: pieceColor, type }) => pieceType === type && pieceColor === color
-          ).length
-        ));
-      });
-    } else {
-      _.forEach(ColorEnum, (color) => {
-        const prevMaterial = this.darkChessMaterialByMove[color][moveIndex - 1];
-
-        if (prevMaterial) {
-          this.darkChessMaterialByMove[color][moveIndex] = { ...prevMaterial };
-        }
-      });
-
-      const lastMove = _.last(this.getUsedMoves());
-
-      if (lastMove && lastMove.to && lastMove.isCapture && this.player) {
-        const prevMovePieces = this.getMoveVisiblePieces(moveIndex - 1, this.player.color);
-        const capturedPiece = prevMovePieces.filter(Game.isBoardPiece).find(
-          ({ location }) => !!lastMove.to && Game.areSquaresEqual(location, lastMove.to)
-        );
-
-        if (capturedPiece) {
-          const material = this.darkChessMaterialByMove[capturedPiece.color][moveIndex];
-          const opponentMaterial = this.darkChessMaterialByMove[Game.getOppositeColor(capturedPiece.color)][moveIndex];
-
-          if (material) {
-            material[capturedPiece.type] -= 1;
-          }
-
-          if (this.isCrazyhouse && opponentMaterial && this.pocketPiecesUsed.includes(capturedPiece.type)) {
-            opponentMaterial[capturedPiece.type] += 1;
-          }
-        }
-      }
     }
   }
 

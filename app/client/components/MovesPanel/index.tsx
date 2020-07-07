@@ -59,7 +59,7 @@ export default class MovesPanel extends React.Component<Props> {
     const startingMoveIndex = game.startingData.startingMoveIndex;
     const startingMove = Math.floor(startingMoveIndex / 2);
     const startingMoveOffset = startingMoveIndex % 2;
-    const firstMoveLeftOffset = 45 * startingMoveOffset;
+    const firstMoveLeftOffset = 44 * startingMoveOffset;
     const restMoves = _.chunk(moves.slice(startingMoveOffset), 2);
 
     return (

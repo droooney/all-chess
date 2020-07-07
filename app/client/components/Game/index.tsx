@@ -932,10 +932,8 @@ class Game extends React.Component<Props, State> {
           startingMoveIndex,
           isBlackBase,
           boardsShiftX,
-          isOngoingDarkChessGame,
           darkChessMode,
           showDarkChessHiddenPieces,
-          darkChessMaterialByMove,
           lastMoveTimestamp,
           currentMoveIndex,
           premoves
@@ -973,21 +971,13 @@ class Game extends React.Component<Props, State> {
             : pieces;
 
           _.forEach(PieceTypeEnum, (pieceType) => {
-            const getPiecesCount = (color: ColorEnum): number => {
-              if (isOngoingDarkChessGame) {
-                const material = darkChessMaterialByMove[color][currentMoveIndex];
-
-                return material ? material[pieceType] : 0;
-              }
-
-              return (
-                actualPieces.filter((piece) => (
-                  GameHelper.isRealPiece(piece)
-                  && (piece.abilities || piece.type) === pieceType
-                  && piece.color === color
-                )).length
-              );
-            };
+            const getPiecesCount = (color: ColorEnum): number => (
+              actualPieces.filter((piece) => (
+                GameHelper.isRealPiece(piece)
+                && (piece.abilities || piece.type) === pieceType
+                && piece.color === color
+              )).length
+            );
 
             const diff = materialDifference[pieceType] = getPiecesCount(ColorEnum.WHITE) - getPiecesCount(ColorEnum.BLACK);
 

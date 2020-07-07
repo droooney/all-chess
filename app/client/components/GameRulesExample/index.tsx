@@ -49,7 +49,7 @@ export default class GameRulesExample extends React.Component<Props> {
       [Variant "${variantsString}"]
 
       ${props.moves || ''}
-    `);
+    `, props.id);
 
     if ('startingMoveIndex' in props) {
       this.game.navigateToMove(props.startingMoveIndex || 0);

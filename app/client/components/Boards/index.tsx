@@ -140,6 +140,7 @@ class Boards extends React.Component<Props> {
     const {
       game,
       game: {
+        id: gameId,
         isAliceChess,
         isDarkChess,
         isAntichess,
@@ -200,19 +201,16 @@ class Boards extends React.Component<Props> {
         && !piece.location
       );
     };
-    const piecesSelector = (ids: string[]) => ids.map((id) => `#piece-${id}`).join(',');
+    const piecesSelector = (ids: string[]) => ids.map((id) => `#boards-${gameId}  #piece-${id}`).join(',');
 
     pieces.forEach((piece) => {
       const prevLocation = prevPieceLocations[piece.id];
 
       if (
-        Game.isNonExistentPiece(piece)
-        || (
-          Game.isBoardPiece(piece)
-          && prevLocation
-          && prevLocation.type === PieceLocationEnum.BOARD
-          && !Game.areSquaresEqual(piece.location, prevLocation)
-        )
+        Game.isBoardPiece(piece)
+        && prevLocation
+        && prevLocation.type === PieceLocationEnum.BOARD
+        && !Game.areSquaresEqual(piece.location, prevLocation)
       ) {
         movedPieceIds.push(piece.id);
       }
@@ -237,6 +235,7 @@ class Boards extends React.Component<Props> {
     return (
       <div
         ref={this.boardsRef}
+        id={`boards-${gameId}`}
         className={classNames('boards', {
           antichess: isAntichess,
           'no-fantom': !showFantomPieces
@@ -277,7 +276,7 @@ class Boards extends React.Component<Props> {
           )}
 
           {movedAndCapturedPieceIdsSelector && (
-            `${capturedPieceIdsSelector} {
+            `${movedAndCapturedPieceIdsSelector} {
               opacity: 0;
               transition-property: transform, opacity;
             }`
@@ -397,7 +396,7 @@ class Boards extends React.Component<Props> {
                     r={7 * game.getPieceSize() / SVG_SQUARE_SIZE}
                     style={{
                       transform: `rotate(calc(180deg * var(--is-black-base, 0))) translate(${center.x}px, ${center.y}px)`,
-                      transformOrigin: `${game.boardCenterX}px ${game.boardCenterY}px`
+                      transformOrigin: `${boardCenterX}px ${boardCenterY}px`
                     }}
                   />
                 );
