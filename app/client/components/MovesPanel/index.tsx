@@ -7,6 +7,8 @@ import {
 } from '../../../types';
 import { Game } from '../../helpers';
 
+import MovesRow from 'client/components/MovesRow';
+
 import './index.less';
 
 interface OwnProps {
@@ -57,9 +59,7 @@ export default class MovesPanel extends React.Component<Props> {
     const isBeforeFirstMove = currentMoveIndex === -1;
     const isAfterLastMove = currentMoveIndex === moves.length - 1;
     const startingMoveIndex = game.startingData.startingMoveIndex;
-    const startingMove = Math.floor(startingMoveIndex / 2);
     const startingMoveOffset = startingMoveIndex % 2;
-    const firstMoveLeftOffset = 44 * startingMoveOffset;
     const restMoves = _.chunk(moves.slice(startingMoveOffset), 2);
 
     return (
@@ -92,33 +92,17 @@ export default class MovesPanel extends React.Component<Props> {
         </div>
         <div className="moves-container" ref={this.movesRef}>
           {(startingMoveOffset ? [
-            ...[moves.slice(0, startingMoveOffset)],
+            moves.slice(0, startingMoveOffset),
             ...restMoves
           ] : restMoves).map((moves, moveRow) => (
-            <div key={moveRow} className="move-row">
-              <div className="move-index">{startingMove + moveRow + 1}</div>
-              {moves.map((move, turn) => {
-                const moveIndex = moveRow * 2 + turn - (startingMoveOffset && moveRow ? startingMoveOffset : 0);
-                const isCurrent = moveIndex === currentMoveIndex;
-
-                return (
-                  <div
-                    key={turn}
-                    ref={isCurrent ? this.currentMoveRef : undefined}
-                    className={classNames('move', {
-                      current: isCurrent
-                    })}
-                    style={!moveRow && !turn && startingMoveIndex ? {
-                      position: 'relative',
-                      left: `${firstMoveLeftOffset}%`
-                    } : {}}
-                    onClick={() => game.navigateToMove(moveIndex)}
-                  >
-                    {move.figurine}
-                  </div>
-                );
-              })}
-            </div>
+            <MovesRow
+              key={moveRow}
+              game={game}
+              moveRow={moveRow}
+              currentMoveIndex={currentMoveIndex}
+              currentMoveRef={this.currentMoveRef}
+              moves={moves}
+            />
           ))}
         </div>
       </div>
