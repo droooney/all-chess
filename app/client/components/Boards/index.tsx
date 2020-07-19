@@ -3,6 +3,8 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
 
+import { ALICE_CHESS_BOARDS_MARGIN, drawnSymbolColors, SVG_SQUARE_SIZE } from 'client/constants';
+
 import {
   AnyMove,
   BoardPiece as IBoardPiece,
@@ -17,10 +19,11 @@ import {
   Premove,
   RealPiece,
   RealPieceLocation,
-  Square
+  Square,
 } from 'shared/types';
-import { ALICE_CHESS_BOARDS_MARGIN, drawnSymbolColors, SVG_SQUARE_SIZE } from 'client/constants';
+
 import { Game } from 'client/helpers';
+
 import { ReduxState } from 'client/store';
 
 import BoardCenterSquares from '../BoardCenterSquares';
@@ -63,7 +66,7 @@ type Props = OwnProps & ReturnType<typeof mapStateToProps>;
 class Boards extends React.Component<Props> {
   static defaultProps = {
     withLiterals: true,
-    showKingAttack: true
+    showKingAttack: true,
   };
 
   boardsRef = React.createRef<HTMLDivElement>();
@@ -91,7 +94,7 @@ class Boards extends React.Component<Props> {
   isInCheck(square: Square): boolean {
     const {
       game,
-      showKingAttack
+      showKingAttack,
     } = this.props;
 
     if (game.isAntichess || !showKingAttack) {
@@ -113,7 +116,7 @@ class Boards extends React.Component<Props> {
   onSquareClick = (square: Square) => {
     const {
       enableClick,
-      onSquareClick
+      onSquareClick,
     } = this.props;
 
     if (!enableClick) {
@@ -126,7 +129,7 @@ class Boards extends React.Component<Props> {
   onPieceDragStart = (e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation) => {
     const {
       enableDnd,
-      startDraggingPiece
+      startDraggingPiece,
     } = this.props;
 
     if (!enableDnd) {
@@ -151,7 +154,7 @@ class Boards extends React.Component<Props> {
         boardOrthodoxWidth,
         boardOrthodoxHeight,
         boardCenterX,
-        boardCenterY
+        boardCenterY,
       },
       selectedPiece,
       selectedPieceBoard,
@@ -166,7 +169,7 @@ class Boards extends React.Component<Props> {
       darkChessMode,
       boardToShow,
       boardsShiftX,
-      showFantomPieces
+      showFantomPieces,
     } = this.props;
     const prevMoveIndex = currentMoveIndex === this.prevMoveIndexes[1]
       ? this.prevMoveIndexes[0]
@@ -179,7 +182,7 @@ class Boards extends React.Component<Props> {
     const visibleSquares = isDarkChess && darkChessMode
       ? currentMove && 'prevVisibleSquares' in currentMove
         ? game.getLocalVisibleSquares(darkChessMode).filter(
-          (square) => currentMove.prevVisibleSquares!.some(Game.equalToSquare(square))
+          (square) => currentMove.prevVisibleSquares!.some(Game.equalToSquare(square)),
         )
         : game.getLocalVisibleSquares(darkChessMode)
       : [];
@@ -224,7 +227,7 @@ class Boards extends React.Component<Props> {
 
         return {
           ...piece,
-          location: prevPieceLocations[piece.id] as PieceBoardLocation
+          location: prevPieceLocations[piece.id] as PieceBoardLocation,
         };
       });
     const boardPieces = [...realPieces, ...capturedPieces];
@@ -238,7 +241,7 @@ class Boards extends React.Component<Props> {
         id={`boards-${gameId}`}
         className={classNames('boards', {
           antichess: isAntichess,
-          'no-fantom': !showFantomPieces
+          'no-fantom': !showFantomPieces,
         })}
         style={{
           '--is-black-base': +isBlackBase,
@@ -250,14 +253,14 @@ class Boards extends React.Component<Props> {
           '--board-orthodox-height': boardHeight,
           ..._.times(boardWidth).reduce((files, fileX) => ({
             ...files,
-            [`--rendered-file-${fileX}`]: game.adjustFileX(fileX + boardsShiftX)
+            [`--rendered-file-${fileX}`]: game.adjustFileX(fileX + boardsShiftX),
           }), {}),
           '--light-square-color': '#eeeece',
           // '--light-square-color': 'beige',
           '--dark-square-color': '#bbb',
           // '--dark-square-color': 'silver',
           '--half-dark-square-color': '#d8d8d8',
-          '--boards-margin': `${ALICE_CHESS_BOARDS_MARGIN}px`
+          '--boards-margin': `${ALICE_CHESS_BOARDS_MARGIN}px`,
         } as React.CSSProperties}
         onContextMenu={(e) => e.preventDefault()}
       >
@@ -303,7 +306,7 @@ class Boards extends React.Component<Props> {
                 && !!selectedPiece
                 && selectedPiece.id === piece.id
                 && board === selectedPieceBoard
-              )
+              ),
             }));
           let fantomPieces: { piece: IBoardPiece; isFantom: boolean; }[] = [];
           let selectedSquare: JSX.Element | null = null;
@@ -318,7 +321,7 @@ class Boards extends React.Component<Props> {
 
           const allPieces = _.sortBy([
             ...pieces,
-            ...fantomPieces
+            ...fantomPieces,
           ], ({ piece }) => piece.id);
 
           _.times(boardHeight, (rankY) => {
@@ -326,7 +329,7 @@ class Boards extends React.Component<Props> {
               const square = {
                 board,
                 x: fileX,
-                y: rankY
+                y: rankY,
               };
 
               if (game.isEmptySquare(square)) {
@@ -338,7 +341,7 @@ class Boards extends React.Component<Props> {
                 game,
                 board,
                 fileX,
-                rankY
+                rankY,
               };
 
               if (
@@ -370,14 +373,14 @@ class Boards extends React.Component<Props> {
                   <BoardSquare
                     {...baseSquareParams}
                     className="current-move-square"
-                  />
+                  />,
                 );
               }
 
               if (isAllowed(square)) {
                 const center = game.getSquareCenter({
                   ...square,
-                  x: game.adjustFileX(square.x + boardsShiftX)
+                  x: game.adjustFileX(square.x + boardsShiftX),
                 });
 
                 allowedSquares.push(
@@ -386,7 +389,7 @@ class Boards extends React.Component<Props> {
                     className="allowed-square"
                     onSquareClick={this.onSquareClick}
                     onPieceDragStart={this.onPieceDragStart}
-                  />
+                  />,
                 );
 
                 allowedDots.push(
@@ -396,9 +399,9 @@ class Boards extends React.Component<Props> {
                     r={7 * game.getPieceSize() / SVG_SQUARE_SIZE}
                     style={{
                       transform: `rotate(calc(180deg * var(--is-black-base, 0))) translate(${center.x}px, ${center.y}px)`,
-                      transformOrigin: `${boardCenterX}px ${boardCenterY}px`
+                      transformOrigin: `${boardCenterX}px ${boardCenterY}px`,
                     }}
-                  />
+                  />,
                 );
               }
 
@@ -407,7 +410,7 @@ class Boards extends React.Component<Props> {
                   <BoardSquare
                     {...baseSquareParams}
                     className="check-square"
-                  />
+                  />,
                 );
               }
 
@@ -416,7 +419,7 @@ class Boards extends React.Component<Props> {
                   <BoardSquare
                     {...baseSquareParams}
                     className="hidden-square"
-                  />
+                  />,
                 );
               }
 
@@ -430,7 +433,7 @@ class Boards extends React.Component<Props> {
                       {...baseSquareParams}
                       key={`${baseSquareParams.key}-${index}`}
                       className="premove-square"
-                    />
+                    />,
                   );
                 }
               });
@@ -514,7 +517,7 @@ class Boards extends React.Component<Props> {
               <g className="symbols">
                 {[
                   ...drawnSymbols.filter(({ type }) => type === 'circle'),
-                  ...drawnSymbols.filter(({ type }) => type === 'arrow')
+                  ...drawnSymbols.filter(({ type }) => type === 'arrow'),
                 ].map((symbol) => (
                   <DrawnSymbol
                     key={symbol.id}
@@ -536,7 +539,7 @@ function mapStateToProps(state: ReduxState, ownProps: OwnProps) {
   return {
     showFantomPieces: 'showFantomPieces' in ownProps
       ? ownProps.showFantomPieces
-      : state.gameSettings.showFantomPieces
+      : state.gameSettings.showFantomPieces,
   };
 }
 

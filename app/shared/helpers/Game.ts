@@ -1,6 +1,11 @@
 import * as _ from 'lodash';
 
 import {
+  COLOR_NAMES,
+  GAME_VARIANT_PGN_NAMES,
+} from 'shared/constants';
+
+import {
   CastlingTypeEnum,
   ChatMessage,
   ColorEnum,
@@ -19,12 +24,9 @@ import {
   StartingData,
   TakebackRequest,
   TimeControl,
-  TimeControlEnum
+  TimeControlEnum,
 } from 'shared/types';
-import {
-  COLOR_NAMES,
-  GAME_VARIANT_PGN_NAMES
-} from 'shared/constants';
+
 import GameResultUtils from './GameResultUtils';
 
 const DIGITS_REGEX = /^\d+$/;
@@ -99,7 +101,7 @@ export class Game extends GameResultUtils implements IGame {
           if (values.length === 1) {
             timeControl = {
               type: TimeControlEnum.CORRESPONDENCE,
-              base
+              base,
             };
           } else {
             const incrementString = values[1];
@@ -113,7 +115,7 @@ export class Game extends GameResultUtils implements IGame {
             timeControl = {
               type: TimeControlEnum.TIMER,
               base,
-              increment
+              increment,
             };
           }
         }
@@ -145,12 +147,12 @@ export class Game extends GameResultUtils implements IGame {
           winner: resultString === RESULT_WIN_WHITE
             ? ColorEnum.WHITE
             : ColorEnum.BLACK,
-          reason: ResultReasonEnum.RESIGN
+          reason: ResultReasonEnum.RESIGN,
         };
       } else {
         result = {
           winner: null,
-          reason: ResultReasonEnum.AGREED_TO_DRAW
+          reason: ResultReasonEnum.AGREED_TO_DRAW,
         };
       }
 
@@ -166,7 +168,7 @@ export class Game extends GameResultUtils implements IGame {
       startingData,
       variants,
       timeControl,
-      pgnTags
+      pgnTags,
     });
 
     if (!game.isLeftInCheckAllowed && game.isInCheck(game.getOpponentColor())) {
@@ -257,7 +259,7 @@ export class Game extends GameResultUtils implements IGame {
           toFileLiteral,
           toRankLiteral,
           promotionPieceLiteral,
-          queenSideCastling
+          queenSideCastling,
         ] = moveSquaresMatch;
         const isDrop = !!drop;
         const isCastling = moveSquares.includes('O-O');
@@ -313,7 +315,7 @@ export class Game extends GameResultUtils implements IGame {
               : 0
             : piece.location.board,
           x: toFile,
-          y: toRank
+          y: toRank,
         });
         const pieces = game.getPieces(game.turn)
           .filter(Game.isRealPiece)
@@ -350,7 +352,7 @@ export class Game extends GameResultUtils implements IGame {
         const move: Move = {
           from: piece.location,
           to: toSquare,
-          duration: 0
+          duration: 0,
         };
 
         if (game.isPromoting(piece, toSquare) && promotedPiece) {
@@ -373,7 +375,7 @@ export class Game extends GameResultUtils implements IGame {
       isAntichess,
       isHexagonalChess,
       isHorde,
-      isTwoFamilies
+      isTwoFamilies,
     } = Game.getVariantsInfo(variants);
     const middleFile = 5;
 
@@ -415,7 +417,7 @@ export class Game extends GameResultUtils implements IGame {
     }
 
     const {
-      boardHeight
+      boardHeight,
     } = Game.getBoardDimensions(variants);
 
     // not promoted pawns
@@ -463,7 +465,7 @@ export class Game extends GameResultUtils implements IGame {
       timeControl: null,
       id: '',
       startingData,
-      variants
+      variants,
     });
 
     if (game.isInCheck(game.getOpponentColor())) {
@@ -489,15 +491,15 @@ export class Game extends GameResultUtils implements IGame {
       mock: true,
       name: '',
       color: ColorEnum.WHITE,
-      time: null
+      time: null,
     },
     [ColorEnum.BLACK]: {
       id: 'black',
       mock: true,
       name: '',
       color: ColorEnum.BLACK,
-      time: null
-    }
+      time: null,
+    },
   };
   timeControl: TimeControl;
   pgnTags: PGNTags;
@@ -529,7 +531,7 @@ export class Game extends GameResultUtils implements IGame {
       const player = this.players[prevTurn];
       const {
         duration: actualDuration,
-        prevPiecesWorth
+        prevPiecesWorth,
       } = _.last(this.getUsedMoves())!;
       const duration = Math.max(actualDuration / 2, actualDuration - averagePing / 2);
 

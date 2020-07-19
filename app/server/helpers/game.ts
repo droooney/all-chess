@@ -9,6 +9,6 @@ export function pickGameMinimalData(game: Game): GameMinimalData {
     'players',
     'result',
     'timeControl',
-    'variants'
+    'variants',
   ]);
 }

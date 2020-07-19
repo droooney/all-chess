@@ -1,8 +1,10 @@
 import * as React from 'react';
 
-import { Game } from 'client/helpers';
-import { PieceBoardLocation, PieceLocationEnum, RealPieceLocation, Square } from 'shared/types';
 import { SVG_SQUARE_SIZE, CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from 'client/constants';
+
+import { PieceBoardLocation, PieceLocationEnum, RealPieceLocation, Square } from 'shared/types';
+
+import { Game } from 'client/helpers';
 
 export interface BoardSquareProps {
   game: Game;
@@ -32,16 +34,16 @@ export default class BoardSquare extends React.PureComponent<Props> {
       isHexagonalChess,
       boardWidth,
       boardHeight,
-      boardOrthodoxWidth
+      boardOrthodoxWidth,
     } = game;
     const square: Square = {
       board,
       x: fileX,
-      y: rankY
+      y: rankY,
     };
     const location: PieceBoardLocation = {
       ...square,
-      type: PieceLocationEnum.BOARD
+      type: PieceLocationEnum.BOARD,
     };
 
     const translateX = `calc(${SVG_SQUARE_SIZE}px * var(--rendered-file-${fileX}, ${fileX}))`;
@@ -58,13 +60,13 @@ export default class BoardSquare extends React.PureComponent<Props> {
             isCircularChess || isHexagonalChess
               ? []
               : [`translate(${translateX}, ${translateY})`]
-          )
+          ),
         ].join(' '),
-        transformOrigin: `${game.boardCenterX}px ${game.boardCenterY}px`
+        transformOrigin: `${game.boardCenterX}px ${game.boardCenterY}px`,
       },
       onClick: onSquareClick && (() => onSquareClick(square)),
       onMouseDown: onPieceDragStart && ((e: React.MouseEvent) => onPieceDragStart(e, location)),
-      onTouchStart: onPieceDragStart && ((e: React.TouchEvent) => onPieceDragStart(e, location))
+      onTouchStart: onPieceDragStart && ((e: React.TouchEvent) => onPieceDragStart(e, location)),
     };
     let pathD = '';
 
@@ -85,7 +87,7 @@ export default class BoardSquare extends React.PureComponent<Props> {
         getCirclePoint(r, angle),
         getCirclePoint(r, nextAngle),
         getCirclePoint(nextR, nextAngle),
-        getCirclePoint(nextR, angle)
+        getCirclePoint(nextR, angle),
       ];
 
       pathD = `

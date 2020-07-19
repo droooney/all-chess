@@ -1,10 +1,11 @@
-import '../shared/plugins';
+import 'shared/plugins';
 
-import server from './server';
-import config from './config';
+import config from 'server/config';
 
-import './routes';
-import './sockets';
+import server from 'server/server';
+
+import 'server/routes';
+import 'server/sockets';
 
 (async () => {
   await new Promise((resolve) => {

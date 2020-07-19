@@ -6,7 +6,7 @@ type Url = string | RegExp;
 export function url(
   url: Url,
   middleware: CustomMiddleware,
-  exact = true
+  exact = true,
 ): CustomMiddleware {
   return async (ctx, next) => {
     if (typeof url === 'string') {
@@ -44,7 +44,7 @@ export function url(
 
 export function method(
   method: Method,
-  middleware: CustomMiddleware
+  middleware: CustomMiddleware,
 ): CustomMiddleware {
   const upperCaseMethod = method.toUpperCase();
 
@@ -64,7 +64,7 @@ interface RouteOptions {
 
 export function route(
   middleware: CustomMiddleware,
-  options: RouteOptions
+  options: RouteOptions,
 ): CustomMiddleware {
   return url(options.url, method(options.method, middleware));
 }

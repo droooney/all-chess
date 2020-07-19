@@ -4,9 +4,11 @@ import * as bcrypt from 'bcryptjs';
 import * as pug from 'pug';
 import uuid = require('uuid/v1');
 
-import { User } from 'server/db';
-import { buildURL, sendEmail } from 'server/helpers';
 import { CustomContext } from 'server/types';
+
+import { buildURL, sendEmail } from 'server/helpers';
+
+import { User } from 'server/db';
 
 const registerHTML = pug.compile(fs.readFileSync(path.resolve('./app/server/emails/register.pug'), 'utf8'));
 
@@ -14,14 +16,14 @@ export async function confirmRegister(ctx: CustomContext) {
   const {
     query: {
       email,
-      token
-    }
+      token,
+    },
   } = ctx;
   const user = await User.findOne({
     where: {
       email,
-      confirmToken: token
-    }
+      confirmToken: token,
+    },
   });
 
   if (!user) {
@@ -33,7 +35,7 @@ export async function confirmRegister(ctx: CustomContext) {
 
   await user.update({
     confirmed: true,
-    confirmToken: null
+    confirmToken: null,
   });
 
   ctx.redirect('/');
@@ -44,15 +46,15 @@ export async function login(ctx: CustomContext) {
     request: {
       body: {
         login = '',
-        password = ''
-      }
-    }
+        password = '',
+      },
+    },
   } = ctx;
   const session = ctx.state.session!;
   const user = await User.findOne({
     where: {
-      login
-    }
+      login,
+    },
   });
 
   if (!user) {
@@ -71,7 +73,7 @@ export async function login(ctx: CustomContext) {
 
   ctx.body = {
     success: true,
-    user
+    user,
   };
 }
 
@@ -87,9 +89,9 @@ export async function register(ctx: CustomContext) {
       body: {
         email = '',
         login = '',
-        password = ''
-      }
-    }
+        password = '',
+      },
+    },
   } = ctx;
   let user: User;
 
@@ -98,15 +100,15 @@ export async function register(ctx: CustomContext) {
       email,
       login,
       password,
-      confirmToken: uuid()
+      confirmToken: uuid(),
     });
   } catch (err) {
     ctx.body = {
       success: false,
       errors: {
         login: !!err.fields && 'login' in err.fields,
-        email: !!err.fields && 'email' in err.fields
-      }
+        email: !!err.fields && 'email' in err.fields,
+      },
     };
 
     return;
@@ -116,7 +118,7 @@ export async function register(ctx: CustomContext) {
 
   ctx.body = {
     success: true,
-    user
+    user,
   };
 }
 
@@ -133,10 +135,10 @@ async function sendConfirmationEmail(ctx: CustomContext, user: User) {
           path: '/api/auth/confirm_register',
           query: {
             email: user.email,
-            token: user.confirmToken!
-          }
-        })
-      })
+            token: user.confirmToken!,
+          },
+        }),
+      }),
     });
   } catch (err) {
     /* empty */

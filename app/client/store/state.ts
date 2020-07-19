@@ -1,6 +1,6 @@
 import {
   GameSettings,
-  PublicUser
+  PublicUser,
 } from 'shared/types';
 
 export interface CommonState {

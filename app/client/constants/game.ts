@@ -5,12 +5,12 @@ import {
   DrawnSymbolColor,
   GameSettings,
   PieceLocationEnum,
-  PieceTypeEnum
+  PieceTypeEnum,
 } from 'shared/types';
 
 export const GAME_DEFAULT_SETTINGS: { [key in keyof GameSettings]: GameSettings[key]; } = {
   showFantomPieces: true,
-  timeControl: null
+  timeControl: null,
 };
 
 export const SVG_SQUARE_SIZE = 60;
@@ -33,8 +33,8 @@ export const pocketPieces = _.mapValues(ColorEnum, (color) => (
     location: {
       type: PieceLocationEnum.POCKET as PieceLocationEnum.POCKET,
       pieceType,
-      color
-    }
+      color,
+    },
   }))
 ));
 
@@ -42,5 +42,5 @@ export const drawnSymbolColors: Record<DrawnSymbolColor, string> = {
   [DrawnSymbolColor.GREEN]: '#080',
   [DrawnSymbolColor.BLUE]: '#0bf',
   [DrawnSymbolColor.RED]: '#f00',
-  [DrawnSymbolColor.YELLOW]: '#fc0'
+  [DrawnSymbolColor.YELLOW]: '#fc0',
 };

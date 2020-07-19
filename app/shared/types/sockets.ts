@@ -10,7 +10,7 @@ import {
   GamePlayers,
   GameResult,
   Move,
-  TakebackRequest
+  TakebackRequest,
 } from './game';
 
 declare global {

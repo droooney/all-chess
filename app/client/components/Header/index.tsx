@@ -3,10 +3,12 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 
+import { STANDARD_FEN } from 'client/constants';
+
+import { fetch } from 'client/helpers';
+
 import { DispatchProps, ReduxState } from 'client/store';
 import { setUserData } from 'client/actions';
-import { fetch } from 'client/helpers';
-import { STANDARD_FEN } from 'client/constants';
 
 import Link from '../Link';
 
@@ -20,11 +22,11 @@ class Header extends React.Component<Props> {
 
     const {
       dispatch,
-      history
+      history,
     } = this.props;
     const { success } = await fetch({
       url: '/api/auth/logout',
-      method: 'get'
+      method: 'get',
     });
 
     if (success) {
@@ -37,7 +39,7 @@ class Header extends React.Component<Props> {
   render() {
     const {
       location,
-      user
+      user,
     } = this.props;
     const from = location.pathname + location.search;
 
@@ -52,10 +54,10 @@ class Header extends React.Component<Props> {
           <Link
             to={{
               pathname: '/editor',
-              search: `?${qs.stringify({
+              search: qs.stringify({
                 fen: STANDARD_FEN,
-                variants: ''
-              })}`
+                variants: '',
+              }),
             }}
             style={{ marginRight: 20 }}
           >
@@ -81,7 +83,7 @@ class Header extends React.Component<Props> {
                 replace
                 to={{
                   pathname: '/login',
-                  search: from === '/' ? '' : `?${qs.stringify({ from })}`
+                  search: from === '/' ? '' : qs.stringify({ from }),
                 }}
               >
                 Login
@@ -95,7 +97,7 @@ class Header extends React.Component<Props> {
 }
 
 const mapStateToProps = (state: ReduxState) => ({
-  user: state.user
+  user: state.user,
 });
 
 export default withRouter(connect(mapStateToProps)(Header));

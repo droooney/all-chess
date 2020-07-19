@@ -1,8 +1,9 @@
 import * as React from 'react';
 
 import {
-  ColorEnum
+  ColorEnum,
 } from 'shared/types';
+
 import { Game } from 'client/helpers';
 
 interface OwnProps {
@@ -14,7 +15,7 @@ type Props = OwnProps;
 export default class Queen extends React.PureComponent<Props> {
   render() {
     const {
-      color
+      color,
     } = this.props;
 
     if (Game.isLightColor(color)) {

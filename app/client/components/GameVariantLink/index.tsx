@@ -1,10 +1,11 @@
 import * as React from 'react';
 
-import { GameVariantEnum } from 'shared/types';
 import {
   GAME_VARIANT_NAMES,
-  GAME_VARIANT_LINKS
+  GAME_VARIANT_LINKS,
 } from 'shared/constants';
+
+import { GameVariantEnum } from 'shared/types';
 
 import Link from '../Link';
 
@@ -20,7 +21,7 @@ export default class GameVariantLink extends React.Component<Props> {
   render() {
     const {
       variant,
-      className
+      className,
     } = this.props;
 
     return (

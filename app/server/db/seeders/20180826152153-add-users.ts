@@ -6,11 +6,11 @@ const users = [{
   email: 'a123@a.com',
   login: '123',
   password: '123',
-  confirmed: true
+  confirmed: true,
 }, {
   email: 'a@a.com',
   login: '1',
-  password: '123'
+  password: '123',
 }];
 
 export async function up() {
@@ -21,8 +21,8 @@ export async function down() {
   await User.destroy({
     where: {
       login: {
-        [Op.in]: users.map(({ login }) => login)
-      }
-    }
+        [Op.in]: users.map(({ login }) => login),
+      },
+    },
   });
 }

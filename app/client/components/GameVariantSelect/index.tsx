@@ -2,9 +2,11 @@ import * as _ from 'lodash';
 import * as React from 'react';
 import { MenuItem } from '@material-ui/core';
 
-import { Game } from 'client/helpers';
-import { GameVariantEnum } from 'shared/types';
 import { GAME_VARIANT_NAMES, GAME_VARIANT_SHORT_NAMES } from 'shared/constants';
+
+import { GameVariantEnum } from 'shared/types';
+
+import { Game } from 'client/helpers';
 
 import Checkbox from '../Checkbox';
 import Select from '../Select';
@@ -19,23 +21,23 @@ type Props = OwnProps;
 
 class GameVariantSelect extends React.Component<Props> {
   static defaultProps = {
-    disabledVariants: []
+    disabledVariants: [],
   };
 
   onVariantChange = (e: React.ChangeEvent<{ value: unknown; }>) => {
     const {
-      onVariantsChange
+      onVariantsChange,
     } = this.props;
 
     onVariantsChange(
-      _.filter(GameVariantEnum, (variant) => (e.target.value as GameVariantEnum[]).includes(variant))
+      _.filter(GameVariantEnum, (variant) => (e.target.value as GameVariantEnum[]).includes(variant)),
     );
   };
 
   render() {
     const {
       variants: selectedVariants,
-      disabledVariants
+      disabledVariants,
     } = this.props;
     const variants = _.map(GameVariantEnum, (variant) => {
       const enabled = selectedVariants.includes(variant);
@@ -46,7 +48,7 @@ class GameVariantSelect extends React.Component<Props> {
         allowed: (
           !disabledVariants.includes(variant)
           && (enabled || Game.validateVariants([...selectedVariants, variant]))
-        )
+        ),
       };
     });
 
@@ -67,7 +69,7 @@ class GameVariantSelect extends React.Component<Props> {
         )}
         MenuProps={{
           disableAutoFocusItem: true,
-          getContentAnchorEl: null
+          getContentAnchorEl: null,
         }}
       >
         {variants.map(({ variant, enabled, allowed }) => (

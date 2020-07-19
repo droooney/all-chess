@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import {
   ColorEnum,
   PieceLocation,
-  PieceTypeEnum
+  PieceTypeEnum,
 } from 'shared/types';
 
 import King from './King';
@@ -39,7 +39,7 @@ export default class Piece<T extends PieceLocation> extends React.PureComponent<
   onClick = () => {
     const {
       location,
-      onClick
+      onClick,
     } = this.props;
 
     onClick!(location);
@@ -48,7 +48,7 @@ export default class Piece<T extends PieceLocation> extends React.PureComponent<
   onDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     const {
       location,
-      onDragStart
+      onDragStart,
     } = this.props;
 
     onDragStart!(e, location);
@@ -66,7 +66,7 @@ export default class Piece<T extends PieceLocation> extends React.PureComponent<
       color,
       type,
       onClick,
-      onDragStart
+      onDragStart,
     } = this.props;
 
     return (

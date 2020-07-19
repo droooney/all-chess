@@ -4,10 +4,10 @@ import { Redirect, Router, Switch } from 'react-router-dom';
 import { ThemeProvider } from '@material-ui/styles';
 import { createBrowserHistory } from 'history';
 
-import lightTheme from 'client/themes/light';
+import { isMobileDevice } from 'client/helpers';
+
 import { setIsMobile } from 'client/actions';
 import { DispatchProps, ReduxState } from 'client/store';
-import { isMobileDevice } from 'client/helpers';
 
 import Route from 'client/components/Route';
 import Header from 'client/components/Header';
@@ -18,6 +18,8 @@ import Games from 'client/components/Games';
 import Login from 'client/components/Login';
 import GamesRules from 'client/components/GamesRules';
 import Game from 'client/components/Game';
+
+import lightTheme from './themes/light';
 
 import './index.less';
 
@@ -33,7 +35,7 @@ class App extends React.Component<Props> {
   onWindowResize = () => {
     const {
       dispatch,
-      isMobile
+      isMobile,
     } = this.props;
     const newIsMobile = isMobileDevice();
 
@@ -69,7 +71,7 @@ class App extends React.Component<Props> {
 }
 
 const mapStateToProps = (state: ReduxState) => ({
-  isMobile: state.common.isMobile
+  isMobile: state.common.isMobile,
 });
 
 export default connect(mapStateToProps)(App);

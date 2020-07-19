@@ -7,7 +7,7 @@ import {
   PieceTypeEnum,
   ResultReasonEnum,
   StandardPiece,
-  TimeControlEnum
+  TimeControlEnum,
 } from 'shared/types';
 
 export const SHORT_PIECE_NAMES: EachPieceType<string> = {
@@ -19,7 +19,7 @@ export const SHORT_PIECE_NAMES: EachPieceType<string> = {
   [PieceTypeEnum.ROOK]: 'R',
   [PieceTypeEnum.BISHOP]: 'B',
   [PieceTypeEnum.KNIGHT]: 'N',
-  [PieceTypeEnum.PAWN]: 'P'
+  [PieceTypeEnum.PAWN]: 'P',
 };
 
 export const PIECE_LITERALS: EachColor<Record<StandardPiece, string>> = {
@@ -29,7 +29,7 @@ export const PIECE_LITERALS: EachColor<Record<StandardPiece, string>> = {
     [PieceTypeEnum.ROOK]: '♖',
     [PieceTypeEnum.BISHOP]: '♗',
     [PieceTypeEnum.KNIGHT]: '♘',
-    [PieceTypeEnum.PAWN]: '♙'
+    [PieceTypeEnum.PAWN]: '♙',
   },
   [ColorEnum.BLACK]: {
     [PieceTypeEnum.KING]: '♚',
@@ -37,8 +37,8 @@ export const PIECE_LITERALS: EachColor<Record<StandardPiece, string>> = {
     [PieceTypeEnum.ROOK]: '♜',
     [PieceTypeEnum.BISHOP]: '♝',
     [PieceTypeEnum.KNIGHT]: '♞',
-    [PieceTypeEnum.PAWN]: '♟'
-  }
+    [PieceTypeEnum.PAWN]: '♟',
+  },
 };
 
 export const POSSIBLE_TIMER_BASES_IN_MINUTES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30, 45, 60];
@@ -70,7 +70,7 @@ export const GAME_VARIANT_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.CIRCULAR_CHESS]: 'Circular chess',
   [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal chess',
   [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation chess',
-  [GameVariantEnum.RETREAT_CHESS]: 'Retreat chess'
+  [GameVariantEnum.RETREAT_CHESS]: 'Retreat chess',
 };
 
 export const GAME_VARIANT_SHORT_NAMES: Record<GameVariantEnum, string> = {
@@ -94,7 +94,7 @@ export const GAME_VARIANT_SHORT_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.CIRCULAR_CHESS]: 'Circular',
   [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal',
   [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation',
-  [GameVariantEnum.RETREAT_CHESS]: 'Retreat'
+  [GameVariantEnum.RETREAT_CHESS]: 'Retreat',
 };
 
 export const GAME_VARIANT_PGN_NAMES: Record<GameVariantEnum, string> = {
@@ -118,7 +118,7 @@ export const GAME_VARIANT_PGN_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.CIRCULAR_CHESS]: 'Circular',
   [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal',
   [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation',
-  [GameVariantEnum.RETREAT_CHESS]: 'Retreat'
+  [GameVariantEnum.RETREAT_CHESS]: 'Retreat',
 };
 
 export const GAME_VARIANT_LINKS: Record<GameVariantEnum, string> = {
@@ -142,7 +142,7 @@ export const GAME_VARIANT_LINKS: Record<GameVariantEnum, string> = {
   [GameVariantEnum.CIRCULAR_CHESS]: 'circular-chess',
   [GameVariantEnum.HEXAGONAL_CHESS]: 'hexagonal-chess',
   [GameVariantEnum.COMPENSATION_CHESS]: 'compensation-chess',
-  [GameVariantEnum.RETREAT_CHESS]: 'retreat-chess'
+  [GameVariantEnum.RETREAT_CHESS]: 'retreat-chess',
 };
 
 export const RESULT_REASON_NAMES: Record<ResultReasonEnum, string> = {
@@ -161,24 +161,24 @@ export const RESULT_REASON_NAMES: Record<ResultReasonEnum, string> = {
   [ResultReasonEnum.INSUFFICIENT_MATERIAL]: 'insufficient material',
   [ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT]: 'insufficient material + time out',
   [ResultReasonEnum.THREEFOLD_REPETITION]: 'threefold repetition',
-  [ResultReasonEnum.FIFTY_MOVE_RULE]: '50 move rule'
+  [ResultReasonEnum.FIFTY_MOVE_RULE]: '50 move rule',
 };
 
 export const COLOR_NAMES: EachColor<string> = {
   [ColorEnum.WHITE]: 'White',
-  [ColorEnum.BLACK]: 'Black'
+  [ColorEnum.BLACK]: 'Black',
 };
 
 export const GAME_STATUS_NAMES: Record<GameStatusEnum, string> = {
   [GameStatusEnum.BEFORE_START]: 'Waiting for the opponent',
   [GameStatusEnum.ONGOING]: 'In progress',
-  [GameStatusEnum.FINISHED]: 'Finished'
+  [GameStatusEnum.FINISHED]: 'Finished',
 };
 
 export const TIME_CONTROL_NAMES: Record<TimeControlEnum, string> = {
   [TimeControlEnum.NONE]: 'None',
   [TimeControlEnum.TIMER]: 'Real time',
-  [TimeControlEnum.CORRESPONDENCE]: 'Correspondence'
+  [TimeControlEnum.CORRESPONDENCE]: 'Correspondence',
 };
 
 export const PIECES_WORTH: Record<'orthodox' | 'circular' | 'hexagonal', EachPieceType<number>> = {
@@ -191,7 +191,7 @@ export const PIECES_WORTH: Record<'orthodox' | 'circular' | 'hexagonal', EachPie
     [PieceTypeEnum.ROOK]: 5,
     [PieceTypeEnum.BISHOP]: 3,
     [PieceTypeEnum.KNIGHT]: 3,
-    [PieceTypeEnum.PAWN]: 1
+    [PieceTypeEnum.PAWN]: 1,
   },
   circular: {
     [PieceTypeEnum.KING]: 2,
@@ -202,7 +202,7 @@ export const PIECES_WORTH: Record<'orthodox' | 'circular' | 'hexagonal', EachPie
     [PieceTypeEnum.ROOK]: 6,
     [PieceTypeEnum.BISHOP]: 2,
     [PieceTypeEnum.KNIGHT]: 2,
-    [PieceTypeEnum.PAWN]: 1
+    [PieceTypeEnum.PAWN]: 1,
   },
   hexagonal: {
     [PieceTypeEnum.KING]: 4,
@@ -213,6 +213,6 @@ export const PIECES_WORTH: Record<'orthodox' | 'circular' | 'hexagonal', EachPie
     [PieceTypeEnum.ROOK]: 8,
     [PieceTypeEnum.BISHOP]: 3,
     [PieceTypeEnum.KNIGHT]: 4,
-    [PieceTypeEnum.PAWN]: 1
-  }
+    [PieceTypeEnum.PAWN]: 1,
+  },
 };

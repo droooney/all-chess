@@ -3,20 +3,23 @@ import mount = require('koa-mount');
 import BodyParser = require('koa-bodyparser');
 import compose = require('koa-compose');
 
-import app from '../app';
-import { helpers } from '../controllers/helpers';
-import {
-  session,
-  sessionRequired
-} from 'server/controllers/session';
+import { CustomState, CustomContext } from 'server/types';
+
+import { get, post } from 'server/helpers';
+
 import {
   confirmRegister,
   login,
   logout,
-  register
+  register,
 } from 'server/controllers/auth';
-import { get, post } from 'server/helpers';
-import { CustomState, CustomContext } from 'server/types';
+import { state } from 'server/controllers/state';
+import {
+  session,
+  sessionRequired,
+} from 'server/controllers/session';
+
+import app from '../app';
 
 const bodyParser = BodyParser();
 
@@ -30,7 +33,7 @@ authApp.use(post('/register', compose([bodyParser, register])));
 
 apiApp.use(session);
 apiApp.use(sessionRequired);
-apiApp.use(helpers);
+apiApp.use(state);
 apiApp.use(mount('/auth', authApp));
 
 app.use(mount('/api', apiApp));

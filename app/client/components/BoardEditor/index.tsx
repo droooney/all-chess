@@ -3,8 +3,9 @@ import * as _ from 'lodash';
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 
-import { Game } from 'client/helpers';
-import { Game as BaseGame } from 'shared/helpers';
+import { STANDARD_FEN } from 'client/constants';
+import { GAME_VARIANT_PGN_NAMES } from 'shared/constants';
+
 import {
   BoardPiece,
   GameVariantEnum,
@@ -12,10 +13,11 @@ import {
   PieceLocationEnum,
   RealPiece,
   RealPieceLocation,
-  Square
+  Square,
 } from 'shared/types';
-import { STANDARD_FEN } from 'client/constants';
-import { GAME_VARIANT_PGN_NAMES } from 'shared/constants';
+
+import { Game } from 'client/helpers';
+import { Game as BaseGame } from 'shared/helpers';
 
 import Boards from '../Boards';
 import DocumentTitle from '../DocumentTitle';
@@ -36,7 +38,7 @@ class BoardEditor extends React.Component<Props, State> {
   queryChangedFromOutside = true;
   state: State = {
     selectedPiece: null,
-    isDragging: false
+    isDragging: false,
   };
 
   componentDidMount() {
@@ -101,15 +103,15 @@ class BoardEditor extends React.Component<Props, State> {
         startingData: Game.getStartingDataFromFen(STANDARD_FEN, []),
         timeControl: null,
         variants: [],
-        id: ''
-      })
+        id: '',
+      }),
     });
   }
 
   getGameFromFen(): Game | null {
     const {
       fen,
-      variants: variantsString
+      variants: variantsString,
     } = this.getQuery();
 
     if (!fen) {
@@ -131,8 +133,8 @@ class BoardEditor extends React.Component<Props, State> {
           startingData: Game.getStartingDataFromFen(fen, []),
           timeControl: null,
           variants,
-          id: ''
-        })
+          id: '',
+        }),
       });
     } catch (err) {
       return null;
@@ -141,13 +143,13 @@ class BoardEditor extends React.Component<Props, State> {
 
   getQuery(): { fen: string | null; variants: string; } {
     const {
-      location
+      location,
     } = this.props;
     const query = qs.parse(location.search.slice(1));
 
     return {
       fen: query.fen ? `${query.fen}` : null,
-      variants: query.variants ? `${query.variants}` : ''
+      variants: query.variants ? `${query.variants}` : '',
     };
   }
 
@@ -157,23 +159,23 @@ class BoardEditor extends React.Component<Props, State> {
 
   replaceQuery = () => {
     const {
-      history
+      history,
     } = this.props;
 
     this.queryChangedFromOutside = false;
 
     history.replace({
       pathname: '/editor',
-      search: `?${qs.stringify({
+      search: qs.stringify({
         fen: this.game.getFen(),
-        variants: this.game.variants.map((variant) => GAME_VARIANT_PGN_NAMES[variant]).join('+')
-      })}`
+        variants: this.game.variants.map((variant) => GAME_VARIANT_PGN_NAMES[variant]).join('+'),
+      }),
     });
   };
 
   selectPiece = (selectedPiece: RealPiece | null) => {
     this.setState({
-      selectedPiece
+      selectedPiece,
     });
   };
 
@@ -187,14 +189,14 @@ class BoardEditor extends React.Component<Props, State> {
 
       this.setState({
         selectedPiece: draggedPiece,
-        isDragging: true
+        isDragging: true,
       });
     }
   };
 
   onSquareClick = (square: Square) => {
     const {
-      selectedPiece
+      selectedPiece,
     } = this.state;
 
     if (selectedPiece) {
@@ -206,12 +208,12 @@ class BoardEditor extends React.Component<Props, State> {
 
   makeMove = (square: Square | null) => {
     const {
-      selectedPiece
+      selectedPiece,
     } = this.state;
 
     if (!selectedPiece) {
       this.setState({
-        isDragging: false
+        isDragging: false,
       });
 
       return;
@@ -224,7 +226,7 @@ class BoardEditor extends React.Component<Props, State> {
       && Game.areSquaresEqual(selectedPiece.location, square)
     ) {
       this.setState({
-        isDragging: false
+        isDragging: false,
       });
 
       return;
@@ -239,7 +241,7 @@ class BoardEditor extends React.Component<Props, State> {
     if (existingPiece && pieceIndex !== -1) {
       pieces = [
         ...this.game.pieces.slice(0, pieceIndex),
-        ...this.game.pieces.slice(pieceIndex + 1)
+        ...this.game.pieces.slice(pieceIndex + 1),
       ];
     } else {
       pieces = [...this.game.pieces];
@@ -257,12 +259,12 @@ class BoardEditor extends React.Component<Props, State> {
 
     (selectedPiece as Piece).location = square && {
       ...square,
-      type: PieceLocationEnum.BOARD
+      type: PieceLocationEnum.BOARD,
     };
 
     this.setState({
       isDragging: false,
-      selectedPiece: null
+      selectedPiece: null,
     });
     this.replaceQuery();
   };
@@ -283,7 +285,7 @@ class BoardEditor extends React.Component<Props, State> {
     }
 
     this.setState({
-      isDragging: false
+      isDragging: false,
     });
 
     const point = this.getEventPoint(e);
@@ -320,7 +322,7 @@ class BoardEditor extends React.Component<Props, State> {
   render() {
     const {
       selectedPiece,
-      isDragging
+      isDragging,
     } = this.state;
 
     return (
@@ -355,7 +357,7 @@ class BoardEditor extends React.Component<Props, State> {
               ref={this.draggingPieceRef}
               style={{
                 pointerEvents: 'none',
-                transform: this.draggingPieceTranslate
+                transform: this.draggingPieceTranslate,
               }}
             >
               <GamePiece

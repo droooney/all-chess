@@ -2,7 +2,12 @@
 
 import * as _ from 'lodash';
 
-import GameTurnUtils from './GameTurnUtils';
+import {
+  PIECE_LITERALS,
+  PIECES_WORTH,
+  SHORT_PIECE_NAMES,
+} from 'shared/constants';
+
 import {
   BoardPiece,
   Boards,
@@ -23,13 +28,10 @@ import {
   RealPiece,
   Square,
   StandardPiece,
-  StartingData
+  StartingData,
 } from 'shared/types';
-import {
-  PIECE_LITERALS,
-  PIECES_WORTH,
-  SHORT_PIECE_NAMES
-} from 'shared/constants';
+
+import GameTurnUtils from './GameTurnUtils';
 
 interface PiecesData {
   kings: GameKings;
@@ -42,7 +44,7 @@ const STANDARD_PIECES: readonly PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.KNIGHT,
-  PieceTypeEnum.PAWN
+  PieceTypeEnum.PAWN,
 ];
 
 const PIECES_SORTING: readonly PieceTypeEnum[] = [
@@ -53,14 +55,14 @@ const PIECES_SORTING: readonly PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.KNIGHT,
-  PieceTypeEnum.PAWN
+  PieceTypeEnum.PAWN,
 ];
 
 const STANDARD_VALID_PROMOTIONS: readonly PieceTypeEnum[] = [
   PieceTypeEnum.QUEEN,
   PieceTypeEnum.ROOK,
   PieceTypeEnum.BISHOP,
-  PieceTypeEnum.KNIGHT
+  PieceTypeEnum.KNIGHT,
 ];
 
 const CAPABLANCA_VALID_PROMOTIONS: readonly PieceTypeEnum[] = [
@@ -69,7 +71,7 @@ const CAPABLANCA_VALID_PROMOTIONS: readonly PieceTypeEnum[] = [
   PieceTypeEnum.CARDINAL,
   PieceTypeEnum.ROOK,
   PieceTypeEnum.BISHOP,
-  PieceTypeEnum.KNIGHT
+  PieceTypeEnum.KNIGHT,
 ];
 
 const STANDARD_POCKET: readonly PieceTypeEnum[] = [
@@ -77,7 +79,7 @@ const STANDARD_POCKET: readonly PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.KNIGHT,
-  PieceTypeEnum.PAWN
+  PieceTypeEnum.PAWN,
 ];
 
 const CAPABLANCA_POCKET: readonly PieceTypeEnum[] = [
@@ -87,7 +89,7 @@ const CAPABLANCA_POCKET: readonly PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.KNIGHT,
-  PieceTypeEnum.PAWN
+  PieceTypeEnum.PAWN,
 ];
 
 export default abstract class GamePieceUtils extends GameTurnUtils {
@@ -124,7 +126,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
 
     return pieceType && {
       color,
-      type: pieceType
+      type: pieceType,
     };
   }
 
@@ -150,13 +152,13 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
         if (originalPiece.abilities && absorbedPiece.abilities) {
           return GamePieceUtils.getPieceTypeAfterAbsorption(originalPiece, {
             ...absorbedPiece,
-            type: absorbedPiece.abilities
+            type: absorbedPiece.abilities,
           });
         }
 
         return {
           type: PieceTypeEnum.KING,
-          abilities: originalPiece.abilities || absorbedPiece.abilities
+          abilities: originalPiece.abilities || absorbedPiece.abilities,
         };
       }
 
@@ -165,8 +167,8 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
           type: PieceTypeEnum.KING,
           abilities: GamePieceUtils.getPieceTypeAfterAbsorption({
             ...originalPiece,
-            type: originalPiece.abilities
-          }, absorbedPiece).type
+            type: originalPiece.abilities,
+          }, absorbedPiece).type,
         };
       }
 
@@ -174,7 +176,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
         type: PieceTypeEnum.KING,
         abilities: GamePieceUtils.isPawn(absorbedPiece)
           ? null
-          : absorbedPiece.type
+          : absorbedPiece.type,
       };
     }
 
@@ -233,14 +235,14 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
 
     return {
       type: newPieceType,
-      abilities: null
+      abilities: null,
     };
   }
 
   static getPiecesDataFromStartingData(startingData: StartingData): PiecesData {
     const kings: GameKings = {
       [ColorEnum.WHITE]: [],
-      [ColorEnum.BLACK]: []
+      [ColorEnum.BLACK]: [],
     };
     const pieces: Piece[] = startingData.pieces.map((piece) => {
       piece = { ...piece };
@@ -261,7 +263,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
 
     return {
       kings,
-      pieces
+      pieces,
     };
   }
 
@@ -343,7 +345,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
 
   kings: GameKings = {
     [ColorEnum.WHITE]: [],
-    [ColorEnum.BLACK]: []
+    [ColorEnum.BLACK]: [],
   };
   pieces: readonly Piece[] = [];
   piecesWorth: EachPieceType<number>;
@@ -369,7 +371,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
     if (this.isAntichess) {
       this.validPromotions = [
         PieceTypeEnum.KING,
-        ...this.validPromotions
+        ...this.validPromotions,
       ];
     }
   }
@@ -507,7 +509,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
 
     ({
       pieces: this.pieces,
-      kings: this.kings
+      kings: this.kings,
     } = GamePieceUtils.getPiecesDataFromStartingData(this.startingData));
   }
 }

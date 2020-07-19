@@ -1,5 +1,6 @@
-import GameVariantsUtils from './GameVariantsUtils';
 import { ColorEnum, StartingData } from 'shared/types';
+
+import GameVariantsUtils from './GameVariantsUtils';
 
 export default abstract class GameTurnUtils extends GameVariantsUtils {
   static getOppositeColor(color: ColorEnum): ColorEnum {

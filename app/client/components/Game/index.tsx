@@ -6,6 +6,20 @@ import io = require('socket.io-client');
 import classNames from 'classnames';
 
 import {
+  GAME_VARIANT_NAMES,
+} from 'shared/constants';
+import {
+  ALICE_CHESS_BOARDS_MARGIN,
+  GAME_GRID_GAP,
+  MIN_LEFT_DESKTOP_PANEL_WIDTH,
+  MAX_LEFT_DESKTOP_PANEL_WIDTH,
+  MIN_RIGHT_DESKTOP_PANEL_WIDTH,
+  MAX_RIGHT_DESKTOP_PANEL_WIDTH,
+  MIN_TABLET_PANEL_WIDTH,
+  MAX_TABLET_PANEL_WIDTH,
+} from 'client/constants';
+
+import {
   BaseMove,
   BoardPiece,
   BoardPossibleMove,
@@ -24,30 +38,20 @@ import {
   Player,
   RealPiece,
   RealPieceLocation,
-  Square
+  Square,
 } from 'shared/types';
-import {
-  GAME_VARIANT_NAMES
-} from 'shared/constants';
-import {
-  ALICE_CHESS_BOARDS_MARGIN,
-  GAME_GRID_GAP,
-  MIN_LEFT_DESKTOP_PANEL_WIDTH,
-  MAX_LEFT_DESKTOP_PANEL_WIDTH,
-  MIN_RIGHT_DESKTOP_PANEL_WIDTH,
-  MAX_RIGHT_DESKTOP_PANEL_WIDTH,
-  MIN_TABLET_PANEL_WIDTH,
-  MAX_TABLET_PANEL_WIDTH
-} from 'client/constants';
+
 import { Game as GameHelper } from 'client/helpers';
+
 import { ReduxState } from 'client/store';
+
+import MovesPanel from 'client/components/MovesPanel';
 
 import DocumentTitle from '../DocumentTitle';
 import FixedElement from '../FixedElement';
 import GamePlayer from '../GamePlayer';
 import GameInfo from '../GameInfo';
 import GameActions from '../GameActions';
-import MovesPanel from 'client/components/MovesPanel';
 import Chat from '../Chat';
 import Boards from '../Boards';
 import GamePiece from '../GamePiece';
@@ -109,16 +113,16 @@ class Game extends React.Component<Props, State> {
     gridMode: 'desktop',
     leftDesktopPanelWidth: 0,
     rightDesktopPanelWidth: 0,
-    tabletPanelWidth: 0
+    tabletPanelWidth: 0,
   };
 
   componentDidMount() {
     const {
       match: {
         params: {
-          gameId
-        }
-      }
+          gameId,
+        },
+      },
     } = this.props;
     const socket = this.socket = io.connect(`/games/${gameId}`);
 
@@ -133,8 +137,8 @@ class Game extends React.Component<Props, State> {
         gameData: gameData && {
           ...gameData,
           status: GameStatusEnum.ONGOING,
-          players
-        }
+          players,
+        },
       }));
     });
 
@@ -199,17 +203,17 @@ class Game extends React.Component<Props, State> {
   getPieceSize(): number {
     const {
       boardsWidth,
-      boardToShow
+      boardToShow,
     } = this.state;
     const {
       boardCount,
-      boardCenterX
+      boardCenterX,
     } = this.game!;
     const boardWidth = Math.max(
       boardToShow === 'all'
         ? (boardsWidth - (boardCount - 1) * ALICE_CHESS_BOARDS_MARGIN) / boardCount
         : boardsWidth,
-      0
+      0,
     );
 
     return this.game!.getPieceSize() * boardWidth / (2 * boardCenterX);
@@ -231,14 +235,14 @@ class Game extends React.Component<Props, State> {
     }
 
     const {
-      scrollSize
+      scrollSize,
     } = this.props;
     const {
-      boardToShow: currentBoardToShow
+      boardToShow: currentBoardToShow,
     } = this.state;
     const {
       boardCount,
-      boardSidesRenderedRatio
+      boardSidesRenderedRatio,
     } = this.game;
     const availableDesktopWidth = window.innerWidth - 2 * GAME_GRID_GAP - scrollSize;
     const availableTabletWidth = window.innerWidth - 2 * GAME_GRID_GAP - scrollSize;
@@ -269,12 +273,12 @@ class Game extends React.Component<Props, State> {
       leftDesktopPanelWidth = Math.min(
         MAX_LEFT_DESKTOP_PANEL_WIDTH,
         MIN_LEFT_DESKTOP_PANEL_WIDTH + (maxAvailableDesktopWidth - maxDesktopBoardsWidth)
-        * MAX_LEFT_DESKTOP_PANEL_WIDTH / (MAX_LEFT_DESKTOP_PANEL_WIDTH + MAX_RIGHT_DESKTOP_PANEL_WIDTH)
+        * MAX_LEFT_DESKTOP_PANEL_WIDTH / (MAX_LEFT_DESKTOP_PANEL_WIDTH + MAX_RIGHT_DESKTOP_PANEL_WIDTH),
       );
       rightDesktopPanelWidth = Math.min(
         MAX_LEFT_DESKTOP_PANEL_WIDTH,
         MIN_LEFT_DESKTOP_PANEL_WIDTH + (maxAvailableDesktopWidth - maxDesktopBoardsWidth)
-        * MAX_LEFT_DESKTOP_PANEL_WIDTH / (MAX_LEFT_DESKTOP_PANEL_WIDTH + MAX_RIGHT_DESKTOP_PANEL_WIDTH)
+        * MAX_LEFT_DESKTOP_PANEL_WIDTH / (MAX_LEFT_DESKTOP_PANEL_WIDTH + MAX_RIGHT_DESKTOP_PANEL_WIDTH),
       );
       tabletPanelWidth = 0;
     } else {
@@ -304,7 +308,7 @@ class Game extends React.Component<Props, State> {
           rightDesktopPanelWidth = 0;
           tabletPanelWidth = Math.min(
             MAX_TABLET_PANEL_WIDTH,
-            MIN_TABLET_PANEL_WIDTH + (maxAvailableTabletWidth - maxTabletBoardsWidth)
+            MIN_TABLET_PANEL_WIDTH + (maxAvailableTabletWidth - maxTabletBoardsWidth),
           );
         } else {
           const maxHeight = (maxAvailableTabletWidth - ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1)) / boardCount / boardSidesRenderedRatio;
@@ -324,7 +328,7 @@ class Game extends React.Component<Props, State> {
             rightDesktopPanelWidth = 0;
             tabletPanelWidth = Math.min(
               MAX_TABLET_PANEL_WIDTH,
-              MIN_TABLET_PANEL_WIDTH + (maxAvailableTabletWidth - maxTabletBoardWidth)
+              MIN_TABLET_PANEL_WIDTH + (maxAvailableTabletWidth - maxTabletBoardWidth),
             );
           } else {
             const maxHeight = maxAvailableTabletWidth / boardSidesRenderedRatio;
@@ -355,7 +359,7 @@ class Game extends React.Component<Props, State> {
       gridMode,
       leftDesktopPanelWidth,
       rightDesktopPanelWidth,
-      tabletPanelWidth
+      tabletPanelWidth,
     });
   }
 
@@ -365,7 +369,7 @@ class Game extends React.Component<Props, State> {
 
   onKeyDown = (e: KeyboardEvent) => {
     const {
-      boardToShow
+      boardToShow,
     } = this.state;
     const game = this.game;
 
@@ -405,7 +409,7 @@ class Game extends React.Component<Props, State> {
       socket: this.socket,
       player,
       currentMoveIndex: this.game && this.game.currentMoveIndex,
-      timestamp
+      timestamp,
     });
     this.prevMoveIndex = this.game.currentMoveIndex;
     this.prevMoveCount = this.game.getUsedMoves().length;
@@ -431,7 +435,7 @@ class Game extends React.Component<Props, State> {
           isDragging: false,
           drawingSymbolStart: null,
           drawingSymbol: null,
-          drawnSymbols: []
+          drawnSymbols: [],
         });
       } else if (
         this.state.selectedPiece
@@ -440,7 +444,7 @@ class Game extends React.Component<Props, State> {
         && this.game.turn === this.player.color
       ) {
         this.setState({
-          allowedMoves: this.getAllowedMoves(this.state.selectedPiece, this.state.selectedPieceBoard).toArray()
+          allowedMoves: this.getAllowedMoves(this.state.selectedPiece, this.state.selectedPieceBoard).toArray(),
         });
       } else {
         this.forceUpdate();
@@ -451,7 +455,7 @@ class Game extends React.Component<Props, State> {
     });
 
     this.setState({
-      gameData: game
+      gameData: game,
     });
     this.updateGridLayout();
 
@@ -469,7 +473,7 @@ class Game extends React.Component<Props, State> {
       allowedMoves: selectedPiece
         ? this.getAllowedMoves(selectedPiece, selectedPieceBoard).toArray()
         : [],
-      drawnSymbols: []
+      drawnSymbols: [],
     });
   };
 
@@ -479,7 +483,7 @@ class Game extends React.Component<Props, State> {
 
   switchBoard = (boardToShow: number) => {
     this.setState({
-      boardToShow
+      boardToShow,
     });
   };
 
@@ -505,9 +509,9 @@ class Game extends React.Component<Props, State> {
           ...square,
           board: GameHelper.isPocketPiece(selectedPiece)
             ? square.board
-            : selectedPieceBoard
+            : selectedPieceBoard,
         },
-        realSquare: square
+        realSquare: square,
       }))
       .toArray();
 
@@ -523,9 +527,9 @@ class Game extends React.Component<Props, State> {
             ...move,
             square: {
               ...castlingRook.location,
-              board: selectedPieceBoard
+              board: selectedPieceBoard,
             },
-            realSquare: move.realSquare
+            realSquare: move.realSquare,
           };
         }
       }
@@ -536,12 +540,12 @@ class Game extends React.Component<Props, State> {
     const {
       selectedPiece,
       selectedPieceBoard,
-      allowedMoves
+      allowedMoves,
     } = this.state;
 
     if (!selectedPiece) {
       this.setState({
-        isDragging: false
+        isDragging: false,
       });
 
       return;
@@ -553,7 +557,7 @@ class Game extends React.Component<Props, State> {
       && GameHelper.areSquaresEqual({ ...selectedPiece.location, board: selectedPieceBoard }, square)
     ) {
       this.setState({
-        isDragging: false
+        isDragging: false,
       });
 
       return;
@@ -568,7 +572,7 @@ class Game extends React.Component<Props, State> {
     const resetGameState = {
       isDragging: false,
       selectedPiece: null,
-      allowedMoves: []
+      allowedMoves: [],
     };
 
     if (!allowedMove) {
@@ -579,7 +583,7 @@ class Game extends React.Component<Props, State> {
 
     const move: BaseMove = {
       from: selectedPiece.location,
-      to: allowedMove.realSquare
+      to: allowedMove.realSquare,
     };
     const isPawnPromotion = this.game!.isPromoting(selectedPiece, allowedMove.realSquare);
     const validPromotions = isPawnPromotion && !isPremove
@@ -593,13 +597,13 @@ class Game extends React.Component<Props, State> {
         ...resetGameState,
         promotionModalVisible: true,
         promotionMove: move,
-        validPromotions
+        validPromotions,
       });
     } else {
       this.game!.move(
         isPawnPromotion
           ? { ...move, promotion: isPremove ? PieceTypeEnum.QUEEN : validPromotions[0] }
-          : move
+          : move,
       );
 
       this.setState(resetGameState);
@@ -609,14 +613,14 @@ class Game extends React.Component<Props, State> {
   closePromotionPopup = () => {
     this.setState({
       promotionModalVisible: false,
-      promotionMove: null
+      promotionMove: null,
     });
   };
 
   promoteToPiece = (pieceType: PieceTypeEnum) => {
     this.game!.move({
       ...this.state.promotionMove!,
-      promotion: pieceType
+      promotion: pieceType,
     });
 
     this.closePromotionPopup();
@@ -624,18 +628,18 @@ class Game extends React.Component<Props, State> {
 
   onSquareClick = (square: Square) => {
     const {
-      isTouchDevice
+      isTouchDevice,
     } = this.props;
     const {
       selectedPiece,
       selectedPieceBoard,
-      allowedMoves
+      allowedMoves,
     } = this.state;
     const enableDnd = true;
 
     if (!this.isAbleToMove()) {
       this.setState({
-        drawnSymbols: []
+        drawnSymbols: [],
       });
 
       return;
@@ -686,7 +690,7 @@ class Game extends React.Component<Props, State> {
 
   startDrag = (e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation) => {
     const {
-      isTouchDevice
+      isTouchDevice,
     } = this.props;
 
     if (
@@ -700,7 +704,7 @@ class Game extends React.Component<Props, State> {
 
         this.setState({
           selectedPiece: null,
-          allowedMoves: []
+          allowedMoves: [],
         });
       } else {
         e.preventDefault();
@@ -720,8 +724,8 @@ class Game extends React.Component<Props, State> {
                   ? DrawnSymbolColor.YELLOW
                   : DrawnSymbolColor.GREEN,
             id: ++this.drawnSymbolId,
-            square: location
-          }
+            square: location,
+          },
         });
       }
 
@@ -757,7 +761,7 @@ class Game extends React.Component<Props, State> {
         drawingSymbolStart: null,
         drawingSymbol: null,
         drawnSymbols: [],
-        isDragging: true
+        isDragging: true,
       });
     } else {
       this.setState(({ drawnSymbols }) => (
@@ -820,7 +824,7 @@ class Game extends React.Component<Props, State> {
         }
 
         return {
-          drawingSymbol: newDrawingSymbol || null
+          drawingSymbol: newDrawingSymbol || null,
         };
       });
     } else {
@@ -852,7 +856,7 @@ class Game extends React.Component<Props, State> {
         drawingSymbol: null,
         drawnSymbols: drawingSymbol
           ? this.addOrRemoveDrawnSymbol(drawingSymbol, drawnSymbols)
-          : drawnSymbols
+          : drawnSymbols,
       }));
 
       return;
@@ -870,7 +874,7 @@ class Game extends React.Component<Props, State> {
             && element.dataset.pocketPiece === this.state.selectedPiece.location.pieceType
           ) {
             this.setState({
-              isDragging: false
+              isDragging: false,
             });
 
             return true;
@@ -897,7 +901,7 @@ class Game extends React.Component<Props, State> {
       this.setState({
         isDragging: false,
         selectedPiece: null,
-        allowedMoves: []
+        allowedMoves: [],
       });
     }
   };
@@ -909,7 +913,7 @@ class Game extends React.Component<Props, State> {
     if (this.state.gameData && this.game) {
       const {
         status,
-        variants
+        variants,
       } = this.state.gameData;
 
       title = `AllChess - ${variants.length > 1 ? 'Mixed' : variants.length ? GAME_VARIANT_NAMES[variants[0]] : 'Standard'} Game`;
@@ -936,14 +940,14 @@ class Game extends React.Component<Props, State> {
           showDarkChessHiddenPieces,
           lastMoveTimestamp,
           currentMoveIndex,
-          premoves
+          premoves,
         } = this.game;
         const {
           boardsWidth,
           boardToShow,
           selectedPiece,
           isDragging,
-          gridMode
+          gridMode,
         } = this.state;
         const usedMoves = this.game.getUsedMoves();
         const player = this.player;
@@ -994,7 +998,7 @@ class Game extends React.Component<Props, State> {
               '--left-desktop-panel-width': `${this.state.leftDesktopPanelWidth}px`,
               '--right-desktop-panel-width': `${this.state.rightDesktopPanelWidth}px`,
               '--tablet-panel-width': `${this.state.tabletPanelWidth}px`,
-              '--pocket-size': this.game.pocketPiecesUsed.length
+              '--pocket-size': this.game.pocketPiecesUsed.length,
             } as React.CSSProperties}
           >
             <div className="game-content">
@@ -1102,7 +1106,7 @@ class Game extends React.Component<Props, State> {
                     ref={this.draggingPieceRef}
                     style={{
                       pointerEvents: 'none',
-                      transform: this.draggingPieceTranslate
+                      transform: this.draggingPieceTranslate,
                     }}
                   >
                     <GamePiece
@@ -1148,7 +1152,7 @@ function mapStateToProps(state: ReduxState) {
   return {
     isTouchDevice: state.common.isTouchDevice,
     scrollSize: state.common.scrollSize,
-    showFantomPieces: state.gameSettings.showFantomPieces
+    showFantomPieces: state.gameSettings.showFantomPieces,
   };
 }
 

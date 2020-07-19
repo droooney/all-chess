@@ -1,10 +1,13 @@
-import io, { games } from 'server/io';
-import {
-  pickGameMinimalData
-} from 'server/helpers';
 import { Dictionary } from 'shared/types';
+
+import {
+  pickGameMinimalData,
+} from 'server/helpers';
+
 import { sessionMiddleware } from 'server/controllers/session';
+
 import Game from 'server/Game';
+import io, { games } from 'server/io';
 
 const gameList: Game[] = [];
 const gameMap: Dictionary<Game> = {};
@@ -35,7 +38,7 @@ games.on('connection', (socket) => {
     const gameNamespace = io.of(`/games/${id}`);
     const game = new Game(gameNamespace, {
       ...settings,
-      id
+      id,
     });
 
     gameList.push(game);

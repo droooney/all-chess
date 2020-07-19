@@ -12,7 +12,7 @@ Object.defineProperties(proto, {
       }
 
       return true;
-    }
+    },
   },
 
   any: {
@@ -24,7 +24,7 @@ Object.defineProperties(proto, {
       }
 
       return false;
-    }
+    },
   },
 
   entries: {
@@ -34,7 +34,7 @@ Object.defineProperties(proto, {
       for (const value of this) {
         yield [i++, value];
       }
-    }
+    },
   },
 
   filter: {
@@ -44,7 +44,7 @@ Object.defineProperties(proto, {
           yield value;
         }
       }
-    }
+    },
   },
 
   find: {
@@ -56,7 +56,7 @@ Object.defineProperties(proto, {
       }
 
       return null;
-    }
+    },
   },
 
   map: {
@@ -64,7 +64,7 @@ Object.defineProperties(proto, {
       for (const value of this) {
         yield callback(value);
       }
-    }
+    },
   },
 
   reduce: {
@@ -76,7 +76,7 @@ Object.defineProperties(proto, {
       }
 
       return val;
-    }
+    },
   },
 
   slice: {
@@ -92,7 +92,7 @@ Object.defineProperties(proto, {
 
         yield value;
       }
-    }
+    },
   },
 
   take: {
@@ -104,12 +104,12 @@ Object.defineProperties(proto, {
       }
 
       return null;
-    }
+    },
   },
 
   toArray: {
     value: function toArray<T>(this: Generator<T>): T[] {
       return [...this];
-    }
-  }
+    },
+  },
 });

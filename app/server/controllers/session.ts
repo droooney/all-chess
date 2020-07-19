@@ -3,8 +3,10 @@ import { IncomingMessage, ServerResponse } from 'http';
 import expressSession = require('express-session');
 import redis = require('connect-redis');
 
-import { createClient } from 'server/helpers';
 import { CustomContext } from 'server/types';
+
+import { createClient } from 'server/helpers';
+
 import config from 'server/config';
 
 const Store = redis(expressSession);
@@ -14,14 +16,14 @@ export const sessionMiddleware = util.promisify(expressSession({
   store: new Store({
     client: createClient(),
     host: config.redis.host,
-    port: config.redis.port
+    port: config.redis.port,
   }),
   secret: config.secret,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: config.sessionExpires
-  }
+    maxAge: config.sessionExpires,
+  },
 })) as (req: IncomingMessage, res: ServerResponse) => any;
 
 declare global {

@@ -1,8 +1,8 @@
 import { Howl } from 'howler';
 
-import { isNotUndefined } from 'client/helpers/common';
-
 import { Dictionary } from 'shared/types';
+
+import { isNotUndefined } from 'client/helpers/common';
 
 // @ts-ignore
 import mp3Sounds from '../sounds/*/*.mp3';
@@ -14,7 +14,7 @@ type SoundType = 'piece-move' | 'piece-move2' | 'piece-move3' | 'piece-capture' 
 type Sounds = Partial<Dictionary<{ index: string; }>>;
 
 const volumes: Partial<Record<SoundType, number>> = {
-  'piece-capture': 0.3
+  'piece-capture': 0.3,
 };
 
 export class Sound {
@@ -30,7 +30,7 @@ export class Sound {
       src: ([mp3Sounds, oggSounds] as Sounds[]).map((sounds) => sounds[type]?.index).filter(isNotUndefined),
       preload: true,
       volume: volumes[type] || 1,
-      onload: res
+      onload: res,
     });
   }
 

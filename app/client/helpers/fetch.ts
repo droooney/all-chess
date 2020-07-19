@@ -7,7 +7,7 @@ import {
   GenericResponse,
   LoginResponse,
   LogoutResponse,
-  RegisterResponse
+  RegisterResponse,
 } from 'shared/types';
 
 export async function fetch(options: LoginRequestOptions): Promise<LoginResponse>;
@@ -20,14 +20,14 @@ export async function fetch(options: RequestOptions): Promise<GenericResponse> {
   if (options.data) {
     additionalData.body = JSON.stringify(options.data);
     additionalData.headers = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
   }
 
   const response = await window.fetch(options.url, {
     credentials: 'same-origin',
     method: options.method.toUpperCase(),
-    ...additionalData
+    ...additionalData,
   });
 
   if ((response.status >= 200 && response.status < 300) || response.status === 304) {

@@ -11,7 +11,7 @@ type Props = OwnProps;
 export default class Link extends React.Component<Props> {
   onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     const {
-      onClick
+      onClick,
     } = this.props;
 
     e.stopPropagation();
@@ -38,8 +38,8 @@ export default class Link extends React.Component<Props> {
           ),
           state: {
             resetScroll: true,
-            ...(typeof to === 'object' && to.state ? to.state : {})
-          }
+            ...(typeof to === 'object' && to.state ? to.state : {}),
+          },
         }}
         onClick={this.onClick}
       />

@@ -3,20 +3,20 @@ import {
 
   applyMiddleware,
   compose,
-  createStore
+  createStore,
 } from 'redux';
 import { createLogger } from 'redux-logger';
 import thunk from 'redux-thunk';
 
-import { ReduxState } from './state';
-
 import rootReducer from '../reducers';
+
+import { ReduxState } from './state';
 
 const middlewares = [
   thunk,
   createLogger({
-    collapsed: true
-  })
+    collapsed: true,
+  }),
 ];
 
 type ActionCreators = typeof import('../actions');

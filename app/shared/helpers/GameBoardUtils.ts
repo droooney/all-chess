@@ -2,7 +2,6 @@
 
 import * as _ from 'lodash';
 
-import GamePieceUtils from './GamePieceUtils';
 import {
   BoardPiece,
   Boards,
@@ -13,15 +12,17 @@ import {
   GetPossibleMovesMode,
   MovementType,
   PieceTypeEnum,
-  Square
+  Square,
 } from 'shared/types';
+
+import GamePieceUtils from './GamePieceUtils';
 
 const HEXAGONAL_EMPTY_SQUARES: readonly Square[] = [
   [6, 0], [6, 10],
   [7, 0], [7, 1], [7, 9], [7, 10],
   [8, 0], [8, 1], [8, 2], [8, 8], [8, 9], [8, 10],
   [9, 0], [9, 1], [9, 2], [9, 3], [9, 7], [9, 8], [9, 9], [9, 10],
-  [10, 0], [10, 1], [10, 2], [10, 3], [10, 4], [10, 6], [10, 7], [10, 8], [10, 9], [10, 10]
+  [10, 0], [10, 1], [10, 2], [10, 3], [10, 4], [10, 6], [10, 7], [10, 8], [10, 9], [10, 10],
 ].map(([y, x]) => ({ board: 0, x, y }));
 
 export const KNIGHT_MOVE_INCREMENTS: readonly [number, number][] = [
@@ -32,7 +33,7 @@ export const KNIGHT_MOVE_INCREMENTS: readonly [number, number][] = [
   [+1, -2],
   [+1, +2],
   [+2, -1],
-  [+2, +1]
+  [+2, +1],
 ];
 
 export const HEX_KNIGHT_MOVE_INCREMENTS: readonly [number, number][] = [
@@ -47,14 +48,14 @@ export const HEX_KNIGHT_MOVE_INCREMENTS: readonly [number, number][] = [
   [-2, +1],
   [-1, +2],
   [+1, -2],
-  [+2, -1]
+  [+2, -1],
 ];
 
 export const BISHOP_MOVE_INCREMENTS: readonly [number, number][] = [
   [-1, -1],
   [-1, +1],
   [+1, -1],
-  [+1, +1]
+  [+1, +1],
 ];
 
 export const HEX_BISHOP_MOVE_INCREMENTS: readonly [number, number][] = [
@@ -63,14 +64,14 @@ export const HEX_BISHOP_MOVE_INCREMENTS: readonly [number, number][] = [
   [-2, -1],
   [-1, +1],
   [+1, -1],
-  [+2, +1]
+  [+2, +1],
 ];
 
 export const ROOK_MOVE_INCREMENTS: readonly [number, number][] = [
   [-1, 0],
   [0, -1],
   [0, +1],
-  [+1, 0]
+  [+1, 0],
 ];
 
 export const HEX_ROOK_MOVE_INCREMENTS: readonly [number, number][] = [
@@ -79,7 +80,7 @@ export const HEX_ROOK_MOVE_INCREMENTS: readonly [number, number][] = [
   [0, 1],
   [1, 0],
   [-1, -1],
-  [1, 1]
+  [1, 1],
 ];
 
 export default abstract class GameBoardUtils extends GamePieceUtils {
@@ -122,7 +123,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
   static getEmptySquares(variants: readonly GameVariantEnum[]): readonly Square[] {
     const {
       isAliceChess,
-      isHexagonalChess
+      isHexagonalChess,
     } = GameBoardUtils.getVariantsInfo(variants);
 
     if (!isHexagonalChess) {
@@ -168,7 +169,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     ({
       boardCount: this.boardCount,
       boardWidth: this.boardWidth,
-      boardHeight: this.boardHeight
+      boardHeight: this.boardHeight,
     } = GameBoardUtils.getBoardDimensions(options.variants));
 
     this.boardOrthodoxWidth = this.isCircularChess
@@ -234,7 +235,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     const bottomCenterY = topCenterY - 1;
     const {
       x: squareX,
-      y: squareY
+      y: squareY,
     } = square;
 
     if (squareX === leftCenterX && squareY === topCenterY) {
@@ -290,15 +291,15 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
               ...newSquares,
               ...newSquares.map((square) => ({
                 ...square,
-                board: this.getNextBoard(square.board + board)
-              }))
+                board: this.getNextBoard(square.board + board),
+              })),
             ];
           });
         }
 
         return [
           ...squares,
-          ...newSquares
+          ...newSquares,
         ];
       }, [] as Square[]);
   }
@@ -392,7 +393,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
           && (square.x - this.middleFileX) * incrementX < 0
         ))
           ? rankY - direction
-          : rankY
+          : rankY,
       };
 
       if (!this.isNullSquare(sq)) {
@@ -425,7 +426,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     return !this.isAliceChess || _.times(this.boardCount - 1).every((board) => (
       !this.getBoardPiece({
         ...square,
-        board: this.getNextBoard(square.board + board)
+        board: this.getNextBoard(square.board + board),
       })
     ));
   }
@@ -526,7 +527,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     const {
       board,
       x: startX,
-      y: startY
+      y: startY,
     } = startSquare;
     let fileX = startX;
     let rankY = startY;
@@ -682,7 +683,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
       const square: Square = {
         board,
         x: fileX,
-        y: rankY
+        y: rankY,
       };
 
       if (this.isNullSquare(square) || (fileX === startX && rankY === startY)) {

@@ -3,20 +3,23 @@ import { connect } from 'react-redux';
 import classNames from 'classnames';
 
 import {
-  changeSettings
-} from 'client/actions';
+  COLOR_NAMES,
+} from 'shared/constants';
+
 import {
   ColorEnum,
   GamePlayers,
   GameResult,
   PieceTypeEnum,
   Player,
-  TakebackRequest
+  TakebackRequest,
 } from 'shared/types';
-import {
-  COLOR_NAMES
-} from 'shared/constants';
+
 import { Game } from 'client/helpers';
+
+import {
+  changeSettings,
+} from 'client/actions';
 import { DispatchProps, ReduxState } from 'client/store';
 
 import Piece from '../Piece';
@@ -51,13 +54,13 @@ type Props = OwnProps & ReturnType<typeof mapStateToProps> & DispatchProps;
 
 class GameActions extends React.Component<Props, State> {
   state: State = {
-    resignModalVisible: false
+    resignModalVisible: false,
   };
 
   offerDraw = () => {
     const {
       game,
-      drawOffer
+      drawOffer,
     } = this.props;
 
     if (!drawOffer) {
@@ -80,7 +83,7 @@ class GameActions extends React.Component<Props, State> {
   navigateToTakebackRequestMove = () => {
     const {
       game,
-      takebackRequest
+      takebackRequest,
     } = this.props;
 
     if (takebackRequest) {
@@ -92,7 +95,7 @@ class GameActions extends React.Component<Props, State> {
     const {
       game,
       isNoMovesMade,
-      takebackRequest
+      takebackRequest,
     } = this.props;
 
     if (!isNoMovesMade && !takebackRequest) {
@@ -105,7 +108,7 @@ class GameActions extends React.Component<Props, State> {
       game,
       isNoMovesMade,
       isCurrentMoveLast,
-      takebackRequest
+      takebackRequest,
     } = this.props;
 
     if (!isNoMovesMade && !isCurrentMoveLast && !takebackRequest) {
@@ -127,13 +130,13 @@ class GameActions extends React.Component<Props, State> {
 
   openResignModal = () => {
     this.setState({
-      resignModalVisible: true
+      resignModalVisible: true,
     });
   };
 
   closeResignModal = () => {
     this.setState({
-      resignModalVisible: false
+      resignModalVisible: false,
     });
   };
 
@@ -151,7 +154,7 @@ class GameActions extends React.Component<Props, State> {
     const {
       game,
       boardToShow,
-      switchBoard
+      switchBoard,
     } = this.props;
 
     if (boardToShow !== 'all') {
@@ -162,7 +165,7 @@ class GameActions extends React.Component<Props, State> {
   toggleShowFantomPieces = () => {
     const {
       dispatch,
-      showFantomPieces
+      showFantomPieces,
     } = this.props;
 
     dispatch(changeSettings('showFantomPieces', !showFantomPieces));
@@ -171,7 +174,7 @@ class GameActions extends React.Component<Props, State> {
   toggleShowDarkChessHiddenPieces = () => {
     const {
       darkChessMode,
-      toggleShowDarkChessHiddenPieces
+      toggleShowDarkChessHiddenPieces,
     } = this.props;
 
     if (darkChessMode) {
@@ -183,7 +186,7 @@ class GameActions extends React.Component<Props, State> {
     const {
       isBlackBase,
       boardsShiftX,
-      setBoardsShiftX
+      setBoardsShiftX,
     } = this.props;
 
     setBoardsShiftX(boardsShiftX + (isBlackBase ? -incrementX : incrementX));
@@ -207,7 +210,7 @@ class GameActions extends React.Component<Props, State> {
       darkChessMode,
       player,
       showDarkChessHiddenPieces,
-      showFantomPieces
+      showFantomPieces,
     } = this.props;
     const boardsString = game.isAliceChess
       ? 'boards'
@@ -260,7 +263,7 @@ class GameActions extends React.Component<Props, State> {
           onClick={this.requestTakebackUpToCurrentMove}
         >
           <i className="fa fa-reply-all" />
-        </div>
+        </div>,
       );
     }
 
@@ -270,7 +273,7 @@ class GameActions extends React.Component<Props, State> {
         className={classNames('button', {
           enabled: !player || player.color === ColorEnum.WHITE
             ? isBlackBase
-            : !isBlackBase
+            : !isBlackBase,
         })}
         title={`Flip the ${boardsString}`}
         onClick={this.flipBoard}
@@ -283,7 +286,7 @@ class GameActions extends React.Component<Props, State> {
             location={null}
           />
         </div>
-      </div>
+      </div>,
     );
 
     if (game.isAliceChess && boardToShow !== 'all') {
@@ -295,7 +298,7 @@ class GameActions extends React.Component<Props, State> {
           onClick={this.switchBoard}
         >
           {boardToShow + 1}
-        </div>
+        </div>,
       );
     }
 
@@ -324,7 +327,7 @@ class GameActions extends React.Component<Props, State> {
           onClick={() => this.shiftBoard(-1)}
         >
           <i className="fa fa-arrow-right" />
-        </div>
+        </div>,
       );
     }
 
@@ -347,7 +350,7 @@ class GameActions extends React.Component<Props, State> {
               />
             </div>
           )}
-        </div>
+        </div>,
       );
     }
 
@@ -369,7 +372,7 @@ class GameActions extends React.Component<Props, State> {
               />
             </div>
           )}
-        </div>
+        </div>,
       );
     }
 
@@ -455,7 +458,7 @@ class GameActions extends React.Component<Props, State> {
           question="Are you sure you want to resign?"
           choices={[
             { key: 'yes', text: 'Yes', className: 'ok' },
-            { key: 'no', text: 'Cancel', className: 'cancel' }
+            { key: 'no', text: 'Cancel', className: 'cancel' },
           ]}
           onChoose={this.resign}
         />
@@ -466,7 +469,7 @@ class GameActions extends React.Component<Props, State> {
 
 function mapStateToProps(state: ReduxState) {
   return {
-    showFantomPieces: state.gameSettings.showFantomPieces
+    showFantomPieces: state.gameSettings.showFantomPieces,
   };
 }
 

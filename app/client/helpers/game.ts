@@ -2,6 +2,16 @@ import * as _ from 'lodash';
 import { Socket } from 'socket.io-client';
 
 import {
+  POSSIBLE_TIMER_BASES_IN_MINUTES,
+  POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
+  POSSIBLE_TIMER_INCREMENTS_IN_SECONDS,
+  POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS,
+  POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS,
+  POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS,
+} from 'shared/constants';
+import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from 'client/constants';
+
+import {
   AnyMove,
   BaseMove,
   BoardPiece,
@@ -25,19 +35,10 @@ import {
   ResultReasonEnum,
   Square,
   TimeControl,
-  TimeControlEnum
+  TimeControlEnum,
 } from 'shared/types';
-import { Game as GameHelper } from 'shared/helpers';
-import {
-  POSSIBLE_TIMER_BASES_IN_MINUTES,
-  POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
-  POSSIBLE_TIMER_INCREMENTS_IN_SECONDS,
-  POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS,
-  POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS,
-  POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS
-} from 'shared/constants';
-import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from 'client/constants';
 
+import { Game as GameHelper } from 'shared/helpers';
 import { Sound } from 'client/helpers/sounds';
 import { RegisterMoveReturnValue } from 'shared/helpers/GameMovesUtils';
 
@@ -102,12 +103,12 @@ export class Game extends GameHelper {
   piecesBeforePremoves: readonly Piece[];
   colorMoves: EachColor<DarkChessLocalMove[]> = {
     [ColorEnum.WHITE]: [],
-    [ColorEnum.BLACK]: []
+    [ColorEnum.BLACK]: [],
   };
   pieceLocationsByMove: Partial<Record<number, Dictionary<PieceLocation>>> = {};
   colorPieceLocationsByMove: EachColor<Partial<Record<number, Dictionary<PieceLocation>>>> = {
     [ColorEnum.WHITE]: {},
-    [ColorEnum.BLACK]: {}
+    [ColorEnum.BLACK]: {},
   };
   currentMoveIndex: number;
   isOngoingDarkChessGame: boolean;
@@ -120,11 +121,11 @@ export class Game extends GameHelper {
   showDarkChessHiddenPieces: boolean;
   listeners: Record<GameEvent, (() => void)[]> = {
     updateChat: [],
-    updateGame: []
+    updateGame: [],
   };
   sounds = {
     pieceMove: new Sound('piece-move2'),
-    pieceCapture: new Sound('piece-capture4')
+    pieceCapture: new Sound('piece-capture4'),
   };
 
   constructor({
@@ -132,14 +133,14 @@ export class Game extends GameHelper {
     socket,
     player,
     currentMoveIndex,
-    timestamp
+    timestamp,
   }: InitGameOptions) {
     super({
       id: game.id,
       pgnTags: game.pgnTags,
       startingData: game.startingData,
       timeControl: game.timeControl,
-      variants: game.variants
+      variants: game.variants,
     });
 
     this.drawOffer = game.drawOffer;
@@ -302,7 +303,7 @@ export class Game extends GameHelper {
       socket.on('newChatMessage', (chatMessage) => {
         this.chat = [
           ...this.chat,
-          chatMessage
+          chatMessage,
         ];
 
         this.emit('updateChat');
@@ -459,7 +460,7 @@ export class Game extends GameHelper {
       topLeft: { x: x0, y: y0 - SVG_SQUARE_SIZE },
       topRight: { x: x0 + 2 * a, y: y0 - SVG_SQUARE_SIZE },
       right: { x: x0 + 3 * a, y: y0 - SVG_SQUARE_SIZE / 2 },
-      bottomRight: { x: x0 + 2 * a, y: y0 }
+      bottomRight: { x: x0 + 2 * a, y: y0 },
     };
   }
 
@@ -517,7 +518,7 @@ export class Game extends GameHelper {
 
       return {
         x: this.boardCenterX - centerR * Math.sin(centerAngle),
-        y: this.boardOrthodoxWidth * SVG_SQUARE_SIZE - (this.boardCenterY - centerR * Math.cos(centerAngle))
+        y: this.boardOrthodoxWidth * SVG_SQUARE_SIZE - (this.boardCenterY - centerR * Math.cos(centerAngle)),
       };
     }
 
@@ -529,13 +530,13 @@ export class Game extends GameHelper {
 
       return {
         x: x0 + a,
-        y: y0 - SVG_SQUARE_SIZE / 2
+        y: y0 - SVG_SQUARE_SIZE / 2,
       };
     }
 
     return {
       x: (square.x + 0.5) * SVG_SQUARE_SIZE,
-      y: (this.boardHeight - square.y - 0.5) * SVG_SQUARE_SIZE
+      y: (this.boardHeight - square.y - 0.5) * SVG_SQUARE_SIZE,
     };
   }
 
@@ -576,7 +577,7 @@ export class Game extends GameHelper {
         ? this.getVisibleSquares(this.darkChessMode)
         : undefined;
       const { algebraic, figurine, isCapture, revertMove } = this.performMove(move, {
-        constructMoveLiterals: true
+        constructMoveLiterals: true,
       });
       const pieces = this.pieces.filter(Game.isRealPiece).map(_.clone);
 
@@ -593,13 +594,13 @@ export class Game extends GameHelper {
         prevPiecesWorth: this.getPiecesWorth(),
         timeBeforeMove: {
           [ColorEnum.WHITE]: this.players[ColorEnum.WHITE].time,
-          [ColorEnum.BLACK]: this.players[ColorEnum.BLACK].time
-        }
+          [ColorEnum.BLACK]: this.players[ColorEnum.BLACK].time,
+        },
       }, true, false);
     } else {
       this.onMoveMade({
         ...move,
-        duration
+        duration,
       }, false, false);
     }
 
@@ -674,7 +675,7 @@ export class Game extends GameHelper {
   onDarkChessMoves(moves: Move[]) {
     this.colorMoves = {
       [ColorEnum.WHITE]: [],
-      [ColorEnum.BLACK]: []
+      [ColorEnum.BLACK]: [],
     };
     this.moves = [];
 
@@ -763,9 +764,9 @@ export class Game extends GameHelper {
       to: {
         board: toBoard,
         x: toX,
-        y: toY
+        y: toY,
       },
-      promotion
+      promotion,
     } = move;
     const piece = fromLocation.type === PieceLocationEnum.BOARD
       ? this.getBoardPiece(fromLocation)!
@@ -802,7 +803,7 @@ export class Game extends GameHelper {
         pieceInSquare,
         goesToPocket
           ? { type: PieceLocationEnum.POCKET, pieceType: pieceInSquare.originalType, color: piece.color }
-          : null
+          : null,
       );
     }
 
@@ -811,7 +812,7 @@ export class Game extends GameHelper {
         type: PieceLocationEnum.BOARD,
         board: toBoard,
         x: isKingSideCastling ? this.boardWidth - 3 : 3,
-        y: toY
+        y: toY,
       };
       const pieceInRookLocation = this.getBoardPiece(newRookLocation);
 
@@ -838,7 +839,7 @@ export class Game extends GameHelper {
     if (this.isAbsorption && isAnyCapture) {
       const {
         type,
-        abilities
+        abilities,
       } = Game.getPieceTypeAfterAbsorption(piece, pieceInSquare!);
 
       piece.type = type;
@@ -864,14 +865,14 @@ export class Game extends GameHelper {
 
     this.changePieceLocation(piece, {
       type: PieceLocationEnum.BOARD,
-      ...toLocation
+      ...toLocation,
     });
 
     movedPieces.forEach((piece) => {
       _.times(this.boardCount - 1, (board) => {
         const pieceInSquare = this.getBoardPiece({
           ...piece.location,
-          board: this.getNextBoard(piece.location.board + board)
+          board: this.getNextBoard(piece.location.board + board),
         });
 
         if (pieceInSquare) {
@@ -882,7 +883,7 @@ export class Game extends GameHelper {
       if (fromLocation.type === PieceLocationEnum.BOARD) {
         this.changePieceLocation(piece, {
           ...piece.location,
-          board: this.getNextBoard(piece.location.board)
+          board: this.getNextBoard(piece.location.board),
         });
       }
     });
@@ -913,7 +914,7 @@ export class Game extends GameHelper {
 
     this.colorMoves[this.darkChessMode!].push({
       ...move,
-      revertMove
+      revertMove,
     });
 
     this.changePlayerTime();
@@ -943,7 +944,7 @@ export class Game extends GameHelper {
 
     this.premoves = [
       ...this.premoves,
-      move
+      move,
     ];
   }
 
@@ -962,7 +963,7 @@ export class Game extends GameHelper {
   removeListeners() {
     this.listeners = {
       updateChat: [],
-      updateGame: []
+      updateGame: [],
     };
   }
 
@@ -1020,7 +1021,7 @@ export class Game extends GameHelper {
       this.changeDarkChessMode(
         this.isBlackBase
           ? ColorEnum.BLACK
-          : ColorEnum.WHITE
+          : ColorEnum.WHITE,
       );
     }
 

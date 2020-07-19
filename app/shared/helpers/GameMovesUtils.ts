@@ -2,15 +2,6 @@
 
 import * as _ from 'lodash';
 
-import GamePositionUtils from './GamePositionUtils';
-import {
-  KNIGHT_MOVE_INCREMENTS,
-  HEX_KNIGHT_MOVE_INCREMENTS,
-  BISHOP_MOVE_INCREMENTS,
-  HEX_BISHOP_MOVE_INCREMENTS,
-  ROOK_MOVE_INCREMENTS,
-  HEX_ROOK_MOVE_INCREMENTS
-} from './GameBoardUtils';
 import {
   AnyMove,
   BaseMove,
@@ -29,8 +20,18 @@ import {
   RealPiece,
   ResultReasonEnum,
   RevertableMove,
-  Square
+  Square,
 } from 'shared/types';
+
+import GamePositionUtils from './GamePositionUtils';
+import {
+  KNIGHT_MOVE_INCREMENTS,
+  HEX_KNIGHT_MOVE_INCREMENTS,
+  BISHOP_MOVE_INCREMENTS,
+  HEX_BISHOP_MOVE_INCREMENTS,
+  ROOK_MOVE_INCREMENTS,
+  HEX_ROOK_MOVE_INCREMENTS,
+} from './GameBoardUtils';
 
 export interface PerformMoveOptions {
   constructMoveLiterals?: boolean;
@@ -82,7 +83,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
           const { allowed, revertMove } = this.performMove({
             from: piece.location,
             to: square,
-            promotion
+            promotion,
           }, { checkIfAllowed: true });
 
           revertMove();
@@ -93,7 +94,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
 
       const { allowed, revertMove } = this.performMove({
         from: piece.location,
-        to: square
+        to: square,
       }, { checkIfAllowed: true });
 
       revertMove();
@@ -151,7 +152,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             const square: Square = {
               board,
               x: fileX,
-              y: rankY
+              y: rankY,
             };
 
             if (
@@ -186,7 +187,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     const {
       board,
       x: pieceX,
-      y: pieceY
+      y: pieceY,
     } = piece.location;
     const opponentColor = GameMovesUtils.getOppositeColor(pieceColor);
     const traverseDirection = function* (
@@ -194,7 +195,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       movementType: MovementType,
       incrementY: number,
       incrementX: number,
-      stopAfter: number
+      stopAfter: number,
     ): Generator<Square> {
       let iterations = 0;
 
@@ -279,7 +280,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       const square = {
         board,
         x: pieceX,
-        y: rankY
+        y: rankY,
       };
 
       if ((forMove || onlyPossible || onlyVisible || onlyPremove) && !this.isNullSquare(square)) {
@@ -294,7 +295,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             const square = {
               board,
               x: pieceX,
-              y: rankY + forwardDirection
+              y: rankY + forwardDirection,
             };
             const pieceInSquare = this.getBoardPiece(square);
 
@@ -311,7 +312,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         const square = {
           board,
           x: pieceX,
-          y: rankY
+          y: rankY,
         };
 
         if (!this.isNullSquare(square) && !this.isPawnInitialRank(piece.location, pieceColor)) {
@@ -336,7 +337,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             && (pieceX - this.middleFileX) * incrementX < 0
           ))
             ? rankY - forwardDirection
-            : rankY
+            : rankY,
         };
 
         if (!this.isNullSquare(square)) {
@@ -435,7 +436,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
                 !this.getBoardPiece({
                   board: this.getNextBoard(rookLocation.board + board),
                   y: rookLocation.y,
-                  x: newRookX
+                  x: newRookX,
                 })
               ));
             }
@@ -455,7 +456,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             : isKingSideRook
               ? this.boardWidth - 2
               : 2,
-          y: pieceY
+          y: pieceY,
         };
       }
     }
@@ -495,7 +496,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     const { allowed, revertMove } = this.performMove({
       from: piece.location,
       to: square,
-      promotion
+      promotion,
     }, { checkIfAllowed: true });
 
     revertMove();
@@ -507,7 +508,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     const {
       constructMoveLiterals = false,
       constructPositionString = false,
-      checkIfAllowed = false
+      checkIfAllowed = false,
     } = options;
     const {
       from: fromLocation,
@@ -515,9 +516,9 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       to: {
         board: toBoard,
         x: toX,
-        y: toY
+        y: toY,
       },
-      promotion
+      promotion,
     } = move;
     const piece = fromLocation.type === PieceLocationEnum.BOARD
       ? this.getBoardPiece(fromLocation)!
@@ -554,7 +555,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             : { board: toBoard, x: 2, y: toY }
           : toLocation
       ),
-      type: PieceLocationEnum.BOARD
+      type: PieceLocationEnum.BOARD,
     };
     let needToReset50MoveRule = !this.isCrazyhouse && (
       isPawnPromotion
@@ -634,7 +635,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         const {
           board: fromBoard,
           x: fromX,
-          y: fromY
+          y: fromY,
         } = fromLocation;
 
         if (piece.type === PieceTypeEnum.PAWN) {
@@ -751,11 +752,11 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         enPassantSquare: {
           board: this.getNextBoard(toBoard),
           x: toX,
-          y: Math.round((toY + fromLocation.y) / 2)
+          y: Math.round((toY + fromLocation.y) / 2),
         },
         pieceLocation: this.isAliceChess
           ? { ...newLocation, board: this.getNextBoard(toBoard) }
-          : newLocation
+          : newLocation,
       };
     } else {
       this.possibleEnPassant = null;
@@ -782,7 +783,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       if (this.isAbsorption && isCapture) {
         const {
           type,
-          abilities
+          abilities,
         } = GameMovesUtils.getPieceTypeAfterAbsorption(piece, opponentPiece!);
 
         piece.type = type;
@@ -821,7 +822,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         this.changePieceLocation(piece, {
           type: PieceLocationEnum.POCKET,
           pieceType,
-          color: opponentColor
+          color: opponentColor,
         });
       } else {
         needToReset50MoveRule = true;
@@ -830,7 +831,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
 
     disappearedOrMovedPieces.forEach((disappearedOrMovedPiece, ix) => {
       const {
-        color
+        color,
       } = disappearedOrMovedPiece;
       const location = disappearedOrMovedPiecesData[ix].location;
       let newSquare = null;
@@ -838,7 +839,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       if (disappearedOrMovedPiece === castlingRook) {
         newSquare = {
           x: isKingSideCastling ? this.boardWidth - 3 : 3,
-          y: toY
+          y: toY,
         };
       } else if (this.isCirce) {
         const oldSquare = disappearedOrMovedPiece === piece
@@ -869,21 +870,21 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
               ? !this.isTwoFamilies || oldSquare.y < this.boardOrthodoxHeight
                 ? circularChessQueenSideRankY
                 : circularChessKingSideRankY
-              : pieceRankY
+              : pieceRankY,
           };
         } else if (GameMovesUtils.isEmpress(disappearedOrMovedPiece)) {
           newSquare = {
             x: this.isCircularChess ? 2 : 7,
             y: this.isCircularChess
               ? circularChessKingSideRankY
-              : pieceRankY
+              : pieceRankY,
           };
         } else if (GameMovesUtils.isCardinal(disappearedOrMovedPiece)) {
           newSquare = {
             x: 2,
             y: this.isCircularChess
               ? circularChessQueenSideRankY
-              : pieceRankY
+              : pieceRankY,
           };
         } else if (GameMovesUtils.isPawn(disappearedOrMovedPiece)) {
           newSquare = {
@@ -898,7 +899,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
                   : this.boardOrthodoxHeight + 1
               : color === ColorEnum.WHITE
                 ? 1
-                : this.boardHeight - 2
+                : this.boardHeight - 2,
           };
         } else if (
           GameMovesUtils.isRook(disappearedOrMovedPiece)
@@ -929,14 +930,14 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
               ? (circularFileX + circularChessQueenSideRankY) % 2 === squareColor
                 ? circularChessQueenSideRankY
                 : circularChessKingSideRankY
-              : pieceRankY
+              : pieceRankY,
           };
         }
 
         if (newSquare) {
           const pieceInSquare = this.getBoardPiece({
             ...newSquare,
-            board: location.board
+            board: location.board,
           });
 
           // don't allow rebirth if it takes place on the square with another piece
@@ -952,7 +953,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         this.changePieceLocation(disappearedOrMovedPiece, {
           ...newSquare,
           board: location.board,
-          type: PieceLocationEnum.BOARD
+          type: PieceLocationEnum.BOARD,
         });
       } else {
         removePieceOrMoveToOpponentPocket(disappearedOrMovedPiece);
@@ -989,7 +990,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       if (!isMainPieceMovedOrDisappeared && fromLocation.type === PieceLocationEnum.BOARD) {
         this.changePieceLocation(piece, {
           ...newLocation,
-          board: nextBoard
+          board: nextBoard,
         });
       }
 
@@ -997,11 +998,11 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         if (GameMovesUtils.isBoardPiece(disappearedOrMovedPiece)) {
           const {
             x: squareX,
-            y: squareY
+            y: squareY,
           } = disappearedOrMovedPiece.location;
           const square = {
             x: squareX,
-            y: squareY
+            y: squareY,
           };
 
           // don't allow move to the next board if the square is occupied by another piece on any other board
@@ -1009,7 +1010,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             _.times(this.boardCount - 1).some((board) => (
               !!this.getBoardPiece({
                 ...square,
-                board: this.getNextBoard(toBoard + board)
+                board: this.getNextBoard(toBoard + board),
               })
             ))
           ) {
@@ -1018,7 +1019,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             this.changePieceLocation(disappearedOrMovedPiece, {
               ...square,
               board: nextBoard,
-              type: PieceLocationEnum.BOARD
+              type: PieceLocationEnum.BOARD,
             });
           }
         }
@@ -1107,7 +1108,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
 
           this.changePieceLocation(disappearedPiece, pieceData.location);
         });
-      }
+      },
     };
   }
 
@@ -1118,10 +1119,10 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       figurine,
       movedPiece,
       isCapture,
-      revertMove
+      revertMove,
     } = this.performMove(move, {
       constructMoveLiterals: true,
-      constructPositionString: true
+      constructPositionString: true,
     });
 
     this.moves.push({
@@ -1132,9 +1133,9 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       prevPiecesWorth,
       timeBeforeMove: {
         [ColorEnum.WHITE]: this.players[ColorEnum.WHITE].time,
-        [ColorEnum.BLACK]: this.players[ColorEnum.BLACK].time
+        [ColorEnum.BLACK]: this.players[ColorEnum.BLACK].time,
       },
-      revertMove
+      revertMove,
     });
 
     const winResult = this.isWin();
@@ -1152,7 +1153,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     return {
       movedPiece,
       isWin: !!winResult,
-      isCapture
+      isCapture,
     };
   }
 

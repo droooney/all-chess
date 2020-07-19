@@ -1,19 +1,19 @@
 import * as _ from 'lodash';
 import * as React from 'react';
 import {
-  RouteComponentProps
+  RouteComponentProps,
 } from 'react-router-dom';
 
 import {
   GAME_VARIANT_NAMES,
-  GAME_VARIANT_LINKS
+  GAME_VARIANT_LINKS,
 } from 'shared/constants';
+
 import {
-  GameVariantEnum
+  GameVariantEnum,
 } from 'shared/types';
 
 import DocumentTitle from '../DocumentTitle';
-
 import Chess960GameRules from './Chess960';
 import AtomicGameRules from './Atomic';
 
@@ -24,9 +24,9 @@ export default class GameRules extends React.Component<Props> {
     const {
       match: {
         params: {
-          gameLink
-        }
-      }
+          gameLink,
+        },
+      },
     } = this.props;
     const gameType = _.findKey(GAME_VARIANT_LINKS, (link) => link === gameLink) as GameVariantEnum;
     const gameName = GAME_VARIANT_NAMES[gameType];

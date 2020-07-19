@@ -30,7 +30,7 @@ class Register extends React.Component<{}, State> {
     emailChanged: false,
     success: false,
     loginError: false,
-    emailError: false
+    emailError: false,
   };
 
   onSubmit = async (e: React.SyntheticEvent) => {
@@ -42,20 +42,20 @@ class Register extends React.Component<{}, State> {
       data: {
         login: this.state.login,
         email: this.state.email,
-        password: this.state.password
-      }
+        password: this.state.password,
+      },
     });
 
     if (response.success) {
       this.setState({
         success: true,
         loginError: false,
-        emailError: false
+        emailError: false,
       });
     } else {
       this.setState({
         loginError: response.errors.login,
-        emailError: response.errors.email
+        emailError: response.errors.email,
       });
     }
   };

@@ -28,7 +28,7 @@
     "calc:pieces-worth": "npm run ts:run scripts/get-pieces-worth.ts",
 
     "lint": "eslint . --ext .ts --ext .tsx",
-    "lint:fix": "eslint . --ext .ts --ext .tsx",
+    "lint:fix": "eslint . --ext .ts --ext .tsx --fix",
 
     "ts:check": "tsc --noEmit",
     "ts:run": "ts-node -r tsconfig-paths/register"
@@ -105,6 +105,7 @@
     "caniuse-lite": "^1.0.30001102",
     "core-js": "^2.6.11",
     "eslint": "^5.16.0",
+    "eslint-plugin-import-helpers": "^1.1.0",
     "eslint-plugin-react": "^7.20.3",
     "eslint-plugin-typescript": "^0.12.0",
     "less": "^3.12.2",

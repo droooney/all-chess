@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
 
-import GameBoardUtils from './GameBoardUtils';
 import {
   CastlingTypeEnum,
   ColorEnum,
@@ -9,8 +8,10 @@ import {
   PieceLocationEnum,
   PieceTypeEnum,
   RealPiece,
-  StartingData
+  StartingData,
 } from 'shared/types';
+
+import GameBoardUtils from './GameBoardUtils';
 
 const STANDARD_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
@@ -20,7 +21,7 @@ const STANDARD_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.KING,
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.KNIGHT,
-  PieceTypeEnum.ROOK
+  PieceTypeEnum.ROOK,
 ];
 
 const TWO_FAMILIES_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
@@ -33,7 +34,7 @@ const TWO_FAMILIES_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.KING,
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.KNIGHT,
-  PieceTypeEnum.ROOK
+  PieceTypeEnum.ROOK,
 ];
 
 const CAPABLANCA_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
@@ -46,7 +47,7 @@ const CAPABLANCA_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.EMPRESS,
   PieceTypeEnum.KNIGHT,
-  PieceTypeEnum.ROOK
+  PieceTypeEnum.ROOK,
 ];
 
 const HEXAGONAL_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
@@ -58,7 +59,7 @@ const HEXAGONAL_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.KING,
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.BISHOP,
-  PieceTypeEnum.BISHOP
+  PieceTypeEnum.BISHOP,
 ];
 
 const HEXAGONAL_TWO_FAMILIES_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
@@ -72,7 +73,7 @@ const HEXAGONAL_TWO_FAMILIES_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.QUEEN,
-  PieceTypeEnum.QUEEN
+  PieceTypeEnum.QUEEN,
 ];
 
 const HEXAGONAL_CAPABLANCA_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
@@ -86,7 +87,7 @@ const HEXAGONAL_CAPABLANCA_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.BISHOP,
   PieceTypeEnum.CARDINAL,
-  PieceTypeEnum.EMPRESS
+  PieceTypeEnum.EMPRESS,
 ];
 
 const HEXAGONAL_PIECE_SQUARES: readonly [number, number][] = [
@@ -98,13 +99,13 @@ const HEXAGONAL_PIECE_SQUARES: readonly [number, number][] = [
   [0, 6],
   [0, 5],
   [1, 5],
-  [2, 5]
+  [2, 5],
 ];
 
 const HEXAGONAL_EXTENDED_PIECE_SQUARES: readonly [number, number][] = [
   ...HEXAGONAL_PIECE_SQUARES,
   [1, 4],
-  [1, 6]
+  [1, 6],
 ];
 
 const STANDARD_STARTING_DATA: StartingData = {
@@ -116,32 +117,32 @@ const STANDARD_STARTING_DATA: StartingData = {
   possibleCastling: {
     [ColorEnum.WHITE]: {
       [CastlingTypeEnum.KING_SIDE]: true,
-      [CastlingTypeEnum.QUEEN_SIDE]: true
+      [CastlingTypeEnum.QUEEN_SIDE]: true,
     },
     [ColorEnum.BLACK]: {
       [CastlingTypeEnum.KING_SIDE]: true,
-      [CastlingTypeEnum.QUEEN_SIDE]: true
-    }
+      [CastlingTypeEnum.QUEEN_SIDE]: true,
+    },
   },
   checksCount: {
     [ColorEnum.WHITE]: 0,
-    [ColorEnum.BLACK]: 0
+    [ColorEnum.BLACK]: 0,
   },
-  pieces: []
+  pieces: [],
 };
 
 export default abstract class GameStartingDataUtils extends GameBoardUtils {
   static generateClassicStartingData(variants: readonly GameVariantEnum[]): StartingData {
     const {
       boardWidth,
-      boardHeight
+      boardHeight,
     } = GameStartingDataUtils.getBoardDimensions(variants);
     const {
       is960,
       isCapablanca,
       isCircularChess,
       isHorde,
-      isTwoFamilies
+      isTwoFamilies,
     } = GameStartingDataUtils.getVariantsInfo(variants);
     const orthodoxBoardWidth = isCircularChess
       ? boardWidth * 2
@@ -231,8 +232,8 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
             type: PieceLocationEnum.BOARD,
             board: 0,
             x,
-            y
-          }
+            y,
+          },
         });
       };
 
@@ -275,7 +276,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
           piece.location = {
             ...piece.location,
             x: orthodoxBoardWidth - 1 - piece.location.x,
-            y: boardHeight - 1 - piece.location.y
+            y: boardHeight - 1 - piece.location.y,
           };
         }
       });
@@ -283,7 +284,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
 
     return {
       ...STANDARD_STARTING_DATA,
-      pieces
+      pieces,
     };
   }
 
@@ -293,7 +294,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
     const {
       is960,
       isCapablanca,
-      isTwoFamilies
+      isTwoFamilies,
     } = GameStartingDataUtils.getVariantsInfo(variants);
     let id = 0;
     let pieceTypes: readonly PieceTypeEnum[];
@@ -356,8 +357,8 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
             x,
             y: color === ColorEnum.WHITE
               ? y
-              : boardHeight - 1 - y - Math.abs(x - middleFile)
-          }
+              : boardHeight - 1 - y - Math.abs(x - middleFile),
+          },
         });
       };
 
@@ -376,7 +377,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
 
     return {
       ...STANDARD_STARTING_DATA,
-      pieces
+      pieces,
     };
   }
 
@@ -385,7 +386,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
       isAntichess,
       isCircularChess,
       isCylinderChess,
-      isHexagonalChess
+      isHexagonalChess,
     } = GameStartingDataUtils.getVariantsInfo(variants);
     const startingData = isHexagonalChess
       ? GameStartingDataUtils.generateHexagonalStartingData(variants)
@@ -395,12 +396,12 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
       startingData.possibleCastling = {
         [ColorEnum.WHITE]: {
           [CastlingTypeEnum.KING_SIDE]: false,
-          [CastlingTypeEnum.QUEEN_SIDE]: false
+          [CastlingTypeEnum.QUEEN_SIDE]: false,
         },
         [ColorEnum.BLACK]: {
           [CastlingTypeEnum.KING_SIDE]: false,
-          [CastlingTypeEnum.QUEEN_SIDE]: false
-        }
+          [CastlingTypeEnum.QUEEN_SIDE]: false,
+        },
       };
     }
 

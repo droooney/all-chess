@@ -1,15 +1,17 @@
 import * as React from 'react';
 import classNames from 'classnames';
 
+import { pocketPieces } from 'client/constants';
+
 import {
   ColorEnum,
   Piece as IPiece,
   PiecePocketLocation,
   PocketPiece,
-  RealPieceLocation
+  RealPieceLocation,
 } from 'shared/types';
+
 import { Game } from 'client/helpers';
-import { pocketPieces } from 'client/constants';
 
 import Piece from '../Piece';
 
@@ -32,7 +34,7 @@ export default class PlayerPocket extends React.Component<Props> {
       game,
       enableDnd,
       selectPiece,
-      selectedPiece
+      selectedPiece,
     } = this.props;
 
     if (
@@ -54,7 +56,7 @@ export default class PlayerPocket extends React.Component<Props> {
       enableClick,
       enableDnd,
       selectedPiece,
-      startDraggingPiece
+      startDraggingPiece,
     } = this.props;
 
     return (
@@ -68,7 +70,7 @@ export default class PlayerPocket extends React.Component<Props> {
               key={pieceType}
               data-pocket-piece={pieceType}
               className={classNames('piece-container', {
-                disabled: !pieces.length
+                disabled: !pieces.length,
               })}
               onClick={pieces.length && enableClick ? (() => this.onPocketPieceClick(piece.location)) : undefined}
               onMouseDown={pieces.length && enableDnd ? (e) => startDraggingPiece(e, piece.location) : undefined}

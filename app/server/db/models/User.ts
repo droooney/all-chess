@@ -2,8 +2,9 @@ import * as _ from 'lodash';
 import * as Sequelize from 'sequelize';
 import * as bcrypt from 'bcryptjs';
 
-import sequelize from 'server/db';
 import { PublicUser, User as UserAttributes } from 'shared/types';
+
+import sequelize from 'server/db';
 
 export type UserAddAttributes = Partial<UserAttributes> & Pick<UserAttributes, 'email' | 'password' | 'login'>;
 
@@ -22,46 +23,46 @@ User.init({
     type: Sequelize.INTEGER,
     allowNull: false,
     primaryKey: true,
-    autoIncrement: true
+    autoIncrement: true,
   },
   email: {
     type: Sequelize.STRING,
     allowNull: false,
     unique: true,
     validate: {
-      isEmail: true
-    }
+      isEmail: true,
+    },
   },
   login: {
     type: Sequelize.STRING,
     allowNull: false,
     unique: true,
     validate: {
-      notEmpty: true
-    }
+      notEmpty: true,
+    },
   },
   password: {
-    type: Sequelize.STRING
+    type: Sequelize.STRING,
   },
   confirmToken: {
     type: Sequelize.STRING,
     allowNull: true,
-    defaultValue: ''
+    defaultValue: '',
   },
   confirmed: {
     type: Sequelize.BOOLEAN,
-    defaultValue: false
+    defaultValue: false,
   },
   createdAt: {
     type: Sequelize.DATE,
     field: 'created_at',
-    allowNull: false
+    allowNull: false,
   },
   updatedAt: {
     type: Sequelize.DATE,
     field: 'updated_at',
-    allowNull: false
-  }
+    allowNull: false,
+  },
 }, {
   sequelize,
   tableName: 'users',
@@ -73,8 +74,8 @@ User.init({
       await Promise.all(
         users.map(async (user) => {
           user.password = await bcrypt.hash(user.password, 5);
-        })
+        }),
       );
-    }
-  }
+    },
+  },
 });

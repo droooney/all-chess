@@ -1,9 +1,11 @@
 import * as React from 'react';
 import classNames from 'classnames';
 
-import { Game } from 'client/helpers';
-import { ColorEnum, PiecePocketLocation, PieceTypeEnum, Square } from 'shared/types';
 import { pocketPieces } from 'client/constants';
+
+import { ColorEnum, PiecePocketLocation, PieceTypeEnum, Square } from 'shared/types';
+
+import { Game } from 'client/helpers';
 
 import Modal, { ModalProps } from '../Modal';
 import Piece from '../Piece';
@@ -34,7 +36,7 @@ export default class PromotionModal extends React.PureComponent<Props> {
 
   promoteToPiece = (location: PiecePocketLocation) => {
     const {
-      promoteToPiece
+      promoteToPiece,
     } = this.props;
 
     promoteToPiece(location.pieceType);
@@ -65,19 +67,19 @@ export default class PromotionModal extends React.PureComponent<Props> {
       if (reverse) {
         style = {
           left: box.left,
-          bottom: window.innerHeight - box.bottom
+          bottom: window.innerHeight - box.bottom,
         };
       } else {
         style = {
           left: box.left,
-          top: box.top
+          top: box.top,
         };
       }
     } else {
       style = {
         left: '50%',
         top: '50%',
-        transform: 'translate(-50%, -50%)'
+        transform: 'translate(-50%, -50%)',
       };
     }
 
@@ -87,7 +89,7 @@ export default class PromotionModal extends React.PureComponent<Props> {
           <div
             className="promotion-pieces"
             style={{
-              flexDirection: reverse ? 'column-reverse' : 'column'
+              flexDirection: reverse ? 'column-reverse' : 'column',
             }}
           >
             {validPromotions.map((pieceType) => (

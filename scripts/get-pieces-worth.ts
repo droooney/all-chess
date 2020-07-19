@@ -10,14 +10,15 @@ import {
   GetPossibleMovesMode,
   PieceLocationEnum,
   PieceTypeEnum,
-  Square
+  Square,
 } from '../app/shared/types';
+
 import { Game } from 'shared/helpers';
 
 const boardTypes = [
   'orthodox', 'orthodox-10x8',
   'circular', 'circular-10x8',
-  'hexagonal'
+  'hexagonal',
 ];
 
 const squareToString = (square: Square): string => `${square.board}-${square.y}-${square.x}`;
@@ -28,7 +29,7 @@ const squareFromString = (squareString: string): Square => {
   return {
     board: +boardString,
     y: +yString,
-    x: +xString
+    x: +xString,
   };
 };
 
@@ -44,7 +45,7 @@ boardTypes.forEach((boardType) => {
     ...(boardType.includes('circular') ? [GameVariantEnum.CIRCULAR_CHESS] : []),
     ...(boardType.includes('cylinder') ? [GameVariantEnum.CYLINDER_CHESS] : []),
     ...(boardType.includes('hexagonal') ? [GameVariantEnum.HEXAGONAL_CHESS] : []),
-    ...(boardType.includes('10x8') ? [GameVariantEnum.CAPABLANCA] : [])
+    ...(boardType.includes('10x8') ? [GameVariantEnum.CAPABLANCA] : []),
   ];
 
   Object.values(PieceTypeEnum).forEach((pieceType) => {
@@ -66,22 +67,22 @@ boardTypes.forEach((boardType) => {
         possibleCastling: {
           [ColorEnum.WHITE]: {
             [CastlingTypeEnum.KING_SIDE]: false,
-            [CastlingTypeEnum.QUEEN_SIDE]: false
+            [CastlingTypeEnum.QUEEN_SIDE]: false,
           },
           [ColorEnum.BLACK]: {
             [CastlingTypeEnum.KING_SIDE]: false,
-            [CastlingTypeEnum.QUEEN_SIDE]: false
-          }
+            [CastlingTypeEnum.QUEEN_SIDE]: false,
+          },
         },
         possibleEnPassant: null,
         checksCount: {
           [ColorEnum.WHITE]: 0,
-          [ColorEnum.BLACK]: 0
+          [ColorEnum.BLACK]: 0,
         },
-        pieces: []
+        pieces: [],
       },
       timeControl: null,
-      variants
+      variants,
     });
 
     game.pieces = [{
@@ -91,7 +92,7 @@ boardTypes.forEach((boardType) => {
       location: null,
       moved: true,
       originalType: pieceType,
-      abilities: null
+      abilities: null,
     }];
 
     const piece = game.pieces[0] as BoardPiece;
@@ -127,7 +128,7 @@ boardTypes.forEach((boardType) => {
           stepSquares.forEach((square) => {
             game.changePieceLocation(piece, {
               type: PieceLocationEnum.BOARD,
-              ...square
+              ...square,
             });
             game.getPossibleMoves(piece, GetPossibleMovesMode.POSSIBLE).toArray().forEach((square) => {
               const squareString = squareToString(square);

@@ -20,7 +20,7 @@ interface State {
 export default class Chat extends React.PureComponent<Props, State> {
   messagesRef = React.createRef<HTMLDivElement>();
   state: State = {
-    message: ''
+    message: '',
   };
 
   componentDidMount() {
@@ -49,7 +49,7 @@ export default class Chat extends React.PureComponent<Props, State> {
         this.props.sendMessage(message);
 
         this.setState({
-          message: ''
+          message: '',
         });
       }
     }
@@ -57,13 +57,13 @@ export default class Chat extends React.PureComponent<Props, State> {
 
   onMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     this.setState({
-      message: e.target.value
+      message: e.target.value,
     });
   };
 
   render() {
     const {
-      chat
+      chat,
     } = this.props;
 
     return (

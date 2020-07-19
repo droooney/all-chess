@@ -13,7 +13,8 @@
   },
   "plugins": [
     "react",
-    "typescript"
+    "typescript",
+    "import-helpers"
   ],
   "extends": [
     "eslint:recommended",
@@ -51,7 +52,13 @@
     ],
     "comma-dangle": [
       "error",
-      "never"
+      {
+        "arrays": "always-multiline",
+        "objects": "always-multiline",
+        "imports": "always-multiline",
+        "exports": "always-multiline",
+        "functions": "always-multiline"
+      }
     ],
     "comma-spacing": [
       "error",
@@ -353,6 +360,26 @@
 
     "react/no-did-update-set-state": 0,
     "react/no-string-refs": 2,
-    "react/prop-types": 0
+    "react/prop-types": 0,
+
+    "import-helpers/order-imports": [
+      "error",
+      {
+        "newlinesBetween": "always",
+        "groups": [
+          "module",
+          "/constants/",
+          "/types/",
+          "/helpers/",
+          "/(?:controllers|routes)/",
+          "/(?:actions|reducers|store)/",
+          "/db/",
+          "/components/",
+          "/config/",
+          "/^(?:server|client|shared)/",
+          ["parent", "sibling", "index"]
+        ]
+      }
+    ]
   }
 }

@@ -4,19 +4,6 @@ import { RouteComponentProps } from 'react-router-dom';
 import io = require('socket.io-client');
 import { MenuItem } from '@material-ui/core';
 
-import { DispatchProps, ReduxState } from 'client/store';
-import { Game } from 'client/helpers';
-import {
-  CorrespondenceTimeControl,
-  GameMinimalData,
-  GameVariantEnum,
-  TimeControl,
-  TimeControlEnum,
-  TimerTimeControl
-} from 'shared/types';
-import {
-  changeSettings
-} from 'client/actions';
 import {
   TIME_CONTROL_NAMES,
   POSSIBLE_TIMER_BASES_IN_MINUTES,
@@ -24,8 +11,24 @@ import {
   POSSIBLE_TIMER_INCREMENTS_IN_SECONDS,
   POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS,
   POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS,
-  POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS
+  POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS,
 } from 'shared/constants';
+
+import {
+  CorrespondenceTimeControl,
+  GameMinimalData,
+  GameVariantEnum,
+  TimeControl,
+  TimeControlEnum,
+  TimerTimeControl,
+} from 'shared/types';
+
+import { Game } from 'client/helpers';
+
+import { DispatchProps, ReduxState } from 'client/store';
+import {
+  changeSettings,
+} from 'client/actions';
 
 import Button from '../Button';
 import DocumentTitle from '../DocumentTitle';
@@ -51,7 +54,7 @@ class Games extends React.Component<Props, State> {
     createGameModalVisible: false,
     timeControl: this.props.timeControl,
     variants: [],
-    games: []
+    games: [],
   };
 
   componentDidMount() {
@@ -59,7 +62,7 @@ class Games extends React.Component<Props, State> {
 
     socket.on('gameList', (games) => {
       this.setState({
-        games
+        games,
       });
     });
 
@@ -67,8 +70,8 @@ class Games extends React.Component<Props, State> {
       this.setState(({ games }) => ({
         games: [
           ...games,
-          game
-        ]
+          game,
+        ],
       }));
     });
   }
@@ -79,14 +82,14 @@ class Games extends React.Component<Props, State> {
 
   openModal = () => {
     this.setState({
-      createGameModalVisible: true
+      createGameModalVisible: true,
     });
   };
 
   closeModal = () => {
     this.setState({
       variants: [],
-      createGameModalVisible: false
+      createGameModalVisible: false,
     });
   };
 
@@ -96,14 +99,14 @@ class Games extends React.Component<Props, State> {
     if (this.props.loggedIn) {
       this.socket!.emit('createGame', {
         timeControl: this.state.timeControl,
-        variants: this.state.variants
+        variants: this.state.variants,
       });
     }
   };
 
   onTimeControlChange = (e: React.ChangeEvent<{ value: unknown; }>) => {
     const {
-      dispatch
+      dispatch,
     } = this.props;
     const timeControl = e.target.value as TimeControlEnum;
     const newTimeControl: TimeControl = timeControl === TimeControlEnum.NONE
@@ -115,40 +118,40 @@ class Games extends React.Component<Props, State> {
     dispatch(changeSettings('timeControl', newTimeControl));
 
     this.setState({
-      timeControl: newTimeControl
+      timeControl: newTimeControl,
     });
   };
 
   onTimeControlBaseChange = (e: React.ChangeEvent<{ value: unknown; }>) => {
     const {
-      dispatch
+      dispatch,
     } = this.props;
     const newBase = +(e.target.value as string);
 
     this.setState(({ timeControl }) => {
       const newTimeControl = {
         ...timeControl as CorrespondenceTimeControl | TimerTimeControl,
-        base: newBase
+        base: newBase,
       };
 
       dispatch(changeSettings('timeControl', newTimeControl));
 
       return {
-        timeControl: newTimeControl
+        timeControl: newTimeControl,
       };
     });
   };
 
   onTimeControlIncrementChange = (e: React.ChangeEvent<{ value: unknown; }>) => {
     const {
-      dispatch
+      dispatch,
     } = this.props;
     const newIncrement = +(e.target.value as string);
 
     this.setState(({ timeControl }) => {
       const newTimeControl = {
         ...timeControl as TimerTimeControl,
-        increment: newIncrement
+        increment: newIncrement,
       };
 
       dispatch(changeSettings('timeControl', newTimeControl));
@@ -156,21 +159,21 @@ class Games extends React.Component<Props, State> {
       return {
         timeControl: {
           ...timeControl as TimerTimeControl,
-          increment: newIncrement
-        }
+          increment: newIncrement,
+        },
       };
     });
   };
 
   onVariantsChange = (variants: GameVariantEnum[]) => {
     this.setState({
-      variants
+      variants,
     });
   };
 
   enterGame(id: string) {
     const {
-      history
+      history,
     } = this.props;
 
     history.push(`/games/${id}`);
@@ -181,7 +184,7 @@ class Games extends React.Component<Props, State> {
       createGameModalVisible,
       games,
       timeControl,
-      variants
+      variants,
     } = this.state;
 
     return (
@@ -330,7 +333,7 @@ class Games extends React.Component<Props, State> {
 function mapStateToProps(state: ReduxState) {
   return {
     loggedIn: !!state.user,
-    timeControl: state.gameSettings.timeControl
+    timeControl: state.gameSettings.timeControl,
   };
 }
 

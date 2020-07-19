@@ -28,7 +28,7 @@ export default class FixedElement extends React.Component<Props> {
     const {
       className,
       style,
-      children
+      children,
     } = this.props;
 
     return createPortal(

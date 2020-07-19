@@ -1,10 +1,11 @@
 import * as _ from 'lodash';
 import * as React from 'react';
 
-import { Game } from 'client/helpers';
 import {
-  GameVariantEnum
+  GameVariantEnum,
 } from 'shared/types';
+
+import { Game } from 'client/helpers';
 
 import GameVariantLink from '../GameVariantLink';
 
@@ -19,7 +20,7 @@ class GameVariantList extends React.Component<Props> {
   onVariantChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {
       variants,
-      onVariantsChange
+      onVariantsChange,
     } = this.props;
     const changedVariant = e.target.name as GameVariantEnum;
     const enabled = e.target.checked;
@@ -29,7 +30,7 @@ class GameVariantList extends React.Component<Props> {
         variant === changedVariant
           ? enabled
           : variants.includes(variant)
-      ))
+      )),
     );
   };
 
@@ -40,7 +41,7 @@ class GameVariantList extends React.Component<Props> {
       return {
         variant,
         enabled,
-        allowed: enabled || Game.validateVariants([...this.props.variants, variant])
+        allowed: enabled || Game.validateVariants([...this.props.variants, variant]),
       };
     });
 

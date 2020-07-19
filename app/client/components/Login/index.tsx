@@ -4,8 +4,9 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import { FormControl, InputLabel } from '@material-ui/core';
 
-import { setUserData } from 'client/actions';
 import { fetch } from 'client/helpers';
+
+import { setUserData } from 'client/actions';
 import { DispatchProps } from 'client/store';
 
 import Button from '../Button';
@@ -26,7 +27,7 @@ class Login extends React.Component<Props, State> {
   state: State = {
     login: '',
     password: '',
-    error: false
+    error: false,
   };
 
   onSubmit = async (e: React.SyntheticEvent) => {
@@ -34,22 +35,22 @@ class Login extends React.Component<Props, State> {
 
     const {
       dispatch,
-      history
+      history,
     } = this.props;
     const {
-      from = '/'
+      from = '/',
     } = qs.parse(location.search.slice(1));
 
     const {
       success,
-      user
+      user,
     } = await fetch({
       url: '/api/auth/login',
       method: 'post',
       data: {
         login: this.state.login,
-        password: this.state.password
-      }
+        password: this.state.password,
+      },
     });
 
     if (success) {
@@ -58,7 +59,7 @@ class Login extends React.Component<Props, State> {
       dispatch(setUserData(user));
     } else {
       this.setState({
-        error: true
+        error: true,
       });
     }
   };

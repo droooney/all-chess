@@ -4,15 +4,15 @@ import { Redirect, RouteComponentProps, Switch } from 'react-router-dom';
 import { MenuItem, Select } from '@material-ui/core';
 
 import {
-  GameVariantEnum
-} from 'shared/types';
-import {
   GAME_VARIANT_NAMES,
-  GAME_VARIANT_LINKS
+  GAME_VARIANT_LINKS,
 } from 'shared/constants';
 
-import Route from '../Route';
+import {
+  GameVariantEnum,
+} from 'shared/types';
 
+import Route from '../Route';
 import DocumentTitle from '../DocumentTitle';
 import GameRules from '../GameRules';
 import GameVariantLink from '../GameVariantLink';
@@ -27,9 +27,9 @@ export default class GamesRules extends React.Component<Props> {
       history,
       match: {
         params: {
-          gameLink
-        }
-      }
+          gameLink,
+        },
+      },
     } = this.props;
     const gameType = _.findKey(GAME_VARIANT_LINKS, (link) => link === gameLink) as GameVariantEnum;
 

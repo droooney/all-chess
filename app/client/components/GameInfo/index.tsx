@@ -1,12 +1,14 @@
 import * as React from 'react';
 
 import {
-  GameResult
-} from 'shared/types';
-import {
   COLOR_NAMES,
-  RESULT_REASON_NAMES
+  RESULT_REASON_NAMES,
 } from 'shared/constants';
+
+import {
+  GameResult,
+} from 'shared/types';
+
 import { Game } from 'client/helpers';
 
 import GameVariantLink from '../GameVariantLink';
@@ -22,7 +24,7 @@ export default class GameInfo extends React.Component<Props> {
   render() {
     const {
       game,
-      result
+      result,
     } = this.props;
 
     return (

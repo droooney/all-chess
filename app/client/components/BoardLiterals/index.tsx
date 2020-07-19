@@ -1,9 +1,9 @@
 import * as _ from 'lodash';
 import * as React from 'react';
 
-import { Game } from 'client/helpers';
-
 import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from 'client/constants';
+
+import { Game } from 'client/helpers';
 
 interface OwnProps {
   game: Game;
@@ -27,11 +27,11 @@ export default class BoardLiterals extends React.PureComponent<Props> {
         boardCenterX,
         boardCenterY,
         middleFileX,
-        middleRankY
+        middleRankY,
       },
       board,
       boardsShiftX,
-      isBlackBase
+      isBlackBase,
     } = this.props;
     const rOuter = boardWidth * SVG_SQUARE_SIZE;
     const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE;
@@ -49,7 +49,7 @@ export default class BoardLiterals extends React.PureComponent<Props> {
         const square = {
           board,
           x: fileX,
-          y: rankY
+          y: rankY,
         };
         const translateX = SVG_SQUARE_SIZE * (
           isBlackBase
@@ -65,7 +65,7 @@ export default class BoardLiterals extends React.PureComponent<Props> {
           'data-square': JSON.stringify(square),
           transform: isCircularChess || isHexagonalChess
             ? undefined
-            : `translate(${translateX}, ${translateY})`
+            : `translate(${translateX}, ${translateY})`,
         };
 
         if (
@@ -118,7 +118,7 @@ export default class BoardLiterals extends React.PureComponent<Props> {
               >
                 {fileLiteral}
               </text>
-            </g>
+            </g>,
           );
         }
 
@@ -174,7 +174,7 @@ export default class BoardLiterals extends React.PureComponent<Props> {
               >
                 {rankLiteral}
               </text>
-            </g>
+            </g>,
           );
         }
       });

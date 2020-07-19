@@ -1,5 +1,6 @@
-import GameDarkChessUtils from './GameDarkChessUtils';
 import { ColorEnum, GameCreateOptions, GameResult, GameStatusEnum, ResultReasonEnum } from 'shared/types';
+
+import GameDarkChessUtils from './GameDarkChessUtils';
 
 export default abstract class GameResultUtils extends GameDarkChessUtils {
   status: GameStatusEnum = GameStatusEnum.BEFORE_START;
@@ -14,7 +15,7 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
   end(winner: ColorEnum | null, reason: ResultReasonEnum) {
     this.result = {
       winner,
-      reason
+      reason,
     };
     this.status = GameStatusEnum.FINISHED;
   }
@@ -258,7 +259,7 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
     if (this.isCheckmate()) {
       return {
         winner: prevTurn,
-        reason: ResultReasonEnum.CHECKMATE
+        reason: ResultReasonEnum.CHECKMATE,
       };
     }
 
@@ -267,42 +268,42 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
         winner: this.isAntichess
           ? currentTurn
           : prevTurn,
-        reason: ResultReasonEnum.KING_IN_THE_CENTER
+        reason: ResultReasonEnum.KING_IN_THE_CENTER,
       };
     }
 
     if (this.isAtomic && !this.isAntichess && !this.areKingsOnTheBoard(currentTurn)) {
       return {
         winner: prevTurn,
-        reason: ResultReasonEnum.KING_EXPLODED
+        reason: ResultReasonEnum.KING_EXPLODED,
       };
     }
 
     if (this.isDarkChess && !this.isAntichess && !this.areKingsOnTheBoard(currentTurn)) {
       return {
         winner: prevTurn,
-        reason: ResultReasonEnum.KING_CAPTURED
+        reason: ResultReasonEnum.KING_CAPTURED,
       };
     }
 
     if (this.isHorde && currentTurn === ColorEnum.WHITE && this.isNoPieces(ColorEnum.WHITE)) {
       return {
         winner: prevTurn,
-        reason: ResultReasonEnum.HORDE_DESTROYED
+        reason: ResultReasonEnum.HORDE_DESTROYED,
       };
     }
 
     if (this.isThreeCheck && this.checksCount[prevTurn] === 3) {
       return {
         winner: prevTurn,
-        reason: ResultReasonEnum.THREE_CHECKS
+        reason: ResultReasonEnum.THREE_CHECKS,
       };
     }
 
     if (this.isAntichess && this.isNoPieces(prevTurn) && !this.isNoPieces(currentTurn)) {
       return {
         winner: prevTurn,
-        reason: ResultReasonEnum.NO_MORE_PIECES
+        reason: ResultReasonEnum.NO_MORE_PIECES,
       };
     }
 
@@ -311,7 +312,7 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
         winner: currentTurn,
         reason: this.isNoPieces(currentTurn)
           ? ResultReasonEnum.NO_MORE_PIECES
-          : ResultReasonEnum.STALEMATE
+          : ResultReasonEnum.STALEMATE,
       };
     }
 

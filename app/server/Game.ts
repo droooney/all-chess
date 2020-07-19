@@ -2,6 +2,13 @@ import * as _ from 'lodash';
 import { Namespace } from 'socket.io';
 
 import {
+  COLOR_NAMES,
+  POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS,
+  POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
+  POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS,
+} from 'shared/constants';
+
+import {
   BaseMove,
   ChatMessage,
   ColorEnum,
@@ -15,16 +22,12 @@ import {
   Player,
   ResultReasonEnum,
   TimeControlEnum,
-  User
+  User,
 } from 'shared/types';
-import { sessionMiddleware } from 'server/controllers/session';
+
 import { Game as GameHelper } from 'shared/helpers';
-import {
-  COLOR_NAMES,
-  POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS,
-  POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
-  POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS
-} from 'shared/constants';
+
+import { sessionMiddleware } from 'server/controllers/session';
 
 const VARIANTS = _.values(GameVariantEnum);
 
@@ -92,7 +95,7 @@ export default class Game extends GameHelper {
   pingTimestamps = new Set<number>();
   playerPingTimes: EachColor<number[]> = {
     [ColorEnum.WHITE]: [],
-    [ColorEnum.BLACK]: []
+    [ColorEnum.BLACK]: [],
   };
 
   constructor(io: Namespace, options: GameCreateOptions) {
@@ -135,7 +138,7 @@ export default class Game extends GameHelper {
             mock: false,
             name: user.login,
             color,
-            time: this.timeControl && this.timeControl.base
+            time: this.timeControl && this.timeControl.base,
           };
 
           this.players[player!.color] = player!;
@@ -151,7 +154,7 @@ export default class Game extends GameHelper {
 
         if (player) {
           const {
-            color: playerColor
+            color: playerColor,
           } = player!;
 
           socket.on('gamePong', (timestamp) => {
@@ -208,7 +211,7 @@ export default class Game extends GameHelper {
 
               this.addChatMessage({
                 login: null,
-                message: `${COLOR_NAMES[playerColor]} offered a draw`
+                message: `${COLOR_NAMES[playerColor]} offered a draw`,
               });
               this.io.emit('drawOffered', this.drawOffer);
             }
@@ -241,7 +244,7 @@ export default class Game extends GameHelper {
 
             this.addChatMessage({
               login: null,
-              message: 'Draw offer declined'
+              message: 'Draw offer declined',
             });
             this.io.emit('drawDeclined');
           });
@@ -255,7 +258,7 @@ export default class Game extends GameHelper {
 
             this.addChatMessage({
               login: null,
-              message: 'Draw offer canceled'
+              message: 'Draw offer canceled',
             });
             this.io.emit('drawCanceled');
           });
@@ -271,7 +274,7 @@ export default class Game extends GameHelper {
 
             this.takebackRequest = {
               player: playerColor,
-              moveIndex
+              moveIndex,
             };
 
             const move = this.moves[moveIndex];
@@ -285,7 +288,7 @@ export default class Game extends GameHelper {
 
             this.addChatMessage({
               login: null,
-              message: `${COLOR_NAMES[playerColor]} requested a takeback${moveString}`
+              message: `${COLOR_NAMES[playerColor]} requested a takeback${moveString}`,
             });
             this.io.emit('takebackRequested', this.takebackRequest);
           });
@@ -312,7 +315,7 @@ export default class Game extends GameHelper {
 
             this.addChatMessage({
               login: null,
-              message: 'Takeback request accepted'
+              message: 'Takeback request accepted',
             });
             this.io.emit('takebackAccepted', this.lastMoveTimestamp);
           });
@@ -330,7 +333,7 @@ export default class Game extends GameHelper {
 
             this.addChatMessage({
               login: null,
-              message: 'Takeback request declined'
+              message: 'Takeback request declined',
             });
             this.io.emit('takebackDeclined');
           });
@@ -348,7 +351,7 @@ export default class Game extends GameHelper {
 
             this.addChatMessage({
               login: null,
-              message: 'Takeback request canceled'
+              message: 'Takeback request canceled',
             });
             this.io.emit('takebackCanceled');
           });
@@ -373,14 +376,14 @@ export default class Game extends GameHelper {
             player,
             game: {
               ...this.toJSON(),
-              moves: this.colorMoves[player!.color]
-            }
+              moves: this.colorMoves[player!.color],
+            },
           });
         } else {
           socket.emit('initialGameData', {
             timestamp,
             player,
-            game: this
+            game: this,
           });
         }
 
@@ -392,7 +395,7 @@ export default class Game extends GameHelper {
               if (message && message.length < 256) {
                 this.addChatMessage({
                   login: user.login,
-                  message
+                  message,
                 });
               }
             }
@@ -443,7 +446,7 @@ export default class Game extends GameHelper {
 
       this.io.emit('gameOver', {
         result: this.result!,
-        players: this.players
+        players: this.players,
       });
     }
 
@@ -465,7 +468,7 @@ export default class Game extends GameHelper {
     const {
       from: fromLocation,
       to: toLocation,
-      promotion
+      promotion,
     } = moveForServer;
     const piece = fromLocation.type === PieceLocationEnum.BOARD
       ? this.getBoardPiece(fromLocation)!
@@ -484,7 +487,7 @@ export default class Game extends GameHelper {
     const move: Move = {
       from: fromLocation,
       to: toLocation,
-      duration: newTimestamp - this.lastMoveTimestamp
+      duration: newTimestamp - this.lastMoveTimestamp,
     };
 
     if (promotion) {
@@ -509,7 +512,7 @@ export default class Game extends GameHelper {
           socket.emit('moveMade', {
             move: _.last(this.colorMoves[socketPlayer.color])!,
             moveIndex: this.moves.length - 1,
-            lastMoveTimestamp: this.lastMoveTimestamp
+            lastMoveTimestamp: this.lastMoveTimestamp,
           });
         }
       });
@@ -517,7 +520,7 @@ export default class Game extends GameHelper {
       this.io.emit('moveMade', {
         move,
         moveIndex: this.moves.length - 1,
-        lastMoveTimestamp: this.lastMoveTimestamp
+        lastMoveTimestamp: this.lastMoveTimestamp,
       });
     }
 
@@ -564,7 +567,7 @@ export default class Game extends GameHelper {
             : null,
           hasSufficientMaterial
             ? ResultReasonEnum.TIMEOUT
-            : ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT
+            : ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT,
         );
       }, player.time!) as any;
     }
@@ -584,7 +587,7 @@ export default class Game extends GameHelper {
       'takebackRequest',
       'lastMoveTimestamp',
       'moves',
-      'chat'
+      'chat',
     ]);
   }
 

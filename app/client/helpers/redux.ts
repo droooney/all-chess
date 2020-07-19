@@ -1,6 +1,6 @@
 import { Reducer } from 'redux';
 
-import { ReduxSimpleActionType, ReduxSimpleActionByType, ReduxSimpleAction } from '../store';
+import { ReduxSimpleActionType, ReduxSimpleActionByType, ReduxSimpleAction } from 'client/store';
 
 type ReducerObject<S, K extends ReduxSimpleActionType> = {
   [key in K]: (state: S, action: ReduxSimpleActionByType<key>) => S;
@@ -8,7 +8,7 @@ type ReducerObject<S, K extends ReduxSimpleActionType> = {
 
 export function getReducer<S, K extends ReduxSimpleActionType>(
   initialState: S,
-  reducerObject: ReducerObject<S, K>
+  reducerObject: ReducerObject<S, K>,
 ): Reducer<S, ReduxSimpleAction> {
   return (state = initialState, action) => {
     for (const actionType in reducerObject) {

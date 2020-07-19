@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
 
-import GameStartingDataUtils from './GameStartingDataUtils';
 import {
   BoardPiece,
   CastlingTypeEnum,
@@ -8,8 +7,10 @@ import {
   EachColor,
   GameCreateOptions,
   RealPiece,
-  Square
+  Square,
 } from 'shared/types';
+
+import GameStartingDataUtils from './GameStartingDataUtils';
 
 type CastlingRookCoordinates = Record<CastlingTypeEnum, Square | null>;
 
@@ -21,7 +22,7 @@ export default abstract class GameCastlingUtils extends GameStartingDataUtils {
 
     this.castlingRookCoordinates = {
       [ColorEnum.WHITE]: this.getCastlingRookCoordinates(ColorEnum.WHITE),
-      [ColorEnum.BLACK]: this.getCastlingRookCoordinates(ColorEnum.BLACK)
+      [ColorEnum.BLACK]: this.getCastlingRookCoordinates(ColorEnum.BLACK),
     };
   }
 
@@ -60,7 +61,7 @@ export default abstract class GameCastlingUtils extends GameStartingDataUtils {
   getCastlingRookCoordinates(color: ColorEnum): CastlingRookCoordinates {
     let rookCoordinates: CastlingRookCoordinates = {
       [CastlingTypeEnum.QUEEN_SIDE]: null,
-      [CastlingTypeEnum.KING_SIDE]: null
+      [CastlingTypeEnum.KING_SIDE]: null,
     };
     const castlingRank = color === ColorEnum.WHITE
       ? 0
@@ -78,7 +79,7 @@ export default abstract class GameCastlingUtils extends GameStartingDataUtils {
       if (rooksOnTheCastlingRank.length > 1) {
         rookCoordinates = {
           [CastlingTypeEnum.QUEEN_SIDE]: rooksOnTheCastlingRank[0].location,
-          [CastlingTypeEnum.KING_SIDE]: _.last(rooksOnTheCastlingRank)!.location
+          [CastlingTypeEnum.KING_SIDE]: _.last(rooksOnTheCastlingRank)!.location,
         };
       } else if (rooksOnTheCastlingRank.length === 1) {
         const kingOnTheCastlingRank = this.startingData.pieces.find((piece) => (
@@ -94,12 +95,12 @@ export default abstract class GameCastlingUtils extends GameStartingDataUtils {
           if (castlingRook.location.x > kingOnTheCastlingRank.location.x) {
             rookCoordinates = {
               [CastlingTypeEnum.QUEEN_SIDE]: null,
-              [CastlingTypeEnum.KING_SIDE]: castlingRook.location
+              [CastlingTypeEnum.KING_SIDE]: castlingRook.location,
             };
           } else {
             rookCoordinates = {
               [CastlingTypeEnum.QUEEN_SIDE]: castlingRook.location,
-              [CastlingTypeEnum.KING_SIDE]: null
+              [CastlingTypeEnum.KING_SIDE]: null,
             };
           }
         }
@@ -109,13 +110,13 @@ export default abstract class GameCastlingUtils extends GameStartingDataUtils {
         [CastlingTypeEnum.QUEEN_SIDE]: {
           board: 0,
           x: 0,
-          y: castlingRank
+          y: castlingRank,
         },
         [CastlingTypeEnum.KING_SIDE]: {
           board: 0,
           x: this.boardWidth - 1,
-          y: castlingRank
-        }
+          y: castlingRank,
+        },
       };
     }
 
@@ -133,7 +134,7 @@ export default abstract class GameCastlingUtils extends GameStartingDataUtils {
 
     return {
       [CastlingTypeEnum.QUEEN_SIDE]: getRook(this.castlingRookCoordinates[color][CastlingTypeEnum.QUEEN_SIDE]),
-      [CastlingTypeEnum.KING_SIDE]: getRook(this.castlingRookCoordinates[color][CastlingTypeEnum.KING_SIDE])
+      [CastlingTypeEnum.KING_SIDE]: getRook(this.castlingRookCoordinates[color][CastlingTypeEnum.KING_SIDE]),
     };
   }
 }

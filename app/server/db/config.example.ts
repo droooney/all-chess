@@ -5,20 +5,20 @@ const config: DBConfig = {
     username: 'root',
     database: 'all_chess_dev',
     host: 'localhost',
-    dialect: 'postgres'
+    dialect: 'postgres',
   },
   test: {
     username: 'root',
     database: 'all_chess_test',
     host: 'localhost',
-    dialect: 'postgres'
+    dialect: 'postgres',
   },
   production: {
     username: 'root',
     database: 'all_chess_prod',
     host: 'localhost',
-    dialect: 'postgres'
-  }
+    dialect: 'postgres',
+  },
 };
 
 export = config;

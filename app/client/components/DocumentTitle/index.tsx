@@ -9,7 +9,7 @@ type Props = OwnProps;
 export default class DocumentTitle extends React.Component<Props> {
   render() {
     const {
-      value
+      value,
     } = this.props;
 
     document.title = typeof value === 'string' ? value : 'Loading...';

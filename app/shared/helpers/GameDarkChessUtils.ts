@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
 
-import GameMovesUtils from './GameMovesUtils';
 import {
   ColorEnum,
   DarkChessRevertableMove,
@@ -10,21 +9,23 @@ import {
   Move,
   Piece,
   PieceBoardLocation,
-  PieceLocationEnum
+  PieceLocationEnum,
 } from 'shared/types';
+
+import GameMovesUtils from './GameMovesUtils';
 
 export default abstract class GameDarkChessUtils extends GameMovesUtils {
   colorMoves: EachColor<DarkChessRevertableMove[]> = {
     [ColorEnum.WHITE]: [],
-    [ColorEnum.BLACK]: []
+    [ColorEnum.BLACK]: [],
   };
   visiblePieces: EachColor<readonly DarkChessVisiblePiece[]> = {
     [ColorEnum.WHITE]: [],
-    [ColorEnum.BLACK]: []
+    [ColorEnum.BLACK]: [],
   };
   startingVisiblePieces: EachColor<readonly DarkChessVisiblePiece[]> = {
     [ColorEnum.WHITE]: [],
-    [ColorEnum.BLACK]: []
+    [ColorEnum.BLACK]: [],
   };
 
   getVisiblePieces(forColor: ColorEnum): Piece[] {
@@ -55,13 +56,13 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
     }, {});
     const prevVisibleSquares = {
       [ColorEnum.WHITE]: this.getVisibleSquares(ColorEnum.WHITE),
-      [ColorEnum.BLACK]: this.getVisibleSquares(ColorEnum.BLACK)
+      [ColorEnum.BLACK]: this.getVisibleSquares(ColorEnum.BLACK),
     };
 
     const {
       movedPiece: piece,
       isWin,
-      isCapture
+      isCapture,
     } = this.registerMove(move);
 
     const registeredMove = _.last(this.moves)!;
@@ -95,7 +96,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
           ...piece,
           moved: isOwnPiece && piece.moved,
           id: newId,
-          realId: piece.id
+          realId: piece.id,
         };
       });
       const fromLocationVisible = (
@@ -119,7 +120,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         if (fromLocationVisible) {
           const {
             x: fromX,
-            y: fromY
+            y: fromY,
           } = move.from as PieceBoardLocation;
           const fileLiteral = GameDarkChessUtils.getFileLiteral(fromX);
           const rankLiteral = GameDarkChessUtils.getRankLiteral(fromY);
@@ -140,7 +141,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         if (toLocationVisible || isCapture) {
           const {
             x: toX,
-            y: toY
+            y: toY,
           } = move.to;
           const fileLiteral = GameDarkChessUtils.getFileLiteral(toX);
           const rankLiteral = GameDarkChessUtils.getRankLiteral(toY);
@@ -189,7 +190,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         timeBeforeMove: registeredMove.timeBeforeMove,
         revertMove: () => {
           this.visiblePieces[color] = oldVisiblePieces;
-        }
+        },
       });
     });
   }
@@ -201,7 +202,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
       _.forEach(ColorEnum, (color) => {
         this.visiblePieces[color] = this.startingVisiblePieces[color] = this.getVisiblePieces(color).map((piece) => ({
           ...piece,
-          realId: piece.id
+          realId: piece.id,
         }));
       });
     }

@@ -2,10 +2,12 @@ import * as _ from 'lodash';
 import * as React from 'react';
 import classNames from 'classnames';
 
-import {
-  BoardPiece as IBoardPiece
-} from 'shared/types';
 import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from 'client/constants';
+
+import {
+  BoardPiece as IBoardPiece,
+} from 'shared/types';
+
 import { Game } from 'client/helpers';
 
 import GamePiece from '../GamePiece';
@@ -44,14 +46,14 @@ export default class BoardPiece extends React.Component<Props> {
       piece: {
         location: {
           x: pieceX,
-          y: pieceY
-        }
+          y: pieceY,
+        },
       },
-      isFantom
+      isFantom,
     } = this.props;
     const pieceSize = game.getPieceSize();
     const pieceClassNames = classNames({
-      fantom: isFantom
+      fantom: isFantom,
     });
     let translateX: string;
     let translateY: string;
@@ -82,7 +84,7 @@ export default class BoardPiece extends React.Component<Props> {
     } else {
       translateX = `calc(${SVG_SQUARE_SIZE}px * ${this.ifBlackBase(
         `${game.boardWidth - 1} - var(--rendered-file-${pieceX}, ${pieceX})`,
-        `var(--rendered-file-${pieceX}, ${pieceX})`
+        `var(--rendered-file-${pieceX}, ${pieceX})`,
       )})`;
       translateY = `calc(${SVG_SQUARE_SIZE}px * ${this.ifBlackBase(pieceY, game.boardHeight - 1 - pieceY)})`;
     }
@@ -92,7 +94,7 @@ export default class BoardPiece extends React.Component<Props> {
         className="piece-container"
         id={`piece-${piece.id}`}
         style={{
-          transform: `translate(${translateX}, ${translateY})`
+          transform: `translate(${translateX}, ${translateY})`,
         }}
       >
         <GamePiece

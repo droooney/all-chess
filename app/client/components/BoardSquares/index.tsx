@@ -1,8 +1,9 @@
 import * as _ from 'lodash';
 import * as React from 'react';
 
-import { Game } from 'client/helpers';
 import { RealPieceLocation, Square } from 'shared/types';
+
+import { Game } from 'client/helpers';
 
 import BoardSquare from '../BoardSquare';
 
@@ -21,11 +22,11 @@ export default class BoardSquares extends React.PureComponent<Props> {
       game,
       game: {
         boardWidth,
-        boardHeight
+        boardHeight,
       },
       board,
       onSquareClick,
-      onPieceDragStart
+      onPieceDragStart,
     } = this.props;
     const squares: JSX.Element[] = [];
 
@@ -47,7 +48,7 @@ export default class BoardSquares extends React.PureComponent<Props> {
             rankY={rankY}
             onSquareClick={onSquareClick}
             onPieceDragStart={onPieceDragStart}
-          />
+          />,
         );
       });
     });

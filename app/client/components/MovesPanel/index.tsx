@@ -3,8 +3,9 @@ import * as React from 'react';
 import classNames from 'classnames';
 
 import {
-  AnyMove
+  AnyMove,
 } from 'shared/types';
+
 import { Game } from 'client/helpers';
 
 import MovesRow from 'client/components/MovesRow';
@@ -31,7 +32,7 @@ export default class MovesPanel extends React.Component<Props> {
 
   componentDidUpdate(prevProps: Props) {
     const {
-      currentMoveIndex
+      currentMoveIndex,
     } = this.props;
 
     if (currentMoveIndex !== prevProps.currentMoveIndex) {
@@ -54,7 +55,7 @@ export default class MovesPanel extends React.Component<Props> {
     const {
       game,
       currentMoveIndex,
-      moves
+      moves,
     } = this.props;
     const isBeforeFirstMove = currentMoveIndex === -1;
     const isAfterLastMove = currentMoveIndex === moves.length - 1;
@@ -93,7 +94,7 @@ export default class MovesPanel extends React.Component<Props> {
         <div className="moves-container" ref={this.movesRef}>
           {(startingMoveOffset ? [
             moves.slice(0, startingMoveOffset),
-            ...restMoves
+            ...restMoves,
           ] : restMoves).map((moves, moveRow) => (
             <MovesRow
               key={moveRow}

@@ -2,8 +2,9 @@ import * as React from 'react';
 import classNames from 'classnames';
 
 import {
-  AnyMove
+  AnyMove,
 } from 'shared/types';
+
 import { Game } from 'client/helpers';
 
 interface OwnProps {
@@ -36,7 +37,7 @@ export default class MovesRow extends React.Component<Props> {
       game,
       moveRow,
       currentMoveIndex,
-      moves
+      moves,
     } = props;
     const startingMoveIndex = game.startingData.startingMoveIndex;
     const startingMoveOffset = startingMoveIndex % 2;
@@ -54,7 +55,7 @@ export default class MovesRow extends React.Component<Props> {
       moveRow,
       currentMoveIndex,
       currentMoveRef,
-      moves
+      moves,
     } = this.props;
     const startingMoveIndex = game.startingData.startingMoveIndex;
     const startingMove = Math.floor(startingMoveIndex / 2);
@@ -73,11 +74,11 @@ export default class MovesRow extends React.Component<Props> {
               key={turn}
               ref={isCurrent ? currentMoveRef : undefined}
               className={classNames('move', {
-                current: isCurrent
+                current: isCurrent,
               })}
               style={!moveRow && !turn && startingMoveIndex ? {
                 position: 'relative',
-                left: `${firstMoveLeftOffset}%`
+                left: `${firstMoveLeftOffset}%`,
               } : {}}
               onClick={() => game.navigateToMove(moveIndex)}
             >

@@ -1,11 +1,13 @@
 import * as React from 'react';
 
 import {
-  GameVariantEnum
-} from 'shared/types';
-import {
-  GAME_VARIANT_PGN_NAMES
+  GAME_VARIANT_PGN_NAMES,
 } from 'shared/constants';
+
+import {
+  GameVariantEnum,
+} from 'shared/types';
+
 import { Game } from 'client/helpers';
 
 import Boards from '../Boards';
@@ -32,7 +34,7 @@ export default class GameRulesExample extends React.Component<Props> {
   static defaultProps = {
     boardCount: 1,
     boardWidth: 8,
-    boardHeight: 8
+    boardHeight: 8,
   };
 
   game: Game;
@@ -64,7 +66,7 @@ export default class GameRulesExample extends React.Component<Props> {
     const {
       id,
       description,
-      moves
+      moves,
     } = this.props;
 
     return (

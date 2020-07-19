@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
 
-import GameCastlingUtils from './GameCastlingUtils';
 import {
   BoardPiece,
   CastlingTypeEnum,
@@ -13,8 +12,10 @@ import {
   PossibleEnPassant,
   RealPiece,
   RealPieceLocation,
-  StartingData
+  StartingData,
 } from 'shared/types';
+
+import GameCastlingUtils from './GameCastlingUtils';
 
 const FEN_DIGITS_REGEX = /^\d+$/;
 const FEN_CASTLING_REGEX = /^[kq]+$/i;
@@ -26,29 +27,29 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
     const {
       boardCount,
       boardWidth,
-      boardHeight
+      boardHeight,
     } = GamePositionUtils.getBoardDimensions(variants);
     const startingData: StartingData = {
       possibleCastling: {
         [ColorEnum.WHITE]: {
           [CastlingTypeEnum.KING_SIDE]: false,
-          [CastlingTypeEnum.QUEEN_SIDE]: false
+          [CastlingTypeEnum.QUEEN_SIDE]: false,
         },
         [ColorEnum.BLACK]: {
           [CastlingTypeEnum.KING_SIDE]: false,
-          [CastlingTypeEnum.QUEEN_SIDE]: false
-        }
+          [CastlingTypeEnum.QUEEN_SIDE]: false,
+        },
       },
       possibleEnPassant: null,
       checksCount: {
         [ColorEnum.WHITE]: 0,
-        [ColorEnum.BLACK]: 0
+        [ColorEnum.BLACK]: 0,
       },
       result: null,
       turn: ColorEnum.WHITE,
       startingMoveIndex: 0,
       pliesFor50MoveRule: 0,
-      pieces: []
+      pieces: [],
     };
     const isPocketUsed = GamePositionUtils.getIsPocketUsed(variants);
     const {
@@ -57,7 +58,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
       isCylinderChess,
       isDarkChess,
       isHexagonalChess,
-      isThreeCheck
+      isThreeCheck,
     } = GamePositionUtils.getVariantsInfo(variants);
     const fenData = fen.trim().split(/\s+/);
     const boards = fenData.slice(0, boardCount);
@@ -74,7 +75,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
       possibleEnPassantString,
       pliesFor50MoveRuleString,
       startingMoveIndexString,
-      checksCount
+      checksCount,
     ] = fenData.slice(boardCount);
 
     if (turnString !== 'w' && turnString !== 'b') {
@@ -123,7 +124,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
         enPassantSquare: {
           board: 0,
           x: file,
-          y: rank
+          y: rank,
         },
         pieceLocation: {
           board: 0,
@@ -134,8 +135,8 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
               : rank - 1
             : isCircularChess && rank >= boardHeight / 2
               ? rank - 1
-              : rank + 1
-        }
+              : rank + 1,
+        },
       };
     }
 
@@ -163,7 +164,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
         color,
         moved: false,
         abilities: null,
-        location
+        location,
       } as RealPiece);
     };
 
@@ -203,8 +204,8 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
                 type: PieceLocationEnum.BOARD,
                 board,
                 x: file,
-                y: rank
-              }
+                y: rank,
+              },
             );
 
             file += 1;
@@ -233,8 +234,8 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
             {
               type: PieceLocationEnum.POCKET,
               pieceType: piece.type,
-              color: piece.color
-            }
+              color: piece.color,
+            },
           );
         }
       }
@@ -255,12 +256,12 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
       startingData.possibleEnPassant = {
         enPassantSquare: {
           ...startingData.possibleEnPassant.enPassantSquare,
-          board: enPassantPiece.location.board
+          board: enPassantPiece.location.board,
         },
         pieceLocation: {
           ...startingData.possibleEnPassant.pieceLocation,
-          board: enPassantPiece.location.board
-        }
+          board: enPassantPiece.location.board,
+        },
       };
     }
 
@@ -284,7 +285,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
 
   checksCount: ChecksCount = {
     [ColorEnum.WHITE]: 0,
-    [ColorEnum.BLACK]: 0
+    [ColorEnum.BLACK]: 0,
   };
   isCheck: boolean = false;
   pliesFor50MoveRule: number = 0;

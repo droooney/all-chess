@@ -1,10 +1,11 @@
 import * as _ from 'lodash';
 import * as React from 'react';
 
-import { Game } from 'client/helpers';
-
 import { SVG_SQUARE_SIZE } from 'client/constants';
+
 import { Square } from 'shared/types';
+
+import { Game } from 'client/helpers';
 
 interface OwnProps {
   game: Game;
@@ -21,8 +22,8 @@ export default class BoardSquares extends React.PureComponent<Props> {
         boardWidth,
         boardHeight,
         boardCenterX,
-        boardCenterY
-      }
+        boardCenterY,
+      },
     } = this.props;
     const centerBorders: JSX.Element[] = [];
 
@@ -42,9 +43,9 @@ export default class BoardSquares extends React.PureComponent<Props> {
                 isHexagonalChess
                   ? []
                   : [`translate(${translateX}, ${translateY})`]
-              )
+              ),
             ].join(' '),
-            transformOrigin: `${boardCenterX}px ${boardCenterY}px`
+            transformOrigin: `${boardCenterX}px ${boardCenterY}px`,
           };
 
           if (centerSquareParams.top) {
@@ -60,7 +61,7 @@ export default class BoardSquares extends React.PureComponent<Props> {
                       L ${hexPoints.right.x},${hexPoints.right.y}
                     `}
                   />
-                </g>
+                </g>,
               );
             } else {
               centerBorders.push(
@@ -72,7 +73,7 @@ export default class BoardSquares extends React.PureComponent<Props> {
                     x2={SVG_SQUARE_SIZE}
                     y2={0}
                   />
-                </g>
+                </g>,
               );
             }
           }
@@ -89,7 +90,7 @@ export default class BoardSquares extends React.PureComponent<Props> {
                     L ${hexPoints.topRight.x},${hexPoints.topRight.y}
                   `}
                 />
-              </g>
+              </g>,
             );
           }
 
@@ -105,7 +106,7 @@ export default class BoardSquares extends React.PureComponent<Props> {
                     L ${hexPoints.bottomRight.x},${hexPoints.bottomRight.y}
                   `}
                 />
-              </g>
+              </g>,
             );
           }
 
@@ -122,7 +123,7 @@ export default class BoardSquares extends React.PureComponent<Props> {
                       L ${hexPoints.right.x},${hexPoints.right.y}
                     `}
                   />
-                </g>
+                </g>,
               );
             } else {
               centerBorders.push(
@@ -134,7 +135,7 @@ export default class BoardSquares extends React.PureComponent<Props> {
                     x2={SVG_SQUARE_SIZE}
                     y2={SVG_SQUARE_SIZE}
                   />
-                </g>
+                </g>,
               );
             }
           }
@@ -151,7 +152,7 @@ export default class BoardSquares extends React.PureComponent<Props> {
                     L ${hexPoints.topLeft.x},${hexPoints.topLeft.y}
                   `}
                 />
-              </g>
+              </g>,
             );
           }
 
@@ -167,7 +168,7 @@ export default class BoardSquares extends React.PureComponent<Props> {
                     L ${hexPoints.bottomLeft.x},${hexPoints.bottomLeft.y}
                   `}
                 />
-              </g>
+              </g>,
             );
           }
 
@@ -181,7 +182,7 @@ export default class BoardSquares extends React.PureComponent<Props> {
                   x2={0}
                   y2={SVG_SQUARE_SIZE}
                 />
-              </g>
+              </g>,
             );
           }
 
@@ -195,7 +196,7 @@ export default class BoardSquares extends React.PureComponent<Props> {
                   x2={SVG_SQUARE_SIZE}
                   y2={SVG_SQUARE_SIZE}
                 />
-              </g>
+              </g>,
             );
           }
         }

@@ -3,6 +3,9 @@ import moment = require('moment');
 import * as React from 'react';
 import classNames from 'classnames';
 
+import { COLOR_NAMES } from 'shared/constants';
+import { pocketPieces } from 'client/constants';
+
 import {
   AnyMove,
   ColorEnum,
@@ -14,11 +17,10 @@ import {
   PocketPiece,
   RealPieceLocation,
   TimeControl,
-  TimeControlEnum
+  TimeControlEnum,
 } from 'shared/types';
-import { COLOR_NAMES } from 'shared/constants';
+
 import { Game } from 'client/helpers';
-import { pocketPieces } from 'client/constants';
 
 import Piece from '../Piece';
 import PlayerPocket from '../PlayerPocket';
@@ -58,13 +60,13 @@ const ONE_DAY = 24 * ONE_HOUR;
 export default class GamePlayer extends React.Component<Props, State> {
   timeControlInterval?: number;
   state: State = {
-    intervalActivated: false
+    intervalActivated: false,
   };
 
   componentDidMount() {
     const {
       status,
-      moves
+      moves,
     } = this.props;
 
     if (moves.length >= 2 && status === GameStatusEnum.ONGOING) {
@@ -79,7 +81,7 @@ export default class GamePlayer extends React.Component<Props, State> {
   componentDidUpdate(prevProps: Props) {
     const {
       status,
-      moves
+      moves,
     } = this.props;
 
     if (status !== GameStatusEnum.ONGOING && prevProps.status === GameStatusEnum.ONGOING) {
@@ -94,11 +96,11 @@ export default class GamePlayer extends React.Component<Props, State> {
   activateInterval() {
     const {
       status,
-      timeControl
+      timeControl,
     } = this.props;
 
     this.setState({
-      intervalActivated: true
+      intervalActivated: true,
     });
 
     if (status === GameStatusEnum.ONGOING && timeControl) {
@@ -113,7 +115,7 @@ export default class GamePlayer extends React.Component<Props, State> {
       lastMoveTimestamp,
       realTurn,
       moves,
-      currentMoveIndex
+      currentMoveIndex,
     } = this.props;
     const adjustedLastMoveTimestamp = lastMoveTimestamp + game.timeDiff;
 
@@ -127,7 +129,7 @@ export default class GamePlayer extends React.Component<Props, State> {
       player.color === realTurn
         ? player.time! - timePassedSinceLastMove
         : player.time!,
-      0
+      0,
     );
   }
 
@@ -158,7 +160,7 @@ export default class GamePlayer extends React.Component<Props, State> {
     clearInterval(this.timeControlInterval);
 
     this.setState({
-      intervalActivated: false
+      intervalActivated: false,
     });
   }
 
@@ -180,7 +182,7 @@ export default class GamePlayer extends React.Component<Props, State> {
       allMaterialDifference,
       materialDifference,
       selectPiece,
-      startDraggingPiece
+      startDraggingPiece,
     } = this.props;
     const allMaterialDiffRelativeToPlayer = player.color === ColorEnum.WHITE
       ? allMaterialDifference
@@ -194,7 +196,7 @@ export default class GamePlayer extends React.Component<Props, State> {
           active,
           top: isTop,
           'with-pocket': game.isPocketUsed,
-          'with-material': isMaterialDiffShown
+          'with-material': isMaterialDiffShown,
         })}
       >
         {isMaterialDiffShown && (
@@ -252,7 +254,7 @@ export default class GamePlayer extends React.Component<Props, State> {
           <div className={classNames('timer', {
             correspondence: timeControl.type === TimeControlEnum.CORRESPONDENCE,
             low: time <= timeControl.base / 6,
-            critical: time <= timeControl.base / 12
+            critical: time <= timeControl.base / 12,
           })}>
             {this.getTimeString()}
           </div>

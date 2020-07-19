@@ -18,24 +18,24 @@ export default class DrawnSymbol extends React.Component<Props> {
   getSquareCenter(square: Square): { x: number; y: number; } {
     const {
       game,
-      boardsShiftX
+      boardsShiftX,
     } = this.props;
 
     return game.getSquareCenter({
       ...square,
-      x: game.adjustFileX(square.x + boardsShiftX)
+      x: game.adjustFileX(square.x + boardsShiftX),
     });
   }
 
   render() {
     const {
       game,
-      symbol
+      symbol,
     } = this.props;
     const style = {
       transform: 'rotate(calc(180deg * var(--is-black-base, 0)))',
       transformOrigin: `${game.boardCenterX}px ${game.boardCenterY}px`,
-      stroke: drawnSymbolColors[symbol.color]
+      stroke: drawnSymbolColors[symbol.color],
     };
 
     if (symbol.type === 'circle') {
@@ -62,7 +62,7 @@ export default class DrawnSymbol extends React.Component<Props> {
     const lineLength = Math.hypot(toCenter.x - fromCenter.x, toCenter.y - fromCenter.y) - 2 * strokeWidth;
     const adjustedToCenter = {
       x: fromCenter.x + Math.sign(toCenter.x - fromCenter.x) * lineLength * Math.cos(angle),
-      y: fromCenter.y + Math.sign(toCenter.y - fromCenter.y) * lineLength * Math.sin(angle)
+      y: fromCenter.y + Math.sign(toCenter.y - fromCenter.y) * lineLength * Math.sin(angle),
     };
 
     return (

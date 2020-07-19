@@ -4,7 +4,7 @@ import {
   withRouter,
   Route as RouterRoute,
   RouteProps,
-  RouteComponentProps
+  RouteComponentProps,
 } from 'react-router-dom';
 
 type Props = RouteProps & RouteComponentProps<any, any, { resetScroll?: boolean; } | undefined>;
@@ -16,14 +16,14 @@ class Route extends React.Component<Props> {
       location: {
         state,
         ...location
-      }
+      },
     } = this.props;
 
     if (state && state.resetScroll) {
       window.scrollTo(0, 0);
       history.replace({
         ...location,
-        state: _.omit(state, 'resetScroll')
+        state: _.omit(state, 'resetScroll'),
       });
     }
   }

@@ -8,40 +8,40 @@ export async function up(queryInterface: Sequelize.QueryInterface) {
       type: Sequelize.INTEGER,
       allowNull: false,
       primaryKey: true,
-      autoIncrement: true
+      autoIncrement: true,
     },
     email: {
       type: Sequelize.STRING,
       allowNull: false,
-      unique: true
+      unique: true,
     },
     login: {
       type: Sequelize.STRING,
       allowNull: false,
-      unique: true
+      unique: true,
     },
     password: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
     },
     confirmToken: {
       type: Sequelize.STRING,
       allowNull: true,
-      defaultValue: ''
+      defaultValue: '',
     },
     confirmed: {
       type: Sequelize.BOOLEAN,
-      defaultValue: false
+      defaultValue: false,
     },
     createdAt: {
       type: Sequelize.DATE,
       field: 'created_at',
-      allowNull: false
+      allowNull: false,
     },
     updatedAt: {
       type: Sequelize.DATE,
       field: 'updated_at',
-      allowNull: false
-    }
+      allowNull: false,
+    },
   });
 }
 

@@ -26,7 +26,7 @@ export default class Dialog extends React.Component<Props> {
       question,
       choices,
       onChoose,
-      onOverlayClick
+      onOverlayClick,
     } = this.props;
 
     return (

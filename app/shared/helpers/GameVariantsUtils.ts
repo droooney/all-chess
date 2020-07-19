@@ -1,5 +1,6 @@
-import GameCommonUtils from './GameCommonUtils';
 import { BoardDimensions, GameCreateOptions, GameVariantEnum } from 'shared/types';
+
+import GameCommonUtils from './GameCommonUtils';
 
 interface VariantsInfo {
   is960: boolean;
@@ -36,7 +37,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
       isCapablanca,
       isCircularChess,
       isHexagonalChess,
-      isTwoFamilies
+      isTwoFamilies,
     } = GameVariantsUtils.getVariantsInfo(variants);
     const dimensions: BoardDimensions = {
       boardCount: isAliceChess ? 2 : 1,
@@ -47,7 +48,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
           : 8,
       boardHeight: isHexagonalChess
         ? 11
-        : 8
+        : 8,
     };
 
     if (!isCircularChess) {
@@ -57,7 +58,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
     return {
       ...dimensions,
       boardWidth: dimensions.boardWidth / 2,
-      boardHeight: dimensions.boardHeight * 2
+      boardHeight: dimensions.boardHeight * 2,
     };
   }
 
@@ -83,7 +84,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
       isPatrol: variants.includes(GameVariantEnum.PATROL),
       isRetreatChess: variants.includes(GameVariantEnum.RETREAT_CHESS),
       isThreeCheck: variants.includes(GameVariantEnum.THREE_CHECK),
-      isTwoFamilies: variants.includes(GameVariantEnum.TWO_FAMILIES)
+      isTwoFamilies: variants.includes(GameVariantEnum.TWO_FAMILIES),
     };
   }
 
@@ -108,7 +109,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
       isMadrasi,
       isPatrol,
       isThreeCheck,
-      isTwoFamilies
+      isTwoFamilies,
     } = GameVariantsUtils.getVariantsInfo(variants);
 
     return ((

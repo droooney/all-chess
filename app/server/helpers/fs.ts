@@ -7,7 +7,7 @@ export function getSortedFilesSync(dir: string): string[] {
   return files
     .map((file, ix) => ({
       stat: fs.statSync(path.join(dir, file)),
-      ix
+      ix,
     }))
     .sort(({ stat: { birthtimeMs: b1 } }, { stat: { birthtimeMs: b2 } }) => b2 - b1)
     .map(({ ix }) => path.join(dir, files[ix]));

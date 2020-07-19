@@ -5,6 +5,6 @@ export default styled(Button)(({ theme }) => ({
   color: '#fff',
 
   '&:hover': {
-    backgroundColor: theme.palette.primary.light
-  }
+    backgroundColor: theme.palette.primary.light,
+  },
 }));

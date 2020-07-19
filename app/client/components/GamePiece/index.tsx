@@ -2,7 +2,7 @@ import * as React from 'react';
 import classNames from 'classnames';
 
 import {
-  RealPiece
+  RealPiece,
 } from 'shared/types';
 
 import Piece from '../Piece';
@@ -23,12 +23,12 @@ export default class GamePiece extends React.Component<Props> {
       piece,
       pieceSize,
       className,
-      originalPieceClassName
+      originalPieceClassName,
     } = this.props;
     const cornerPieceSize = pieceSize * 2 / 7;
     const originalPieceCoords = {
       x: pieceSize - cornerPieceSize,
-      y: pieceSize - cornerPieceSize
+      y: pieceSize - cornerPieceSize,
     };
 
     return (

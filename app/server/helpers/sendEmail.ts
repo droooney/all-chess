@@ -1,14 +1,14 @@
 import * as nodemailer from 'nodemailer';
 
-import config from '../config';
+import config from 'server/config';
 
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
-  auth: config.email.auth
+  auth: config.email.auth,
 });
 const {
   name: fromName,
-  email: fromEmail
+  email: fromEmail,
 } = config.email.from;
 
 export interface SendEmailOptions {
@@ -22,6 +22,6 @@ export async function sendEmail(options: SendEmailOptions) {
     from: `"${fromName}" <${fromEmail}>`,
     to: options.to,
     subject: options.subject,
-    html: options.html
+    html: options.html,
   });
 }
