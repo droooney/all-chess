@@ -1,10 +1,10 @@
-import io, { games } from './io';
+import io, { games } from 'server/io';
 import {
   pickGameMinimalData
-} from './helpers';
-import { Dictionary } from '../shared/types';
-import { sessionMiddleware } from './controllers/session';
-import Game from './Game';
+} from 'server/helpers';
+import { Dictionary } from 'shared/types';
+import { sessionMiddleware } from 'server/controllers/session';
+import Game from 'server/Game';
 
 const gameList: Game[] = [];
 const gameMap: Dictionary<Game> = {};

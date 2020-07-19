@@ -3,7 +3,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 
-import { DispatchProps, ReduxState } from '../../store';
+import { DispatchProps, ReduxState } from 'client/store';
 import { setUserData } from '../../actions';
 import { fetch } from 'client/helpers';
 import { STANDARD_FEN } from '../../constants';

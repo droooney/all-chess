@@ -17,7 +17,7 @@
 
     "db:seed": "sequelize db:seed:all --debug",
     "db:seed:create": "sequelize seed:create --debug --name",
-    "db:seed:rerun": "run-s db:seed:undo-all db:seed",
+    "db:seed:rerun": "run-s db:seed:undo:all db:seed",
     "db:seed:undo:all": "sequelize db:seed:undo:all --debug",
 
     "db:create": "sequelize db:create --debug",

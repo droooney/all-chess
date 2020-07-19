@@ -2,8 +2,8 @@ import * as _ from 'lodash';
 import * as Sequelize from 'sequelize';
 import * as bcrypt from 'bcryptjs';
 
-import sequelize from '../';
-import { PublicUser, User as UserAttributes } from '../../../shared/types';
+import sequelize from 'server/db';
+import { PublicUser, User as UserAttributes } from 'shared/types';
 
 export type UserAddAttributes = Partial<UserAttributes> & Pick<UserAttributes, 'email' | 'password' | 'login'>;
 

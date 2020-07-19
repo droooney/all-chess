@@ -4,7 +4,7 @@ import { RouteComponentProps } from 'react-router-dom';
 import io = require('socket.io-client');
 import { MenuItem } from '@material-ui/core';
 
-import { DispatchProps, ReduxState } from '../../store';
+import { DispatchProps, ReduxState } from 'client/store';
 import { Game } from 'client/helpers';
 import {
   CorrespondenceTimeControl,

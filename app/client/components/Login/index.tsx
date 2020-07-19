@@ -6,7 +6,7 @@ import { FormControl, InputLabel } from '@material-ui/core';
 
 import { setUserData } from '../../actions';
 import { fetch } from 'client/helpers';
-import { DispatchProps } from '../../store';
+import { DispatchProps } from 'client/store';
 
 import Button from '../Button';
 import DocumentTitle from '../DocumentTitle';

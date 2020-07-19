@@ -40,7 +40,7 @@ import {
   MAX_TABLET_PANEL_WIDTH
 } from '../../constants';
 import { Game as GameHelper } from 'client/helpers';
-import { ReduxState } from '../../store';
+import { ReduxState } from 'client/store';
 
 import DocumentTitle from '../DocumentTitle';
 import FixedElement from '../FixedElement';

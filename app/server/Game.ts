@@ -16,15 +16,15 @@ import {
   ResultReasonEnum,
   TimeControlEnum,
   User
-} from '../shared/types';
-import { sessionMiddleware } from './controllers/session';
-import { Game as GameHelper } from '../shared/helpers';
+} from 'shared/types';
+import { sessionMiddleware } from 'server/controllers/session';
+import { Game as GameHelper } from 'shared/helpers';
 import {
   COLOR_NAMES,
   POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS,
   POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
   POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS
-} from '../shared/constants';
+} from 'shared/constants';
 
 const VARIANTS = _.values(GameVariantEnum);
 

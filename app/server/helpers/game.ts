@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 
-import { Game, GameMinimalData } from '../../shared/types';
+import { Game, GameMinimalData } from 'shared/types';
 
 export function pickGameMinimalData(game: Game): GameMinimalData {
   return _.pick(game, [

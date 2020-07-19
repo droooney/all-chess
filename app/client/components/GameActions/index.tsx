@@ -4,7 +4,7 @@ import classNames from 'classnames';
 
 import {
   changeSettings
-} from '../../actions';
+} from 'client/actions';
 import {
   ColorEnum,
   GamePlayers,
@@ -12,12 +12,12 @@ import {
   PieceTypeEnum,
   Player,
   TakebackRequest
-} from '../../../shared/types';
+} from 'shared/types';
 import {
   COLOR_NAMES
-} from '../../../shared/constants';
+} from 'shared/constants';
 import { Game } from 'client/helpers';
-import { DispatchProps, ReduxState } from '../../store';
+import { DispatchProps, ReduxState } from 'client/store';
 
 import Piece from '../Piece';
 import Dialog from '../Dialog';
