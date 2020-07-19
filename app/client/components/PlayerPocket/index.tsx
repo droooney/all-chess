@@ -9,7 +9,7 @@ import {
   RealPieceLocation
 } from 'shared/types';
 import { Game } from 'client/helpers';
-import { pocketPieces } from '../../constants';
+import { pocketPieces } from 'client/constants';
 
 import Piece from '../Piece';
 

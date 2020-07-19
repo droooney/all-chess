@@ -29,7 +29,7 @@ import {
   PIECE_LITERALS,
   PIECES_WORTH,
   SHORT_PIECE_NAMES
-} from '../constants';
+} from 'shared/constants';
 
 interface PiecesData {
   kings: GameKings;

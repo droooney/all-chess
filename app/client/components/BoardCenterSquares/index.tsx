@@ -3,7 +3,7 @@ import * as React from 'react';
 
 import { Game } from 'client/helpers';
 
-import { SVG_SQUARE_SIZE } from '../../constants';
+import { SVG_SQUARE_SIZE } from 'client/constants';
 import { Square } from 'shared/types';
 
 interface OwnProps {

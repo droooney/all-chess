@@ -5,7 +5,7 @@ import classNames from 'classnames';
 import {
   BoardPiece as IBoardPiece
 } from 'shared/types';
-import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from '../../constants';
+import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from 'client/constants';
 import { Game } from 'client/helpers';
 
 import GamePiece from '../GamePiece';

@@ -24,7 +24,7 @@ import {
 import {
   COLOR_NAMES,
   GAME_VARIANT_PGN_NAMES
-} from '../constants';
+} from 'shared/constants';
 import GameResultUtils from './GameResultUtils';
 
 const DIGITS_REGEX = /^\d+$/;

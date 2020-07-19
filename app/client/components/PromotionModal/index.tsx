@@ -3,7 +3,7 @@ import classNames from 'classnames';
 
 import { Game } from 'client/helpers';
 import { ColorEnum, PiecePocketLocation, PieceTypeEnum, Square } from 'shared/types';
-import { pocketPieces } from '../../constants';
+import { pocketPieces } from 'client/constants';
 
 import Modal, { ModalProps } from '../Modal';
 import Piece from '../Piece';

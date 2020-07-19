@@ -3,7 +3,7 @@ import * as React from 'react';
 
 import { Game } from 'client/helpers';
 
-import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from '../../constants';
+import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from 'client/constants';
 
 interface OwnProps {
   game: Game;
