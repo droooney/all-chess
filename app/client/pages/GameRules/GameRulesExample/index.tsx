@@ -73,7 +73,6 @@ export default class GameRulesExample extends React.Component<Props> {
       <div className="game-rules-example" id={`example-${id}`}>
         <Boards
           game={this.game}
-          player={null}
           selectedPiece={null}
           selectedPieceBoard={0}
           allowedMoves={[]}

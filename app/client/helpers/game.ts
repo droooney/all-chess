@@ -375,21 +375,15 @@ export class Game extends GameHelper {
   }
 
   acceptDraw() {
-    if (this.socket) {
-      this.socket.emit('acceptDraw');
-    }
+    this.socket?.emit('acceptDraw');
   }
 
   acceptTakeback() {
-    if (this.socket) {
-      this.socket.emit('acceptTakeback');
-    }
+    this.socket?.emit('acceptTakeback');
   }
 
   cancelDraw() {
-    if (this.socket) {
-      this.socket.emit('cancelDraw');
-    }
+    this.socket?.emit('cancelDraw');
   }
 
   cancelPremoves(updateGame: boolean) {
@@ -405,9 +399,7 @@ export class Game extends GameHelper {
   }
 
   cancelTakeback() {
-    if (this.socket) {
-      this.socket.emit('cancelTakeback');
-    }
+    this.socket?.emit('cancelTakeback');
   }
 
   changeDarkChessMode(darkChessMode: ColorEnum | null) {
@@ -419,21 +411,15 @@ export class Game extends GameHelper {
   }
 
   declineDraw() {
-    if (this.socket) {
-      this.socket.emit('declineDraw');
-    }
+    this.socket?.emit('declineDraw');
   }
 
   declineTakeback() {
-    if (this.socket) {
-      this.socket.emit('declineTakeback');
-    }
+    this.socket?.emit('declineTakeback');
   }
 
   destroy() {
-    if (this.socket) {
-      this.socket.disconnect();
-    }
+    this.socket?.disconnect();
 
     this.removeListeners();
   }
@@ -565,9 +551,7 @@ export class Game extends GameHelper {
       return;
     }
 
-    if (this.socket) {
-      this.socket.emit('makeMove', move);
-    }
+    this.socket?.emit('makeMove', move);
 
     const newTimestamp = Date.now() - this.timeDiff;
     const duration = newTimestamp - this.lastMoveTimestamp;
@@ -663,9 +647,7 @@ export class Game extends GameHelper {
   }
 
   offerDraw() {
-    if (this.socket) {
-      this.socket.emit('offerDraw');
-    }
+    this.socket?.emit('offerDraw');
   }
 
   on<K extends GameEvent>(event: K, listener: () => void) {
@@ -949,15 +931,11 @@ export class Game extends GameHelper {
   }
 
   requestTakeback() {
-    if (this.socket) {
-      this.socket.emit('requestTakeback', this.getUsedMoves().length - 2);
-    }
+    this.socket?.emit('requestTakeback', this.getUsedMoves().length - 2);
   }
 
   requestTakebackUpToCurrentMove() {
-    if (this.socket) {
-      this.socket.emit('requestTakeback', this.currentMoveIndex);
-    }
+    this.socket?.emit('requestTakeback', this.currentMoveIndex);
   }
 
   removeListeners() {
@@ -968,9 +946,7 @@ export class Game extends GameHelper {
   }
 
   resign() {
-    if (this.socket) {
-      this.socket.emit('resign');
-    }
+    this.socket?.emit('resign');
   }
 
   revertAnyMove() {
@@ -1006,6 +982,10 @@ export class Game extends GameHelper {
     this.boardsShiftX = boardsShiftX;
 
     this.updateGame();
+  }
+
+  sendMessage(message: string) {
+    this.socket?.emit('addChatMessage', message);
   }
 
   setPieces(pieces: readonly Piece[]) {

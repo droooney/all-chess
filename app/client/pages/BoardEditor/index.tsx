@@ -331,7 +331,6 @@ class BoardEditor extends React.Component<Props, State> {
 
         <Boards
           game={this.game}
-          player={null}
           selectedPiece={selectedPiece}
           selectedPieceBoard={selectedPiece && Game.isBoardPiece(selectedPiece) ? selectedPiece.location.board : 0}
           allowedMoves={[]}

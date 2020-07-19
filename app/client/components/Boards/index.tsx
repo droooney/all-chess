@@ -15,7 +15,6 @@ import {
   Piece as IPiece,
   PieceBoardLocation,
   PieceLocationEnum,
-  Player,
   Premove,
   RealPiece,
   RealPieceLocation,
@@ -37,7 +36,6 @@ import './index.less';
 
 export interface OwnProps {
   game: Game;
-  player: Player | null;
   selectedPiece: RealPiece | null;
   selectedPieceBoard: number;
   allowedMoves: BoardPossibleMove[];

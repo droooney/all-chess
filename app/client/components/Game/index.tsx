@@ -463,7 +463,7 @@ class Game extends React.Component<Props, State> {
   };
 
   sendMessage = (message: string) => {
-    this.socket!.emit('addChatMessage', message);
+    this.game!.sendMessage(message);
   };
 
   selectPiece = (selectedPiece: RealPiece | null, selectedPieceBoard: number = 0) => {
@@ -1026,7 +1026,6 @@ class Game extends React.Component<Props, State> {
               <Boards
                 game={this.game}
                 pieces={usedPieces}
-                player={player}
                 selectedPiece={
                   selectedPiece
                     ? selectedPiece
