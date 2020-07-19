@@ -16,7 +16,7 @@ import {
   ResultReasonEnum,
   TimeControlEnum,
   User
-} from '../types';
+} from '../shared/types';
 import { sessionMiddleware } from './controllers/session';
 import { Game as GameHelper } from '../shared/helpers';
 import {

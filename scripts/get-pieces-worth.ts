@@ -11,7 +11,7 @@ import {
   PieceLocationEnum,
   PieceTypeEnum,
   Square
-} from '../app/types';
+} from '../app/shared/types';
 import { Game } from 'shared/helpers';
 
 const boardTypes = [

@@ -1,5 +1,5 @@
 import GameCommonUtils from './GameCommonUtils';
-import { BoardDimensions, GameCreateOptions, GameVariantEnum } from '../../types';
+import { BoardDimensions, GameCreateOptions, GameVariantEnum } from '../types';
 
 interface VariantsInfo {
   is960: boolean;

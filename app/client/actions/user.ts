@@ -1,4 +1,4 @@
-import { PublicUser } from '../../types';
+import { PublicUser } from '../../shared/types';
 
 export const UserActions = {
   SET_USER_DATA: 'SET_USER_DATA' as const

@@ -10,7 +10,7 @@ import {
 } from '../../../shared/constants';
 import {
   GameVariantEnum
-} from '../../../types';
+} from '../../../shared/types';
 
 import DocumentTitle from '../DocumentTitle';
 

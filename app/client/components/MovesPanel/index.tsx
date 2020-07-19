@@ -4,7 +4,7 @@ import classNames from 'classnames';
 
 import {
   AnyMove
-} from '../../../types';
+} from '../../../shared/types';
 import { Game } from '../../helpers';
 
 import MovesRow from 'client/components/MovesRow';

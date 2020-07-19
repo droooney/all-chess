@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Game } from '../../helpers';
 import {
   GameVariantEnum
-} from '../../../types';
+} from '../../../shared/types';
 
 import GameVariantLink from '../GameVariantLink';
 

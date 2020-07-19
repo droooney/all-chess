@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import {
   GameResult
-} from '../../../types';
+} from '../../../shared/types';
 import {
   COLOR_NAMES,
   RESULT_REASON_NAMES

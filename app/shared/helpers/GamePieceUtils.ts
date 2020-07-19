@@ -1,4 +1,4 @@
-/// <reference path="../../typings/generator.d.ts"/>
+/// <reference path="../typings/generator.d.ts"/>
 
 import * as _ from 'lodash';
 
@@ -24,7 +24,7 @@ import {
   Square,
   StandardPiece,
   StartingData
-} from '../../types';
+} from '../types';
 import {
   PIECE_LITERALS,
   PIECES_WORTH,

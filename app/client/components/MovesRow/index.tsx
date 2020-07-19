@@ -3,7 +3,7 @@ import classNames from 'classnames';
 
 import {
   AnyMove
-} from '../../../types';
+} from '../../../shared/types';
 import { Game } from '../../helpers';
 
 interface OwnProps {

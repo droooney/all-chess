@@ -1,4 +1,4 @@
-/// <reference path="../../typings/generator.d.ts"/>
+/// <reference path="../typings/generator.d.ts"/>
 
 import * as _ from 'lodash';
 
@@ -14,7 +14,7 @@ import {
   MovementType,
   PieceTypeEnum,
   Square
-} from '../../types';
+} from '../types';
 
 const HEXAGONAL_EMPTY_SQUARES: readonly Square[] = [
   [6, 0], [6, 10],

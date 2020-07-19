@@ -13,7 +13,7 @@ import {
   RealPiece,
   RealPieceLocation,
   Square
-} from '../../../types';
+} from '../../../shared/types';
 import { STANDARD_FEN } from '../../constants';
 import { GAME_VARIANT_PGN_NAMES } from '../../../shared/constants';
 

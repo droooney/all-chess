@@ -13,7 +13,7 @@ import {
   TimeControl,
   TimeControlEnum,
   TimerTimeControl
-} from '../../../types';
+} from '../../../shared/types';
 import {
   changeSettings
 } from '../../actions';

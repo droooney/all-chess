@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import {
   GameVariantEnum
-} from '../../../types';
+} from '../../../shared/types';
 import {
   GAME_VARIANT_PGN_NAMES
 } from '../../../shared/constants';

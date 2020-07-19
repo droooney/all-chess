@@ -2,7 +2,7 @@ import { ReduxThunkAction } from '../store';
 
 import {
   GameSettings
-} from '../../types';
+} from '../../shared/types';
 
 import { writeSettingsToLocalStorage } from '../helpers';
 

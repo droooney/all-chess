@@ -1,5 +1,5 @@
 import GameDarkChessUtils from './GameDarkChessUtils';
-import { ColorEnum, GameCreateOptions, GameResult, GameStatusEnum, ResultReasonEnum } from '../../types';
+import { ColorEnum, GameCreateOptions, GameResult, GameStatusEnum, ResultReasonEnum } from '../types';
 
 export default abstract class GameResultUtils extends GameDarkChessUtils {
   status: GameStatusEnum = GameStatusEnum.BEFORE_START;

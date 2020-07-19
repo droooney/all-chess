@@ -4,7 +4,7 @@ import classNames from 'classnames';
 
 import {
   BoardPiece as IBoardPiece
-} from '../../../types';
+} from '../../../shared/types';
 import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from '../../constants';
 import { Game } from '../../helpers';
 

@@ -11,7 +11,7 @@ import {
   Piece,
   PieceBoardLocation,
   PieceLocationEnum
-} from '../../types';
+} from '../types';
 
 export default abstract class GameDarkChessUtils extends GameMovesUtils {
   colorMoves: EachColor<DarkChessRevertableMove[]> = {

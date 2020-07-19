@@ -12,7 +12,7 @@ import {
   PieceTypeEnum,
   Player,
   TakebackRequest
-} from '../../../types';
+} from '../../../shared/types';
 import {
   COLOR_NAMES
 } from '../../../shared/constants';

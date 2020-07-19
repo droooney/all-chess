@@ -1,4 +1,4 @@
-import { User } from '../../types';
+import { User } from '../../shared/types';
 import { UserState } from '../store';
 import { UserActions } from '../actions';
 import { getReducer } from 'client/helpers';

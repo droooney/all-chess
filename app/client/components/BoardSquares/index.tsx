@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import * as React from 'react';
 
 import { Game } from '../../helpers';
-import { RealPieceLocation, Square } from '../../../types';
+import { RealPieceLocation, Square } from '../../../shared/types';
 
 import BoardSquare from '../BoardSquare';
 

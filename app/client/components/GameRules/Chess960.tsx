@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { GameVariantEnum } from '../../../types';
+import { GameVariantEnum } from '../../../shared/types';
 
 import GameRulesExample from '../GameRulesExample';
 import GameVariantLink from '../GameVariantLink';

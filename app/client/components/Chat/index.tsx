@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import * as React from 'react';
 import classNames from 'classnames';
 
-import { ChatMessage } from '../../../types';
+import { ChatMessage } from '../../../shared/types';
 
 import Input from '../Input';
 

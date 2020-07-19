@@ -1,4 +1,4 @@
-/// <reference path="../../typings/generator.d.ts"/>
+/// <reference path="../typings/generator.d.ts"/>
 
 const proto = Object.getPrototypeOf(Object.getPrototypeOf((function* () {})()));
 

@@ -1,4 +1,4 @@
-/// <reference path="../../typings/generator.d.ts"/>
+/// <reference path="../typings/generator.d.ts"/>
 
 import * as _ from 'lodash';
 
@@ -30,7 +30,7 @@ import {
   ResultReasonEnum,
   RevertableMove,
   Square
-} from '../../types';
+} from '../types';
 
 export interface PerformMoveOptions {
   constructMoveLiterals?: boolean;

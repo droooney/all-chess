@@ -15,7 +15,7 @@ import {
   RealPieceLocation,
   TimeControl,
   TimeControlEnum
-} from '../../../types';
+} from '../../../shared/types';
 import { COLOR_NAMES } from '../../../shared/constants';
 import { Game } from '../../helpers';
 import { pocketPieces } from '../../constants';

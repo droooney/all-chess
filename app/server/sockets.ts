@@ -2,7 +2,7 @@ import io, { games } from './io';
 import {
   pickGameMinimalData
 } from './helpers';
-import { Dictionary } from '../types';
+import { Dictionary } from '../shared/types';
 import { sessionMiddleware } from './controllers/session';
 import Game from './Game';
 

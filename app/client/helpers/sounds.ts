@@ -2,7 +2,7 @@ import { Howl } from 'howler';
 
 import { isNotUndefined } from 'client/helpers/common';
 
-import { Dictionary } from '../../types';
+import { Dictionary } from '../../shared/types';
 
 // @ts-ignore
 import mp3Sounds from '../sounds/*/*.mp3';

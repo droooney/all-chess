@@ -26,7 +26,7 @@ import {
   Square,
   TimeControl,
   TimeControlEnum
-} from '../../types';
+} from '../../shared/types';
 import { Game as GameHelper } from '../../shared/helpers';
 import {
   POSSIBLE_TIMER_BASES_IN_MINUTES,

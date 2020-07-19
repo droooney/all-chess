@@ -3,7 +3,7 @@ import * as Sequelize from 'sequelize';
 import * as bcrypt from 'bcryptjs';
 
 import sequelize from '../';
-import { PublicUser, User as UserAttributes } from '../../../types';
+import { PublicUser, User as UserAttributes } from '../../../shared/types';
 
 export type UserAddAttributes = Partial<UserAttributes> & Pick<UserAttributes, 'email' | 'password' | 'login'>;
 

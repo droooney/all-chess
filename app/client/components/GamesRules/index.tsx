@@ -5,7 +5,7 @@ import { MenuItem, Select } from '@material-ui/core';
 
 import {
   GameVariantEnum
-} from '../../../types';
+} from '../../../shared/types';
 import {
   GAME_VARIANT_NAMES,
   GAME_VARIANT_LINKS

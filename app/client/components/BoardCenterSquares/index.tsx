@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Game } from '../../helpers';
 
 import { SVG_SQUARE_SIZE } from '../../constants';
-import { Square } from '../../../types';
+import { Square } from '../../../shared/types';
 
 interface OwnProps {
   game: Game;
