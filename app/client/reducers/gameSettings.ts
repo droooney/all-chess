@@ -1,6 +1,6 @@
-import { GameSettingsState } from '../store';
-import { GameSettingsActions } from '../actions';
-import { getDefaultSettings, getReducer } from '../helpers';
+import { GameSettingsState } from 'client/store';
+import { GameSettingsActions } from 'client/actions';
+import { getDefaultSettings, getReducer } from 'client/helpers';
 
 const initialState: GameSettingsState = getDefaultSettings();
 

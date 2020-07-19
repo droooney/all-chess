@@ -39,7 +39,7 @@ import {
   MIN_TABLET_PANEL_WIDTH,
   MAX_TABLET_PANEL_WIDTH
 } from '../../constants';
-import { Game as GameHelper } from '../../helpers';
+import { Game as GameHelper } from 'client/helpers';
 import { ReduxState } from '../../store';
 
 import DocumentTitle from '../DocumentTitle';

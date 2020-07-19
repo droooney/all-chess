@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { FormControl, InputLabel } from '@material-ui/core';
 
-import { fetch } from '../../helpers';
+import { fetch } from 'client/helpers';
 
 import Button from '../Button';
 import DocumentTitle from '../DocumentTitle';

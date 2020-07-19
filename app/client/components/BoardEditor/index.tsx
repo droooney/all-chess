@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 
-import { Game } from '../../helpers';
+import { Game } from 'client/helpers';
 import { Game as BaseGame } from '../../../shared/helpers';
 import {
   BoardPiece,

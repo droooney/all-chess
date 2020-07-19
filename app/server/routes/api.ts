@@ -8,15 +8,15 @@ import { helpers } from '../controllers/helpers';
 import {
   session,
   sessionRequired
-} from '../controllers/session';
+} from 'server/controllers/session';
 import {
   confirmRegister,
   login,
   logout,
   register
-} from '../controllers/auth';
-import { get, post } from '../helpers';
-import { CustomState, CustomContext } from '../types';
+} from 'server/controllers/auth';
+import { get, post } from 'server/helpers';
+import { CustomState, CustomContext } from 'server/types';
 
 const bodyParser = BodyParser();
 

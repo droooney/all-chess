@@ -16,7 +16,7 @@ import {
 import {
   COLOR_NAMES
 } from '../../../shared/constants';
-import { Game } from '../../helpers';
+import { Game } from 'client/helpers';
 import { DispatchProps, ReduxState } from '../../store';
 
 import Piece from '../Piece';

@@ -5,7 +5,7 @@ import io = require('socket.io-client');
 import { MenuItem } from '@material-ui/core';
 
 import { DispatchProps, ReduxState } from '../../store';
-import { Game } from '../../helpers';
+import { Game } from 'client/helpers';
 import {
   CorrespondenceTimeControl,
   GameMinimalData,

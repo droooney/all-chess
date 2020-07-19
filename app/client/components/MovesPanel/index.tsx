@@ -5,7 +5,7 @@ import classNames from 'classnames';
 import {
   AnyMove
 } from '../../../shared/types';
-import { Game } from '../../helpers';
+import { Game } from 'client/helpers';
 
 import MovesRow from 'client/components/MovesRow';
 

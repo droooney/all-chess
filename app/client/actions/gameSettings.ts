@@ -2,9 +2,9 @@ import { ReduxThunkAction } from '../store';
 
 import {
   GameSettings
-} from '../../shared/types';
+} from 'shared/types';
 
-import { writeSettingsToLocalStorage } from '../helpers';
+import { writeSettingsToLocalStorage } from 'client/helpers';
 
 export const GameSettingsActions = {
   CHANGE_SETTINGS: 'CHANGE_SETTINGS' as const

@@ -17,7 +17,7 @@ import {
   TimeControlEnum
 } from '../../../shared/types';
 import { COLOR_NAMES } from '../../../shared/constants';
-import { Game } from '../../helpers';
+import { Game } from 'client/helpers';
 import { pocketPieces } from '../../constants';
 
 import Piece from '../Piece';

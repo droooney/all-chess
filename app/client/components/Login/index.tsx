@@ -5,7 +5,7 @@ import { RouteComponentProps } from 'react-router-dom';
 import { FormControl, InputLabel } from '@material-ui/core';
 
 import { setUserData } from '../../actions';
-import { fetch } from '../../helpers';
+import { fetch } from 'client/helpers';
 import { DispatchProps } from '../../store';
 
 import Button from '../Button';

@@ -4,7 +4,7 @@ import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, drawnSymbolColors, SVG_SQUARE_SIZE }
 
 import { DrawnSymbol as IDrawnSymbol, Square } from '../../../shared/types';
 
-import { Game } from '../../helpers';
+import { Game } from 'client/helpers';
 
 interface OwnProps {
   game: Game;

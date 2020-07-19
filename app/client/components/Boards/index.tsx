@@ -18,10 +18,10 @@ import {
   RealPiece,
   RealPieceLocation,
   Square
-} from '../../../shared/types';
-import { ALICE_CHESS_BOARDS_MARGIN, drawnSymbolColors, SVG_SQUARE_SIZE } from '../../constants';
-import { Game } from '../../helpers';
-import { ReduxState } from '../../store';
+} from 'shared/types';
+import { ALICE_CHESS_BOARDS_MARGIN, drawnSymbolColors, SVG_SQUARE_SIZE } from 'client/constants';
+import { Game } from 'client/helpers';
+import { ReduxState } from 'client/store';
 
 import BoardCenterSquares from '../BoardCenterSquares';
 import BoardLiterals from '../BoardLiterals';

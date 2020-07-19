@@ -6,7 +6,7 @@ import {
   BoardPiece as IBoardPiece
 } from '../../../shared/types';
 import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from '../../constants';
-import { Game } from '../../helpers';
+import { Game } from 'client/helpers';
 
 import GamePiece from '../GamePiece';
 

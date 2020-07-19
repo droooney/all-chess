@@ -1,6 +1,6 @@
-import { CommonState } from '../store';
-import { CommonActions } from '../actions';
-import { getReducer, getScrollSize, isMobileDevice } from '../helpers';
+import { CommonState } from 'client/store';
+import { CommonActions } from 'client/actions';
+import { getReducer, getScrollSize, isMobileDevice } from 'client/helpers';
 
 const initialState: CommonState = {
   isMobile: isMobileDevice(),

@@ -3,9 +3,9 @@ import { IncomingMessage, ServerResponse } from 'http';
 import expressSession = require('express-session');
 import redis = require('connect-redis');
 
-import { createClient } from '../helpers';
-import { CustomContext } from '../types';
-import config from '../config';
+import { createClient } from 'server/helpers';
+import { CustomContext } from 'server/types';
+import config from 'server/config';
 
 const Store = redis(expressSession);
 

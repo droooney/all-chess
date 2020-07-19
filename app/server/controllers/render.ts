@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as pug from 'pug';
 
-import { getSortedFilesSync } from '../helpers';
-import { CustomContext } from '../types';
+import { getSortedFilesSync } from 'server/helpers';
+import { CustomContext } from 'server/types';
 
 const html = pug.compile(fs.readFileSync(path.resolve('./index.pug'), 'utf8'));
 const JS_BUNDLE_NAME = path.basename(

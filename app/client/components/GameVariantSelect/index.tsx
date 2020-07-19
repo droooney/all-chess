@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import * as React from 'react';
 import { MenuItem } from '@material-ui/core';
 
-import { Game } from '../../helpers';
+import { Game } from 'client/helpers';
 import { GameVariantEnum } from '../../../shared/types';
 import { GAME_VARIANT_NAMES, GAME_VARIANT_SHORT_NAMES } from '../../../shared/constants';
 

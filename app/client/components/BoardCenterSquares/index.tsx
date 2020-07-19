@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as React from 'react';
 
-import { Game } from '../../helpers';
+import { Game } from 'client/helpers';
 
 import { SVG_SQUARE_SIZE } from '../../constants';
 import { Square } from '../../../shared/types';

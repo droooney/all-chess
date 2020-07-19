@@ -1,6 +1,6 @@
-import { User } from '../../shared/types';
-import { UserState } from '../store';
-import { UserActions } from '../actions';
+import { User } from 'shared/types';
+import { UserState } from 'client/store';
+import { UserActions } from 'client/actions';
 import { getReducer } from 'client/helpers';
 
 declare global {

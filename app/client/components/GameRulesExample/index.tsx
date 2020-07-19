@@ -6,7 +6,7 @@ import {
 import {
   GAME_VARIANT_PGN_NAMES
 } from '../../../shared/constants';
-import { Game } from '../../helpers';
+import { Game } from 'client/helpers';
 
 import Boards from '../Boards';
 import MovesPanel from '../MovesPanel';

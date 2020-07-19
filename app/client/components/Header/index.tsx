@@ -5,7 +5,7 @@ import { RouteComponentProps, withRouter } from 'react-router-dom';
 
 import { DispatchProps, ReduxState } from '../../store';
 import { setUserData } from '../../actions';
-import { fetch } from '../../helpers';
+import { fetch } from 'client/helpers';
 import { STANDARD_FEN } from '../../constants';
 
 import Link from '../Link';

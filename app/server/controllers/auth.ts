@@ -4,9 +4,9 @@ import * as bcrypt from 'bcryptjs';
 import * as pug from 'pug';
 import uuid = require('uuid/v1');
 
-import { User } from '../db';
-import { buildURL, sendEmail } from '../helpers';
-import { CustomContext } from '../types';
+import { User } from 'server/db';
+import { buildURL, sendEmail } from 'server/helpers';
+import { CustomContext } from 'server/types';
 
 const registerHTML = pug.compile(fs.readFileSync(path.resolve('./app/server/emails/register.pug'), 'utf8'));
 

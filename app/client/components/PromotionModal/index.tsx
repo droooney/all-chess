@@ -1,7 +1,7 @@
 import * as React from 'react';
 import classNames from 'classnames';
 
-import { Game } from '../../helpers';
+import { Game } from 'client/helpers';
 import { ColorEnum, PiecePocketLocation, PieceTypeEnum, Square } from '../../../shared/types';
 import { pocketPieces } from '../../constants';
 
