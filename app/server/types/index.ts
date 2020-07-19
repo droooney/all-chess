@@ -1,12 +1,12 @@
 import { Middleware, ParameterizedContext } from 'koa';
 
-import { UserModel } from '../db/models';
+import { User } from '../db/models';
 
 export interface CustomState {
   urlIndexGroups: string[];
   urlKeyGroups?: Record<string, string>;
   session?: Express.Session;
-  user?: UserModel;
+  user?: User;
   success(value?: any): void;
 }
 

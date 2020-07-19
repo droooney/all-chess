@@ -6,10 +6,12 @@ import config from './config';
 import './routes';
 import './sockets';
 
-export async function listen(): Promise<number> {
-  return new Promise<number>((resolve) => {
+(async () => {
+  await new Promise((resolve) => {
     server.listen(config.port, () => {
       resolve(config.port);
     });
   });
-}
+
+  console.log(`Listening on ${config.port}...`);
+})();

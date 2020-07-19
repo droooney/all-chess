@@ -1,12 +1,10 @@
-/// <reference path="../../typings/koa.d.ts" />
-
 import * as path from 'path';
 import * as fs from 'fs';
 import * as bcrypt from 'bcryptjs';
 import * as pug from 'pug';
 import uuid = require('uuid/v1');
 
-import { User, UserModel } from '../db';
+import { User } from '../db';
 import { buildURL, sendEmail } from '../helpers';
 import { CustomContext } from '../types';
 
@@ -93,7 +91,7 @@ export async function register(ctx: CustomContext) {
       }
     }
   } = ctx;
-  let user: UserModel;
+  let user: User;
 
   try {
     user = await User.create({
@@ -122,7 +120,7 @@ export async function register(ctx: CustomContext) {
   };
 }
 
-async function sendConfirmationEmail(ctx: CustomContext, user: UserModel) {
+async function sendConfirmationEmail(ctx: CustomContext, user: User) {
   try {
     await sendEmail({
       to: user.email,

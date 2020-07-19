@@ -1,5 +1,3 @@
-/// <reference path="../../typings/koa.d.ts" />
-
 import * as util from 'util';
 import { IncomingMessage, ServerResponse } from 'http';
 import expressSession = require('express-session');

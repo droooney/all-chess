@@ -1,10 +1,10 @@
-import { ShortUser } from '../../types';
+import { PublicUser } from '../../types';
 
 export const UserActions = {
   SET_USER_DATA: 'SET_USER_DATA' as const
 };
 
-export function setUserData(user: ShortUser | null) {
+export function setUserData(user: PublicUser | null) {
   return {
     type: UserActions.SET_USER_DATA,
     user

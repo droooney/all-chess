@@ -512,7 +512,10 @@ class Boards extends React.Component<Props> {
                 )}
               </g>
               <g className="symbols">
-                {drawnSymbols.map((symbol) => (
+                {[
+                  ...drawnSymbols.filter(({ type }) => type === 'circle'),
+                  ...drawnSymbols.filter(({ type }) => type === 'arrow')
+                ].map((symbol) => (
                   <DrawnSymbol
                     key={symbol.id}
                     game={game}

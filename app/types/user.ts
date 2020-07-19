@@ -1,13 +1,13 @@
-export interface ShortUser {
+export interface PublicUser {
+  id: number;
   login: string;
+  createdAt: Date;
 }
 
-export interface User extends ShortUser {
-  id: number;
+export interface User extends PublicUser {
   email: string;
   password: string;
   confirmToken: string | null;
   confirmed: boolean;
-  createdAt: Date;
   updatedAt: Date;
 }

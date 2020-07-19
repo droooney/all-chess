@@ -1,4 +1,4 @@
-import { ShortUser } from './user';
+import { PublicUser } from './user';
 
 export interface GenericResponse {
   success: boolean;
@@ -13,13 +13,13 @@ export interface FailedResponse {
 }
 
 export interface LoginResponse extends GenericResponse {
-  user: ShortUser;
+  user: PublicUser;
 }
 
 export interface LogoutResponse extends GenericResponse {}
 
 export interface RegisterSuccessfulResponse extends SuccessfulResponse {
-  user: ShortUser;
+  user: PublicUser;
 }
 
 export interface RegisterFailedResponse extends FailedResponse {

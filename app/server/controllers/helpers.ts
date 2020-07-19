@@ -1,5 +1,3 @@
-/// <reference path="../../typings/koa.d.ts" />
-
 import { CustomContext } from '../types';
 
 export async function helpers(ctx: CustomContext, next: (err?: any) => Promise<void>) {

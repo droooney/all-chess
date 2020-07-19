@@ -205,14 +205,14 @@ export const PIECES_WORTH: Record<'orthodox' | 'circular' | 'hexagonal', EachPie
     [PieceTypeEnum.PAWN]: 1
   },
   hexagonal: {
-    [PieceTypeEnum.KING]: 3,
-    [PieceTypeEnum.AMAZON]: 13,
-    [PieceTypeEnum.QUEEN]: 10,
-    [PieceTypeEnum.EMPRESS]: 10,
-    [PieceTypeEnum.CARDINAL]: 6,
-    [PieceTypeEnum.ROOK]: 7,
+    [PieceTypeEnum.KING]: 4,
+    [PieceTypeEnum.AMAZON]: 14,
+    [PieceTypeEnum.QUEEN]: 11,
+    [PieceTypeEnum.EMPRESS]: 11,
+    [PieceTypeEnum.CARDINAL]: 7,
+    [PieceTypeEnum.ROOK]: 8,
     [PieceTypeEnum.BISHOP]: 3,
-    [PieceTypeEnum.KNIGHT]: 3,
+    [PieceTypeEnum.KNIGHT]: 4,
     [PieceTypeEnum.PAWN]: 1
   }
 };

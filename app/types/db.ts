@@ -3,7 +3,7 @@ export interface DBConnection {
   password?: string;
   database: string;
   host: string;
-  dialect: string;
+  dialect: 'postgres';
 }
 
 export interface DBConfig {

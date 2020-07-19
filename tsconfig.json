@@ -6,9 +6,6 @@
     "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
-      "gulp-run": ["./app/typings/gulp-run.d.ts"],
-      "koa-bodyparser": ["./app/typings/koa-bodyparser.d.ts"],
-      "socket.io": ["./app/typings/socket.io.d.ts"],
       "client/*": ["./app/client/*"],
       "server/*": ["./app/server/*"],
       "shared/*": ["./app/shared/*"]

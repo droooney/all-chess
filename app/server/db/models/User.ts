@@ -1,14 +1,23 @@
+import * as _ from 'lodash';
 import * as Sequelize from 'sequelize';
 import * as bcrypt from 'bcryptjs';
 
 import sequelize from '../';
-import { User as UserAttributes } from '../../../types';
-
-export interface UserModel extends Sequelize.Instance<UserModel>, UserAttributes {}
+import { PublicUser, User as UserAttributes } from '../../../types';
 
 export type UserAddAttributes = Partial<UserAttributes> & Pick<UserAttributes, 'email' | 'password' | 'login'>;
 
-export const User = sequelize.define<UserModel, UserAddAttributes>('users', {
+export interface User extends UserAttributes {}
+
+export class User extends Sequelize.Model<UserAttributes, UserAddAttributes> {
+  toJSON(): PublicUser {
+    const user = super.toJSON() as UserAttributes;
+
+    return _.pick(user, ['id', 'login', 'createdAt']);
+  }
+}
+
+User.init({
   id: {
     type: Sequelize.INTEGER,
     allowNull: false,
@@ -54,6 +63,8 @@ export const User = sequelize.define<UserModel, UserAddAttributes>('users', {
     allowNull: false
   }
 }, {
+  sequelize,
+  tableName: 'users',
   hooks: {
     async beforeCreate(user) {
       user.password = await bcrypt.hash(user.password, 5);
@@ -67,17 +78,3 @@ export const User = sequelize.define<UserModel, UserAddAttributes>('users', {
     }
   }
 });
-
-const toJSON = ((User as any).prototype as UserModel).toJSON;
-
-((User as any).prototype as UserModel).toJSON = function () {
-  const json: UserModel = toJSON.apply(this);
-
-  delete json.email;
-  delete json.password;
-  delete json.confirmToken;
-  delete json.confirmed;
-  delete json.updatedAt;
-
-  return json;
-};

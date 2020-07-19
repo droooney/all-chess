@@ -1,6 +1,6 @@
 import {
   GameSettings,
-  ShortUser
+  PublicUser
 } from '../../types';
 
 export interface CommonState {
@@ -9,7 +9,7 @@ export interface CommonState {
   scrollSize: number;
 }
 
-export type UserState = ShortUser | null;
+export type UserState = PublicUser | null;
 
 export type GameSettingsState = GameSettings;
 
