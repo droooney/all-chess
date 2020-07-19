@@ -6,7 +6,7 @@ import {
 import {
   COLOR_NAMES,
   RESULT_REASON_NAMES
-} from '../../../shared/constants';
+} from 'shared/constants';
 import { Game } from 'client/helpers';
 
 import GameVariantLink from '../GameVariantLink';

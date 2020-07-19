@@ -5,7 +5,7 @@ import {
 } from 'shared/types';
 import {
   GAME_VARIANT_PGN_NAMES
-} from '../../../shared/constants';
+} from 'shared/constants';
 import { Game } from 'client/helpers';
 
 import Boards from '../Boards';

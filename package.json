@@ -36,7 +36,7 @@
   "alias": {
     "client": "./app/client",
     "server": "./app/server",
-    "shared": "./app/server"
+    "shared": "./app/shared"
   },
   "dependencies": {
     "@babel/polyfill": "^7.10.4",

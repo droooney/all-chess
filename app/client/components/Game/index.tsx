@@ -28,7 +28,7 @@ import {
 } from 'shared/types';
 import {
   GAME_VARIANT_NAMES
-} from '../../../shared/constants';
+} from 'shared/constants';
 import {
   ALICE_CHESS_BOARDS_MARGIN,
   GAME_GRID_GAP,
@@ -38,7 +38,7 @@ import {
   MAX_RIGHT_DESKTOP_PANEL_WIDTH,
   MIN_TABLET_PANEL_WIDTH,
   MAX_TABLET_PANEL_WIDTH
-} from '../../constants';
+} from 'client/constants';
 import { Game as GameHelper } from 'client/helpers';
 import { ReduxState } from 'client/store';
 

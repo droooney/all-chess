@@ -5,9 +5,9 @@ import { isNotUndefined } from 'client/helpers/common';
 import { Dictionary } from 'shared/types';
 
 // @ts-ignore
-import mp3Sounds from 'client/sounds/*/*.mp3';
+import mp3Sounds from '../sounds/*/*.mp3';
 // @ts-ignore
-import oggSounds from 'client/sounds/*/*.ogg';
+import oggSounds from '../sounds/*/*.ogg';
 
 type SoundType = 'piece-move' | 'piece-move2' | 'piece-move3' | 'piece-capture' | 'piece-capture2' | 'piece-capture3' | 'piece-capture4';
 

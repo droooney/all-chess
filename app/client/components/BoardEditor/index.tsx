@@ -4,7 +4,7 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 
 import { Game } from 'client/helpers';
-import { Game as BaseGame } from '../../../shared/helpers';
+import { Game as BaseGame } from 'shared/helpers';
 import {
   BoardPiece,
   GameVariantEnum,
@@ -14,8 +14,8 @@ import {
   RealPieceLocation,
   Square
 } from 'shared/types';
-import { STANDARD_FEN } from '../../constants';
-import { GAME_VARIANT_PGN_NAMES } from '../../../shared/constants';
+import { STANDARD_FEN } from 'client/constants';
+import { GAME_VARIANT_PGN_NAMES } from 'shared/constants';
 
 import Boards from '../Boards';
 import DocumentTitle from '../DocumentTitle';

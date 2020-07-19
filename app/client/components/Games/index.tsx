@@ -25,7 +25,7 @@ import {
   POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS,
   POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS,
   POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS
-} from '../../../shared/constants';
+} from 'shared/constants';
 
 import Button from '../Button';
 import DocumentTitle from '../DocumentTitle';

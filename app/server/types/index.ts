@@ -7,7 +7,8 @@ export interface CustomState {
   urlKeyGroups?: Record<string, string>;
   session?: Express.Session;
   user?: User;
-  success(value?: any): void;
+  success(): void;
+  success(success: boolean): void;
 }
 
 export type CustomContext = ParameterizedContext<CustomState, {}>;

@@ -4,7 +4,7 @@ import { GameVariantEnum } from 'shared/types';
 import {
   GAME_VARIANT_NAMES,
   GAME_VARIANT_LINKS
-} from '../../../shared/constants';
+} from 'shared/constants';
 
 import Link from '../Link';
 

@@ -9,7 +9,7 @@ import {
 import {
   GAME_VARIANT_NAMES,
   GAME_VARIANT_LINKS
-} from '../../../shared/constants';
+} from 'shared/constants';
 
 import Route from '../Route';
 
