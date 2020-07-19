@@ -8,7 +8,7 @@ import {
   ResultReasonEnum,
   StandardPiece,
   TimeControlEnum
-} from '../types';
+} from 'shared/types';
 
 export const SHORT_PIECE_NAMES: EachPieceType<string> = {
   [PieceTypeEnum.KING]: 'K',

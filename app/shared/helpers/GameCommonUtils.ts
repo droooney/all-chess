@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 
-import { GameVariantEnum } from '../types';
+import { GameVariantEnum } from 'shared/types';
 
 export default class GameCommonUtils {
   static generateUid(map: Record<string, any>): string {

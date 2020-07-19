@@ -9,7 +9,7 @@ import {
   GameCreateOptions,
   RealPiece,
   Square
-} from '../types';
+} from 'shared/types';
 
 type CastlingRookCoordinates = Record<CastlingTypeEnum, Square | null>;
 

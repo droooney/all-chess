@@ -30,7 +30,7 @@ import {
   ResultReasonEnum,
   RevertableMove,
   Square
-} from '../types';
+} from 'shared/types';
 
 export interface PerformMoveOptions {
   constructMoveLiterals?: boolean;

@@ -14,7 +14,7 @@ import {
   RealPiece,
   RealPieceLocation,
   StartingData
-} from '../types';
+} from 'shared/types';
 
 const FEN_DIGITS_REGEX = /^\d+$/;
 const FEN_CASTLING_REGEX = /^[kq]+$/i;

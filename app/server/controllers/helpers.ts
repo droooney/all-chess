@@ -1,4 +1,4 @@
-import { CustomContext } from '../types';
+import { CustomContext } from 'server/types';
 
 export async function helpers(ctx: CustomContext, next: (err?: any) => Promise<void>) {
   ctx.state.success = (...args: any[]) => {

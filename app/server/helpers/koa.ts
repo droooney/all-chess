@@ -1,4 +1,4 @@
-import { CustomMiddleware } from '../types';
+import { CustomMiddleware } from 'server/types';
 
 type Method = 'get' | 'post' | 'put' | 'delete';
 type Url = string | RegExp;

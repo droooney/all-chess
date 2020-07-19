@@ -20,7 +20,7 @@ import {
   TakebackRequest,
   TimeControl,
   TimeControlEnum
-} from '../types';
+} from 'shared/types';
 import {
   COLOR_NAMES,
   GAME_VARIANT_PGN_NAMES

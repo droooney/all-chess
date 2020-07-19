@@ -24,7 +24,7 @@ import {
   Square,
   StandardPiece,
   StartingData
-} from '../types';
+} from 'shared/types';
 import {
   PIECE_LITERALS,
   PIECES_WORTH,

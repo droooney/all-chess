@@ -14,7 +14,7 @@ import {
   MovementType,
   PieceTypeEnum,
   Square
-} from '../types';
+} from 'shared/types';
 
 const HEXAGONAL_EMPTY_SQUARES: readonly Square[] = [
   [6, 0], [6, 10],

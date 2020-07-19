@@ -10,7 +10,7 @@ import {
   PieceTypeEnum,
   RealPiece,
   StartingData
-} from '../types';
+} from 'shared/types';
 
 const STANDARD_PIECE_PLACEMENT: readonly PieceTypeEnum[] = [
   PieceTypeEnum.ROOK,
