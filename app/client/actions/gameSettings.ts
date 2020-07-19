@@ -1,4 +1,4 @@
-import { CustomThunkAction } from '../store';
+import { ReduxThunkAction } from '../store';
 
 import {
   GameSettings
@@ -6,17 +6,11 @@ import {
 
 import { writeSettingsToLocalStorage } from '../helpers';
 
-export enum GameSettingsActions {
-  CHANGE_SETTINGS = 'CHANGE_SETTINGS'
-}
+export const GameSettingsActions = {
+  CHANGE_SETTINGS: 'CHANGE_SETTINGS' as const
+};
 
-export interface ChangeSettingsInStateAction<K extends keyof GameSettings> {
-  type: GameSettingsActions.CHANGE_SETTINGS;
-  key: K;
-  value: GameSettings[K];
-}
-
-function changeSettingsInState<K extends keyof GameSettings>(key: K, value: GameSettings[K]): ChangeSettingsInStateAction<K> {
+export function changeSettingsInState<K extends keyof GameSettings>(key: K, value: GameSettings[K]) {
   return {
     type: GameSettingsActions.CHANGE_SETTINGS,
     key,
@@ -24,7 +18,7 @@ function changeSettingsInState<K extends keyof GameSettings>(key: K, value: Game
   };
 }
 
-export function changeSettings<K extends keyof GameSettings>(key: K, value: GameSettings[K]): CustomThunkAction<void> {
+export function changeSettings<K extends keyof GameSettings>(key: K, value: GameSettings[K]): ReduxThunkAction<void> {
   return (dispatch) => {
     writeSettingsToLocalStorage(key, value);
 

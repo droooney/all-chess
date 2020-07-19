@@ -1,10 +1,7 @@
 import { User } from '../../types';
 import { UserState } from '../store';
-import {
-  UserActions,
-
-  SetUserDataAction
-} from '../actions';
+import { UserActions } from '../actions';
+import { getReducer } from 'client/helpers';
 
 declare global {
   interface Window {
@@ -14,22 +11,6 @@ declare global {
 
 const initialState: UserState = window.__ALL_CHESS_USER__;
 
-type Action = (
-  SetUserDataAction
-  | { type: '' }
-);
-
-export default (
-  state: UserState = initialState,
-  action: Action
-): UserState => {
-  switch (action.type) {
-    case UserActions.SET_USER_DATA: {
-      return action.user;
-    }
-
-    default: {
-      return state;
-    }
-  }
-};
+export default getReducer(initialState, {
+  [UserActions.SET_USER_DATA]: (_state, action) => action.user
+});

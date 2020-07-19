@@ -1,15 +1,10 @@
 import { ShortUser } from '../../types';
 
-export enum UserActions {
-  SET_USER_DATA = 'SET_USER_DATA'
-}
+export const UserActions = {
+  SET_USER_DATA: 'SET_USER_DATA' as const
+};
 
-export interface SetUserDataAction {
-  type: UserActions.SET_USER_DATA;
-  user: ShortUser | null;
-}
-
-export function setUserData(user: ShortUser | null): SetUserDataAction {
+export function setUserData(user: ShortUser | null) {
   return {
     type: UserActions.SET_USER_DATA,
     user

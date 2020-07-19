@@ -1,33 +1,12 @@
-import { GameSettings } from '../../types';
 import { GameSettingsState } from '../store';
-import {
-  GameSettingsActions,
-
-  ChangeSettingsInStateAction
-} from '../actions';
-import { getDefaultSettings } from '../helpers';
+import { GameSettingsActions } from '../actions';
+import { getDefaultSettings, getReducer } from '../helpers';
 
 const initialState: GameSettingsState = getDefaultSettings();
 
-type Action = (
-  ChangeSettingsInStateAction<keyof GameSettings>
-  | { type: '' }
-);
-
-export default (
-  state: GameSettingsState = initialState,
-  action: Action
-): GameSettingsState => {
-  switch (action.type) {
-    case GameSettingsActions.CHANGE_SETTINGS: {
-      return {
-        ...state,
-        [action.key]: action.value
-      };
-    }
-
-    default: {
-      return state;
-    }
-  }
-};
+export default getReducer(initialState, {
+  [GameSettingsActions.CHANGE_SETTINGS]: (state, action) => ({
+    ...state,
+    [action.key]: action.value
+  })
+});

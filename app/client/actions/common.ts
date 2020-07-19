@@ -1,13 +1,8 @@
-export enum CommonActions {
-  SET_IS_MOBILE = 'SET_IS_MOBILE'
-}
+export const CommonActions = {
+  SET_IS_MOBILE: 'SET_IS_MOBILE' as const
+};
 
-export interface SetIsMobileAction {
-  type: CommonActions.SET_IS_MOBILE;
-  isMobile: boolean;
-}
-
-export function setIsMobile(isMobile: boolean): SetIsMobileAction {
+export function setIsMobile(isMobile: boolean) {
   return {
     type: CommonActions.SET_IS_MOBILE,
     isMobile

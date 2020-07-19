@@ -1,10 +1,6 @@
 import { CommonState } from '../store';
-import {
-  CommonActions,
-
-  SetIsMobileAction
-} from '../actions';
-import { getScrollSize, isMobileDevice } from '../helpers';
+import { CommonActions } from '../actions';
+import { getReducer, getScrollSize, isMobileDevice } from '../helpers';
 
 const initialState: CommonState = {
   isMobile: isMobileDevice(),
@@ -12,25 +8,9 @@ const initialState: CommonState = {
   scrollSize: getScrollSize()
 };
 
-type Action = (
-  SetIsMobileAction
-  | { type: '' }
-);
-
-export default (
-  state: CommonState = initialState,
-  action: Action
-): CommonState => {
-  switch (action.type) {
-    case CommonActions.SET_IS_MOBILE: {
-      return {
-        ...state,
-        isMobile: action.isMobile
-      };
-    }
-
-    default: {
-      return state;
-    }
-  }
-};
+export default getReducer(initialState, {
+  [CommonActions.SET_IS_MOBILE]: (state, action) => ({
+    ...state,
+    isMobile: action.isMobile
+  })
+});
