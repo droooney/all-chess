@@ -10,7 +10,7 @@ import { fetch } from 'client/helpers';
 import { DispatchProps, ReduxState } from 'client/store';
 import { setUserData } from 'client/actions';
 
-import Link from '../Link';
+import Link from '../../Link';
 
 import './index.less';
 

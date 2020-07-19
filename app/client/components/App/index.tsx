@@ -10,16 +10,17 @@ import { setIsMobile } from 'client/actions';
 import { DispatchProps, ReduxState } from 'client/store';
 
 import Route from 'client/components/Route';
-import Header from 'client/components/Header';
-import Home from 'client/components/Home';
-import BoardEditor from 'client/components/BoardEditor';
-import Register from 'client/components/Register';
-import Games from 'client/components/Games';
-import Login from 'client/components/Login';
-import GamesRules from 'client/components/GamesRules';
+import Header from 'client/components/App/Header';
 import Game from 'client/components/Game';
 
-import lightTheme from './themes/light';
+import GamesRules from 'client/pages/GamesRules';
+import Home from 'client/pages/Home';
+import BoardEditor from 'client/pages/BoardEditor';
+import Register from 'client/pages/Register';
+import Games from 'client/pages/Games';
+import Login from 'client/pages/Login';
+
+import lightTheme from '../../themes/light';
 
 import './index.less';
 

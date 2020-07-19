@@ -9,9 +9,9 @@ import { fetch } from 'client/helpers';
 import { setUserData } from 'client/actions';
 import { DispatchProps } from 'client/store';
 
-import Button from '../Button';
-import DocumentTitle from '../DocumentTitle';
-import Input from '../Input';
+import Button from '../../components/Button';
+import DocumentTitle from '../../components/DocumentTitle';
+import Input from '../../components/Input';
 
 import './index.less';
 

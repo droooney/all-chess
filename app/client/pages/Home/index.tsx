@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import DocumentTitle from '../DocumentTitle';
-import Link from '../Link';
+import DocumentTitle from '../../components/DocumentTitle';
+import Link from '../../components/Link';
 
 import './index.less';
 

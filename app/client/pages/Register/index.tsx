@@ -3,9 +3,9 @@ import { FormControl, InputLabel } from '@material-ui/core';
 
 import { fetch } from 'client/helpers';
 
-import Button from '../Button';
-import DocumentTitle from '../DocumentTitle';
-import Input from '../Input';
+import Button from '../../components/Button';
+import DocumentTitle from '../../components/DocumentTitle';
+import Input from '../../components/Input';
 
 import './index.less';
 

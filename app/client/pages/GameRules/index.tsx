@@ -13,7 +13,8 @@ import {
   GameVariantEnum,
 } from 'shared/types';
 
-import DocumentTitle from '../DocumentTitle';
+import DocumentTitle from '../../components/DocumentTitle';
+
 import Chess960GameRules from './Chess960';
 import AtomicGameRules from './Atomic';
 

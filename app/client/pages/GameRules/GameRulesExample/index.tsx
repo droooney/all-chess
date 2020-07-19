@@ -10,8 +10,8 @@ import {
 
 import { Game } from 'client/helpers';
 
-import Boards from '../Boards';
-import MovesPanel from '../MovesPanel';
+import Boards from '../../../components/Boards';
+import MovesPanel from '../../../components/MovesPanel';
 
 import './index.less';
 

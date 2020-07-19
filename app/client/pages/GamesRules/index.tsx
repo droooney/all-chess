@@ -12,10 +12,11 @@ import {
   GameVariantEnum,
 } from 'shared/types';
 
-import Route from '../Route';
-import DocumentTitle from '../DocumentTitle';
+import Route from '../../components/Route';
+import DocumentTitle from '../../components/DocumentTitle';
+import GameVariantLink from '../../components/GameVariantLink';
+
 import GameRules from '../GameRules';
-import GameVariantLink from '../GameVariantLink';
 
 import './index.less';
 

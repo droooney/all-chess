@@ -2,8 +2,9 @@ import * as React from 'react';
 
 import { GameVariantEnum } from 'shared/types';
 
-import GameRulesExample from '../GameRulesExample';
-import GameVariantLink from '../GameVariantLink';
+import GameVariantLink from '../../components/GameVariantLink';
+
+import GameRulesExample from './GameRulesExample';
 
 export default class Chess960GameRules extends React.Component {
   render() {

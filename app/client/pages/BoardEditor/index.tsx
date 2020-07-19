@@ -19,10 +19,10 @@ import {
 import { Game } from 'client/helpers';
 import { Game as BaseGame } from 'shared/helpers';
 
-import Boards from '../Boards';
-import DocumentTitle from '../DocumentTitle';
-import FixedElement from '../FixedElement';
-import GamePiece from '../GamePiece';
+import Boards from '../../components/Boards';
+import DocumentTitle from '../../components/DocumentTitle';
+import FixedElement from '../../components/FixedElement';
+import GamePiece from '../../components/GamePiece';
 
 type Props = RouteComponentProps<any>;
 

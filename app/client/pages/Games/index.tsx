@@ -30,12 +30,12 @@ import {
   changeSettings,
 } from 'client/actions';
 
-import Button from '../Button';
-import DocumentTitle from '../DocumentTitle';
-import GameVariantLink from '../GameVariantLink';
-import GameVariantSelect from '../GameVariantSelect';
-import Modal from '../Modal';
-import Select from '../Select';
+import Button from '../../components/Button';
+import DocumentTitle from '../../components/DocumentTitle';
+import GameVariantLink from '../../components/GameVariantLink';
+import GameVariantSelect from '../../components/GameVariantSelect';
+import Modal from '../../components/Modal';
+import Select from '../../components/Select';
 
 import './index.less';
 

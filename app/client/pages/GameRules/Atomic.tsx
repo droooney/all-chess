@@ -4,8 +4,9 @@ import { GAME_VARIANT_NAMES } from 'shared/constants';
 
 import { GameVariantEnum } from 'shared/types';
 
-import GameRulesExample from '../GameRulesExample';
-import GameVariantLink from '../GameVariantLink';
+import GameVariantLink from '../../components/GameVariantLink';
+
+import GameRulesExample from './GameRulesExample';
 
 export default class AtomicGameRules extends React.Component {
   render() {
