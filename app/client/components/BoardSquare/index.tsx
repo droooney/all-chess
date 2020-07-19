@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { Game } from 'client/helpers';
-import { PieceBoardLocation, PieceLocationEnum, RealPieceLocation, Square } from '../../../shared/types';
+import { PieceBoardLocation, PieceLocationEnum, RealPieceLocation, Square } from 'shared/types';
 import { SVG_SQUARE_SIZE, CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from '../../constants';
 
 export interface BoardSquareProps {

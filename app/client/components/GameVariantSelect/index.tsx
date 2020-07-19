@@ -3,7 +3,7 @@ import * as React from 'react';
 import { MenuItem } from '@material-ui/core';
 
 import { Game } from 'client/helpers';
-import { GameVariantEnum } from '../../../shared/types';
+import { GameVariantEnum } from 'shared/types';
 import { GAME_VARIANT_NAMES, GAME_VARIANT_SHORT_NAMES } from '../../../shared/constants';
 
 import Checkbox from '../Checkbox';

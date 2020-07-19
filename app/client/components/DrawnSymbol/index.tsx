@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, drawnSymbolColors, SVG_SQUARE_SIZE } from '../../constants';
 
-import { DrawnSymbol as IDrawnSymbol, Square } from '../../../shared/types';
+import { DrawnSymbol as IDrawnSymbol, Square } from 'shared/types';
 
 import { Game } from 'client/helpers';
 

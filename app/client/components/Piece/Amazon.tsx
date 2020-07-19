@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import {
   ColorEnum
-} from '../../../shared/types';
+} from 'shared/types';
 import { Game } from 'client/helpers';
 
 interface OwnProps {

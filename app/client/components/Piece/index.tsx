@@ -5,7 +5,7 @@ import {
   ColorEnum,
   PieceLocation,
   PieceTypeEnum
-} from '../../../shared/types';
+} from 'shared/types';
 
 import King from './King';
 import Amazon from './Amazon';

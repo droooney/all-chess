@@ -3,7 +3,7 @@ import classNames from 'classnames';
 
 import {
   RealPiece
-} from '../../../shared/types';
+} from 'shared/types';
 
 import Piece from '../Piece';
 

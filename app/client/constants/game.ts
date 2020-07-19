@@ -6,7 +6,7 @@ import {
   GameSettings,
   PieceLocationEnum,
   PieceTypeEnum
-} from '../../shared/types';
+} from 'shared/types';
 
 export const GAME_DEFAULT_SETTINGS: { [key in keyof GameSettings]: GameSettings[key]; } = {
   showFantomPieces: true,

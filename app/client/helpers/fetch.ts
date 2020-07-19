@@ -8,7 +8,7 @@ import {
   LoginResponse,
   LogoutResponse,
   RegisterResponse
-} from '../../shared/types';
+} from 'shared/types';
 
 export async function fetch(options: LoginRequestOptions): Promise<LoginResponse>;
 export async function fetch(options: LogoutRequestOptions): Promise<LogoutResponse>;

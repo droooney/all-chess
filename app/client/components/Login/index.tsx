@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import { FormControl, InputLabel } from '@material-ui/core';
 
-import { setUserData } from '../../actions';
+import { setUserData } from 'client/actions';
 import { fetch } from 'client/helpers';
 import { DispatchProps } from 'client/store';
 

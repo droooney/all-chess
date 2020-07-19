@@ -25,7 +25,7 @@ import {
   RealPiece,
   RealPieceLocation,
   Square
-} from '../../../shared/types';
+} from 'shared/types';
 import {
   GAME_VARIANT_NAMES
 } from '../../../shared/constants';

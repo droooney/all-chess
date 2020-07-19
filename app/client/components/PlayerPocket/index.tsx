@@ -7,7 +7,7 @@ import {
   PiecePocketLocation,
   PocketPiece,
   RealPieceLocation
-} from '../../../shared/types';
+} from 'shared/types';
 import { Game } from 'client/helpers';
 import { pocketPieces } from '../../constants';
 

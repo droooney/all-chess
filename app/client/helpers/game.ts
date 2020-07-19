@@ -26,8 +26,8 @@ import {
   Square,
   TimeControl,
   TimeControlEnum
-} from '../../shared/types';
-import { Game as GameHelper } from '../../shared/helpers';
+} from 'shared/types';
+import { Game as GameHelper } from 'shared/helpers';
 import {
   POSSIBLE_TIMER_BASES_IN_MINUTES,
   POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
@@ -35,10 +35,10 @@ import {
   POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS,
   POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS,
   POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS
-} from '../../shared/constants';
-import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from '../constants';
+} from 'shared/constants';
+import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from 'client/constants';
 
-import { Sound } from './sounds';
+import { Sound } from 'client/helpers/sounds';
 import { RegisterMoveReturnValue } from 'shared/helpers/GameMovesUtils';
 
 type GameEvent = 'updateChat' | 'updateGame';

@@ -13,10 +13,10 @@ import {
   TimeControl,
   TimeControlEnum,
   TimerTimeControl
-} from '../../../shared/types';
+} from 'shared/types';
 import {
   changeSettings
-} from '../../actions';
+} from 'client/actions';
 import {
   TIME_CONTROL_NAMES,
   POSSIBLE_TIMER_BASES_IN_MINUTES,
