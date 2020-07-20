@@ -23,7 +23,7 @@ export default class Chess960GameRules extends React.Component {
         </h2>
 
         <p>
-          White&apos;s pieces are placed according to the following rules:
+          White's pieces are placed according to the following rules:
 
           <br />
           <br />
@@ -33,7 +33,7 @@ export default class Chess960GameRules extends React.Component {
           - the king is placed between the rooks
           <br />
           <br />
-          Then Black&apos;s pieces are placed symmetrically.
+          Then Black's pieces are placed symmetrically.
         </p>
 
         <GameRulesExample
@@ -57,15 +57,15 @@ export default class Chess960GameRules extends React.Component {
           <br />
           - after queen-side castling the king ends up on the c-file and the rook on the d-file
           <br />
-          - the king and the castling rook haven&apos;t moved previously in the game
+          - the king and the castling rook haven't moved previously in the game
           <br />
-          - all the squares between the king&apos;s initial and final position
+          - all the squares between the king's initial and final position
           (including the initial and final squares) are not under attack
           (except when combined with a variant in which there are no checks, i.e. <GameVariantLink variant={GameVariantEnum.ATOMIC} /> or
           {' '}<GameVariantLink variant={GameVariantEnum.DARK_CHESS} />)
           <br />
-          - all the squares between the king&apos;s initial position and final position
-          and all the squares between the castling rook&apos;s initial and final position are empty (with the exception of these two pieces)
+          - all the squares between the king's initial position and final position
+          and all the squares between the castling rook's initial and final position are empty (with the exception of these two pieces)
 
           <br />
           <br />
@@ -75,17 +75,17 @@ export default class Chess960GameRules extends React.Component {
           <br />
           <br />
 
-          - the standard one: both the king and the rook&apos;s final positions are empty before the castling (<a href="#example-2">example 2</a> - White)
+          - the standard one: both the king and the rook's final positions are empty before the castling (<a href="#game-2">example 2</a> - White)
           <br />
-          - the king&apos;s initial and final position is the same square (<a href="#example-3">example 3</a> - Black)
+          - the king's initial and final position is the same square (<a href="#game-3">example 3</a> - Black)
           <br />
-          - the rook&apos;s initial and final position is the same square (<a href="#example-4">example 4</a> - White)
+          - the rook's initial and final position is the same square (<a href="#game-4">example 4</a> - White)
           <br />
-          - the king&apos;s final position is the rook initial position (<a href="#example-3">example 3</a> - White)
+          - the king's final position is the rook initial position (<a href="#game-3">example 3</a> - White)
           <br />
-          - the rook&apos;s final position is the king initial position (<a href="#example-4">example 4</a> - Black)
+          - the rook's final position is the king initial position (<a href="#game-4">example 4</a> - Black)
           <br />
-          - the king and the rook swap places with each other (<a href="#example-2">example 2</a> - Black)
+          - the king and the rook swap places with each other (<a href="#game-2">example 2</a> - Black)
 
           <br />
           <br />

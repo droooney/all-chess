@@ -47,7 +47,7 @@ export default class AtomicGameRules extends React.Component {
         />
 
         <p>
-          Any move is legal in Atomic chess if a player doesn&apos;t explode their own king.
+          Any move is legal in Atomic chess if a player doesn't explode their own king.
           That means that there are no checks in Atomic chess so a king may move into &quot;check&quot; and castle through an attacked square.
           But that also means that a king may not capture.
         </p>
@@ -58,7 +58,7 @@ export default class AtomicGameRules extends React.Component {
 
         <p>
           When a pawn is capturing en passant the explosion center is not the captured pawn square, but the capturing pawn destination square
-          {' '}(see <a href="#example-2">example 2</a>).
+          {' '}(see <a href="#game-2">example 2</a>).
         </p>
 
         <GameRulesExample
@@ -75,7 +75,7 @@ export default class AtomicGameRules extends React.Component {
         </h3>
 
         <p>
-          A player wins by exploding the opponent&apos;s king, not necessarily directly (see <a href="#example-1">example 1</a>).
+          A player wins by exploding the opponent's king, not necessarily directly (see <a href="#game-1">example 1</a>).
 
           <br />
           <br />

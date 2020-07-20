@@ -1,13 +1,8 @@
 @import (reference) '../../../styles/mixins';
 
 .game-rules-example {
-  display: grid;
   align-items: center;
   margin: 20px 0;
-
-  .boards {
-    grid-area: boards;
-  }
 
   .description {
     grid-area: description;
@@ -17,32 +12,41 @@
   }
 
   .moves-panel {
-    grid-area: moves-panel;
+    align-self: center;
   }
 
   .not-desktop({
-    grid-template:
-      "boards     " auto
-      "description" auto
-      ".          " 10px
-      "moves-panel" auto
-      ~"/" 100%;
+    .game-content {
+      grid-template:
+        "boards     " auto
+        "description" auto
+        ".          " 10px
+        "moves      " auto
+        ~"/" 100%;
 
-    .moves-panel {
-      width: 100%;
+      .boards .board {
+        max-height: 80vh;
+      }
+
+      .moves-panel {
+        width: 100%;
+      }
     }
   });
 
   .desktop({
-    grid-template:
-      "boards      moves-panel" auto
-      "description moves-panel" auto
-      ~"/" 2fr 1fr;
-    grid-column-gap: 20px;
     padding: 0 10%;
 
-    .moves-panel {
-      min-height: 150px;
+    .game-content {
+      grid-template:
+        "boards      moves" auto
+        "description moves" auto
+        ~"/" 2fr 1fr;
+      grid-column-gap: 20px;
+
+      .moves-panel {
+        min-height: 150px;
+      }
     }
   });
 }

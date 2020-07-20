@@ -1,3 +1,5 @@
+@import (reference) '../../styles/mixins';
+
 @grid-gap: var(--grid-gap);
 @left-desktop-panel-width: var(--left-desktop-panel-width);
 @right-desktop-panel-width: var(--right-desktop-panel-width);
@@ -5,7 +7,18 @@
 @tablet-panel-width: var(--tablet-panel-width);
 @pocket-size: var(--pocket-size);
 
-.game-route {
+.route.game-route {
+  .flex-col(@justify-content: center);
+
+  .spinner {
+    .flex();
+  }
+
+  .game {
+    display: grid;
+    padding: @grid-gap;
+  }
+
   &.grid-desktop-style {
     --right-panel-width: @right-desktop-panel-width;
 

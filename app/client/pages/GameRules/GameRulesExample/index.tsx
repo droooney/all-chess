@@ -8,10 +8,9 @@ import {
   GameVariantEnum,
 } from 'shared/types';
 
-import { Game } from 'client/helpers';
+import { Game as GameHelper } from 'client/helpers';
 
-import Boards from '../../../components/Boards';
-import MovesPanel from '../../../components/MovesPanel';
+import Game from 'client/components/Game';
 
 import './index.less';
 
@@ -37,7 +36,7 @@ export default class GameRulesExample extends React.Component<Props> {
     boardHeight: 8,
   };
 
-  game: Game;
+  game: GameHelper;
 
   constructor(props: Props) {
     super(props);
@@ -46,7 +45,7 @@ export default class GameRulesExample extends React.Component<Props> {
       ? props.variants.map((variant) => GAME_VARIANT_PGN_NAMES[variant]).join(' + ')
       : 'Standard';
 
-    this.game = Game.getGameFromPgn(`
+    this.game = GameHelper.getGameFromPgn(`
       ${props.fen ? `[FEN "${props.fen}"]` : ''}
       [Variant "${variantsString}"]
 
@@ -64,43 +63,20 @@ export default class GameRulesExample extends React.Component<Props> {
 
   render() {
     const {
-      id,
       description,
-      moves,
     } = this.props;
 
     return (
-      <div className="game-rules-example" id={`example-${id}`}>
-        <Boards
-          game={this.game}
-          selectedPiece={null}
-          selectedPieceBoard={0}
-          allowedMoves={[]}
-          premoves={[]}
-          drawnSymbols={[]}
-          onSquareClick={() => {}}
-          startDraggingPiece={() => {}}
-          enableClick={false}
-          enableDnd={false}
-          darkChessMode={null}
-          isBlackBase={false}
-          isDragging={false}
-          currentMoveIndex={this.game.currentMoveIndex}
-          boardToShow="all"
-          boardsShiftX={0}
-          pieces={this.game.pieces}
-        />
-        <div className="description">
-          {description}
-        </div>
-        {moves && (
-          <MovesPanel
-            game={this.game}
-            currentMoveIndex={this.game.currentMoveIndex}
-            moves={this.game.getUsedMoves()}
-          />
-        )}
-      </div>
+      <Game
+        className="game-rules-example"
+        game={this.game}
+        showMovesPanel
+        contentChildren={
+          <div className="description">
+            {description}
+          </div>
+        }
+      />
     );
   }
 }

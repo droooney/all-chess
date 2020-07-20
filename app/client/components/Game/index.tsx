@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import * as React from 'react';
 import { connect } from 'react-redux';
+import classNames from 'classnames';
 
 import {
   ALICE_CHESS_BOARDS_MARGIN,
@@ -29,12 +30,12 @@ import { ReduxState } from 'client/store';
 
 import MovesPanel from 'client/components/MovesPanel';
 import FixedElement from 'client/components/FixedElement';
+import Chat from 'client/components/Chat';
+import Boards from 'client/components/Boards';
 
 import GamePlayer from './GamePlayer';
 import GameInfo from './GameInfo';
 import GameActions from './GameActions';
-import Chat from '../Chat';
-import Boards from '../Boards';
 import GamePiece from './GamePiece';
 import PromotionModal from './PromotionModal';
 
@@ -42,6 +43,10 @@ import './index.less';
 
 interface OwnProps {
   game: GameHelper;
+
+  children?: React.ReactNode;
+  contentChildren?: React.ReactNode;
+  className?: string;
 
   showBoard?: boolean;
   showPlayers?: boolean;
@@ -750,6 +755,9 @@ class Game extends React.Component<Props, State> {
 
   render() {
     const {
+      className,
+      children,
+      contentChildren,
       game,
       showBoard,
       showPlayers,
@@ -826,7 +834,8 @@ class Game extends React.Component<Props, State> {
 
     return (
       <div
-        className="game"
+        className={classNames('game', className)}
+        id={`game-${game.id}`}
         style={{
           '--pocket-size': game.pocketPiecesUsed.length,
         } as React.CSSProperties}
@@ -951,6 +960,8 @@ class Game extends React.Component<Props, State> {
               </svg>
             </FixedElement>
           )}
+
+          {contentChildren}
         </div>
 
         {showInfo && (
@@ -966,6 +977,8 @@ class Game extends React.Component<Props, State> {
             sendMessage={this.sendMessage}
           />
         )}
+
+        {children}
       </div>
     );
   }

@@ -360,6 +360,7 @@
 
     "react/no-did-update-set-state": 0,
     "react/no-string-refs": 2,
+    "react/no-unescaped-entities": 0,
     "react/prop-types": 0,
 
     "import-helpers/order-imports": [
