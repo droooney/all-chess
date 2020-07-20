@@ -5,7 +5,7 @@ import { RealPieceLocation, Square } from 'shared/types';
 
 import { Game } from 'client/helpers';
 
-import BoardSquare from '../BoardSquare';
+import BoardSquare from './BoardSquare';
 
 interface OwnProps {
   game: Game;

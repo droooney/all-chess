@@ -10,7 +10,7 @@ import {
 
 import { Game } from 'client/helpers';
 
-import GamePiece from '../GamePiece';
+import GamePiece from '../Game/GamePiece';
 
 interface OwnProps {
   game: Game;

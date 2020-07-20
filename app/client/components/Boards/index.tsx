@@ -25,11 +25,11 @@ import { Game } from 'client/helpers';
 
 import { ReduxState } from 'client/store';
 
-import BoardCenterSquares from '../BoardCenterSquares';
-import BoardLiterals from '../BoardLiterals';
-import BoardPiece from '../BoardPiece';
-import BoardSquare, { BoardSquareProps } from '../BoardSquare';
-import BoardSquares from '../BoardSquares';
+import BoardCenterSquares from './BoardCenterSquares';
+import BoardLiterals from './BoardLiterals';
+import BoardPiece from './BoardPiece';
+import BoardSquare, { BoardSquareProps } from './BoardSquare';
+import BoardSquares from './BoardSquares';
 import DrawnSymbol from '../DrawnSymbol';
 
 import './index.less';

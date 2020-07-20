@@ -28,15 +28,15 @@ import { Game as GameHelper } from 'client/helpers';
 import { ReduxState } from 'client/store';
 
 import MovesPanel from 'client/components/MovesPanel';
+import FixedElement from 'client/components/FixedElement';
 
-import FixedElement from '../FixedElement';
-import GamePlayer from '../GamePlayer';
-import GameInfo from '../GameInfo';
-import GameActions from '../GameActions';
+import GamePlayer from './GamePlayer';
+import GameInfo from './GameInfo';
+import GameActions from './GameActions';
 import Chat from '../Chat';
 import Boards from '../Boards';
-import GamePiece from '../GamePiece';
-import PromotionModal from '../PromotionModal';
+import GamePiece from './GamePiece';
+import PromotionModal from './PromotionModal';
 
 import './index.less';
 

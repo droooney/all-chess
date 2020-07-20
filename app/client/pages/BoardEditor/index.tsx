@@ -22,7 +22,7 @@ import { Game as BaseGame } from 'shared/helpers';
 import Boards from '../../components/Boards';
 import DocumentTitle from '../../components/DocumentTitle';
 import FixedElement from '../../components/FixedElement';
-import GamePiece from '../../components/GamePiece';
+import GamePiece from '../../components/Game/GamePiece';
 
 type Props = RouteComponentProps<any>;
 
