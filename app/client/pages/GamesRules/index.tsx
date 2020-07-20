@@ -16,7 +16,7 @@ import Route from '../../components/Route';
 import DocumentTitle from '../../components/DocumentTitle';
 import GameVariantLink from '../../components/GameVariantLink';
 
-import GameRules from '../GameRules';
+import GameRules from 'client/pages/GameRules';
 
 import './index.less';
 

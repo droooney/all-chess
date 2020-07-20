@@ -11,16 +11,16 @@ import { DispatchProps, ReduxState } from 'client/store';
 
 import Route from 'client/components/Route';
 import Header from 'client/components/App/Header';
-import Game from 'client/components/Game';
 
 import GamesRules from 'client/pages/GamesRules';
 import Home from 'client/pages/Home';
 import BoardEditor from 'client/pages/BoardEditor';
 import Register from 'client/pages/Register';
 import Games from 'client/pages/Games';
+import Game from 'client/pages/Game';
 import Login from 'client/pages/Login';
 
-import lightTheme from '../../themes/light';
+import lightTheme from 'client/themes/light';
 
 import './index.less';
 

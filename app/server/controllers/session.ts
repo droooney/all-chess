@@ -1,7 +1,7 @@
 import * as util from 'util';
 import { IncomingMessage, ServerResponse } from 'http';
-import expressSession = require('express-session');
-import redis = require('connect-redis');
+import expressSession from 'express-session';
+import redis from 'connect-redis';
 
 import { CustomContext } from 'server/types';
 

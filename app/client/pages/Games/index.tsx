@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
-import io = require('socket.io-client');
+import io from 'socket.io-client';
 import { MenuItem } from '@material-ui/core';
 
 import {

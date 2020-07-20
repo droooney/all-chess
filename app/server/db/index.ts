@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize';
 
-import config = require('server/db/config');
+import config from 'server/db/config';
 
 export default new Sequelize(config.development);
 

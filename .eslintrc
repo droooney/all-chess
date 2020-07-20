@@ -375,6 +375,7 @@
           "/(?:actions|reducers|store)/",
           "/db/",
           "/components/",
+          "/pages/",
           "/config/",
           "/^(?:server|client|shared)/",
           ["parent", "sibling", "index"]

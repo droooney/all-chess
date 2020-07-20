@@ -1,4 +1,4 @@
-import Application = require('koa');
+import Application from 'koa';
 
 const app = new Application();
 

@@ -1,7 +1,7 @@
 import * as path from 'path';
-import mount = require('koa-mount');
-import serve = require('koa-static');
-import compose = require('koa-compose');
+import mount from 'koa-mount';
+import serve from 'koa-static';
+import compose from 'koa-compose';
 
 import { get } from 'server/helpers';
 

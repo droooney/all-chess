@@ -14,6 +14,7 @@
       "node_modules/@types",
       "app/shared/typings"
     ],
+    "esModuleInterop": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "strict": true,

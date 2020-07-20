@@ -1,7 +1,7 @@
-import Application = require('koa');
-import mount = require('koa-mount');
-import BodyParser = require('koa-bodyparser');
-import compose = require('koa-compose');
+import Application from 'koa';
+import mount from 'koa-mount';
+import BodyParser from 'koa-bodyparser';
+import compose from 'koa-compose';
 
 import { CustomState, CustomContext } from 'server/types';
 

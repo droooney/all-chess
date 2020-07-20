@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as bcrypt from 'bcryptjs';
 import * as pug from 'pug';
-import uuid = require('uuid/v1');
+import uuid from 'uuid/v1';
 
 import { CustomContext } from 'server/types';
 

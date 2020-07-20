@@ -95,7 +95,7 @@ export class Game extends GameHelper {
     return `${base} + ${increment}`;
   }
 
-  player?: Player | null;
+  player: Player | null;
   socket?: Socket;
   timeDiff = 0;
   moves: LocalMove[] = [];
@@ -117,6 +117,7 @@ export class Game extends GameHelper {
   boardCenterY: number;
   isBlackBase: boolean;
   boardsShiftX: number;
+  boardToShow: number | 'all';
   darkChessMode: ColorEnum | null;
   showDarkChessHiddenPieces: boolean;
   listeners: Record<GameEvent, (() => void)[]> = {
@@ -148,7 +149,7 @@ export class Game extends GameHelper {
     this.lastMoveTimestamp = game.lastMoveTimestamp;
     this.currentMoveIndex = game.moves.length - 1;
     this.chat = game.chat;
-    this.player = player;
+    this.player = player || null;
     this.socket = socket;
     this.isOngoingDarkChessGame = this.isDarkChess && game.status !== GameStatusEnum.FINISHED;
     this.showDarkChessHiddenPieces = !this.isOngoingDarkChessGame;
@@ -171,6 +172,7 @@ export class Game extends GameHelper {
     ) / 2;
     this.isBlackBase = !!player && player.color === ColorEnum.BLACK;
     this.boardsShiftX = 0;
+    this.boardToShow = 'all';
     this.darkChessMode = this.isDarkChess && player ? player.color : null;
     this.piecesBeforePremoves = this.pieces;
 
@@ -650,6 +652,10 @@ export class Game extends GameHelper {
     this.socket?.emit('offerDraw');
   }
 
+  off<K extends GameEvent>(event: K, listener: () => void) {
+    this.listeners[event] = this.listeners[event].filter((savedListener) => savedListener !== listener);
+  }
+
   on<K extends GameEvent>(event: K, listener: () => void) {
     this.listeners[event].push(listener);
   }
@@ -980,6 +986,12 @@ export class Game extends GameHelper {
 
   setBoardsShiftX(boardsShiftX: number) {
     this.boardsShiftX = boardsShiftX;
+
+    this.updateGame();
+  }
+
+  setBoardToShow(boardNumber: number | 'all') {
+    this.boardToShow = boardNumber;
 
     this.updateGame();
   }

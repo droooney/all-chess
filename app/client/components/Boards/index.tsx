@@ -56,7 +56,6 @@ export interface OwnProps {
   withLiterals?: boolean;
   showFantomPieces?: boolean;
   showKingAttack?: boolean;
-  getAllowedMoves?(): Generator<BoardPossibleMove>;
 }
 
 type Props = OwnProps & ReturnType<typeof mapStateToProps>;

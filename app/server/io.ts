@@ -1,4 +1,4 @@
-import sio = require('socket.io');
+import sio from 'socket.io';
 
 import server from './server';
 

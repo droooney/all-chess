@@ -1,22 +1,9 @@
 import * as _ from 'lodash';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { RouteComponentProps } from 'react-router-dom';
-import io = require('socket.io-client');
-import classNames from 'classnames';
 
 import {
-  GAME_VARIANT_NAMES,
-} from 'shared/constants';
-import {
   ALICE_CHESS_BOARDS_MARGIN,
-  GAME_GRID_GAP,
-  MIN_LEFT_DESKTOP_PANEL_WIDTH,
-  MAX_LEFT_DESKTOP_PANEL_WIDTH,
-  MIN_RIGHT_DESKTOP_PANEL_WIDTH,
-  MAX_RIGHT_DESKTOP_PANEL_WIDTH,
-  MIN_TABLET_PANEL_WIDTH,
-  MAX_TABLET_PANEL_WIDTH,
 } from 'client/constants';
 
 import {
@@ -24,18 +11,13 @@ import {
   BoardPiece,
   BoardPossibleMove,
   ColorEnum,
-  DarkChessGame,
-  DarkChessGameInitialData,
   DrawnSymbol,
   DrawnSymbolColor,
   EachPieceType,
-  Game as IGame,
-  GameInitialData,
   GameStatusEnum,
   GetPossibleMovesMode,
   PieceLocationEnum,
   PieceTypeEnum,
-  Player,
   RealPiece,
   RealPieceLocation,
   Square,
@@ -47,7 +29,6 @@ import { ReduxState } from 'client/store';
 
 import MovesPanel from 'client/components/MovesPanel';
 
-import DocumentTitle from '../DocumentTitle';
 import FixedElement from '../FixedElement';
 import GamePlayer from '../GamePlayer';
 import GameInfo from '../GameInfo';
@@ -59,35 +40,46 @@ import PromotionModal from '../PromotionModal';
 
 import './index.less';
 
-type Props = ReturnType<typeof mapStateToProps> & RouteComponentProps<{ gameId: string }>;
+interface OwnProps {
+  game: GameHelper;
+
+  showBoard?: boolean;
+  showPlayers?: boolean;
+  showMovesPanel?: boolean;
+  showChat?: boolean;
+  showActions?: boolean;
+  showInfo?: boolean;
+  boardsWidth?: number;
+}
+
+type Props = OwnProps & ReturnType<typeof mapStateToProps>;
 
 interface State {
-  gameData: IGame | DarkChessGame | null;
   selectedPiece: RealPiece | null;
   selectedPieceBoard: number;
   allowedMoves: BoardPossibleMove[];
   drawingSymbolStart: Square | null;
   drawingSymbol: DrawnSymbol | null;
   drawnSymbols: DrawnSymbol[];
-  showHiddenPieces: boolean;
-  boardsWidth: number;
-  boardToShow: 'all' | number;
   promotionModalVisible: boolean;
   promotionMove: BaseMove | null;
   validPromotions: readonly PieceTypeEnum[];
   isDragging: boolean;
-  gridMode: 'desktop' | 'tablet' | 'mobile';
-  leftDesktopPanelWidth: number;
-  rightDesktopPanelWidth: number;
-  tabletPanelWidth: number;
 }
 
 const INPUT_ELEMENTS = ['input', 'textarea'];
 
 class Game extends React.Component<Props, State> {
-  socket?: io.Socket;
-  player: Player | null = null;
-  game?: GameHelper;
+  static defaultProps = {
+    showBoard: true,
+    showPlayers: false,
+    showMovesPanel: false,
+    showChat: false,
+    showActions: false,
+    showInfo: false,
+    boardsWidth: 0,
+  };
+
   draggingPieceRef = React.createRef<SVGSVGElement>();
   draggingPieceTranslate: string = 'none';
   prevMoveIndex = -1;
@@ -102,49 +94,15 @@ class Game extends React.Component<Props, State> {
     drawingSymbolStart: null,
     drawingSymbol: null,
     drawnSymbols: [],
-    gameData: null,
-    showHiddenPieces: true,
-    boardsWidth: 0,
-    boardToShow: 'all',
     promotionModalVisible: false,
     promotionMove: null,
     validPromotions: [],
     isDragging: false,
-    gridMode: 'desktop',
-    leftDesktopPanelWidth: 0,
-    rightDesktopPanelWidth: 0,
-    tabletPanelWidth: 0,
   };
 
   componentDidMount() {
-    const {
-      match: {
-        params: {
-          gameId,
-        },
-      },
-    } = this.props;
-    const socket = this.socket = io.connect(`/games/${gameId}`);
+    this.addGameListeners();
 
-    socket.on('initialGameData', this.onGameData);
-    socket.on('initialDarkChessGameData', this.onGameData);
-
-    socket.on('startGame', (players) => {
-      this.game!.players = players;
-      this.game!.status = GameStatusEnum.ONGOING;
-
-      this.setState(({ gameData }) => ({
-        gameData: gameData && {
-          ...gameData,
-          status: GameStatusEnum.ONGOING,
-          players,
-        },
-      }));
-    });
-
-    this.updateGridLayout();
-
-    window.addEventListener('resize', this.onWindowResize);
     document.addEventListener('mousemove', this.drag);
     document.addEventListener('touchmove', this.drag, { passive: false });
     document.addEventListener('mouseup', this.endDrag);
@@ -152,15 +110,42 @@ class Game extends React.Component<Props, State> {
     document.addEventListener('keydown', this.onKeyDown);
   }
 
-  componentWillUnmount() {
-    this.socket!.disconnect();
+  componentDidUpdate(prevProps: Props) {
+    if (prevProps.game !== this.props.game) {
+      this.removeGameListeners();
+      this.addGameListeners();
+    }
+  }
 
-    window.removeEventListener('resize', this.onWindowResize);
+  componentWillUnmount() {
+    this.removeGameListeners();
+
     document.removeEventListener('mousemove', this.drag);
     document.removeEventListener('touchmove', this.drag);
     document.removeEventListener('mouseup', this.endDrag);
     document.removeEventListener('touchend', this.endDrag);
     document.removeEventListener('keydown', this.onKeyDown);
+  }
+
+  addGameListeners() {
+    const {
+      game,
+    } = this.props;
+
+    this.prevMoveIndex = game.currentMoveIndex;
+    this.prevMoveCount = game.getUsedMoves().length;
+
+    game.on('updateChat', this.onUpdateChat);
+    game.on('updateGame', this.onUpdateGame);
+  }
+
+  removeGameListeners() {
+    const {
+      game,
+    } = this.props;
+
+    game.off('updateChat', this.onUpdateChat);
+    game.off('updateGame', this.onUpdateGame);
   }
 
   addOrRemoveDrawnSymbol(drawnSymbol: DrawnSymbol, drawnSymbols: DrawnSymbol[]): DrawnSymbol[] {
@@ -174,16 +159,25 @@ class Game extends React.Component<Props, State> {
       && GameHelper.areSquaresEqual(drawnSymbol.from, symbol.from, false)
       && GameHelper.areSquaresEqual(drawnSymbol.to, symbol.to, false)
     ));
+    const sameColor = existingIndex !== -1 && drawnSymbols[existingIndex].color === drawnSymbol.color;
 
     return existingIndex === -1
       ? [...drawnSymbols, drawnSymbol]
-      : [...drawnSymbols.slice(0, existingIndex), ...drawnSymbols.slice(existingIndex + 1)];
+      : [
+        ...drawnSymbols.slice(0, existingIndex),
+        ...(sameColor ? [] : [drawnSymbol]),
+        ...drawnSymbols.slice(existingIndex + 1),
+      ];
   }
 
   getBoardPiece(square: Square): BoardPiece | null | false {
-    return this.game!.getBoardPiece(square) || (
+    const {
+      game,
+    } = this.props;
+
+    return game.getBoardPiece(square) || (
       this.props.showFantomPieces
-      && this.game!.getBoardPiece({ ...square, board: this.game!.getPrevBoard(square.board) })
+      && game.getBoardPiece({ ...square, board: game.getPrevBoard(square.board) })
     );
   }
 
@@ -202,178 +196,39 @@ class Game extends React.Component<Props, State> {
 
   getPieceSize(): number {
     const {
-      boardsWidth,
-      boardToShow,
-    } = this.state;
-    const {
-      boardCount,
-      boardCenterX,
-    } = this.game!;
+      game,
+      boardsWidth = 0,
+    } = this.props;
     const boardWidth = Math.max(
-      boardToShow === 'all'
-        ? (boardsWidth - (boardCount - 1) * ALICE_CHESS_BOARDS_MARGIN) / boardCount
+      game.boardToShow === 'all'
+        ? (boardsWidth - (game.boardCount - 1) * ALICE_CHESS_BOARDS_MARGIN) / game.boardCount
         : boardsWidth,
       0,
     );
 
-    return this.game!.getPieceSize() * boardWidth / (2 * boardCenterX);
+    return game.getPieceSize() * boardWidth / (2 * game.boardCenterX);
   }
 
   isAbleToMove(): boolean {
-    return (
-      !!this.player
-      // TODO: replace true with premovesEnabled
-      && (this.player.color === this.game!.turn || true)
-      && this.game!.status === GameStatusEnum.ONGOING
-      && this.game!.currentMoveIndex === this.game!.getUsedMoves().length - 1
-    );
-  }
-
-  updateGridLayout() {
-    if (!this.game) {
-      return;
-    }
-
     const {
-      scrollSize,
+      game,
     } = this.props;
-    const {
-      boardToShow: currentBoardToShow,
-    } = this.state;
-    const {
-      boardCount,
-      boardSidesRenderedRatio,
-    } = this.game;
-    const availableDesktopWidth = window.innerWidth - 2 * GAME_GRID_GAP - scrollSize;
-    const availableTabletWidth = window.innerWidth - 2 * GAME_GRID_GAP - scrollSize;
-    const availableMobileWidth = window.innerWidth - scrollSize;
-    const availableDesktopHeight = window.innerHeight - 2 * GAME_GRID_GAP - 30;
-    const availableTabletHeight = window.innerHeight - 2 * GAME_GRID_GAP - 30;
-    // const availableMobileHeight = window.innerHeight - 2 * GAME_GRID_GAP - 30;
-    const maxAvailableDesktopWidth = (
-      availableDesktopWidth
-      - MIN_LEFT_DESKTOP_PANEL_WIDTH
-      - MIN_RIGHT_DESKTOP_PANEL_WIDTH
-      - 2 * GAME_GRID_GAP
+
+    return (
+      !!game.player
+      // TODO: replace true with premovesEnabled
+      && (game.player.color === game.turn || true)
+      && game.status === GameStatusEnum.ONGOING
+      && game.currentMoveIndex === game.getUsedMoves().length - 1
     );
-    const maxDesktopBoardWidth = availableDesktopHeight * boardSidesRenderedRatio;
-    const maxDesktopBoardsWidth = maxDesktopBoardWidth * boardCount + ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1);
-    const numberBoardToShow = currentBoardToShow !== 'all' && currentBoardToShow;
-    let gridMode: 'desktop' | 'tablet' | 'mobile';
-    let boardsWidth: number;
-    let boardToShow: 'all' | number;
-    let leftDesktopPanelWidth: number;
-    let rightDesktopPanelWidth: number;
-    let tabletPanelWidth: number;
-
-    if (maxDesktopBoardsWidth <= maxAvailableDesktopWidth) {
-      gridMode = 'desktop';
-      boardsWidth = maxDesktopBoardsWidth;
-      boardToShow = 'all';
-      leftDesktopPanelWidth = Math.min(
-        MAX_LEFT_DESKTOP_PANEL_WIDTH,
-        MIN_LEFT_DESKTOP_PANEL_WIDTH + (maxAvailableDesktopWidth - maxDesktopBoardsWidth)
-        * MAX_LEFT_DESKTOP_PANEL_WIDTH / (MAX_LEFT_DESKTOP_PANEL_WIDTH + MAX_RIGHT_DESKTOP_PANEL_WIDTH),
-      );
-      rightDesktopPanelWidth = Math.min(
-        MAX_LEFT_DESKTOP_PANEL_WIDTH,
-        MIN_LEFT_DESKTOP_PANEL_WIDTH + (maxAvailableDesktopWidth - maxDesktopBoardsWidth)
-        * MAX_LEFT_DESKTOP_PANEL_WIDTH / (MAX_LEFT_DESKTOP_PANEL_WIDTH + MAX_RIGHT_DESKTOP_PANEL_WIDTH),
-      );
-      tabletPanelWidth = 0;
-    } else {
-      const maxHeight = (maxAvailableDesktopWidth - ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1)) / boardCount / boardSidesRenderedRatio;
-
-      if (maxHeight >= availableDesktopHeight * 0.8) {
-        gridMode = 'desktop';
-        boardsWidth = maxAvailableDesktopWidth;
-        boardToShow = 'all';
-        leftDesktopPanelWidth = MIN_LEFT_DESKTOP_PANEL_WIDTH;
-        rightDesktopPanelWidth = MIN_RIGHT_DESKTOP_PANEL_WIDTH;
-        tabletPanelWidth = 0;
-      } else {
-        const maxAvailableTabletWidth = (
-          availableTabletWidth
-          - MIN_TABLET_PANEL_WIDTH
-          - GAME_GRID_GAP
-        );
-        const maxTabletBoardWidth = availableTabletHeight * boardSidesRenderedRatio;
-        const maxTabletBoardsWidth = maxDesktopBoardWidth * boardCount + ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1);
-
-        if (maxTabletBoardsWidth <= maxAvailableTabletWidth) {
-          gridMode = 'tablet';
-          boardsWidth = maxTabletBoardsWidth;
-          boardToShow = 'all';
-          leftDesktopPanelWidth = 0;
-          rightDesktopPanelWidth = 0;
-          tabletPanelWidth = Math.min(
-            MAX_TABLET_PANEL_WIDTH,
-            MIN_TABLET_PANEL_WIDTH + (maxAvailableTabletWidth - maxTabletBoardsWidth),
-          );
-        } else {
-          const maxHeight = (maxAvailableTabletWidth - ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1)) / boardCount / boardSidesRenderedRatio;
-
-          if (maxHeight >= availableTabletHeight * 0.8) {
-            gridMode = 'tablet';
-            boardsWidth = maxAvailableTabletWidth;
-            boardToShow = 'all';
-            leftDesktopPanelWidth = 0;
-            rightDesktopPanelWidth = 0;
-            tabletPanelWidth = MIN_TABLET_PANEL_WIDTH;
-          } else if (maxTabletBoardWidth <= maxAvailableTabletWidth) {
-            gridMode = 'tablet';
-            boardsWidth = maxTabletBoardWidth;
-            boardToShow = numberBoardToShow || 0;
-            leftDesktopPanelWidth = 0;
-            rightDesktopPanelWidth = 0;
-            tabletPanelWidth = Math.min(
-              MAX_TABLET_PANEL_WIDTH,
-              MIN_TABLET_PANEL_WIDTH + (maxAvailableTabletWidth - maxTabletBoardWidth),
-            );
-          } else {
-            const maxHeight = maxAvailableTabletWidth / boardSidesRenderedRatio;
-
-            if (maxHeight >= availableTabletHeight * 0.8) {
-              gridMode = 'tablet';
-              boardsWidth = maxAvailableTabletWidth;
-              boardToShow = numberBoardToShow || 0;
-              leftDesktopPanelWidth = 0;
-              rightDesktopPanelWidth = 0;
-              tabletPanelWidth = MIN_TABLET_PANEL_WIDTH;
-            } else {
-              gridMode = 'mobile';
-              boardsWidth = availableMobileWidth;
-              boardToShow = numberBoardToShow || 0;
-              leftDesktopPanelWidth = 0;
-              rightDesktopPanelWidth = 0;
-              tabletPanelWidth = 0;
-            }
-          }
-        }
-      }
-    }
-
-    this.setState({
-      boardsWidth,
-      boardToShow,
-      gridMode,
-      leftDesktopPanelWidth,
-      rightDesktopPanelWidth,
-      tabletPanelWidth,
-    });
   }
-
-  onWindowResize = () => {
-    this.updateGridLayout();
-  };
 
   onKeyDown = (e: KeyboardEvent) => {
     const {
-      boardToShow,
-    } = this.state;
-    const game = this.game;
+      game,
+    } = this.props;
 
-    if (game && (!e.target || !INPUT_ELEMENTS.includes((e.target as HTMLElement).tagName.toLowerCase()))) {
+    if (!e.target || !INPUT_ELEMENTS.includes((e.target as HTMLElement).tagName.toLowerCase())) {
       let preventDefault = true;
 
       if (e.key === 'ArrowLeft') {
@@ -385,7 +240,7 @@ class Game extends React.Component<Props, State> {
       } else if (e.key === 'ArrowDown') {
         game.navigateToMove(game.getUsedMoves().length - 1);
       } else if (e.key === '1' || e.key === '2') {
-        if (boardToShow !== 'all') {
+        if (game.boardToShow !== 'all') {
           this.switchBoard(+e.key - 1);
         }
       } else {
@@ -398,72 +253,48 @@ class Game extends React.Component<Props, State> {
     }
   };
 
-  onGameData = ({ timestamp, player, game }: GameInitialData | DarkChessGameInitialData) => {
-    if (this.game) {
-      this.game.removeListeners();
+  onUpdateChat = () => {
+    this.forceUpdate();
+  };
+
+  onUpdateGame = () => {
+    const {
+      game,
+    } = this.props;
+
+    if (
+      this.prevMoveCount - this.prevMoveIndex !== game.getUsedMoves().length - game.currentMoveIndex
+      && this.prevMoveIndex !== game.currentMoveIndex
+    ) {
+      game.cancelPremoves(false);
+
+      this.setState({
+        selectedPiece: null,
+        allowedMoves: [],
+        isDragging: false,
+        drawingSymbolStart: null,
+        drawingSymbol: null,
+        drawnSymbols: [],
+      });
+    } else if (
+      this.state.selectedPiece
+      && this.prevMoveCount !== game.getUsedMoves().length
+      && game.player
+      && game.turn === game.player.color
+    ) {
+      this.setState({
+        allowedMoves: this.getAllowedMoves(this.state.selectedPiece, this.state.selectedPieceBoard).toArray(),
+      });
+    } else {
+      this.forceUpdate();
     }
 
-    this.player = player;
-    this.game = new GameHelper({
-      game,
-      socket: this.socket,
-      player,
-      currentMoveIndex: this.game && this.game.currentMoveIndex,
-      timestamp,
-    });
-    this.prevMoveIndex = this.game.currentMoveIndex;
-    this.prevMoveCount = this.game.getUsedMoves().length;
-
-    this.game.on('updateChat', () => {
-      this.forceUpdate();
-    });
-
-    this.game.on('updateGame', () => {
-      if (!this.game) {
-        return;
-      }
-
-      if (
-        this.prevMoveCount - this.prevMoveIndex !== this.game.getUsedMoves().length - this.game.currentMoveIndex
-        && this.prevMoveIndex !== this.game.currentMoveIndex
-      ) {
-        this.game.cancelPremoves(false);
-
-        this.setState({
-          selectedPiece: null,
-          allowedMoves: [],
-          isDragging: false,
-          drawingSymbolStart: null,
-          drawingSymbol: null,
-          drawnSymbols: [],
-        });
-      } else if (
-        this.state.selectedPiece
-        && this.prevMoveCount !== this.game.getUsedMoves().length
-        && this.player
-        && this.game.turn === this.player.color
-      ) {
-        this.setState({
-          allowedMoves: this.getAllowedMoves(this.state.selectedPiece, this.state.selectedPieceBoard).toArray(),
-        });
-      } else {
-        this.forceUpdate();
-      }
-
-      this.prevMoveIndex = this.game.currentMoveIndex;
-      this.prevMoveCount = this.game.getUsedMoves().length;
-    });
-
-    this.setState({
-      gameData: game,
-    });
-    this.updateGridLayout();
-
-    console.log(this.game);
+    this.prevMoveIndex = game.currentMoveIndex;
+    this.prevMoveCount = game.getUsedMoves().length;
   };
 
   sendMessage = (message: string) => {
-    this.game!.sendMessage(message);
+    this.props.game.sendMessage(message);
   };
 
   selectPiece = (selectedPiece: RealPiece | null, selectedPieceBoard: number = 0) => {
@@ -478,31 +309,37 @@ class Game extends React.Component<Props, State> {
   };
 
   flipBoard = () => {
-    this.game!.toggleIsBlackBase(true);
+    this.props.game.toggleIsBlackBase(true);
   };
 
   switchBoard = (boardToShow: number) => {
-    this.setState({
-      boardToShow,
-    });
+    this.props.game.setBoardToShow(boardToShow);
   };
 
   toggleShowDarkChessHiddenPieces = () => {
-    this.game!.toggleShowDarkChessHiddenPieces();
+    this.props.game.toggleShowDarkChessHiddenPieces();
   };
 
   setBoardsShiftX = (boardsShiftX: number) => {
-    this.game!.setBoardsShiftX(boardsShiftX);
+    this.props.game.setBoardsShiftX(boardsShiftX);
   };
 
-  getAllowedMoves = function* (this: Game, selectedPiece: RealPiece, selectedPieceBoard: number): Generator<BoardPossibleMove, any, any> {
-    if (!this.player) {
+  getAllowedMoves = function* (
+    this: Game,
+    selectedPiece: RealPiece,
+    selectedPieceBoard: number,
+  ): Generator<BoardPossibleMove, any, any> {
+    const {
+      game,
+    } = this.props;
+
+    if (!game.player) {
       return;
     }
 
-    const moves = this.player.color === this.game!.turn
-      ? this.game!.getAllowedMoves(selectedPiece)
-      : this.game!.getPossibleMoves(selectedPiece, GetPossibleMovesMode.PREMOVES);
+    const moves = game.player.color === game.turn
+      ? game.getAllowedMoves(selectedPiece)
+      : game.getPossibleMoves(selectedPiece, GetPossibleMovesMode.PREMOVES);
     const allowedMoves = moves
       .map((square) => ({
         square: {
@@ -518,9 +355,9 @@ class Game extends React.Component<Props, State> {
     yield* allowedMoves;
 
     // add own rooks as castling move targets
-    if (!this.game!.is960) {
+    if (!game.is960) {
       for (const move of allowedMoves) {
-        const castlingRook = this.game!.getCastlingRook(selectedPiece, move.realSquare);
+        const castlingRook = game.getCastlingRook(selectedPiece, move.realSquare);
 
         if (castlingRook) {
           yield {
@@ -537,6 +374,9 @@ class Game extends React.Component<Props, State> {
   }.bind(this);
 
   makeMove = (square: Square) => {
+    const {
+      game,
+    } = this.props;
     const {
       selectedPiece,
       selectedPieceBoard,
@@ -563,11 +403,11 @@ class Game extends React.Component<Props, State> {
       return;
     }
 
-    if (!this.player) {
+    if (!game.player) {
       return;
     }
 
-    const isPremove = this.player.color !== this.game!.turn;
+    const isPremove = game.player.color !== game.turn;
     const allowedMove = allowedMoves.find(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
     const resetGameState = {
       isDragging: false,
@@ -585,10 +425,10 @@ class Game extends React.Component<Props, State> {
       from: selectedPiece.location,
       to: allowedMove.realSquare,
     };
-    const isPawnPromotion = this.game!.isPromoting(selectedPiece, allowedMove.realSquare);
+    const isPawnPromotion = game.isPromoting(selectedPiece, allowedMove.realSquare);
     const validPromotions = isPawnPromotion && !isPremove
-      ? this.game!.validPromotions.filter((promotion) => (
-        this.game!.isMoveAllowed(selectedPiece, allowedMove.realSquare, promotion)
+      ? game.validPromotions.filter((promotion) => (
+        game.isMoveAllowed(selectedPiece, allowedMove.realSquare, promotion)
       ))
       : [];
 
@@ -600,7 +440,7 @@ class Game extends React.Component<Props, State> {
         validPromotions,
       });
     } else {
-      this.game!.move(
+      game.move(
         isPawnPromotion
           ? { ...move, promotion: isPremove ? PieceTypeEnum.QUEEN : validPromotions[0] }
           : move,
@@ -618,7 +458,7 @@ class Game extends React.Component<Props, State> {
   };
 
   promoteToPiece = (pieceType: PieceTypeEnum) => {
-    this.game!.move({
+    this.props.game.move({
       ...this.state.promotionMove!,
       promotion: pieceType,
     });
@@ -628,6 +468,7 @@ class Game extends React.Component<Props, State> {
 
   onSquareClick = (square: Square) => {
     const {
+      game,
       isTouchDevice,
     } = this.props;
     const {
@@ -645,14 +486,14 @@ class Game extends React.Component<Props, State> {
       return;
     }
 
-    const playerColor = this.player ? this.player.color : null;
+    const playerColor = game.player ? game.player.color : null;
 
     if (!selectedPiece) {
       const pieceInSquare = this.getBoardPiece(square);
 
       if (!pieceInSquare || playerColor !== pieceInSquare.color) {
         if (isTouchDevice) {
-          this.game!.cancelPremoves(true);
+          game.cancelPremoves(true);
         }
 
         return;
@@ -676,7 +517,7 @@ class Game extends React.Component<Props, State> {
 
       if (!pieceInSquare || playerColor !== pieceInSquare.color) {
         if (isTouchDevice) {
-          this.game!.cancelPremoves(false);
+          game.cancelPremoves(false);
         }
 
         return this.selectPiece(null);
@@ -690,6 +531,7 @@ class Game extends React.Component<Props, State> {
 
   startDrag = (e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation) => {
     const {
+      game,
       isTouchDevice,
     } = this.props;
 
@@ -699,8 +541,8 @@ class Game extends React.Component<Props, State> {
       && (e as React.MouseEvent).button === 2
       && location.type === PieceLocationEnum.BOARD
     ) {
-      if (this.game!.premoves.length) {
-        this.game!.cancelPremoves(false);
+      if (game.premoves.length) {
+        game.cancelPremoves(false);
 
         this.setState({
           selectedPiece: null,
@@ -738,11 +580,11 @@ class Game extends React.Component<Props, State> {
 
     const draggedPiece = location.type === PieceLocationEnum.BOARD
       ? this.getBoardPiece(location)
-      : this.game!.getPocketPiece(location.pieceType, location.color);
+      : game.getPocketPiece(location.pieceType, location.color);
 
     if (
       draggedPiece
-      && draggedPiece.color === this.player!.color
+      && draggedPiece.color === game.player?.color
       && (
         !GameHelper.isBoardPiece(draggedPiece)
         || this.state.allowedMoves.every(({ square }) => !GameHelper.areSquaresEqual(draggedPiece.location, square))
@@ -907,241 +749,223 @@ class Game extends React.Component<Props, State> {
   };
 
   render() {
-    let content: JSX.Element | string;
-    let title: string | null;
+    const {
+      game,
+      showBoard,
+      showPlayers,
+      showMovesPanel,
+      showChat,
+      showActions,
+      showInfo,
+    } = this.props;
+    const {
+      player,
+      status,
+      pieces,
+      piecesBeforePremoves,
+      piecesWorth,
+      chat,
+      players,
+      turn,
+      drawOffer,
+      takebackRequest,
+      timeControl,
+      result,
+      startingMoveIndex,
+      isBlackBase,
+      boardsShiftX,
+      boardToShow,
+      darkChessMode,
+      showDarkChessHiddenPieces,
+      lastMoveTimestamp,
+      currentMoveIndex,
+      premoves,
+    } = game;
+    const {
+      selectedPiece,
+      isDragging,
+    } = this.state;
+    const usedMoves = game.getUsedMoves();
+    const isCurrentMoveLast = currentMoveIndex === usedMoves.length - 1;
+    const readOnly = !this.isAbleToMove();
+    const enableClick = !readOnly;
+    const enableDnd = !readOnly;
+    const pieceSize = this.getPieceSize();
+    const realTurn = (usedMoves.length + startingMoveIndex) % 2 === 1
+      ? ColorEnum.BLACK
+      : ColorEnum.WHITE;
+    const topPlayer = isBlackBase
+      ? players[ColorEnum.WHITE]
+      : players[ColorEnum.BLACK];
+    const usedPieces = darkChessMode && !showDarkChessHiddenPieces && !premoves.length
+      ? game.getMoveVisiblePieces(currentMoveIndex, darkChessMode)
+      : pieces;
+    const isMaterialDiffShown = game.isMaterialDiffShown();
+    const materialDifference: EachPieceType<number> = {} as any;
+    let allMaterialDifference = 0;
 
-    if (this.state.gameData && this.game) {
-      const {
-        status,
-        variants,
-      } = this.state.gameData;
+    if (isMaterialDiffShown) {
+      const actualPieces = premoves.length
+        ? piecesBeforePremoves
+        : pieces;
 
-      title = `AllChess - ${variants.length > 1 ? 'Mixed' : variants.length ? GAME_VARIANT_NAMES[variants[0]] : 'Standard'} Game`;
-
-      if (status === GameStatusEnum.BEFORE_START) {
-        content = this.player
-          ? 'Waiting for the opponent...'
-          : 'Waiting for the players...';
-      } else {
-        const {
-          status,
-          pieces,
-          chat,
-          players,
-          turn,
-          drawOffer,
-          takebackRequest,
-          timeControl,
-          result,
-          startingMoveIndex,
-          isBlackBase,
-          boardsShiftX,
-          darkChessMode,
-          showDarkChessHiddenPieces,
-          lastMoveTimestamp,
-          currentMoveIndex,
-          premoves,
-        } = this.game;
-        const {
-          boardsWidth,
-          boardToShow,
-          selectedPiece,
-          isDragging,
-          gridMode,
-        } = this.state;
-        const usedMoves = this.game.getUsedMoves();
-        const player = this.player;
-        const isCurrentMoveLast = currentMoveIndex === usedMoves.length - 1;
-        const readOnly = !this.isAbleToMove();
-        const enableClick = !readOnly;
-        const enableDnd = !readOnly;
-        const pieceSize = this.getPieceSize();
-        const realTurn = (usedMoves.length + startingMoveIndex) % 2 === 1
-          ? ColorEnum.BLACK
-          : ColorEnum.WHITE;
-        const topPlayer = isBlackBase
-          ? players[ColorEnum.WHITE]
-          : players[ColorEnum.BLACK];
-        const usedPieces = darkChessMode && !showDarkChessHiddenPieces && !premoves.length
-          ? this.game.getMoveVisiblePieces(currentMoveIndex, darkChessMode)
-          : pieces;
-        const isMaterialDiffShown = this.game.isMaterialDiffShown();
-        const materialDifference: EachPieceType<number> = {} as any;
-        let allMaterialDifference = 0;
-
-        if (isMaterialDiffShown) {
-          const actualPieces = premoves.length
-            ? this.game.piecesBeforePremoves
-            : pieces;
-
-          _.forEach(PieceTypeEnum, (pieceType) => {
-            const getPiecesCount = (color: ColorEnum): number => (
-              actualPieces.filter((piece) => (
-                GameHelper.isRealPiece(piece)
-                && (piece.abilities || piece.type) === pieceType
-                && piece.color === color
-              )).length
-            );
-
-            const diff = materialDifference[pieceType] = getPiecesCount(ColorEnum.WHITE) - getPiecesCount(ColorEnum.BLACK);
-
-            allMaterialDifference += diff * this.game!.piecesWorth[pieceType];
-          });
-        }
-
-        content = (
-          <div
-            className={classNames('game', `grid-${gridMode}-style`)}
-            style={{
-              '--boards-width': `${boardsWidth}px`,
-              '--grid-gap': `${GAME_GRID_GAP}px`,
-              '--left-desktop-panel-width': `${this.state.leftDesktopPanelWidth}px`,
-              '--right-desktop-panel-width': `${this.state.rightDesktopPanelWidth}px`,
-              '--tablet-panel-width': `${this.state.tabletPanelWidth}px`,
-              '--pocket-size': this.game.pocketPiecesUsed.length,
-            } as React.CSSProperties}
-          >
-            <div className="game-content">
-              <GameActions
-                game={this.game}
-                result={result}
-                players={players}
-                isBlackBase={isBlackBase}
-                isNoMovesMade={usedMoves.length === 0}
-                isCurrentMoveLast={isCurrentMoveLast}
-                boardToShow={boardToShow}
-                drawOffer={drawOffer}
-                takebackRequest={takebackRequest}
-                isBasicTakeback={!!takebackRequest && takebackRequest.moveIndex === usedMoves.length - 2}
-                darkChessMode={darkChessMode}
-                showDarkChessHiddenPieces={showDarkChessHiddenPieces}
-                player={player}
-                boardsShiftX={boardsShiftX}
-                flipBoard={this.flipBoard}
-                switchBoard={this.switchBoard}
-                toggleShowDarkChessHiddenPieces={this.toggleShowDarkChessHiddenPieces}
-                setBoardsShiftX={this.setBoardsShiftX}
-              />
-
-              <Boards
-                game={this.game}
-                pieces={usedPieces}
-                selectedPiece={
-                  selectedPiece
-                    ? selectedPiece
-                    : null
-                }
-                selectedPieceBoard={this.state.selectedPieceBoard}
-                allowedMoves={this.state.allowedMoves}
-                premoves={premoves}
-                drawnSymbols={
-                  this.state.drawingSymbol
-                    ? [...this.state.drawnSymbols, this.state.drawingSymbol]
-                    : this.state.drawnSymbols
-                }
-                onSquareClick={this.onSquareClick}
-                startDraggingPiece={this.startDrag}
-                enableClick={!!player}
-                enableDnd={!!player}
-                isBlackBase={isBlackBase}
-                isDragging={isDragging}
-                boardToShow={boardToShow}
-                darkChessMode={darkChessMode}
-                currentMoveIndex={currentMoveIndex}
-                boardsShiftX={boardsShiftX}
-                showKingAttack={!premoves.length}
-              />
-
-              {_.map(players, (panelPlayer) => (
-                <GamePlayer
-                  key={panelPlayer.id}
-                  game={this.game!}
-                  player={panelPlayer}
-                  playingPlayer={player}
-                  pieces={pieces}
-                  moves={usedMoves}
-                  timeControl={timeControl}
-                  turn={turn}
-                  realTurn={realTurn}
-                  status={status}
-                  currentMoveIndex={currentMoveIndex}
-                  lastMoveTimestamp={lastMoveTimestamp}
-                  enableClick={enableClick && !!player && panelPlayer.id === player.id}
-                  enableDnd={enableDnd && !!player && panelPlayer.id === player.id}
-                  isTop={panelPlayer.id === topPlayer.id}
-                  isMaterialDiffShown={isMaterialDiffShown}
-                  allMaterialDifference={allMaterialDifference}
-                  materialDifference={materialDifference}
-                  selectedPiece={
-                    selectedPiece && selectedPiece.color === panelPlayer.color && GameHelper.isPocketPiece(selectedPiece)
-                      ? selectedPiece
-                      : null
-                  }
-                  selectPiece={this.selectPiece}
-                  startDraggingPiece={this.startDrag}
-                />
-              ))}
-
-              <MovesPanel
-                game={this.game}
-                currentMoveIndex={currentMoveIndex}
-                moves={usedMoves}
-              />
-
-              <PromotionModal
-                game={this.game}
-                visible={this.state.promotionModalVisible}
-                square={this.state.promotionMove && this.state.promotionMove.to}
-                pieceSize={pieceSize}
-                isBlackBase={isBlackBase}
-                validPromotions={this.state.validPromotions}
-                onOverlayClick={this.closePromotionPopup}
-                promoteToPiece={this.promoteToPiece}
-              />
-
-              {isDragging && selectedPiece && (
-                <FixedElement>
-                  <svg
-                    ref={this.draggingPieceRef}
-                    style={{
-                      pointerEvents: 'none',
-                      transform: this.draggingPieceTranslate,
-                    }}
-                  >
-                    <GamePiece
-                      piece={selectedPiece}
-                      pieceSize={pieceSize}
-                    />
-                  </svg>
-                </FixedElement>
-              )}
-            </div>
-
-            <GameInfo
-              game={this.game}
-              result={result}
-            />
-
-            <Chat
-              chat={chat}
-              sendMessage={this.sendMessage}
-            />
-          </div>
+      _.forEach(PieceTypeEnum, (pieceType) => {
+        const getPiecesCount = (color: ColorEnum): number => (
+          actualPieces.filter((piece) => (
+            GameHelper.isRealPiece(piece)
+            && (piece.abilities || piece.type) === pieceType
+            && piece.color === color
+          )).length
         );
-      }
-    } else {
-      content = (
-        <div className="spinner">
-          Loading game...
-        </div>
-      );
-      title = null;
+
+        const diff = materialDifference[pieceType] = getPiecesCount(ColorEnum.WHITE) - getPiecesCount(ColorEnum.BLACK);
+
+        allMaterialDifference += diff * piecesWorth[pieceType];
+      });
     }
 
     return (
-      <div className="route game-route">
-        <DocumentTitle value={title} />
-        {content}
+      <div
+        className="game"
+        style={{
+          '--pocket-size': game.pocketPiecesUsed.length,
+        } as React.CSSProperties}
+      >
+        <div className="game-content">
+          {showActions && (
+            <GameActions
+              game={game}
+              result={result}
+              players={players}
+              isBlackBase={isBlackBase}
+              isNoMovesMade={usedMoves.length === 0}
+              isCurrentMoveLast={isCurrentMoveLast}
+              boardToShow={boardToShow}
+              drawOffer={drawOffer}
+              takebackRequest={takebackRequest}
+              isBasicTakeback={!!takebackRequest && takebackRequest.moveIndex === usedMoves.length - 2}
+              darkChessMode={darkChessMode}
+              showDarkChessHiddenPieces={showDarkChessHiddenPieces}
+              player={player}
+              boardsShiftX={boardsShiftX}
+              flipBoard={this.flipBoard}
+              switchBoard={this.switchBoard}
+              toggleShowDarkChessHiddenPieces={this.toggleShowDarkChessHiddenPieces}
+              setBoardsShiftX={this.setBoardsShiftX}
+            />
+          )}
+
+          {showBoard && (
+            <Boards
+              game={game}
+              pieces={usedPieces}
+              selectedPiece={
+                selectedPiece
+                  ? selectedPiece
+                  : null
+              }
+              selectedPieceBoard={this.state.selectedPieceBoard}
+              allowedMoves={this.state.allowedMoves}
+              premoves={premoves}
+              drawnSymbols={
+                this.state.drawingSymbol
+                  ? [...this.state.drawnSymbols, this.state.drawingSymbol]
+                  : this.state.drawnSymbols
+              }
+              onSquareClick={this.onSquareClick}
+              startDraggingPiece={this.startDrag}
+              enableClick={!!player}
+              enableDnd={!!player}
+              isBlackBase={isBlackBase}
+              isDragging={isDragging}
+              boardToShow={boardToShow}
+              darkChessMode={darkChessMode}
+              currentMoveIndex={currentMoveIndex}
+              boardsShiftX={boardsShiftX}
+              showKingAttack={!premoves.length}
+            />
+          )}
+
+          {showPlayers && _.map(players, (panelPlayer) => (
+            <GamePlayer
+              key={panelPlayer.id}
+              game={game}
+              player={panelPlayer}
+              playingPlayer={player}
+              pieces={pieces}
+              moves={usedMoves}
+              timeControl={timeControl}
+              turn={turn}
+              realTurn={realTurn}
+              status={status}
+              currentMoveIndex={currentMoveIndex}
+              lastMoveTimestamp={lastMoveTimestamp}
+              enableClick={enableClick && !!player && panelPlayer.id === player.id}
+              enableDnd={enableDnd && !!player && panelPlayer.id === player.id}
+              isTop={panelPlayer.id === topPlayer.id}
+              isMaterialDiffShown={isMaterialDiffShown}
+              allMaterialDifference={allMaterialDifference}
+              materialDifference={materialDifference}
+              selectedPiece={
+                selectedPiece && selectedPiece.color === panelPlayer.color && GameHelper.isPocketPiece(selectedPiece)
+                  ? selectedPiece
+                  : null
+              }
+              selectPiece={this.selectPiece}
+              startDraggingPiece={this.startDrag}
+            />
+          ))}
+
+          {showMovesPanel && (
+            <MovesPanel
+              game={game}
+              currentMoveIndex={currentMoveIndex}
+              moves={usedMoves}
+            />
+          )}
+
+          <PromotionModal
+            game={game}
+            visible={this.state.promotionModalVisible}
+            square={this.state.promotionMove && this.state.promotionMove.to}
+            pieceSize={pieceSize}
+            isBlackBase={isBlackBase}
+            validPromotions={this.state.validPromotions}
+            onOverlayClick={this.closePromotionPopup}
+            promoteToPiece={this.promoteToPiece}
+          />
+
+          {isDragging && selectedPiece && (
+            <FixedElement>
+              <svg
+                ref={this.draggingPieceRef}
+                style={{
+                  pointerEvents: 'none',
+                  transform: this.draggingPieceTranslate,
+                }}
+              >
+                <GamePiece
+                  piece={selectedPiece}
+                  pieceSize={pieceSize}
+                />
+              </svg>
+            </FixedElement>
+          )}
+        </div>
+
+        {showInfo && (
+          <GameInfo
+            game={game}
+            result={result}
+          />
+        )}
+
+        {showChat && (
+          <Chat
+            chat={chat}
+            sendMessage={this.sendMessage}
+          />
+        )}
       </div>
     );
   }
@@ -1150,7 +974,6 @@ class Game extends React.Component<Props, State> {
 function mapStateToProps(state: ReduxState) {
   return {
     isTouchDevice: state.common.isTouchDevice,
-    scrollSize: state.common.scrollSize,
     showFantomPieces: state.gameSettings.showFantomPieces,
   };
 }
