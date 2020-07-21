@@ -39,15 +39,15 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
     ));
   }
 
-  registerAnyMove(move: Move) {
+  registerAnyMove(move: Move, constructMoveNotation: boolean) {
     if (this.isDarkChess) {
-      this.registerDarkChessMove(move);
+      this.registerDarkChessMove(move, constructMoveNotation);
     } else {
-      this.registerMove(move);
+      this.registerMove(move, constructMoveNotation);
     }
   }
 
-  registerDarkChessMove(move: Move) {
+  registerDarkChessMove(move: Move, constructMoveNotation: boolean) {
     const prevPieceLocations = this.pieces.map(({ location }) => location);
     const idMap = this.pieces.reduce<Dictionary<true>>((map, piece) => {
       map[piece.id] = true;
@@ -63,7 +63,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
       movedPiece: piece,
       isWin,
       isCapture,
-    } = this.registerMove(move);
+    } = this.registerMove(move, constructMoveNotation);
 
     const registeredMove = _.last(this.moves)!;
     const isPromotion = !!move.promotion;
@@ -105,16 +105,13 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         && visibleSquares.some(GameDarkChessUtils.equalToSquare(move.from))
       );
       const toLocationVisible = visibleSquares.some(GameDarkChessUtils.equalToSquare(move.to));
-      let algebraic = '';
-      let figurine = '';
+      let notation = '';
 
       if (isOwnMove) {
-        algebraic = registeredMove.algebraic;
-        figurine = registeredMove.figurine;
+        notation = registeredMove.notation;
       } else if (fromLocationVisible || toLocationVisible || isCapture) {
         if (fromLocationVisible || toLocationVisible) {
-          algebraic += GameDarkChessUtils.getPieceFullAlgebraicLiteral(piece);
-          figurine += GameDarkChessUtils.getPieceFullFigurineLiteral(piece);
+          notation += GameDarkChessUtils.getPieceLiteral(piece.type);
         }
 
         if (fromLocationVisible) {
@@ -126,16 +123,13 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
           const rankLiteral = GameDarkChessUtils.getRankLiteral(fromY);
           const fromLocationLiteral = fileLiteral + rankLiteral;
 
-          algebraic += fromLocationLiteral;
-          figurine += fromLocationLiteral;
+          notation += fromLocationLiteral;
         } else {
-          algebraic += '?';
-          figurine += '?';
+          notation += '?';
         }
 
         if (isCapture) {
-          algebraic += 'x';
-          figurine += 'x';
+          notation += 'x';
         }
 
         if (toLocationVisible || isCapture) {
@@ -147,11 +141,9 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
           const rankLiteral = GameDarkChessUtils.getRankLiteral(toY);
           const toLocationLiteral = fileLiteral + rankLiteral;
 
-          algebraic += toLocationLiteral;
-          figurine += toLocationLiteral;
+          notation += toLocationLiteral;
         } else {
-          algebraic += '?';
-          figurine += '?';
+          notation += '?';
         }
 
         const promotionVisible = (
@@ -161,17 +153,14 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         );
 
         if (promotionVisible) {
-          algebraic += `=${toLocationVisible ? GameDarkChessUtils.getPieceAlgebraicLiteral(move.promotion!) : '?'}`;
-          figurine += `=${toLocationVisible ? GameDarkChessUtils.getPieceFigurineLiteral(move.promotion!, piece.color) : '?'}`;
+          notation += `=${toLocationVisible ? GameDarkChessUtils.getPieceLiteral(move.promotion!) : '?'}`;
         }
 
         if (isWin) {
-          algebraic += '#';
-          figurine += '#';
+          notation += '#';
         }
       } else {
-        algebraic = '?';
-        figurine = '?';
+        notation = '?';
       }
 
       this.visiblePieces[color] = newPieces;
@@ -180,8 +169,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         ...move,
         from: fromLocationVisible ? move.from : null,
         to: toLocationVisible || isCapture ? move.to : null,
-        algebraic,
-        figurine,
+        notation,
         isCapture,
         pieces: newPieces.map((piece) => _.omit(piece, 'realId')),
         prevPiecesWorth: this.isFrankfurt || this.isAbsorption || this.isAtomic || this.isCirce

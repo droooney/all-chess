@@ -42,5 +42,5 @@ export const drawnSymbolColors: Record<DrawnSymbolColor, string> = {
   [DrawnSymbolColor.GREEN]: '#080',
   [DrawnSymbolColor.BLUE]: '#0bf',
   [DrawnSymbolColor.RED]: '#f00',
-  [DrawnSymbolColor.YELLOW]: '#fc0',
+  [DrawnSymbolColor.YELLOW]: '#fa0',
 };

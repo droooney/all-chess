@@ -283,7 +283,7 @@ export default class Game extends GameHelper {
               : this.isDarkChess
                 ? ' up to ?'
                 : move
-                  ? ` up to move ${move.figurine}`
+                  ? ` up to move ${move.notation}`
                   : ' up to the start of the game';
 
             this.addChatMessage({
@@ -499,7 +499,7 @@ export default class Game extends GameHelper {
       ? Math.round(this.playerPingTimes[player.color].reduce((sum, ping) => sum + ping, 0) / pingTimes.length)
       : 0;
 
-    this.registerAnyMove(move);
+    this.registerAnyMove(move, false);
     this.changePlayerTime(averagePing);
 
     this.lastMoveTimestamp = newTimestamp;

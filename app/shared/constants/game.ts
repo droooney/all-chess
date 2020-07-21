@@ -6,7 +6,6 @@ import {
   GameVariantEnum,
   PieceTypeEnum,
   ResultReasonEnum,
-  StandardPiece,
   TimeControlEnum,
 } from 'shared/types';
 
@@ -20,25 +19,6 @@ export const SHORT_PIECE_NAMES: EachPieceType<string> = {
   [PieceTypeEnum.BISHOP]: 'B',
   [PieceTypeEnum.KNIGHT]: 'N',
   [PieceTypeEnum.PAWN]: 'P',
-};
-
-export const PIECE_LITERALS: EachColor<Record<StandardPiece, string>> = {
-  [ColorEnum.WHITE]: {
-    [PieceTypeEnum.KING]: '♔',
-    [PieceTypeEnum.QUEEN]: '♕',
-    [PieceTypeEnum.ROOK]: '♖',
-    [PieceTypeEnum.BISHOP]: '♗',
-    [PieceTypeEnum.KNIGHT]: '♘',
-    [PieceTypeEnum.PAWN]: '♙',
-  },
-  [ColorEnum.BLACK]: {
-    [PieceTypeEnum.KING]: '♚',
-    [PieceTypeEnum.QUEEN]: '♛',
-    [PieceTypeEnum.ROOK]: '♜',
-    [PieceTypeEnum.BISHOP]: '♝',
-    [PieceTypeEnum.KNIGHT]: '♞',
-    [PieceTypeEnum.PAWN]: '♟',
-  },
 };
 
 export const POSSIBLE_TIMER_BASES_IN_MINUTES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30, 45, 60];

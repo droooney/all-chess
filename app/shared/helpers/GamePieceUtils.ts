@@ -3,7 +3,6 @@
 import * as _ from 'lodash';
 
 import {
-  PIECE_LITERALS,
   PIECES_WORTH,
   SHORT_PIECE_NAMES,
 } from 'shared/constants';
@@ -27,7 +26,6 @@ import {
   PossibleEnPassant,
   RealPiece,
   Square,
-  StandardPiece,
   StartingData,
 } from 'shared/types';
 
@@ -37,15 +35,6 @@ interface PiecesData {
   kings: GameKings;
   pieces: Piece[];
 }
-
-const STANDARD_PIECES: readonly PieceTypeEnum[] = [
-  PieceTypeEnum.KING,
-  PieceTypeEnum.QUEEN,
-  PieceTypeEnum.ROOK,
-  PieceTypeEnum.BISHOP,
-  PieceTypeEnum.KNIGHT,
-  PieceTypeEnum.PAWN,
-];
 
 const PIECES_SORTING: readonly PieceTypeEnum[] = [
   PieceTypeEnum.AMAZON,
@@ -93,30 +82,8 @@ const CAPABLANCA_POCKET: readonly PieceTypeEnum[] = [
 ];
 
 export default abstract class GamePieceUtils extends GameTurnUtils {
-  static getPieceAlgebraicLiteral(pieceType: PieceTypeEnum): string {
+  static getPieceLiteral(pieceType: PieceTypeEnum): string {
     return SHORT_PIECE_NAMES[pieceType];
-  }
-
-  static getPieceFigurineLiteral(pieceType: PieceTypeEnum, color: ColorEnum): string {
-    const pieceLiterals = PIECE_LITERALS[color];
-
-    if (STANDARD_PIECES.includes(pieceType)) {
-      return pieceLiterals[pieceType as StandardPiece];
-    }
-
-    if (pieceType === PieceTypeEnum.AMAZON) {
-      return pieceLiterals[PieceTypeEnum.QUEEN] + pieceLiterals[PieceTypeEnum.KNIGHT];
-    }
-
-    if (pieceType === PieceTypeEnum.EMPRESS) {
-      return pieceLiterals[PieceTypeEnum.ROOK] + pieceLiterals[PieceTypeEnum.KNIGHT];
-    }
-
-    if (pieceType === PieceTypeEnum.CARDINAL) {
-      return pieceLiterals[PieceTypeEnum.BISHOP] + pieceLiterals[PieceTypeEnum.KNIGHT];
-    }
-
-    return '';
   }
 
   static getPieceFromLiteral(pieceLiteral: string): { color: ColorEnum; type: PieceTypeEnum } | undefined {
@@ -130,19 +97,11 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
     };
   }
 
-  static getPieceFullAlgebraicLiteral(piece: Piece): string {
-    const pieceLiteral = GamePieceUtils.getPieceAlgebraicLiteral(piece.type);
+  static getPieceFullLiteral(piece: Piece): string {
+    const pieceLiteral = GamePieceUtils.getPieceLiteral(piece.type);
 
     return piece.abilities
-      ? `${pieceLiteral}(${GamePieceUtils.getPieceAlgebraicLiteral(piece.abilities)})`
-      : pieceLiteral;
-  }
-
-  static getPieceFullFigurineLiteral(piece: Piece): string {
-    const pieceLiteral = GamePieceUtils.getPieceFigurineLiteral(piece.type, piece.color);
-
-    return piece.abilities
-      ? pieceLiteral + GamePieceUtils.getPieceFigurineLiteral(piece.abilities, piece.color)
+      ? `${pieceLiteral}(${GamePieceUtils.getPieceLiteral(piece.abilities)})`
       : pieceLiteral;
   }
 

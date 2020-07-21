@@ -44,10 +44,10 @@ export default class GamePiece extends React.Component<Props> {
 
         {(piece.abilities || piece.type !== piece.originalType) && (
           <React.Fragment>
-            <rect
-              {...originalPieceCoords}
-              width={cornerPieceSize}
-              height={cornerPieceSize}
+            <circle
+              cx={originalPieceCoords.x + cornerPieceSize / 2}
+              cy={originalPieceCoords.y + cornerPieceSize / 2}
+              r={cornerPieceSize / 2}
               className={classNames('original-piece', originalPieceClassName)}
             />
             <Piece

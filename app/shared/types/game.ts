@@ -261,8 +261,7 @@ export interface Move extends BaseMove {
 
 export interface ExtendedMove extends Move {
   isCapture: boolean;
-  algebraic: string;
-  figurine: string;
+  notation: string;
   prevPiecesWorth: EachColor<number>;
   timeBeforeMove: EachColor<number | null>;
 }
@@ -284,8 +283,7 @@ export interface DarkChessMove {
   to: Square | null;
   promotion?: PieceTypeEnum;
   duration: number;
-  algebraic: string;
-  figurine: string;
+  notation: string;
   pieces: readonly Piece[];
   isCapture: boolean;
   prevPiecesWorth: EachColor<number>;

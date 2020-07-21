@@ -27,7 +27,7 @@ export default class MovesRow extends React.Component<Props> {
 
     return (
       containsCurrentMove !== this.containsCurrentMove(nextProps)
-      || this.props.moves.some(({ algebraic }, index) => nextProps.moves[index].algebraic !== algebraic)
+      || this.props.moves.some(({ notation }, index) => nextProps.moves[index].notation !== notation)
       || (containsCurrentMove && this.props.currentMoveIndex !== nextProps.currentMoveIndex)
     );
   }
@@ -76,13 +76,13 @@ export default class MovesRow extends React.Component<Props> {
               className={classNames('move', {
                 current: isCurrent,
               })}
-              style={!moveRow && !turn && startingMoveIndex ? {
+              style={moveRow === 0 && turn === 0 && startingMoveIndex ? {
                 position: 'relative',
                 left: `${firstMoveLeftOffset}%`,
               } : {}}
               onClick={() => game.navigateToMove(moveIndex)}
             >
-              {move.figurine}
+              {move.notation}
             </div>
           );
         })}

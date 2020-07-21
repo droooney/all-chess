@@ -359,7 +359,7 @@ export class Game extends GameResultUtils implements IGame {
           move.promotion = promotedPiece.type;
         }
 
-        game.registerMove(move);
+        game.registerMove(move, true);
 
         movesString = movesString.slice(moveString.length);
         shouldBeMoveIndex = game.pliesCount % 2 === 0;

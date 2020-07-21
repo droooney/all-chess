@@ -27,7 +27,6 @@ import {
   Move,
   Piece,
   PieceBoardLocation,
-  PieceLocation,
   PieceLocationEnum,
   PieceTypeEnum,
   Player,
@@ -105,8 +104,8 @@ export class Game extends GameHelper {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: [],
   };
-  pieceLocationsByMove: Partial<Record<number, Dictionary<PieceLocation>>> = {};
-  colorPieceLocationsByMove: EachColor<Partial<Record<number, Dictionary<PieceLocation>>>> = {
+  piecesByMove: Partial<Record<number, Dictionary<Piece>>> = {};
+  colorPiecesByMove: EachColor<Partial<Record<number, Dictionary<Piece>>>> = {
     [ColorEnum.WHITE]: {},
     [ColorEnum.BLACK]: {},
   };
@@ -176,7 +175,7 @@ export class Game extends GameHelper {
     this.darkChessMode = this.isDarkChess && player ? player.color : null;
     this.piecesBeforePremoves = this.pieces;
 
-    this.savePieceLocations();
+    this.savePieces();
 
     const moves: (Move | DarkChessMove)[] = game.moves;
 
@@ -474,11 +473,11 @@ export class Game extends GameHelper {
     return this.getVisibleSquares(color);
   }
 
-  getMovePieceLocations(moveIndex: number): Dictionary<PieceLocation> {
+  getMovePieces(moveIndex: number): Dictionary<Piece> {
     return (
       this.darkChessMode && !this.showDarkChessHiddenPieces
-        ? this.colorPieceLocationsByMove[this.darkChessMode][moveIndex]
-        : this.pieceLocationsByMove[moveIndex]
+        ? this.colorPiecesByMove[this.darkChessMode][moveIndex]
+        : this.piecesByMove[moveIndex]
     ) || {};
   }
 
@@ -562,8 +561,8 @@ export class Game extends GameHelper {
       const prevVisibleSquares = this.darkChessMode
         ? this.getVisibleSquares(this.darkChessMode)
         : undefined;
-      const { algebraic, figurine, isCapture, revertMove } = this.performMove(move, {
-        constructMoveLiterals: true,
+      const { notation, isCapture, revertMove } = this.performMove(move, {
+        constructMoveNotation: true,
       });
       const pieces = this.pieces.filter(Game.isRealPiece).map(_.clone);
 
@@ -573,8 +572,7 @@ export class Game extends GameHelper {
         ...move,
         prevVisibleSquares,
         duration,
-        algebraic,
-        figurine,
+        notation,
         isCapture,
         pieces,
         prevPiecesWorth: this.getPiecesWorth(),
@@ -668,7 +666,7 @@ export class Game extends GameHelper {
     this.moves = [];
 
     this.setupStartingData();
-    this.savePieceLocations();
+    this.savePieces();
 
     const { currentMoveIndex } = this;
 
@@ -702,7 +700,7 @@ export class Game extends GameHelper {
     } else {
       this.moves = [...(moves as LocalMove[])];
 
-      this.registerMove(move as Move);
+      this.registerMove(move as Move, true);
     }
 
     this.currentMoveIndex++;
@@ -890,10 +888,10 @@ export class Game extends GameHelper {
   }
 
   registerAnyMove(move: Move) {
-    super.registerAnyMove(move);
+    super.registerAnyMove(move, true);
 
     if (this.isDarkChess) {
-      this.savePieceLocations();
+      this.savePieces();
     }
   }
 
@@ -906,16 +904,16 @@ export class Game extends GameHelper {
     });
 
     this.changePlayerTime();
-    this.savePieceLocations();
+    this.savePieces();
   }
 
-  registerMove(move: Move): RegisterMoveReturnValue {
-    const returnValue = super.registerMove(move);
+  registerMove(move: Move, constructMoveNotation: boolean): RegisterMoveReturnValue {
+    const returnValue = super.registerMove(move, constructMoveNotation);
 
     this.changePlayerTime();
 
     if (!this.isDarkChess) {
-      this.savePieceLocations();
+      this.savePieces();
     }
 
     return returnValue;
@@ -965,20 +963,20 @@ export class Game extends GameHelper {
     }
   }
 
-  savePieceLocations() {
+  savePieces() {
     const moveIndex = this.getUsedMoves().length - 1;
-    const locations: Dictionary<PieceLocation> = this.pieceLocationsByMove[moveIndex] = {};
+    const pieces: Dictionary<Piece> = this.piecesByMove[moveIndex] = {};
 
-    this.pieces.forEach(({ location, id }) => {
-      locations[id] = location;
+    this.pieces.forEach((piece) => {
+      pieces[piece.id] = _.clone(piece);
     });
 
     if (this.isDarkChess) {
       _.forEach(ColorEnum, (color) => {
-        const locations: Dictionary<PieceLocation> = this.colorPieceLocationsByMove[color][moveIndex] = {};
+        const pieces: Dictionary<Piece> = this.colorPiecesByMove[color][moveIndex] = {};
 
-        this.getMoveVisiblePieces(moveIndex, color).forEach(({ location, id }) => {
-          locations[id] = location;
+        this.getMoveVisiblePieces(moveIndex, color).forEach((piece) => {
+          pieces[piece.id] = _.clone(piece);
         });
       });
     }

@@ -224,7 +224,7 @@ class GameActions extends React.Component<Props, State> {
           : (
             <React.Fragment>
               {' '}up to move <span className="takeback-move-link" onClick={this.navigateToTakebackRequestMove}>
-                {game.getUsedMoves()[takebackRequest.moveIndex].figurine}
+                {game.getUsedMoves()[takebackRequest.moveIndex].notation}
               </span>
             </React.Fragment>
           )

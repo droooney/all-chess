@@ -8,7 +8,7 @@ import {
 
 import { Game } from 'client/helpers';
 
-import MovesRow from 'client/components/MovesRow';
+import MovesRow from './MovesRow';
 
 import './index.less';
 

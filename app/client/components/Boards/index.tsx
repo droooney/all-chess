@@ -13,7 +13,6 @@ import {
   DrawnSymbol as IDrawnSymbol,
   DrawnSymbolColor,
   Piece as IPiece,
-  PieceBoardLocation,
   PieceLocationEnum,
   Premove,
   RealPiece,
@@ -174,7 +173,7 @@ class Boards extends React.Component<Props> {
     const currentMove = game.getUsedMoves()[currentMoveIndex] as AnyMove | undefined;
     const movedPieceIds: string[] = [];
     const capturedPieceIds: string[] = [];
-    const prevPieceLocations = game.getMovePieceLocations(prevMoveIndex);
+    const prevPieces = game.getMovePieces(prevMoveIndex);
 
     const visibleSquares = isDarkChess && darkChessMode
       ? currentMove && 'prevVisibleSquares' in currentMove
@@ -191,43 +190,31 @@ class Boards extends React.Component<Props> {
     const isAllowed = (square: Square): boolean => (
       allowedMoves.some(({ square: allowedSquare }) => Game.areSquaresEqual(square, allowedSquare))
     );
-    const wasCaptured = (piece: IPiece): boolean => {
-      const prevLocation = prevPieceLocations[piece.id];
-
-      return (
-        currentMoveIndex - prevMoveIndex === 1
-        && !!prevLocation
-        && prevLocation.type === PieceLocationEnum.BOARD
-        && !piece.location
-      );
-    };
     const piecesSelector = (ids: string[]) => ids.map((id) => `#boards-${gameId}  #piece-${id}`).join(',');
 
-    pieces.forEach((piece) => {
-      const prevLocation = prevPieceLocations[piece.id];
+    const boardPieces = pieces.filter(Game.isBoardPiece);
 
-      if (
-        Game.isBoardPiece(piece)
-        && prevLocation
-        && prevLocation.type === PieceLocationEnum.BOARD
-        && !Game.areSquaresEqual(piece.location, prevLocation)
-      ) {
-        movedPieceIds.push(piece.id);
+    pieces.forEach((piece) => {
+      const prevPiece = prevPieces[piece.id];
+
+      if (prevPiece && Game.isBoardPiece(prevPiece)) {
+        if (
+          Game.isBoardPiece(piece)
+          && !Game.areSquaresEqual(piece.location, prevPiece.location)
+        ) {
+          movedPieceIds.push(piece.id);
+        }
+
+        if (
+          currentMoveIndex - prevMoveIndex === 1
+          && !Game.isBoardPiece(piece)
+        ) {
+          capturedPieceIds.push(piece.id);
+          boardPieces.push(prevPiece);
+        }
       }
     });
 
-    const realPieces = pieces.filter(Game.isBoardPiece);
-    const capturedPieces = pieces
-      .filter(wasCaptured)
-      .map((piece) => {
-        capturedPieceIds.push(piece.id);
-
-        return {
-          ...piece,
-          location: prevPieceLocations[piece.id] as PieceBoardLocation,
-        };
-      });
-    const boardPieces = [...realPieces, ...capturedPieces];
     const movedPieceIdsSelector = piecesSelector(movedPieceIds);
     const capturedPieceIdsSelector = piecesSelector(capturedPieceIds);
     const movedAndCapturedPieceIdsSelector = piecesSelector(_.intersection(movedPieceIds, capturedPieceIds));

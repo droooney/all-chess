@@ -347,7 +347,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
           if (pieceInSquare) {
             putEmptySpacesIfNeeded();
 
-            const pieceLiteral = GamePositionUtils.getPieceFullAlgebraicLiteral(pieceInSquare);
+            const pieceLiteral = GamePositionUtils.getPieceFullLiteral(pieceInSquare);
 
             rankString += pieceInSquare.color === ColorEnum.WHITE
               ? pieceLiteral
@@ -368,7 +368,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
           this.pieces
             .filter(GamePositionUtils.isPocketPiece)
             .map((piece) => {
-              const pieceLiteral = GamePositionUtils.getPieceFullAlgebraicLiteral(piece);
+              const pieceLiteral = GamePositionUtils.getPieceFullLiteral(piece);
 
               return piece.color === ColorEnum.WHITE
                 ? pieceLiteral

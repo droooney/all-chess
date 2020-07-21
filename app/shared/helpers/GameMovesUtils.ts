@@ -34,15 +34,14 @@ import {
 } from './GameBoardUtils';
 
 export interface PerformMoveOptions {
-  constructMoveLiterals?: boolean;
+  constructMoveNotation?: boolean;
   constructPositionString?: boolean;
   checkIfAllowed?: boolean;
 }
 
 export interface PerformMoveReturnValue {
   allowed: boolean;
-  algebraic: string;
-  figurine: string;
+  notation: string;
   movedPiece: RealPiece;
   isCapture: boolean;
   revertMove(): void;
@@ -134,6 +133,12 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         !this.isAliceChess || (!forMove && !onlyPossible) || this.isAvailableSquare(square)
       ))
       .filter((square) => captureAllowed || !this.getCapturedPiece(piece, square));
+  }
+
+  getMoveColor(moveIndex: number): ColorEnum {
+    return moveIndex % 2
+      ? GameMovesUtils.getOppositeColor(this.startingData.turn)
+      : this.startingData.turn;
   }
 
   // do not call this anywhere except getFilteredPossibleMoves (allowed to call for premoves)
@@ -506,7 +511,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
 
   performMove(move: BaseMove, options: PerformMoveOptions = {}): PerformMoveReturnValue {
     const {
-      constructMoveLiterals = false,
+      constructMoveNotation = false,
       constructPositionString = false,
       checkIfAllowed = false,
     } = options;
@@ -601,13 +606,11 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       _.pick(piece, ['moved', 'color', 'type', 'originalType', 'location', 'abilities'])
     ));
 
-    let algebraic = '';
-    let figurine = '';
+    let notation = '';
 
-    if (constructMoveLiterals) {
+    if (constructMoveNotation) {
       if (fromLocation.type === PieceLocationEnum.POCKET) {
-        algebraic += GameMovesUtils.getPieceFullAlgebraicLiteral(piece);
-        figurine += GameMovesUtils.getPieceFullFigurineLiteral(piece);
+        notation += GameMovesUtils.getPieceLiteral(piece.type);
 
         const otherBoardsToDropPiece = this.getAllowedMoves(piece).any(({ board, x, y }) => (
           board !== toBoard
@@ -618,19 +621,16 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         if (otherBoardsToDropPiece) {
           const boardLiteral = GameMovesUtils.getBoardLiteral(toBoard);
 
-          algebraic += boardLiteral;
-          figurine += boardLiteral;
+          notation += boardLiteral;
         }
 
         const destination = GameMovesUtils.getFileLiteral(toX) + GameMovesUtils.getRankLiteral(toY);
 
-        algebraic += `@${destination}`;
-        figurine += `@${destination}`;
+        notation += `@${destination}`;
       } else if (isCastling) {
         const castling = isKingSideCastling ? 'O-O' : 'O-O-O';
 
-        algebraic += castling;
-        figurine += castling;
+        notation += castling;
       } else {
         const {
           board: fromBoard,
@@ -642,8 +642,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
           if (isCapture) {
             const fileLiteral = GameMovesUtils.getFileLiteral(fromX);
 
-            algebraic += fileLiteral;
-            figurine += fileLiteral;
+            notation += fileLiteral;
           } else if (this.isAliceChess || this.isRetreatChess) {
             const otherPawnsAbleToMakeMove = playerPieces
               .filter(GameMovesUtils.isBoardPiece)
@@ -656,19 +655,16 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             if (otherPawnsAbleToMakeMove.length) {
               const rankLiteral = GameMovesUtils.getRankLiteral(fromY);
 
-              algebraic += rankLiteral;
-              figurine += rankLiteral;
+              notation += rankLiteral;
             }
           }
         } else {
-          algebraic += GameMovesUtils.getPieceFullAlgebraicLiteral(piece);
-          figurine += GameMovesUtils.getPieceFullFigurineLiteral(piece);
+          notation += GameMovesUtils.getPieceLiteral(piece.type);
 
           const otherPiecesAbleToMakeMove = playerPieces
             .filter(GameMovesUtils.isBoardPiece)
             .filter((otherPiece) => (
               otherPiece.type === piece.type
-              && otherPiece.abilities === piece.abilities
               && otherPiece.id !== piece.id
               && this.getAllowedMoves(otherPiece).any(GameMovesUtils.equalToSquare(toLocation, false))
             ));
@@ -679,58 +675,48 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
             const rankLiteral = GameMovesUtils.getRankLiteral(fromY);
 
             if (otherPiecesAbleToMakeMove.every(({ location }) => location.board !== fromBoard)) {
-              algebraic += boardLiteral;
-              figurine += boardLiteral;
+              notation += boardLiteral;
             } else if (otherPiecesAbleToMakeMove.every(({ location }) => location.x !== fromX)) {
-              algebraic += fileLiteral;
-              figurine += fileLiteral;
+              notation += fileLiteral;
             } else if (otherPiecesAbleToMakeMove.every(({ location }) => location.y !== fromY)) {
-              algebraic += rankLiteral;
-              figurine += rankLiteral;
+              notation += rankLiteral;
             } else if (
               otherPiecesAbleToMakeMove.every(({ location }) => (
                 location.board !== fromBoard
                 || location.x !== fromX
               ))
             ) {
-              algebraic += boardLiteral + fileLiteral;
-              figurine += boardLiteral + fileLiteral;
+              notation += boardLiteral + fileLiteral;
             } else if (
               otherPiecesAbleToMakeMove.every(({ location }) => (
                 location.board !== fromBoard
                 || location.y !== fromY
               ))
             ) {
-              algebraic += boardLiteral + rankLiteral;
-              figurine += boardLiteral + rankLiteral;
+              notation += boardLiteral + rankLiteral;
             } else if (
               otherPiecesAbleToMakeMove.every(({ location }) => (
                 location.x !== fromX
                 || location.y !== fromY
               ))
             ) {
-              algebraic += fileLiteral + rankLiteral;
-              figurine += fileLiteral + rankLiteral;
+              notation += fileLiteral + rankLiteral;
             } else {
-              algebraic += boardLiteral + fileLiteral + rankLiteral;
-              figurine += boardLiteral + fileLiteral + rankLiteral;
+              notation += boardLiteral + fileLiteral + rankLiteral;
             }
           }
         }
 
         if (isCapture) {
-          algebraic += 'x';
-          figurine += 'x';
+          notation += 'x';
         }
 
         const destination = GameMovesUtils.getFileLiteral(toX) + GameMovesUtils.getRankLiteral(toY);
 
-        algebraic += destination;
-        figurine += destination;
+        notation += destination;
 
         if (isPawnPromotion) {
-          algebraic += `=${GameMovesUtils.getPieceAlgebraicLiteral(promotion!)}`;
-          figurine += `=${GameMovesUtils.getPieceFigurineLiteral(promotion!, piece.color)}`;
+          notation += `=${GameMovesUtils.getPieceLiteral(promotion!)}`;
         }
       }
     }
@@ -1042,13 +1028,11 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
 
     setMoveIsAllowed();
 
-    if (constructMoveLiterals) {
+    if (constructMoveNotation) {
       if (this.isWin()) {
-        algebraic += '#';
-        figurine += '#';
+        notation += '#';
       } else if (this.isCheck) {
-        algebraic += '+';
-        figurine += '+';
+        notation += '+';
       }
     }
 
@@ -1062,8 +1046,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
 
     return {
       allowed: isAllowed,
-      algebraic,
-      figurine,
+      notation,
       movedPiece: piece,
       isCapture,
       revertMove: () => {
@@ -1112,23 +1095,21 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     };
   }
 
-  registerMove(move: Move): RegisterMoveReturnValue {
+  registerMove(move: Move, constructMoveNotation: boolean): RegisterMoveReturnValue {
     const prevPiecesWorth = this.getPiecesWorth();
     const {
-      algebraic,
-      figurine,
+      notation,
       movedPiece,
       isCapture,
       revertMove,
     } = this.performMove(move, {
-      constructMoveLiterals: true,
+      constructMoveNotation,
       constructPositionString: true,
     });
 
     this.moves.push({
       ...move,
-      algebraic,
-      figurine,
+      notation,
       isCapture,
       prevPiecesWorth,
       timeBeforeMove: {

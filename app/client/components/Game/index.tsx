@@ -775,6 +775,7 @@ class Game extends React.Component<Props, State> {
       chat,
       players,
       turn,
+      isDarkChess,
       drawOffer,
       takebackRequest,
       timeControl,
@@ -891,7 +892,7 @@ class Game extends React.Component<Props, State> {
               darkChessMode={darkChessMode}
               currentMoveIndex={currentMoveIndex}
               boardsShiftX={boardsShiftX}
-              showKingAttack={!premoves.length}
+              showKingAttack={!premoves.length && (!isDarkChess || showDarkChessHiddenPieces)}
             />
           )}
 
