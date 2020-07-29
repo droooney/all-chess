@@ -121,9 +121,9 @@
           }
 
           &:not(.disabled) {
-            &:hover {
+            .hover({
               background-color: rgba(0,0,0,0.2);
-            }
+            });
           }
 
           .piece-container {
@@ -352,10 +352,10 @@
         cursor: pointer;
         border: 2px solid black;
 
-        &:hover {
+        .hover({
           background-color: #aaa;
           transition: background-color 0.12s;
-        }
+        });
       }
     }
   }

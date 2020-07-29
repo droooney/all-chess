@@ -23,6 +23,7 @@ import {
   EachColor,
   Game as IGame,
   GameStatusEnum,
+  GameVariantEnum,
   LocalMove,
   Move,
   Piece,
@@ -67,6 +68,13 @@ interface HexPoints {
 }
 
 export class Game extends GameHelper {
+  static areSameVariants(variants1: GameVariantEnum[], variants2: GameVariantEnum[]): boolean {
+    return (
+      variants1.length === variants2.length
+      && variants1.every((variant) => variants2.includes(variant))
+    );
+  }
+
   static getGameFromPgn(pgn: string, id: string): Game {
     const game = super.getGameFromPgn(pgn, id);
 

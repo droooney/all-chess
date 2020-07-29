@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { FormControl, InputLabel } from '@material-ui/core';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
 
 import { fetch } from 'client/helpers';
 

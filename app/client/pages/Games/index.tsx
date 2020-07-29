@@ -2,7 +2,8 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import io from 'socket.io-client';
-import { MenuItem } from '@material-ui/core';
+import MenuItem from '@material-ui/core/MenuItem';
+import classNames from 'classnames';
 
 import {
   TIME_CONTROL_NAMES,
@@ -36,6 +37,7 @@ import GameVariantLink from '../../components/GameVariantLink';
 import GameVariantSelect from '../../components/GameVariantSelect';
 import Modal from '../../components/Modal';
 import Select from '../../components/Select';
+import GameVariantStar from 'client/components/GameVariantStar';
 
 import './index.less';
 
@@ -82,24 +84,35 @@ class Games extends React.Component<Props, State> {
 
   openModal = () => {
     this.setState({
+      variants: this.props.lastPlayedVariants,
       createGameModalVisible: true,
     });
   };
 
   closeModal = () => {
     this.setState({
-      variants: [],
       createGameModalVisible: false,
     });
   };
 
   createGame = () => {
+    const {
+      dispatch,
+      loggedIn,
+    } = this.props;
+    const {
+      variants,
+      timeControl,
+    } = this.state;
+
     this.closeModal();
 
-    if (this.props.loggedIn) {
+    dispatch(changeSettings('lastPlayedVariants', variants));
+
+    if (loggedIn) {
       this.socket!.emit('createGame', {
-        timeControl: this.state.timeControl,
-        variants: this.state.variants,
+        timeControl,
+        variants,
       });
     }
   };
@@ -186,6 +199,9 @@ class Games extends React.Component<Props, State> {
       timeControl,
       variants,
     } = this.state;
+    const disabledVariants = timeControl?.type === TimeControlEnum.TIMER
+      ? []
+      : [GameVariantEnum.COMPENSATION_CHESS];
 
     return (
       <div className="route games-route">
@@ -301,24 +317,24 @@ class Games extends React.Component<Props, State> {
               )}
             </div>
 
-            <div className="variants" style={{ marginTop: 20 }}>
-              <div>
-                Variants:{' '}
-                <GameVariantSelect
-                  variants={variants}
-                  disabledVariants={
-                    timeControl?.type === TimeControlEnum.TIMER
-                      ? []
-                      : [GameVariantEnum.COMPENSATION_CHESS]
-                  }
-                  onVariantsChange={this.onVariantsChange}
-                />
-              </div>
+            <div
+              className={classNames('variants', { standard: variants.length === 0 })}
+              style={{ marginTop: 20 }}
+            >
+              Variants:{' '}
+              <GameVariantSelect
+                selectedVariants={variants}
+                disabledVariants={disabledVariants}
+                onVariantsChange={this.onVariantsChange}
+              />
+
+              <GameVariantStar variants={variants} />
             </div>
 
             <Button
               onClick={this.createGame}
               style={{ marginTop: 30 }}
+              disabled={disabledVariants.some((variant) => variants.includes(variant))}
             >
               Create game
             </Button>
@@ -334,6 +350,7 @@ function mapStateToProps(state: ReduxState) {
   return {
     loggedIn: !!state.user,
     timeControl: state.gameSettings.timeControl,
+    lastPlayedVariants: state.gameSettings.lastPlayedVariants,
   };
 }
 

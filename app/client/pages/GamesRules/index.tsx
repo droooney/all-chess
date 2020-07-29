@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as React from 'react';
 import { Redirect, RouteComponentProps, Switch } from 'react-router-dom';
-import { MenuItem, Select } from '@material-ui/core';
+import MenuItem from '@material-ui/core/MenuItem';
 
 import {
   GAME_VARIANT_NAMES,
@@ -15,6 +15,7 @@ import {
 import Route from '../../components/Route';
 import DocumentTitle from '../../components/DocumentTitle';
 import GameVariantLink from '../../components/GameVariantLink';
+import Select from '../../components/Select';
 
 import GameRules from 'client/pages/GameRules';
 

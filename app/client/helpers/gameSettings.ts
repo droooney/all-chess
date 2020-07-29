@@ -20,7 +20,7 @@ export function getDefaultSettings(): GameSettings {
 
     try {
       localStorageValue = JSON.parse(localStorage.getItem(getLocalStorageSettingsKey(key))!);
-    } catch (err) {
+    } catch {
       /* empty */
     }
 

@@ -4,6 +4,7 @@ import {
   ColorEnum,
   DrawnSymbolColor,
   GameSettings,
+  GameVariantEnum,
   PieceLocationEnum,
   PieceTypeEnum,
 } from 'shared/types';
@@ -11,6 +12,8 @@ import {
 export const GAME_DEFAULT_SETTINGS: { [key in keyof GameSettings]: GameSettings[key]; } = {
   showFantomPieces: true,
   timeControl: null,
+  favouriteVariants: [],
+  lastPlayedVariants: [],
 };
 
 export const SVG_SQUARE_SIZE = 60;
@@ -44,3 +47,5 @@ export const drawnSymbolColors: Record<DrawnSymbolColor, string> = {
   [DrawnSymbolColor.RED]: '#f00',
   [DrawnSymbolColor.YELLOW]: '#fa0',
 };
+
+export const ALL_VARIANTS = _.values(GameVariantEnum).sort();

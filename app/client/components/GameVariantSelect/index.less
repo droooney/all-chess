@@ -1,0 +1,24 @@
+@import (reference) "../../styles/mixins";
+
+.game-variant-select {
+  .desktop({
+    max-width: 300px;
+  });
+
+  .MuiMenuItem-root {
+    .MuiTypography-root {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .star-outlined {
+      visibility: hidden;
+    }
+
+    .hover({
+      .star-outlined {
+        visibility: visible;
+      }
+    });
+  }
+}

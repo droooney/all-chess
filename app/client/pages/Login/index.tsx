@@ -2,7 +2,8 @@ import * as qs from 'querystring';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
-import { FormControl, InputLabel } from '@material-ui/core';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
 
 import { fetch } from 'client/helpers';
 

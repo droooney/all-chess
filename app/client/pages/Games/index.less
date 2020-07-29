@@ -33,16 +33,22 @@
   width: 350px;
   padding: 20px 30px;
 
-  .time-control,
-  .variants {
+  .time-control  {
     .flex-col();
   }
 
   .variants {
-    align-items: flex-start;
+    .flex(@align-items: center);
+
+    &.standard {
+      .star-outlined {
+        visibility: hidden;
+      }
+    }
 
     .MuiInput-root {
       width: 200px;
+      margin-left: 6px;
     }
   }
 }
