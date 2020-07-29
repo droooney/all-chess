@@ -166,7 +166,7 @@ class GameVariantSelect extends React.Component<Props, State> {
       <MenuItem key={variant} value={variant} disabled={!allowed} tabIndex={-1}>
         <Checkbox checked={enabled} />
 
-        <ListItemText>
+        <ListItemText title={GAME_VARIANT_NAMES[variant]}>
           {GAME_VARIANT_NAMES[variant]}
         </ListItemText>
 
@@ -174,21 +174,21 @@ class GameVariantSelect extends React.Component<Props, State> {
       </MenuItem>
     );
 
+    const selectedVariantsString = selectedVariants.length === 0
+      ? 'Standard'
+      : `${
+        selectedVariants.length > 1 ? `(${selectedVariants.length}) ` : ''
+      }${
+        selectedVariants.map((variant) => GAME_VARIANT_SHORT_NAMES[variant]).join(' + ')
+      }`;
+
     return (
       <Select
         displayEmpty
         multiple
         value={selectedVariants}
         onChange={this.onVariantChange}
-        renderValue={() => (
-          selectedVariants.length === 0
-            ? 'Standard'
-            : `${
-              selectedVariants.length > 1 ? `(${selectedVariants.length}) ` : ''
-            }${
-              selectedVariants.map((variant) => GAME_VARIANT_SHORT_NAMES[variant]).join(' + ')
-            }`
-        )}
+        renderValue={() => selectedVariantsString}
         MenuProps={{
           MenuListProps: {
             classes: {
@@ -198,19 +198,26 @@ class GameVariantSelect extends React.Component<Props, State> {
           disableAutoFocusItem: true,
           getContentAnchorEl: null,
         }}
+        title={selectedVariantsString}
         onOpen={this.saveFavouriteVariants}
       >
-        {favouriteCombinationsGroup.map(({ variants, enabled, allowed }) => (
-          <MenuItem key={variants.join(',')} value={variants} tabIndex={-1} disabled={!allowed}>
-            <Checkbox checked={enabled} />
+        {favouriteCombinationsGroup.map(({ variants, enabled, allowed }) => {
+          const variantsString = variants
+            .map((variant) => GAME_VARIANT_SHORT_NAMES[variant])
+            .join(' + ');
 
-            <ListItemText>
-              {variants.map((variant) => GAME_VARIANT_SHORT_NAMES[variant]).join(' + ')}
-            </ListItemText>
+          return (
+            <MenuItem key={variants.join(',')} value={variants} tabIndex={-1} disabled={!allowed}>
+              <Checkbox checked={enabled} />
 
-            <GameVariantStar variants={variants} />
-          </MenuItem>
-        ))}
+              <ListItemText title={variantsString}>
+                {variantsString}
+              </ListItemText>
+
+              <GameVariantStar variants={variants} />
+            </MenuItem>
+          );
+        })}
 
         {favouriteCombinationsGroup.length !== 0 && <Divider />}
 
