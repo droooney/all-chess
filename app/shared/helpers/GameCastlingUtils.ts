@@ -1,4 +1,5 @@
-import * as _ from 'lodash';
+import find from 'lodash/find';
+import last from 'lodash/last';
 
 import {
   BoardPiece,
@@ -50,7 +51,7 @@ export default abstract class GameCastlingUtils extends GameStartingDataUtils {
       return null;
     }
 
-    return _.find(this.getCastlingRooks(piece.color), (rook, castlingSide) => (
+    return find(this.getCastlingRooks(piece.color), (rook, castlingSide) => (
       !!rook
       && !rook.moved
       && this.startingData.possibleCastling[piece.color][castlingSide as CastlingTypeEnum]
@@ -79,7 +80,7 @@ export default abstract class GameCastlingUtils extends GameStartingDataUtils {
       if (rooksOnTheCastlingRank.length > 1) {
         rookCoordinates = {
           [CastlingTypeEnum.QUEEN_SIDE]: rooksOnTheCastlingRank[0].location,
-          [CastlingTypeEnum.KING_SIDE]: _.last(rooksOnTheCastlingRank)!.location,
+          [CastlingTypeEnum.KING_SIDE]: last(rooksOnTheCastlingRank)!.location,
         };
       } else if (rooksOnTheCastlingRank.length === 1) {
         const kingOnTheCastlingRank = this.startingData.pieces.find((piece) => (

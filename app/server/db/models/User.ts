@@ -1,6 +1,6 @@
-import * as _ from 'lodash';
 import * as Sequelize from 'sequelize';
 import * as bcrypt from 'bcryptjs';
+import pick from 'lodash/pick';
 
 import { PublicUser, User as UserAttributes } from 'shared/types';
 
@@ -14,7 +14,7 @@ export class User extends Sequelize.Model<UserAttributes, UserAddAttributes> {
   toJSON(): PublicUser {
     const user = super.toJSON() as UserAttributes;
 
-    return _.pick(user, ['id', 'login', 'createdAt']);
+    return pick(user, ['id', 'login', 'createdAt']);
   }
 }
 

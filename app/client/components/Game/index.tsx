@@ -1,7 +1,8 @@
-import * as _ from 'lodash';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
+import forEach from 'lodash/forEach';
+import map from 'lodash/map';
 
 import {
   ALICE_CHESS_BOARDS_MARGIN,
@@ -818,7 +819,7 @@ class Game extends React.Component<Props, State> {
         ? piecesBeforePremoves
         : pieces;
 
-      _.forEach(PieceTypeEnum, (pieceType) => {
+      forEach(PieceTypeEnum, (pieceType) => {
         const getPiecesCount = (color: ColorEnum): number => (
           actualPieces.filter((piece) => (
             GameHelper.isRealPiece(piece)
@@ -896,7 +897,7 @@ class Game extends React.Component<Props, State> {
             />
           )}
 
-          {showPlayers && _.map(players, (panelPlayer) => (
+          {showPlayers && map(players, (panelPlayer) => (
             <GamePlayer
               key={panelPlayer.id}
               game={game}

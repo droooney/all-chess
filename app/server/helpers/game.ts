@@ -1,9 +1,9 @@
-import * as _ from 'lodash';
+import pick from 'lodash/pick';
 
 import { Game, GameMinimalData } from 'shared/types';
 
 export function pickGameMinimalData(game: Game): GameMinimalData {
-  return _.pick(game, [
+  return pick(game, [
     'id',
     'status',
     'players',

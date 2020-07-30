@@ -1,5 +1,5 @@
-import * as _ from 'lodash';
 import * as React from 'react';
+import times from 'lodash/times';
 
 import { RealPieceLocation, Square } from 'shared/types';
 
@@ -30,8 +30,8 @@ export default class BoardSquares extends React.PureComponent<Props> {
     } = this.props;
     const squares: JSX.Element[] = [];
 
-    _.times(boardHeight, (rankY) => {
-      _.times(boardWidth, (fileX) => {
+    times(boardHeight, (rankY) => {
+      times(boardWidth, (fileX) => {
         const square: Square = { board, x: fileX, y: rankY };
 
         if (game.isEmptySquare(square)) {

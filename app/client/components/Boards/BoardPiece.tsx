@@ -1,6 +1,7 @@
-import * as _ from 'lodash';
 import * as React from 'react';
 import classNames from 'classnames';
+import cloneDeep from 'lodash/cloneDeep';
+import isEqual from 'lodash/isEqual';
 
 import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from 'client/constants';
 
@@ -21,7 +22,7 @@ interface OwnProps {
 type Props = OwnProps;
 
 export default class BoardPiece extends React.Component<Props> {
-  prevPiece = _.cloneDeep(this.props.piece);
+  prevPiece = cloneDeep(this.props.piece);
 
   ifBlackBase = (value: number | string, alternate: number | string): string => {
     return `(var(--is-black-base, 0) * (${value}) + (1 - var(--is-black-base, 0)) * (${alternate}))`;
@@ -29,14 +30,14 @@ export default class BoardPiece extends React.Component<Props> {
 
   shouldComponentUpdate(nextProps: Props): boolean {
     return (
-      !_.isEqual(this.prevPiece, nextProps.piece)
+      !isEqual(this.prevPiece, nextProps.piece)
       || this.props.game !== nextProps.game
       || this.props.isFantom !== nextProps.isFantom
     );
   }
 
   componentDidUpdate() {
-    this.prevPiece = _.cloneDeep(this.props.piece);
+    this.prevPiece = cloneDeep(this.props.piece);
   }
 
   render() {

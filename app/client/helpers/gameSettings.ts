@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import keys from 'lodash/keys';
 
 import { GAME_DEFAULT_SETTINGS } from 'client/constants';
 
@@ -15,7 +15,7 @@ export function writeSettingsToLocalStorage<K extends keyof GameSettings>(key: K
 export function getDefaultSettings(): GameSettings {
   const settings = { ...GAME_DEFAULT_SETTINGS };
 
-  _.keys(settings).forEach((key) => {
+  keys(settings).forEach((key) => {
     let localStorageValue = null;
 
     try {

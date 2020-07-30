@@ -1,4 +1,5 @@
-import * as _ from 'lodash';
+import last from 'lodash/last';
+import times from 'lodash/times';
 
 import {
   BoardPiece,
@@ -324,8 +325,8 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
   }
 
   getFenPieces(): string {
-    return _.times(this.boardCount, (board) => (
-      _.times(this.boardHeight, (y) => {
+    return times(this.boardCount, (board) => (
+      times(this.boardHeight, (y) => {
         let rankString = '';
         let emptySpaces = 0;
         const putEmptySpacesIfNeeded = () => {
@@ -335,7 +336,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
           }
         };
 
-        _.times(this.boardWidth, (x) => {
+        times(this.boardWidth, (x) => {
           const square = { board, x, y };
 
           if (this.isEmptySquare(square)) {
@@ -384,9 +385,9 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
     const whiteCastlingRooks = this.getCastlingRooks(ColorEnum.WHITE);
     const blackCastlingRooks = this.getCastlingRooks(ColorEnum.BLACK);
     const whiteQueenSideKing = this.kings[ColorEnum.WHITE][0];
-    const whiteKingSideKing = _.last(this.kings[ColorEnum.WHITE]);
+    const whiteKingSideKing = last(this.kings[ColorEnum.WHITE]);
     const blackQueenSideKing = this.kings[ColorEnum.BLACK][0];
-    const blackKingSideKing = _.last(this.kings[ColorEnum.BLACK]);
+    const blackKingSideKing = last(this.kings[ColorEnum.BLACK]);
     const whiteQueenSideCastlingPossible = (
       this.startingData.possibleCastling[ColorEnum.WHITE][CastlingTypeEnum.QUEEN_SIDE]
       && !!whiteQueenSideKing

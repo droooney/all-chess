@@ -1,6 +1,6 @@
-import * as _ from 'lodash';
 import * as React from 'react';
 import classNames from 'classnames';
+import chunk from 'lodash/chunk';
 
 import {
   AnyMove,
@@ -61,7 +61,7 @@ export default class MovesPanel extends React.Component<Props> {
     const isAfterLastMove = currentMoveIndex === moves.length - 1;
     const startingMoveIndex = game.startingData.startingMoveIndex;
     const startingMoveOffset = startingMoveIndex % 2;
-    const restMoves = _.chunk(moves.slice(startingMoveOffset), 2);
+    const restMoves = chunk(moves.slice(startingMoveOffset), 2);
 
     return (
       <div className="moves-panel">

@@ -1,6 +1,8 @@
 /// <reference path="../typings/generator.d.ts"/>
 
-import * as _ from 'lodash';
+import findKey from 'lodash/findKey';
+import forEach from 'lodash/forEach';
+import mapValues from 'lodash/mapValues';
 
 import {
   PIECES_WORTH,
@@ -89,7 +91,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
   static getPieceFromLiteral(pieceLiteral: string): { color: ColorEnum; type: PieceTypeEnum } | undefined {
     const pieceName = pieceLiteral.toUpperCase();
     const color = pieceName === pieceLiteral ? ColorEnum.WHITE : ColorEnum.BLACK;
-    const pieceType = _.findKey(SHORT_PIECE_NAMES, (shortPieceName) => shortPieceName === pieceName) as PieceTypeEnum | undefined;
+    const pieceType = findKey(SHORT_PIECE_NAMES, (shortPieceName) => shortPieceName === pieceName) as PieceTypeEnum | undefined;
 
     return pieceType && {
       color,
@@ -213,7 +215,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
       return piece;
     });
 
-    _.forEach(kings, (kings) => {
+    forEach(kings, (kings) => {
       kings.forEach((king) => {
         pieces.splice(pieces.indexOf(king), 1);
         pieces.unshift(king);
@@ -396,7 +398,7 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
   }
 
   getPiecesWorth(): EachColor<number> {
-    return _.mapValues(ColorEnum, (color) => {
+    return mapValues(ColorEnum, (color) => {
       let sumPiecesWorth = 0;
 
       this.getPieces(color).forEach(({ type }) => {

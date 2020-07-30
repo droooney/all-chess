@@ -1,7 +1,8 @@
-import * as _ from 'lodash';
 import moment from 'moment';
 import * as React from 'react';
 import classNames from 'classnames';
+import map from 'lodash/map';
+import padStart from 'lodash/padStart';
 
 import { COLOR_NAMES } from 'shared/constants';
 import { pocketPieces } from 'client/constants';
@@ -144,11 +145,11 @@ export default class GamePlayer extends React.Component<Props, State> {
       return `${days}d${hours ? ` ${hours}h` : ''}`;
     }
 
-    const minutes = _.padStart(`${duration.minutes()}`, 2, '0');
-    const seconds = _.padStart(`${duration.seconds()}`, 2, '0');
+    const minutes = padStart(`${duration.minutes()}`, 2, '0');
+    const seconds = padStart(`${duration.seconds()}`, 2, '0');
 
     if (time > ONE_HOUR) {
-      const hours = _.padStart(`${duration.hours()}`, 2, '0');
+      const hours = padStart(`${duration.hours()}`, 2, '0');
 
       return `${hours}:${minutes}:${seconds}`;
     }
@@ -201,7 +202,7 @@ export default class GamePlayer extends React.Component<Props, State> {
       >
         {isMaterialDiffShown && (
           <div className="material-advantage">
-            {_.map(materialDifference, (count, pieceType) => {
+            {map(materialDifference, (count, pieceType) => {
               if (game.isThreeCheck && pieceType === PieceTypeEnum.KING) {
                 count = game.checksCount[player.color] * (player.color === ColorEnum.WHITE ? 1 : -1);
               }

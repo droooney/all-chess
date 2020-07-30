@@ -1,8 +1,6 @@
-import * as _ from 'lodash';
 import * as React from 'react';
-import {
-  RouteComponentProps,
-} from 'react-router-dom';
+import { Redirect, RouteComponentProps } from 'react-router-dom';
+import findKey from 'lodash/findKey';
 
 import {
   GAME_VARIANT_NAMES,
@@ -29,7 +27,14 @@ export default class GameRules extends React.Component<Props> {
         },
       },
     } = this.props;
-    const gameType = _.findKey(GAME_VARIANT_LINKS, (link) => link === gameLink) as GameVariantEnum;
+    const gameType = findKey(GAME_VARIANT_LINKS, (link) => link === gameLink) as GameVariantEnum | undefined;
+
+    if (!gameType) {
+      return (
+        <Redirect to="/rules" />
+      );
+    }
+
     const gameName = GAME_VARIANT_NAMES[gameType];
     let Component: React.ComponentType;
 

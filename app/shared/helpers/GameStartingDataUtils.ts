@@ -1,4 +1,5 @@
-import * as _ from 'lodash';
+import forEach from 'lodash/forEach';
+import times from 'lodash/times';
 
 import {
   CastlingTypeEnum,
@@ -155,7 +156,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
     let pieceTypes: readonly PieceTypeEnum[];
 
     if (is960) {
-      const randomPieceTypes: (PieceTypeEnum | null)[] = _.times(orthodoxBoardWidth, () => null);
+      const randomPieceTypes: (PieceTypeEnum | null)[] = times(orthodoxBoardWidth, () => null);
 
       const darkSquareBishopPosition = 2 * Math.floor(halfBoard * Math.random());
       const lightSquareBishopPosition = 2 * Math.floor(halfBoard * Math.random()) + 1;
@@ -219,7 +220,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
 
     const pieces: RealPiece[] = [];
 
-    _.forEach(ColorEnum, (color) => {
+    forEach(ColorEnum, (color) => {
       const addPiece = (type: PieceTypeEnum, x: number, y: number) => {
         pieces.push({
           id: `${++id}`,
@@ -240,8 +241,8 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
       if (isHorde && color === ColorEnum.WHITE) {
         const lastPawnRank = 4;
 
-        _.times(lastPawnRank, (y) => {
-          _.times(orthodoxBoardWidth, (x) => {
+        times(lastPawnRank, (y) => {
+          times(orthodoxBoardWidth, (x) => {
             addPiece(PieceTypeEnum.PAWN, x, y);
           });
         });
@@ -264,7 +265,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
           addPiece(type, x, pieceRankY);
         });
 
-        _.times(orthodoxBoardWidth, (x) => {
+        times(orthodoxBoardWidth, (x) => {
           addPiece(PieceTypeEnum.PAWN, x, pawnRankY);
         });
       }
@@ -342,7 +343,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
 
     const pieces: RealPiece[] = [];
 
-    _.forEach(ColorEnum, (color) => {
+    forEach(ColorEnum, (color) => {
       const addPiece = (type: PieceTypeEnum, x: number, y: number) => {
         pieces.push({
           id: `${++id}`,
@@ -370,7 +371,7 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
         addPiece(pieceTypes[ix], x, y);
       });
 
-      _.times(9, (x) => {
+      times(9, (x) => {
         addPiece(PieceTypeEnum.PAWN, x + 1, middleFile - 1 - Math.abs(x + 1 - middleFile));
       });
     });

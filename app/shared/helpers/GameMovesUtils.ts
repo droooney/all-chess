@@ -1,6 +1,10 @@
 /// <reference path="../typings/generator.d.ts"/>
 
-import * as _ from 'lodash';
+import filter from 'lodash/filter';
+import forEach from 'lodash/forEach';
+import last from 'lodash/last';
+import pick from 'lodash/pick';
+import times from 'lodash/times';
 
 import {
   AnyMove,
@@ -375,80 +379,82 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       )
     ) {
       const queenSideKing = this.kings[pieceColor][0];
-      const kingSideKing = _.last(this.kings[pieceColor])!;
-      const validCastlingRooks = _
-        .filter(this.getCastlingRooks(pieceColor), (rook, castlingSide) => (
+      const kingSideKing = last(this.kings[pieceColor])!;
+      const validCastlingRooks = filter(this.getCastlingRooks(pieceColor), (rook, castlingSide) => {
+        if (
           (
-            // queen-side king and queen-side rook
-            (piece.id === queenSideKing.id && castlingSide === CastlingTypeEnum.QUEEN_SIDE)
-            // king-side king and king-side rook
-            || (piece.id === kingSideKing.id && castlingSide === CastlingTypeEnum.KING_SIDE)
+            // not queen-side king or not queen-side rook
+            (piece.id !== queenSideKing.id || castlingSide !== CastlingTypeEnum.QUEEN_SIDE)
+            // not king-side king or not king-side rook
+            && (piece.id !== kingSideKing.id || castlingSide !== CastlingTypeEnum.KING_SIDE)
           )
-          && this.startingData.possibleCastling[pieceColor][castlingSide]
-          && !!rook
-          && rook.location.board === board
-          && (!onlyPremove || !this.isMadrasi || !this.isParalysed(rook))
-        ))
-        .filter((rook) => {
-          const { location: rookLocation } = rook!;
-          const isKingSideRook = rookLocation.x - pieceX > 0;
-          const newKingX = isKingSideRook ? this.boardWidth - 2 : 2;
-          const newRookX = isKingSideRook ? this.boardWidth - 3 : 3;
-          let canKingMove = true;
+          || !this.startingData.possibleCastling[pieceColor][castlingSide]
+          || !rook
+          || rook.location.board !== board
+          || (!onlyPremove && this.isMadrasi && this.isParalysed(rook))
+        ) {
+          return false;
+        }
 
-          if (forMove) {
-            _.forEach(_.times(Math.abs(pieceX - newKingX)), (x) => {
-              const fileX = newKingX + (pieceX > newKingX ? +x : -x);
-              const pieceInSquare = this.getBoardPiece({ board, y: pieceY, x: fileX });
+        if (onlyPremove) {
+          return true;
+        }
 
-              // square is attacked or square is occupied by a piece that is not the rook
-              if ((
-                fileX !== newKingX
-                && !this.isLeftInCheckAllowed
-                && this.isAttackedByOpponentPiece({ board, x: fileX, y: pieceY }, opponentColor)
-              ) || (
-                pieceInSquare
-                && pieceInSquare.id !== rook!.id
-              )) {
-                return canKingMove = false;
-              }
-            });
+        const { location: rookLocation } = rook;
+        const isKingSideRook = rookLocation.x - pieceX > 0;
+        const newKingX = isKingSideRook ? this.boardWidth - 2 : 2;
+        const newRookX = isKingSideRook ? this.boardWidth - 3 : 3;
+        let canKingMove = true;
+
+        forEach(times(Math.abs(pieceX - newKingX)), (x) => {
+          const fileX = newKingX + (pieceX > newKingX ? +x : -x);
+          const pieceInSquare = this.getBoardPiece({ board, y: pieceY, x: fileX });
+
+          // square is attacked or square is occupied by a piece that is not the rook
+          if ((
+            fileX !== newKingX
+            && !this.isLeftInCheckAllowed
+            && this.isAttackedByOpponentPiece({ board, x: fileX, y: pieceY }, opponentColor)
+          ) || (
+            pieceInSquare
+            && pieceInSquare.id !== rook.id
+          )) {
+            return canKingMove = false;
           }
-
-          if (!canKingMove) {
-            return false;
-          }
-
-          let canRookMove = true;
-
-          if (forMove) {
-            _.forEach(_.times(Math.abs(rookLocation.x - newRookX)), (x) => {
-              const fileX = newRookX + (rookLocation.x > newRookX ? +x : -x);
-              const pieceInSquare = this.getBoardPiece({ board, y: pieceY, x: fileX });
-
-              // square is occupied by a piece that is not the king
-              if (
-                pieceInSquare
-                && pieceInSquare.id !== piece.id
-              ) {
-                return canRookMove = false;
-              }
-            });
-
-            if (this.boardCount > 1) {
-              // a rook cannot move to a square that is occupied on any other board
-              canRookMove = canRookMove && _.times(this.boardCount - 1).every((board) => (
-                !this.getBoardPiece({
-                  board: this.getNextBoard(rookLocation.board + board),
-                  y: rookLocation.y,
-                  x: newRookX,
-                })
-              ));
-            }
-          }
-
-          return canRookMove;
         });
+
+        if (!canKingMove) {
+          return false;
+        }
+
+        let canRookMove = true;
+
+        forEach(times(Math.abs(rookLocation.x - newRookX)), (x) => {
+          const fileX = newRookX + (rookLocation.x > newRookX ? +x : -x);
+          const pieceInSquare = this.getBoardPiece({ board, y: pieceY, x: fileX });
+
+          // square is occupied by a piece that is not the king
+          if (
+            pieceInSquare
+            && pieceInSquare.id !== piece.id
+          ) {
+            return canRookMove = false;
+          }
+        });
+
+        if (this.boardCount > 1) {
+          // a rook cannot move to a square that is occupied on any other board
+          canRookMove = canRookMove && times(this.boardCount - 1).every((board) => (
+            !this.getBoardPiece({
+              board: this.getNextBoard(rookLocation.board + board),
+              y: rookLocation.y,
+              x: newRookX,
+            })
+          ));
+        }
+
+        return canRookMove;
+      });
 
       for (const rook of validCastlingRooks) {
         const { location: rookLocation } = rook!;
@@ -603,7 +609,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     }
 
     const disappearedOrMovedPiecesData = (disappearedOrMovedPieces as BoardPiece[]).map((piece) => (
-      _.pick(piece, ['moved', 'color', 'type', 'originalType', 'location', 'abilities'])
+      pick(piece, ['moved', 'color', 'type', 'originalType', 'location', 'abilities'])
     ));
 
     let notation = '';
@@ -993,7 +999,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
 
           // don't allow move to the next board if the square is occupied by another piece on any other board
           if (
-            _.times(this.boardCount - 1).some((board) => (
+            times(this.boardCount - 1).some((board) => (
               !!this.getBoardPiece({
                 ...square,
                 board: this.getNextBoard(toBoard + board),

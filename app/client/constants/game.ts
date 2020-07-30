@@ -1,4 +1,5 @@
-import * as _ from 'lodash';
+import mapValues from 'lodash/mapValues';
+import values from 'lodash/values';
 
 import {
   ColorEnum,
@@ -29,8 +30,8 @@ export const MAX_TABLET_PANEL_WIDTH = 300;
 
 export const STANDARD_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-export const pocketPieces = _.mapValues(ColorEnum, (color) => (
-  _.mapValues(PieceTypeEnum, (pieceType) => ({
+export const pocketPieces = mapValues(ColorEnum, (color) => (
+  mapValues(PieceTypeEnum, (pieceType) => ({
     color,
     type: pieceType,
     location: {
@@ -48,4 +49,4 @@ export const drawnSymbolColors: Record<DrawnSymbolColor, string> = {
   [DrawnSymbolColor.YELLOW]: '#fa0',
 };
 
-export const ALL_VARIANTS = _.values(GameVariantEnum).sort();
+export const ALL_VARIANTS = values(GameVariantEnum).sort();

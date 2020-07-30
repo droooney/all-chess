@@ -1,4 +1,6 @@
-import * as _ from 'lodash';
+import forEach from 'lodash/forEach';
+import last from 'lodash/last';
+import omit from 'lodash/omit';
 
 import {
   ColorEnum,
@@ -65,10 +67,10 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
       isCapture,
     } = this.registerMove(move, constructMoveNotation);
 
-    const registeredMove = _.last(this.moves)!;
+    const registeredMove = last(this.moves)!;
     const isPromotion = !!move.promotion;
 
-    _.forEach(ColorEnum, (color) => {
+    forEach(ColorEnum, (color) => {
       const isOwnMove = color === piece.color;
       const oldVisiblePieces = this.visiblePieces[color];
       const newVisiblePieces = this.getVisiblePieces(color);
@@ -171,7 +173,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         to: toLocationVisible || isCapture ? move.to : null,
         notation,
         isCapture,
-        pieces: newPieces.map((piece) => _.omit(piece, 'realId')),
+        pieces: newPieces.map((piece) => omit(piece, 'realId')),
         prevPiecesWorth: this.isFrankfurt || this.isAbsorption || this.isAtomic || this.isCirce
           ? { [ColorEnum.WHITE]: 0, [ColorEnum.BLACK]: 0 }
           : registeredMove.prevPiecesWorth,
@@ -187,7 +189,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
     super.setupStartingData();
 
     if (this.isDarkChess) {
-      _.forEach(ColorEnum, (color) => {
+      forEach(ColorEnum, (color) => {
         this.visiblePieces[color] = this.startingVisiblePieces[color] = this.getVisiblePieces(color).map((piece) => ({
           ...piece,
           realId: piece.id,

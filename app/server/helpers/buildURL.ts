@@ -1,5 +1,5 @@
 import * as qs from 'querystring';
-import * as _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 
 export interface BuildURLOptions {
   protocol: string;
@@ -11,7 +11,7 @@ export interface BuildURLOptions {
 export function buildURL(options: BuildURLOptions): string {
   let search = '';
 
-  if (!_.isEmpty(options.query)) {
+  if (!isEmpty(options.query)) {
     search = `?${qs.stringify(options.query)}`;
   }
 

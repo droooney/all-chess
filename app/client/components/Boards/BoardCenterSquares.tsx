@@ -1,5 +1,5 @@
-import * as _ from 'lodash';
 import * as React from 'react';
+import times from 'lodash/times';
 
 import { SVG_SQUARE_SIZE } from 'client/constants';
 
@@ -27,8 +27,8 @@ export default class BoardSquares extends React.PureComponent<Props> {
     } = this.props;
     const centerBorders: JSX.Element[] = [];
 
-    _.times(boardHeight, (rankY) => {
-      _.times(boardWidth, (fileX) => {
+    times(boardHeight, (rankY) => {
+      times(boardWidth, (fileX) => {
         const square: Square = { board: 0, x: fileX, y: rankY };
         const centerSquareParams = game.getCenterSquareParams(square);
         const hexPoints = game.getHexPoints(square);

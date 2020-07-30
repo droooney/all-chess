@@ -1,7 +1,10 @@
-import * as _ from 'lodash';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
+import intersection from 'lodash/intersection';
+import map from 'lodash/map';
+import sortBy from 'lodash/sortBy';
+import times from 'lodash/times';
 
 import { ALICE_CHESS_BOARDS_MARGIN, drawnSymbolColors, SVG_SQUARE_SIZE } from 'client/constants';
 
@@ -217,7 +220,7 @@ class Boards extends React.Component<Props> {
 
     const movedPieceIdsSelector = piecesSelector(movedPieceIds);
     const capturedPieceIdsSelector = piecesSelector(capturedPieceIds);
-    const movedAndCapturedPieceIdsSelector = piecesSelector(_.intersection(movedPieceIds, capturedPieceIds));
+    const movedAndCapturedPieceIdsSelector = piecesSelector(intersection(movedPieceIds, capturedPieceIds));
 
     return (
       <div
@@ -235,7 +238,7 @@ class Boards extends React.Component<Props> {
           '--board-orthodox-width': boardOrthodoxWidth,
           '--board-height': boardOrthodoxHeight,
           '--board-orthodox-height': boardHeight,
-          ..._.times(boardWidth).reduce((files, fileX) => ({
+          ...times(boardWidth).reduce((files, fileX) => ({
             ...files,
             [`--rendered-file-${fileX}`]: game.adjustFileX(fileX + boardsShiftX),
           }), {}),
@@ -270,7 +273,7 @@ class Boards extends React.Component<Props> {
           )}
         </style>
 
-        {_.times(boardCount, (board) => {
+        {times(boardCount, (board) => {
           if (boardToShow !== 'all' && board !== boardToShow) {
             return;
           }
@@ -303,13 +306,13 @@ class Boards extends React.Component<Props> {
               .map((piece) => ({ piece, isFantom: true }));
           }
 
-          const allPieces = _.sortBy([
+          const allPieces = sortBy([
             ...pieces,
             ...fantomPieces,
           ], ({ piece }) => piece.id);
 
-          _.times(boardHeight, (rankY) => {
-            _.times(boardWidth, (fileX) => {
+          times(boardHeight, (rankY) => {
+            times(boardWidth, (fileX) => {
               const square = {
                 board,
                 x: fileX,
@@ -439,7 +442,7 @@ class Boards extends React.Component<Props> {
                   <stop offset="0%" stopColor="red" />
                   <stop offset="100%" stopColor="rgba(0,0,0,0)" />
                 </radialGradient>
-                {_.map(DrawnSymbolColor, (color) => (
+                {map(DrawnSymbolColor, (color) => (
                   <marker
                     key={color}
                     id={`arrow-marker-${color}`}

@@ -1,7 +1,8 @@
-import * as _ from 'lodash';
 import * as React from 'react';
 import { Redirect, RouteComponentProps, Switch } from 'react-router-dom';
 import MenuItem from '@material-ui/core/MenuItem';
+import findKey from 'lodash/findKey';
+import map from 'lodash/map';
 
 import {
   GAME_VARIANT_NAMES,
@@ -33,12 +34,12 @@ export default class GamesRules extends React.Component<Props> {
         },
       },
     } = this.props;
-    const gameType = _.findKey(GAME_VARIANT_LINKS, (link) => link === gameLink) as GameVariantEnum;
+    const gameType = findKey(GAME_VARIANT_LINKS, (link) => link === gameLink) as GameVariantEnum | undefined;
 
     return (
       <div className="route rules-route">
         <div className="desktop-variants">
-          {_.map(GameVariantEnum, (variant) => (
+          {map(GameVariantEnum, (variant) => (
             <GameVariantLink key={variant} variant={variant} />
           ))}
         </div>
@@ -49,7 +50,7 @@ export default class GamesRules extends React.Component<Props> {
             renderValue={() => gameType ? GAME_VARIANT_NAMES[gameType] : 'Select variant'}
             onChange={(e) => history.push(`/rules/${GAME_VARIANT_LINKS[e.target.value as GameVariantEnum]}`)}
           >
-            {_.map(GameVariantEnum, (variant) => (
+            {map(GameVariantEnum, (variant) => (
               <MenuItem key={variant} value={variant}>
                 {GAME_VARIANT_NAMES[variant]}
               </MenuItem>
@@ -58,7 +59,7 @@ export default class GamesRules extends React.Component<Props> {
         </div>
         <div className="rules-container">
           <Switch>
-            <Route exact strict path={`/rules/:gameLink(${_.map(GAME_VARIANT_LINKS).join('|')})`} component={GameRules}/>
+            <Route exact strict path={`/rules/:gameLink(${map(GAME_VARIANT_LINKS).join('|')})`} component={GameRules}/>
             <Route
               exact
               strict

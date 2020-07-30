@@ -1,5 +1,5 @@
-import * as _ from 'lodash';
 import * as React from 'react';
+import times from 'lodash/times';
 
 import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from 'client/constants';
 
@@ -43,8 +43,8 @@ export default class BoardLiterals extends React.PureComponent<Props> {
     const literalMargin = literalFontSize / 3;
     const literals: JSX.Element[] = [];
 
-    _.times(boardHeight, (rankY) => {
-      _.times(boardWidth, (fileX) => {
+    times(boardHeight, (rankY) => {
+      times(boardWidth, (fileX) => {
         const renderedFileX = game.adjustFileX(fileX + boardsShiftX);
         const square = {
           board,

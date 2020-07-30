@@ -1,7 +1,7 @@
 import * as qs from 'querystring';
-import * as _ from 'lodash';
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
+import findKey from 'lodash/findKey';
 
 import { STANDARD_FEN } from 'client/constants';
 import { GAME_VARIANT_PGN_NAMES } from 'shared/constants';
@@ -16,7 +16,7 @@ import {
   Square,
 } from 'shared/types';
 
-import { Game } from 'client/helpers';
+import { Game, isNotUndefined } from 'client/helpers';
 import { Game as BaseGame } from 'shared/helpers';
 
 import Boards from '../../components/Boards';
@@ -120,8 +120,8 @@ class BoardEditor extends React.Component<Props, State> {
 
     const variants = variantsString
       .split('+')
-      .map((variant) => _.findKey(GAME_VARIANT_PGN_NAMES, (pgnName) => pgnName === variant))
-      .filter(Boolean) as GameVariantEnum[];
+      .map((variant) => findKey(GAME_VARIANT_PGN_NAMES, (pgnName) => pgnName === variant))
+      .filter(isNotUndefined) as GameVariantEnum[];
 
     if (!Game.validateVariants(variants)) {
       return null;

@@ -1,4 +1,5 @@
-import * as _ from 'lodash';
+import findKey from 'lodash/findKey';
+import last from 'lodash/last';
 
 import {
   COLOR_NAMES,
@@ -68,7 +69,7 @@ export class Game extends GameResultUtils implements IGame {
       if (tagName === 'Variant') {
         if (trueTagValue !== 'Standard') {
           trueTagValue.split(/\s*\+\s*/).forEach((variantString) => {
-            const variant = _.findKey(GAME_VARIANT_PGN_NAMES, (name) => name === variantString) as GameVariantEnum | undefined;
+            const variant = findKey(GAME_VARIANT_PGN_NAMES, (name) => name === variantString) as GameVariantEnum | undefined;
 
             if (!variant) {
               throw new Error(`Invalid PGN: invalid variant (${variantString})`);
@@ -282,7 +283,7 @@ export class Game extends GameResultUtils implements IGame {
 
         if (isCastling) {
           const kings = game.kings[game.turn];
-          const king = isQueenSideCastling ? kings[0] : _.last(kings);
+          const king = isQueenSideCastling ? kings[0] : last(kings);
 
           if (!king || !king.location || king.location.type !== PieceLocationEnum.BOARD) {
             throw new Error('Invalid PGN: wrong castling move');
@@ -532,7 +533,7 @@ export class Game extends GameResultUtils implements IGame {
       const {
         duration: actualDuration,
         prevPiecesWorth,
-      } = _.last(this.getUsedMoves())!;
+      } = last(this.getUsedMoves())!;
       const duration = Math.max(actualDuration / 2, actualDuration - averagePing / 2);
 
       if (this.isFinished()) {

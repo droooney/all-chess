@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import times from 'lodash/times';
 
 import { GameVariantEnum } from 'shared/types';
 
@@ -7,7 +7,7 @@ export default class GameCommonUtils {
     let id: string;
 
     do {
-      id = _.times(10, () => String.fromCharCode(97 + Math.floor(Math.random() * 26))).join('');
+      id = times(10, () => String.fromCharCode(97 + Math.floor(Math.random() * 26))).join('');
     } while (map[id]);
 
     return id;

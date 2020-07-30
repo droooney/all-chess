@@ -1,6 +1,6 @@
 /// <reference path="../typings/generator.d.ts"/>
 
-import * as _ from 'lodash';
+import times from 'lodash/times';
 
 import {
   BoardPiece,
@@ -286,7 +286,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
         let newSquares = this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.VISIBLE).toArray();
 
         if (this.isAliceChess) {
-          _.times(this.boardCount - 1, (board) => {
+          times(this.boardCount - 1, (board) => {
             newSquares = [
               ...newSquares,
               ...newSquares.map((square) => ({
@@ -423,7 +423,7 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
   }
 
   isAvailableSquare(square: Square): boolean {
-    return !this.isAliceChess || _.times(this.boardCount - 1).every((board) => (
+    return !this.isAliceChess || times(this.boardCount - 1).every((board) => (
       !this.getBoardPiece({
         ...square,
         board: this.getNextBoard(square.board + board),
@@ -504,9 +504,9 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
   }
 
   resetBoards() {
-    this.boards = _.times(this.boardCount, () => (
-      _.times(this.boardHeight, () => (
-        _.times(this.boardWidth, () => null)
+    this.boards = times(this.boardCount, () => (
+      times(this.boardHeight, () => (
+        times(this.boardWidth, () => null)
       ))
     ));
 

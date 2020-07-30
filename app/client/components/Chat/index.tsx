@@ -1,6 +1,6 @@
-import * as _ from 'lodash';
 import * as React from 'react';
 import classNames from 'classnames';
+import last from 'lodash/last';
 
 import { ChatMessage } from 'shared/types';
 
@@ -32,7 +32,7 @@ export default class Chat extends React.PureComponent<Props, State> {
   componentDidUpdate(prevProps: Props) {
     if (this.props.chat.length > prevProps.chat.length) {
       const messages = this.messagesRef.current!;
-      const lastMessage = _.last(messages.children)!;
+      const lastMessage = last(messages.children)!;
       const maxScroll = messages.scrollHeight - messages.clientHeight;
 
       if (maxScroll - messages.scrollTop - 10 <= lastMessage.clientHeight) {

@@ -1,5 +1,9 @@
-import * as _ from 'lodash';
 import { Socket } from 'socket.io-client';
+import clone from 'lodash/clone';
+import forEach from 'lodash/forEach';
+import isEqual from 'lodash/isEqual';
+import last from 'lodash/last';
+import times from 'lodash/times';
 
 import {
   POSSIBLE_TIMER_BASES_IN_MINUTES,
@@ -222,13 +226,13 @@ export class Game extends GameHelper {
         this.lastMoveTimestamp = lastMoveTimestamp;
 
         if (moveIndex === this.getUsedMoves().length - 1) {
-          const lastMove = _.last(this.getUsedMoves())!;
+          const lastMove = last(this.getUsedMoves())!;
 
           // already locally registered move
           if (
             !this.isOngoingDarkChessGame
-            && _.isEqual(lastMove.from, move.from)
-            && _.isEqual(lastMove.to, move.to)
+            && isEqual(lastMove.from, move.from)
+            && isEqual(lastMove.to, move.to)
             && lastMove.promotion === move.promotion
           ) {
             lastMove.duration = move.duration;
@@ -277,7 +281,7 @@ export class Game extends GameHelper {
           if (this.premoves.length) {
             this.piecesBeforePremoves = this.pieces;
 
-            this.setPieces(this.pieces.map(_.clone));
+            this.setPieces(this.pieces.map(clone));
 
             this.premoves.forEach((premove) => {
               this.performPremove(premove);
@@ -572,7 +576,7 @@ export class Game extends GameHelper {
       const { notation, isCapture, revertMove } = this.performMove(move, {
         constructMoveNotation: true,
       });
-      const pieces = this.pieces.filter(Game.isRealPiece).map(_.clone);
+      const pieces = this.pieces.filter(Game.isRealPiece).map(clone);
 
       revertMove();
 
@@ -632,11 +636,11 @@ export class Game extends GameHelper {
     }
 
     if (moveIndex < this.currentMoveIndex) {
-      _.times(this.currentMoveIndex - moveIndex, () => {
+      times(this.currentMoveIndex - moveIndex, () => {
         this.moveBack(false);
       });
     } else {
-      _.times(moveIndex - this.currentMoveIndex, () => {
+      times(moveIndex - this.currentMoveIndex, () => {
         this.moveForward(false);
       });
     }
@@ -863,7 +867,7 @@ export class Game extends GameHelper {
     });
 
     movedPieces.forEach((piece) => {
-      _.times(this.boardCount - 1, (board) => {
+      times(this.boardCount - 1, (board) => {
         const pieceInSquare = this.getBoardPiece({
           ...piece.location,
           board: this.getNextBoard(piece.location.board + board),
@@ -931,7 +935,7 @@ export class Game extends GameHelper {
     if (!this.premoves.length) {
       this.piecesBeforePremoves = this.pieces;
 
-      this.setPieces(this.pieces.map(_.clone));
+      this.setPieces(this.pieces.map(clone));
     }
 
     this.performPremove(move);
@@ -976,15 +980,15 @@ export class Game extends GameHelper {
     const pieces: Dictionary<Piece> = this.piecesByMove[moveIndex] = {};
 
     this.pieces.forEach((piece) => {
-      pieces[piece.id] = _.clone(piece);
+      pieces[piece.id] = clone(piece);
     });
 
     if (this.isDarkChess) {
-      _.forEach(ColorEnum, (color) => {
+      forEach(ColorEnum, (color) => {
         const pieces: Dictionary<Piece> = this.colorPiecesByMove[color][moveIndex] = {};
 
         this.getMoveVisiblePieces(moveIndex, color).forEach((piece) => {
-          pieces[piece.id] = _.clone(piece);
+          pieces[piece.id] = clone(piece);
         });
       });
     }
@@ -1033,17 +1037,17 @@ export class Game extends GameHelper {
   }
 
   unregisterLastMove() {
-    const move = _.last(this.getUsedMoves())!;
+    const move = last(this.getUsedMoves())!;
     const needToUpdateTime = this.needToChangeTime();
 
     if (this.isOngoingDarkChessGame && this.darkChessMode) {
-      _.last(this.colorMoves[this.darkChessMode])!.revertMove();
+      last(this.colorMoves[this.darkChessMode])!.revertMove();
 
       this.colorMoves[this.darkChessMode] = this.colorMoves[this.darkChessMode].slice(0, -1);
 
       this.setPieces(this.visiblePieces[this.darkChessMode]);
     } else {
-      _.last(this.moves)!.revertMove();
+      last(this.moves)!.revertMove();
 
       this.moves = this.moves.slice(0, -1);
     }

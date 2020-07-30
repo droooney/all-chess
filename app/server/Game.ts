@@ -1,5 +1,12 @@
-import * as _ from 'lodash';
 import { Namespace } from 'socket.io';
+import isEqual from 'lodash/isEqual';
+import find from 'lodash/find';
+import forEach from 'lodash/forEach';
+import keys from 'lodash/keys';
+import last from 'lodash/last';
+import pick from 'lodash/pick';
+import some from 'lodash/some';
+import values from 'lodash/values';
 
 import {
   COLOR_NAMES,
@@ -29,7 +36,7 @@ import { Game as GameHelper } from 'shared/helpers';
 
 import { sessionMiddleware } from 'server/controllers/session';
 
-const VARIANTS = _.values(GameVariantEnum);
+const VARIANTS = values(GameVariantEnum);
 
 export default class Game extends GameHelper {
   static validateSettings(settings: any): boolean {
@@ -56,14 +63,14 @@ export default class Game extends GameHelper {
       return (
         POSSIBLE_TIMER_BASES_IN_MILLISECONDS.includes(timeControl.base)
         && POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS.includes(timeControl.increment)
-        && _.isEqual(_.keys(timeControl).sort(), ['base', 'increment', 'type'])
+        && isEqual(keys(timeControl).sort(), ['base', 'increment', 'type'])
       );
     }
 
     if (timeControl.type === TimeControlEnum.CORRESPONDENCE) {
       return (
         POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS.includes(timeControl.base)
-        && _.isEqual(_.keys(timeControl).sort(), ['base', 'type'])
+        && isEqual(keys(timeControl).sort(), ['base', 'type'])
       );
     }
 
@@ -116,17 +123,17 @@ export default class Game extends GameHelper {
           ? socket.request.session.user || null
           : null;
 
-        const existingPlayer = (user && _.find(this.players, (player) => player.id === user.id)) || null;
+        const existingPlayer = (user && find(this.players, (player) => player.id === user.id)) || null;
         const isNewPlayer = (
           !existingPlayer
           && this.status === GameStatusEnum.BEFORE_START
-          && _.some(this.players, (player) => player.mock)
+          && some(this.players, (player) => player.mock)
         );
         const isOngoingDarkChessGame = this.isDarkChess && this.status !== GameStatusEnum.FINISHED;
         let player: Player | null = null;
 
         if (isNewPlayer && user) {
-          const otherPlayer = _.find(this.players, (player) => !player.mock);
+          const otherPlayer = find(this.players, (player) => !player.mock);
           const color = otherPlayer
             ? Game.getOppositeColor(otherPlayer.color)
             : Math.random() > 0.5
@@ -505,12 +512,12 @@ export default class Game extends GameHelper {
     this.lastMoveTimestamp = newTimestamp;
 
     if (this.isDarkChess) {
-      _.forEach(this.io.sockets, (socket) => {
+      forEach(this.io.sockets, (socket) => {
         const socketPlayer = socket.player;
 
         if (socketPlayer) {
           socket.emit('moveMade', {
-            move: _.last(this.colorMoves[socketPlayer.color])!,
+            move: last(this.colorMoves[socketPlayer.color])!,
             moveIndex: this.moves.length - 1,
             lastMoveTimestamp: this.lastMoveTimestamp,
           });
@@ -574,7 +581,7 @@ export default class Game extends GameHelper {
   }
 
   toJSON(): IGame {
-    return _.pick(this, [
+    return pick(this, [
       'id',
       'startingData',
       'variants',
@@ -592,7 +599,7 @@ export default class Game extends GameHelper {
   }
 
   unregisterLastMove() {
-    const move = _.last(this.moves)!;
+    const move = last(this.moves)!;
     const needToUpdateTime = this.needToChangeTime();
 
     move.revertMove();
@@ -606,8 +613,8 @@ export default class Game extends GameHelper {
     }
 
     if (this.isDarkChess) {
-      _.forEach(ColorEnum, (color) => {
-        const move = _.last(this.colorMoves[color]);
+      forEach(ColorEnum, (color) => {
+        const move = last(this.colorMoves[color]);
 
         if (move) {
           move.revertMove();
