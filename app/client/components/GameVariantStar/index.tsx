@@ -58,7 +58,7 @@ class GameVariantStar extends React.PureComponent<Props> {
     ));
   };
 
-  onMouseDown = (e: React.MouseEvent) => {
+  stopPropagation = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
   };
 
@@ -67,7 +67,8 @@ class GameVariantStar extends React.PureComponent<Props> {
       <IconButton
         style={{ padding: 6 }}
         onClick={this.onClick}
-        onMouseDown={this.onMouseDown}
+        onMouseDown={this.stopPropagation}
+        onTouchStart={this.stopPropagation}
       >
         {
           this.isFavourite()

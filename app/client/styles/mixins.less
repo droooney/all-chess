@@ -42,6 +42,14 @@
   });
 }
 
+.not-hover(@rules) {
+  .supports-hover({
+    &:not(:hover) {
+      @rules();
+    }
+  });
+}
+
 .ellipsis {
   max-width: 100%;
   overflow: hidden;
