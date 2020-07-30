@@ -123,17 +123,17 @@ export default class Game extends GameHelper {
           ? socket.request.session.user || null
           : null;
 
-        const existingPlayer = (user && find(this.players, (player) => player.id === user.id)) || null;
+        const existingPlayer = (user && find(this.players, { id: user.id })) || null;
         const isNewPlayer = (
           !existingPlayer
           && this.status === GameStatusEnum.BEFORE_START
-          && some(this.players, (player) => player.mock)
+          && some(this.players, { mock: true })
         );
         const isOngoingDarkChessGame = this.isDarkChess && this.status !== GameStatusEnum.FINISHED;
         let player: Player | null = null;
 
         if (isNewPlayer && user) {
-          const otherPlayer = find(this.players, (player) => !player.mock);
+          const otherPlayer = find(this.players, { mock: false });
           const color = otherPlayer
             ? Game.getOppositeColor(otherPlayer.color)
             : Math.random() > 0.5
