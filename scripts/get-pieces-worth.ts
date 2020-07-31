@@ -60,7 +60,6 @@ boardTypes.forEach((boardType) => {
     const game = new Game({
       id: '',
       startingData: {
-        result: null,
         turn: ColorEnum.WHITE,
         startingMoveIndex: 0,
         pliesFor50MoveRule: 0,

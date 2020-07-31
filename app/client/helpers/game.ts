@@ -38,6 +38,7 @@ import {
   Premove,
   ResultReasonEnum,
   Square,
+  SquareColor,
   TimeControl,
   TimeControlEnum,
 } from 'shared/types';
@@ -463,10 +464,10 @@ export class Game extends GameHelper {
     };
   }
 
-  getLiteralColor(square: Square): 'light' | 'dark' | 'half-dark' {
-    return this.getSquareColor(square) === 'light'
-      ? 'dark'
-      : 'light';
+  getLiteralColor(square: Square): SquareColor {
+    return this.getSquareColor(square) === SquareColor.LIGHT
+      ? SquareColor.DARK
+      : SquareColor.LIGHT;
   }
 
   getLocalVisibleSquares(color: ColorEnum): Square[] {

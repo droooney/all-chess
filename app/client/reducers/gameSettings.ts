@@ -10,4 +10,5 @@ export default getReducer(initialState, {
     ...state,
     [action.key]: action.value,
   }),
+  [GameSettingsActions.LOAD_SETTINGS]: (_state, action) => action.settings,
 });

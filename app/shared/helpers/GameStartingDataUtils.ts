@@ -110,7 +110,6 @@ const HEXAGONAL_EXTENDED_PIECE_SQUARES: readonly [number, number][] = [
 ];
 
 const STANDARD_STARTING_DATA: StartingData = {
-  result: null,
   turn: ColorEnum.WHITE,
   startingMoveIndex: 0,
   pliesFor50MoveRule: 0,

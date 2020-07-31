@@ -4,9 +4,9 @@ import { Redirect, Router, Switch } from 'react-router-dom';
 import { ThemeProvider } from '@material-ui/styles';
 import { createBrowserHistory } from 'history';
 
-import { isMobileDevice } from 'client/helpers';
+import { getDefaultSettings, isMobileDevice } from 'client/helpers';
 
-import { setIsMobile } from 'client/actions';
+import { loadSettings, setIsMobile } from 'client/actions';
 import { DispatchProps, ReduxState } from 'client/store';
 
 import Route from 'client/components/Route';
@@ -19,6 +19,7 @@ import Register from 'client/pages/Register';
 import Games from 'client/pages/Games';
 import Game from 'client/pages/Game';
 import Login from 'client/pages/Login';
+import Settings from 'client/pages/Settings';
 
 import lightTheme from 'client/themes/light';
 
@@ -31,7 +32,16 @@ type Props = ReturnType<typeof mapStateToProps> & DispatchProps;
 class App extends React.Component<Props> {
   componentDidMount(): void {
     window.addEventListener('resize', this.onWindowResize);
+    window.addEventListener('storage', this.onStorageChange);
   }
+
+  onStorageChange = () => {
+    const {
+      dispatch,
+    } = this.props;
+
+    dispatch(loadSettings(getDefaultSettings()));
+  };
 
   onWindowResize = () => {
     const {
@@ -54,13 +64,14 @@ class App extends React.Component<Props> {
 
             <main>
               <Switch>
-                <Route exact strict path="/" component={Home}/>
-                <Route strict path="/editor" component={BoardEditor}/>
-                <Route strict path="/rules/:gameLink?" component={GamesRules}/>
-                <Route exact strict path="/login" component={Login}/>
-                <Route exact strict path="/register" component={Register}/>
-                <Route exact strict path="/games" component={Games}/>
-                <Route exact strict path="/games/:gameId" component={Game}/>
+                <Route exact strict path="/" component={Home} />
+                <Route strict path="/editor" component={BoardEditor} />
+                <Route strict path="/rules/:gameLink?" component={GamesRules} />
+                <Route strict path="/settings/:settingsType?" component={Settings}/>
+                <Route exact strict path="/login" component={Login} />
+                <Route exact strict path="/register" component={Register} />
+                <Route exact strict path="/games" component={Games} />
+                <Route exact strict path="/games/:gameId" component={Game} />
                 <Redirect to="/"/>
               </Switch>
             </main>

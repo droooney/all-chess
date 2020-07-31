@@ -1,13 +1,4 @@
-/// <reference path="../typings/socket.io.d.ts" />
-
 import { Dictionary } from './common';
-
-declare module 'socket.io' {
-  interface Socket {
-    pingResponded: Set<number>;
-    player: Player | null;
-  }
-}
 
 export interface Square {
   readonly board: number;
@@ -19,7 +10,13 @@ export enum DrawnSymbolColor {
   GREEN = 'GREEN',
   BLUE = 'BLUE',
   RED = 'RED',
-  YELLOW = 'YELLOW'
+  YELLOW = 'YELLOW',
+}
+
+export enum SquareColor {
+  LIGHT = 'LIGHT',
+  DARK = 'DARK',
+  HALF_DARK = 'HALF_DARK',
 }
 
 export interface BaseDrawnSymbol {
@@ -59,7 +56,7 @@ export enum PieceTypeEnum {
   ROOK = 'ROOK',
   BISHOP = 'BISHOP',
   KNIGHT = 'KNIGHT',
-  PAWN = 'PAWN'
+  PAWN = 'PAWN',
 }
 
 export type EachPieceType<T> = Record<PieceTypeEnum, T>;
@@ -77,14 +74,14 @@ export type MovementType = PieceTypeEnum.KNIGHT | PieceTypeEnum.BISHOP | PieceTy
 
 export enum ColorEnum {
   WHITE = 'WHITE',
-  BLACK = 'BLACK'
+  BLACK = 'BLACK',
 }
 
 export type EachColor<T> = Record<ColorEnum, T>;
 
 export enum CastlingTypeEnum {
   KING_SIDE = 'KING_SIDE',
-  QUEEN_SIDE = 'QUEEN_SIDE'
+  QUEEN_SIDE = 'QUEEN_SIDE',
 }
 
 export type PossibleCastling = EachColor<Record<CastlingTypeEnum, boolean>>;
@@ -103,7 +100,6 @@ export interface PossibleEnPassant {
 }
 
 export interface StartingData {
-  result: GameResult | null;
   turn: ColorEnum;
   startingMoveIndex: number;
   pliesFor50MoveRule: number;
@@ -146,7 +142,7 @@ export type RealPiece = (
 
 export enum PieceLocationEnum {
   BOARD = 'BOARD',
-  POCKET = 'POCKET'
+  POCKET = 'POCKET',
 }
 
 export interface PieceBoardLocation extends Square {
@@ -182,7 +178,7 @@ export interface GameMinimalData {
 }
 
 export interface CommonGameData extends GameMinimalData {
-  startingData: StartingData;
+  startingData?: StartingData;
   result: GameResult | null;
   chat: ChatMessage[];
   takebackRequest: TakebackRequest | null;
@@ -311,13 +307,13 @@ export enum GetPossibleMovesMode {
   CONTROLLED = 'CONTROLLED',
   VISIBLE = 'VISIBLE',
   POSSIBLE = 'POSSIBLE',
-  PREMOVES = 'PREMOVES'
+  PREMOVES = 'PREMOVES',
 }
 
 export enum GameStatusEnum {
   BEFORE_START = 'BEFORE_START',
   ONGOING = 'ONGOING',
-  FINISHED = 'FINISHED'
+  FINISHED = 'FINISHED',
 }
 
 export enum ResultReasonEnum {
@@ -336,7 +332,7 @@ export enum ResultReasonEnum {
   INSUFFICIENT_MATERIAL = 'INSUFFICIENT_MATERIAL',
   INSUFFICIENT_MATERIAL_AND_TIMEOUT = 'INSUFFICIENT_MATERIAL_AND_TIMEOUT',
   THREEFOLD_REPETITION = 'THREEFOLD_REPETITION',
-  FIFTY_MOVE_RULE = 'FIFTY_MOVE_RULE'
+  FIFTY_MOVE_RULE = 'FIFTY_MOVE_RULE',
 }
 
 export interface GameResult {
@@ -347,7 +343,7 @@ export interface GameResult {
 export enum TimeControlEnum {
   TIMER = 'TIMER',
   CORRESPONDENCE = 'CORRESPONDENCE',
-  NONE = 'NONE'
+  NONE = 'NONE',
 }
 
 export interface TimerTimeControl {

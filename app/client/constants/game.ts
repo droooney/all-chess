@@ -4,17 +4,18 @@ import values from 'lodash/values';
 import {
   ColorEnum,
   DrawnSymbolColor,
-  GameSettings,
   GameVariantEnum,
   PieceLocationEnum,
   PieceTypeEnum,
 } from 'shared/types';
+import { SquareColorTheme, GameSettings } from 'client/types';
 
 export const GAME_DEFAULT_SETTINGS: { [key in keyof GameSettings]: GameSettings[key]; } = {
   showFantomPieces: true,
   timeControl: null,
   favouriteVariants: [],
   lastPlayedVariants: [],
+  squareColorTheme: SquareColorTheme.CLASSIC,
 };
 
 export const SVG_SQUARE_SIZE = 60;
@@ -42,7 +43,7 @@ export const pocketPieces = mapValues(ColorEnum, (color) => (
   }))
 ));
 
-export const drawnSymbolColors: Record<DrawnSymbolColor, string> = {
+export const DRAWN_SYMBOL_COLORS: Record<DrawnSymbolColor, string> = {
   [DrawnSymbolColor.GREEN]: '#080',
   [DrawnSymbolColor.BLUE]: '#0bf',
   [DrawnSymbolColor.RED]: '#f00',

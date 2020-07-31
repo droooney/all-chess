@@ -13,6 +13,7 @@ import {
   MovementType,
   PieceTypeEnum,
   Square,
+  SquareColor,
 } from 'shared/types';
 
 import GamePieceUtils from './GamePieceUtils';
@@ -265,18 +266,18 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     return (board + this.boardCount - 1) % this.boardCount;
   }
 
-  getSquareColor(square: Square): 'light' | 'dark' | 'half-dark' {
+  getSquareColor(square: Square): SquareColor {
     if (this.isHexagonalChess) {
       const x = this.middleFileX - Math.abs(square.x - this.middleFileX);
 
       return (square.y + x) % 3 === 2
-        ? 'light'
+        ? SquareColor.LIGHT
         : (square.y + x) % 3 === 1
-          ? 'half-dark'
-          : 'dark';
+          ? SquareColor.HALF_DARK
+          : SquareColor.DARK;
     }
 
-    return (square.y + square.x) % 2 ? 'light' : 'dark';
+    return (square.y + square.x) % 2 ? SquareColor.LIGHT : SquareColor.DARK;
   }
 
   getVisibleSquares(forColor: ColorEnum): Square[] {

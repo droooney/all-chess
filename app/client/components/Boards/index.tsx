@@ -6,7 +6,11 @@ import map from 'lodash/map';
 import sortBy from 'lodash/sortBy';
 import times from 'lodash/times';
 
-import { ALICE_CHESS_BOARDS_MARGIN, drawnSymbolColors, SVG_SQUARE_SIZE } from 'client/constants';
+import {
+  ALICE_CHESS_BOARDS_MARGIN,
+  DRAWN_SYMBOL_COLORS,
+  SVG_SQUARE_SIZE,
+} from 'client/constants';
 
 import {
   AnyMove,
@@ -56,7 +60,6 @@ export interface OwnProps {
   pieces: readonly IPiece[];
 
   withLiterals?: boolean;
-  showFantomPieces?: boolean;
   showKingAttack?: boolean;
 }
 
@@ -169,6 +172,7 @@ class Boards extends React.Component<Props> {
       boardToShow,
       boardsShiftX,
       showFantomPieces,
+      squareColorTheme,
     } = this.props;
     const prevMoveIndex = currentMoveIndex === this.prevMoveIndexes[1]
       ? this.prevMoveIndexes[0]
@@ -226,7 +230,7 @@ class Boards extends React.Component<Props> {
       <div
         ref={this.boardsRef}
         id={`boards-${gameId}`}
-        className={classNames('boards', {
+        className={classNames('boards', `theme-${squareColorTheme}`, {
           antichess: isAntichess,
           'no-fantom': !showFantomPieces,
         })}
@@ -242,11 +246,6 @@ class Boards extends React.Component<Props> {
             ...files,
             [`--rendered-file-${fileX}`]: game.adjustFileX(fileX + boardsShiftX),
           }), {}),
-          '--light-square-color': '#eeeece',
-          // '--light-square-color': 'beige',
-          '--dark-square-color': '#bbb',
-          // '--dark-square-color': 'silver',
-          '--half-dark-square-color': '#d8d8d8',
           '--boards-margin': `${ALICE_CHESS_BOARDS_MARGIN}px`,
         } as React.CSSProperties}
         onContextMenu={(e) => e.preventDefault()}
@@ -453,7 +452,7 @@ class Boards extends React.Component<Props> {
                     refX={7}
                     refY={4}
                   >
-                    <path d="M0,0 V8 L10,4 Z" className="arrow-marker" fill={drawnSymbolColors[color]} />
+                    <path d="M0,0 V8 L10,4 Z" className="arrow-marker" fill={DRAWN_SYMBOL_COLORS[color]} />
                   </marker>
                 ))}
               </defs>
@@ -522,11 +521,10 @@ class Boards extends React.Component<Props> {
   }
 }
 
-function mapStateToProps(state: ReduxState, ownProps: OwnProps) {
+function mapStateToProps(state: ReduxState) {
   return {
-    showFantomPieces: 'showFantomPieces' in ownProps
-      ? ownProps.showFantomPieces
-      : state.gameSettings.showFantomPieces,
+    showFantomPieces: state.gameSettings.showFantomPieces,
+    squareColorTheme: state.gameSettings.squareColorTheme,
   };
 }
 

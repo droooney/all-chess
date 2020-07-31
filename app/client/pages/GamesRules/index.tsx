@@ -43,6 +43,7 @@ export default class GamesRules extends React.Component<Props> {
             <GameVariantLink key={variant} variant={variant} />
           ))}
         </div>
+
         <div className="mobile-variants">
           <Select
             displayEmpty
@@ -57,9 +58,16 @@ export default class GamesRules extends React.Component<Props> {
             ))}
           </Select>
         </div>
+
         <div className="rules-container">
           <Switch>
-            <Route exact strict path={`/rules/:gameLink(${map(GAME_VARIANT_LINKS).join('|')})`} component={GameRules}/>
+            <Route
+              exact
+              strict
+              path={`/rules/:gameLink(${map(GAME_VARIANT_LINKS).join('|')})`}
+              component={GameRules}
+            />
+
             <Route
               exact
               strict
@@ -78,6 +86,7 @@ export default class GamesRules extends React.Component<Props> {
                 </React.Fragment>
               )}
             />
+
             <Redirect to="/rules" />
           </Switch>
         </div>

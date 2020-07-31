@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import IconButton from '@material-ui/core/IconButton';
-import Star from '@material-ui/icons/Star';
-import StarBorder from '@material-ui/icons/StarBorder';
+import StarIcon from '@material-ui/icons/Star';
+import StarBorderIcon from '@material-ui/icons/StarBorder';
 
 import { GameVariantEnum } from 'shared/types';
 
@@ -72,8 +72,8 @@ class GameVariantStar extends React.PureComponent<Props> {
       >
         {
           this.isFavourite()
-            ? <Star color="secondary" />
-            : <StarBorder color="secondary" className="star-outlined" />
+            ? <StarIcon color="secondary" />
+            : <StarBorderIcon color="secondary" className="star-outlined" />
         }
       </IconButton>
     );

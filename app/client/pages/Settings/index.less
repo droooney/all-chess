@@ -1,0 +1,65 @@
+@import (reference) '../../styles/mixins';
+
+.route.settings-route {
+  display: grid;
+  width: 100%;
+  max-width: 1200px;
+  align-self: center;
+
+  .settings-nav {
+    .flex-child-fixed();
+
+    grid-area: settings-nav;
+  }
+
+  .settings-container {
+    .flex-child();
+
+    grid-area: settings-container;
+  }
+
+  .not-mobile({
+    grid-template: "settings-nav settings-container" 100% ~"/" auto 1fr;
+    padding: 20px;
+
+    .settings-nav {
+      padding-right: 20px;
+      border-right: 1px solid black;
+    }
+
+    .settings-container {
+      padding-left: 20px;
+    }
+  });
+
+  .display-settings {
+    .square-style-settings {
+      .flex(@justify-content: flex-start);
+
+      .example-boards {
+        .flex();
+
+        padding: 6px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        cursor: pointer;
+
+        &.selected {
+          border-color: green;
+        }
+
+        &:not(:first-child) {
+          margin-left: 6px;
+        }
+
+        .example-board {
+          height: 60px;
+
+          &:not(:first-child) {
+            margin-left: 6px;
+          }
+        }
+      }
+    }
+  }
+}

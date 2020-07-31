@@ -1,9 +1,9 @@
 import times from 'lodash/times';
 
-import { GameVariantEnum } from 'shared/types';
+import { Dictionary, GameVariantEnum } from 'shared/types';
 
 export default class GameCommonUtils {
-  static generateUid(map: Record<string, any>): string {
+  static generateUid(map: Dictionary<any>): string {
     let id: string;
 
     do {

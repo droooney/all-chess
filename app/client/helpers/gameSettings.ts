@@ -2,7 +2,7 @@ import keys from 'lodash/keys';
 
 import { GAME_DEFAULT_SETTINGS } from 'client/constants';
 
-import { GameSettings } from 'shared/types';
+import { GameSettings } from 'client/types';
 
 function getLocalStorageSettingsKey(key: string): string {
   return `settings.${key}`;
@@ -17,17 +17,19 @@ export function getDefaultSettings(): GameSettings {
 
   keys(settings).forEach((key) => {
     let localStorageValue = null;
+    let loadedFromStorage = false;
 
     try {
       localStorageValue = JSON.parse(localStorage.getItem(getLocalStorageSettingsKey(key))!);
+      loadedFromStorage = true;
     } catch {
       /* empty */
     }
 
-    if (localStorageValue === null) {
-      writeSettingsToLocalStorage(key as keyof GameSettings, settings[key as keyof GameSettings]);
+    if (loadedFromStorage) {
+      settings[key as keyof GameSettings] = localStorageValue as never;
     } else {
-      settings[key as keyof GameSettings] = localStorageValue;
+      writeSettingsToLocalStorage(key as keyof GameSettings, settings[key as keyof GameSettings]);
     }
   });
 

@@ -1,3 +1,5 @@
+/// <reference path="../typings/socket.io.d.ts" />
+
 import {
   BaseMove,
   ChatMessage,
@@ -10,6 +12,7 @@ import {
   GamePlayers,
   GameResult,
   Move,
+  Player,
   TakebackRequest,
 } from './game';
 
@@ -63,4 +66,11 @@ declare global {
     | 'declineTakeback'
     | 'cancelTakeback'
   );
+}
+
+declare module 'socket.io' {
+  interface Socket {
+    pingResponded: Set<number>;
+    player: Player | null;
+  }
 }

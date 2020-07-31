@@ -1,4 +1,4 @@
-import { DBConfig } from 'shared/types';
+import { DBConfig } from 'server/types';
 
 const config: DBConfig = {
   development: {

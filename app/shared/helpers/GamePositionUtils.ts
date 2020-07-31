@@ -46,7 +46,6 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
         [ColorEnum.WHITE]: 0,
         [ColorEnum.BLACK]: 0,
       },
-      result: null,
       turn: ColorEnum.WHITE,
       startingMoveIndex: 0,
       pliesFor50MoveRule: 0,

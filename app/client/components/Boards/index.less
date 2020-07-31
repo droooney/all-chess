@@ -1,11 +1,11 @@
 @import (reference) '../../styles/mixins';
 
-@shown-board-count: var(--shown-board-count, 1);
-@board-margin: var(--boards-margin, 20px);
+@shown-board-count: var(--shown-board-count);
+@board-margin: var(--boards-margin);
 
-@light-color: var(--light-square-color, #eeeece);
-@half-dark-color: var(--half-square-dark-color, #d8d8d8);
-@dark-color: var(--dark-square-color, #bbb);
+@light-color: var(--light-square-color);
+@half-dark-color: var(--half-dark-square-color);
+@dark-color: var(--dark-square-color);
 
 .original-piece {
   fill: #fa0;
@@ -38,18 +38,6 @@
       .user-select(none);
 
       cursor: pointer;
-
-      &.light {
-        fill: @light-color;
-      }
-
-      &.half-dark {
-        fill: @half-dark-color;
-      }
-
-      &.dark {
-        fill: @dark-color;
-      }
     }
 
     .selected-square,
@@ -107,15 +95,15 @@
     .literal {
       .user-select(none);
 
-      &.light {
+      &.LIGHT {
         fill: @light-color;
       }
 
-      &.half-dark {
+      &.HALF_DARK {
         fill: @half-dark-color;
       }
 
-      &.dark {
+      &.DARK {
         fill: @dark-color;
       }
     }
@@ -166,5 +154,43 @@
     .piece-container .piece.fantom {
       opacity: 0;
     }
+  }
+}
+
+.theme-CLASSIC {
+  --light-square-color: #eec;
+  --dark-square-color: #bbb;
+  --half-dark-square-color: #ddd;
+}
+
+.theme-GREEN {
+  --light-square-color: #ded;
+  --dark-square-color: #8b8;
+  --half-dark-square-color: #ada;
+}
+
+.theme-BLUE {
+  --light-square-color: #dde;
+  --dark-square-color: #99d;
+  --half-dark-square-color: #bbd;
+}
+
+.theme-RED {
+  --light-square-color: #edd;
+  --dark-square-color: #b88;
+  --half-dark-square-color: #daa;
+}
+
+.square {
+  &.LIGHT {
+    fill: @light-color;
+  }
+
+  &.HALF_DARK {
+    fill: @half-dark-color;
+  }
+
+  &.DARK {
+    fill: @dark-color;
   }
 }

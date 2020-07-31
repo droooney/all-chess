@@ -1,7 +1,5 @@
-import {
-  GameSettings,
-  PublicUser,
-} from 'shared/types';
+import { PublicUser } from 'shared/types';
+import { GameSettings } from 'client/types';
 
 export interface CommonState {
   isMobile: boolean;

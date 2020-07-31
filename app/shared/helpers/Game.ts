@@ -162,8 +162,6 @@ export class Game extends GameResultUtils implements IGame {
       }
     }
 
-    startingData.result = result;
-
     const game = new Game({
       id,
       startingData,
@@ -171,6 +169,8 @@ export class Game extends GameResultUtils implements IGame {
       timeControl,
       pgnTags,
     });
+
+    game.result = result;
 
     if (!game.isLeftInCheckAllowed && game.isInCheck(game.getOpponentColor())) {
       throw new Error('Invalid FEN: the king is in check');

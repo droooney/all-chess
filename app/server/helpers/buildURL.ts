@@ -1,11 +1,13 @@
 import * as qs from 'querystring';
 import isEmpty from 'lodash/isEmpty';
 
+import { Dictionary } from 'shared/types';
+
 export interface BuildURLOptions {
   protocol: string;
   host: string;
   path: string;
-  query?: Record<string, string>;
+  query?: Dictionary<string>;
 }
 
 export function buildURL(options: BuildURLOptions): string {

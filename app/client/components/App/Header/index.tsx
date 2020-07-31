@@ -2,6 +2,7 @@ import * as qs from 'querystring';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
+import SettingsIcon from '@material-ui/icons/Settings';
 
 import { STANDARD_FEN } from 'client/constants';
 
@@ -68,11 +69,15 @@ class Header extends React.Component<Props> {
           </Link>
           {user ? (
             <React.Fragment>
-              Logged in as <b>{user.login}</b> (
-              <Link to="#" onClick={this.logout}>
+              Logged in as <span className="login">{user.login}</span>
+
+              (<Link to="#" onClick={this.logout}>
                 logout
+              </Link>)
+
+              <Link to="/settings" className="settings-link">
+                <SettingsIcon />
               </Link>
-              )
             </React.Fragment>
           ) : (
             <React.Fragment>

@@ -1,16 +1,16 @@
-import { ColorEnum, GameCreateOptions, GameResult, GameStatusEnum, ResultReasonEnum } from 'shared/types';
+import {
+  ColorEnum,
+  GameResult,
+  GameStatusEnum,
+  ResultReasonEnum,
+  SquareColor,
+} from 'shared/types';
 
 import GameDarkChessUtils from './GameDarkChessUtils';
 
 export default abstract class GameResultUtils extends GameDarkChessUtils {
   status: GameStatusEnum = GameStatusEnum.BEFORE_START;
-  result: GameResult | null;
-
-  protected constructor(options: GameCreateOptions) {
-    super(options);
-
-    this.result = this.startingData.result;
-  }
+  result: GameResult | null = null;
 
   end(winner: ColorEnum | null, reason: ResultReasonEnum) {
     this.result = {
@@ -137,11 +137,11 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
         ? (
           pieces.slice(1).some((piece) => (
             !GameResultUtils.isBishop(piece)
-            || this.getSquareColor(piece.location) !== 'half-dark'
+            || this.getSquareColor(piece.location) !== SquareColor.HALF_DARK
           ))
           || opponentPieces.some((piece) => (
             GameResultUtils.isBishop(piece)
-            && this.getSquareColor(piece.location) !== 'half-dark'
+            && this.getSquareColor(piece.location) !== SquareColor.HALF_DARK
           ))
         )
         : pieces.some((piece) => (
