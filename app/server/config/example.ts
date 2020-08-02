@@ -1,4 +1,4 @@
-import { Config } from 'shared/types';
+import { Config } from 'server/types';
 
 const config: Config = {
   cookieName: 'cookie_name',
