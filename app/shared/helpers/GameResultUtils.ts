@@ -25,7 +25,6 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
       this.isCrazyhouse
       || this.isAbsorption
       || this.isFrankfurt
-      || (this.isHorde && color === ColorEnum.BLACK)
       || (
         !this.isAntichess && (
           this.isKingOfTheHill
@@ -38,12 +37,6 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
 
     const pieces = this.getBoardPieces(color);
     const opponentPieces = this.getBoardPieces(GameResultUtils.getOppositeColor(color));
-
-    if (this.isHorde) {
-      // TODO: finish for white
-
-      return true;
-    }
 
     if (this.isAntichess) {
       return (
@@ -283,13 +276,6 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
       return {
         winner: prevTurn,
         reason: ResultReasonEnum.KING_CAPTURED,
-      };
-    }
-
-    if (this.isHorde && currentTurn === ColorEnum.WHITE && this.isNoPieces(ColorEnum.WHITE)) {
-      return {
-        winner: prevTurn,
-        reason: ResultReasonEnum.HORDE_DESTROYED,
       };
     }
 

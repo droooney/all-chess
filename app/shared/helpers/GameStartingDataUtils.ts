@@ -141,7 +141,6 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
       is960,
       isCapablanca,
       isCircularChess,
-      isHorde,
       isTwoFamilies,
     } = GameStartingDataUtils.getVariantsInfo(variants);
     const orthodoxBoardWidth = isCircularChess
@@ -237,37 +236,16 @@ export default abstract class GameStartingDataUtils extends GameBoardUtils {
         });
       };
 
-      if (isHorde && color === ColorEnum.WHITE) {
-        const lastPawnRank = 4;
+      const pieceRankY = color === ColorEnum.WHITE ? 0 : orthodoxBoardHeight - 1;
+      const pawnRankY = color === ColorEnum.WHITE ? 1 : orthodoxBoardHeight - 2;
 
-        times(lastPawnRank, (y) => {
-          times(orthodoxBoardWidth, (x) => {
-            addPiece(PieceTypeEnum.PAWN, x, y);
-          });
-        });
+      pieceTypes.forEach((type, x) => {
+        addPiece(type, x, pieceRankY);
+      });
 
-        addPiece(PieceTypeEnum.PAWN, 1, lastPawnRank);
-        addPiece(PieceTypeEnum.PAWN, 2, lastPawnRank);
-
-        if (isCapablanca) {
-          addPiece(PieceTypeEnum.PAWN, halfBoard - 1, lastPawnRank);
-          addPiece(PieceTypeEnum.PAWN, halfBoard, lastPawnRank);
-        }
-
-        addPiece(PieceTypeEnum.PAWN, orthodoxBoardWidth - 2, lastPawnRank);
-        addPiece(PieceTypeEnum.PAWN, orthodoxBoardWidth - 3, lastPawnRank);
-      } else {
-        const pieceRankY = color === ColorEnum.WHITE ? 0 : orthodoxBoardHeight - 1;
-        const pawnRankY = color === ColorEnum.WHITE ? 1 : orthodoxBoardHeight - 2;
-
-        pieceTypes.forEach((type, x) => {
-          addPiece(type, x, pieceRankY);
-        });
-
-        times(orthodoxBoardWidth, (x) => {
-          addPiece(PieceTypeEnum.PAWN, x, pawnRankY);
-        });
-      }
+      times(orthodoxBoardWidth, (x) => {
+        addPiece(PieceTypeEnum.PAWN, x, pawnRankY);
+      });
     });
 
     if (isCircularChess) {

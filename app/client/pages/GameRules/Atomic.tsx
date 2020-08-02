@@ -89,7 +89,7 @@ export default class AtomicGameRules extends React.Component {
 
         <p>
           Though White has more advantage over Black than in standard chess, Atomic chess combines well with some variants. Exceptions are:
-          {' '}<GameVariantLink variant={GameVariantEnum.ALICE_CHESS} />, <GameVariantLink variant={GameVariantEnum.HORDE} />,
+          {' '}<GameVariantLink variant={GameVariantEnum.ALICE_CHESS} />, <GameVariantLink variant={GameVariantEnum.BENEDICT_CHESS} />,
           {' '}<GameVariantLink variant={GameVariantEnum.DARK_CHESS} />, <GameVariantLink variant={GameVariantEnum.ABSORPTION} />,
           {' '}<GameVariantLink variant={GameVariantEnum.FRANKFURT} />, <GameVariantLink variant={GameVariantEnum.HEXAGONAL_CHESS} />,
           {' '}<GameVariantLink variant={GameVariantEnum.THREE_CHECK} />, <GameVariantLink variant={GameVariantEnum.CRAZYHOUSE} />.

@@ -375,7 +375,6 @@ export class Game extends GameResultUtils implements IGame {
       isAliceChess,
       isAntichess,
       isHexagonalChess,
-      isHorde,
       isTwoFamilies,
     } = Game.getVariantsInfo(variants);
     const middleFile = 5;
@@ -398,20 +397,21 @@ export class Game extends GameResultUtils implements IGame {
       });
     }
 
-    const whiteKingsNumber = startingData.pieces.filter((piece) => (
+    const whiteKingsCount = startingData.pieces.filter((piece) => (
       piece.color === ColorEnum.WHITE
       && Game.isKing(piece)
     )).length;
-    const blackKingsNumber = startingData.pieces.filter((piece) => (
+    const blackKingsCount = startingData.pieces.filter((piece) => (
       piece.color === ColorEnum.BLACK
       && Game.isKing(piece)
     )).length;
+    const rightKingsCount = isTwoFamilies ? 2 : 1;
 
     // wrong number of kings on the board
     if (
       !isAntichess && (
-        whiteKingsNumber !== (isHorde ? 0 : isTwoFamilies ? 2 : 1)
-        || blackKingsNumber !== (isTwoFamilies ? 2 : 1)
+        whiteKingsCount !== rightKingsCount
+        || blackKingsCount !== rightKingsCount
       )
     ) {
       throw new Error('Invalid FEN: wrong number of kings');
@@ -452,7 +452,7 @@ export class Game extends GameResultUtils implements IGame {
         } else if (
           piece.location.y === (
             piece.color === ColorEnum.WHITE
-              ? isHorde ? Infinity : 0
+              ? 0
               : boardHeight - 1
           )
         ) {

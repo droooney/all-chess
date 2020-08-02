@@ -493,10 +493,6 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
       );
     }
 
-    if (this.isHorde && color === ColorEnum.WHITE && this.isFirstRank(square, color)) {
-      return true;
-    }
-
     return (
       color === ColorEnum.WHITE
         ? square.y === 1 || (this.isCircularChess && square.y === this.boardHeight - 2)

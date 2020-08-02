@@ -549,7 +549,6 @@ export class Game extends GameHelper {
   isMaterialDiffShown(): boolean {
     return (
       !this.isAbsorption
-      && !this.isHorde
       && !this.isOngoingDarkChessGame
     );
   }

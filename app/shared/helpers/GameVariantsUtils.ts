@@ -18,7 +18,6 @@ interface VariantsInfo {
   isDarkChess: boolean;
   isFrankfurt: boolean;
   isHexagonalChess: boolean;
-  isHorde: boolean;
   isKingOfTheHill: boolean;
   isMadrasi: boolean;
   isPatrol: boolean;
@@ -80,7 +79,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
       isDarkChess: variants.includes(GameVariantEnum.DARK_CHESS),
       isFrankfurt: variants.includes(GameVariantEnum.FRANKFURT),
       isHexagonalChess: variants.includes(GameVariantEnum.HEXAGONAL_CHESS),
-      isHorde: variants.includes(GameVariantEnum.HORDE),
       isKingOfTheHill: variants.includes(GameVariantEnum.KING_OF_THE_HILL),
       isMadrasi: variants.includes(GameVariantEnum.MADRASI),
       isPatrol: variants.includes(GameVariantEnum.PATROL),
@@ -107,7 +105,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
       isDarkChess,
       isFrankfurt,
       isHexagonalChess,
-      isHorde,
       isKingOfTheHill,
       isMadrasi,
       isPatrol,
@@ -131,27 +128,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
       !isCirce
       || (
         !is960
-        && !isBenedictChess
-      )
-    ) && (
-      !isHorde
-      || (
-        !isKingOfTheHill
-        && !isCirce
-        && !isPatrol
-        && !isMadrasi
-        && !isAliceChess
-        && !isAtomic
-        && !isCrazyhouse
-        && !isDarkChess
-        && !isAntichess
-        && !isAbsorption
-        && !isFrankfurt
-        && !isThreeCheck
-        // TODO: add support for horde + hex
-        && !isHexagonalChess
-        // TODO: add support for horde + compensation
-        && !isCompensationChess
         && !isBenedictChess
       )
     ) && (

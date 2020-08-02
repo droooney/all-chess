@@ -760,7 +760,6 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       && Math.abs(toY - fromLocation.y) > 1
       // FIXME: is it possible to be different boards
       && fromLocation.board === toBoard
-      && (!this.isHorde || fromLocation.y !== 0)
     ) {
       this.possibleEnPassant = {
         enPassantSquare: {
