@@ -20,8 +20,12 @@ export function getDefaultSettings(): GameSettings {
     let loadedFromStorage = false;
 
     try {
-      localStorageValue = JSON.parse(localStorage.getItem(getLocalStorageSettingsKey(key))!);
-      loadedFromStorage = true;
+      const storageValue = localStorage.getItem(getLocalStorageSettingsKey(key));
+
+      if (storageValue !== null) {
+        localStorageValue = JSON.parse(storageValue);
+        loadedFromStorage = true;
+      }
     } catch {
       /* empty */
     }
