@@ -91,7 +91,6 @@ class Game extends React.Component<Props, State> {
   prevMoveIndex = -1;
   prevMoveCount = 0;
   drawnSymbolId = 0;
-  drawnSymbolColor: DrawnSymbolColor = DrawnSymbolColor.GREEN;
   prevAllowedSquareElem: Element | null = null;
   state: State = {
     selectedPiece: null,
@@ -198,6 +197,16 @@ class Game extends React.Component<Props, State> {
     const pieceSize = this.getPieceSize();
 
     return `translate(${point.x - pieceSize / 2}px, ${point.y - pieceSize / 2}px)`;
+  }
+
+  getSymbolColor(e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent): DrawnSymbolColor {
+    return e.ctrlKey
+      ? DrawnSymbolColor.BLUE
+      : e.shiftKey
+        ? DrawnSymbolColor.RED
+        : e.altKey
+          ? DrawnSymbolColor.YELLOW
+          : DrawnSymbolColor.GREEN;
   }
 
   getPieceSize(): number {
@@ -564,13 +573,7 @@ class Game extends React.Component<Props, State> {
           drawingSymbolStart: location,
           drawingSymbol: {
             type: 'circle',
-            color: this.drawnSymbolColor = e.ctrlKey
-              ? DrawnSymbolColor.BLUE
-              : e.shiftKey
-                ? DrawnSymbolColor.RED
-                : e.altKey
-                  ? DrawnSymbolColor.YELLOW
-                  : DrawnSymbolColor.GREEN,
+            color: this.getSymbolColor(e),
             id: ++this.drawnSymbolId,
             square: location,
           },
@@ -653,8 +656,8 @@ class Game extends React.Component<Props, State> {
 
         const newDrawingSymbol: DrawnSymbol | null | false = square && drawingSymbolStart.board === square.board && (
           GameHelper.areSquaresEqual(drawingSymbolStart, square)
-            ? { type: 'circle', color: this.drawnSymbolColor, id: this.drawnSymbolId, square: drawingSymbolStart }
-            : { type: 'arrow', color: this.drawnSymbolColor, id: this.drawnSymbolId, from: drawingSymbolStart, to: square }
+            ? { type: 'circle', color: this.getSymbolColor(e), id: this.drawnSymbolId, square: drawingSymbolStart }
+            : { type: 'arrow', color: this.getSymbolColor(e), id: this.drawnSymbolId, from: drawingSymbolStart, to: square }
         );
 
         if (
