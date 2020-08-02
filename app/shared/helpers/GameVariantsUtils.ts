@@ -8,6 +8,7 @@ interface VariantsInfo {
   isAliceChess: boolean;
   isAntichess: boolean;
   isAtomic: boolean;
+  isBenedictChess: boolean;
   isCapablanca: boolean;
   isCirce: boolean;
   isCircularChess: boolean;
@@ -69,6 +70,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
       isAliceChess: variants.includes(GameVariantEnum.ALICE_CHESS),
       isAntichess: variants.includes(GameVariantEnum.ANTICHESS),
       isAtomic: variants.includes(GameVariantEnum.ATOMIC),
+      isBenedictChess: variants.includes(GameVariantEnum.BENEDICT_CHESS),
       isCapablanca: variants.includes(GameVariantEnum.CAPABLANCA),
       isCirce: variants.includes(GameVariantEnum.CIRCE),
       isCircularChess: variants.includes(GameVariantEnum.CIRCULAR_CHESS),
@@ -95,6 +97,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
       isAliceChess,
       isAntichess,
       isAtomic,
+      isBenedictChess,
       isCapablanca,
       isCirce,
       isCircularChess,
@@ -126,7 +129,10 @@ export default class GameVariantsUtils extends GameCommonUtils {
       )
     ) && (
       !isCirce
-      || !is960
+      || (
+        !is960
+        && !isBenedictChess
+      )
     ) && (
       !isHorde
       || (
@@ -146,6 +152,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isHexagonalChess
         // TODO: add support for horde + compensation
         && !isCompensationChess
+        && !isBenedictChess
       )
     ) && (
       !isAtomic
@@ -153,6 +160,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
         !isDarkChess
         && !isAliceChess
         && !isCrazyhouse
+        && !isBenedictChess
       )
     ) && (
       !isAntichess
@@ -164,6 +172,8 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isThreeCheck
         && !isCompensationChess
         && !isAbsorption
+        // TODO: add anti + benedict
+        && !isBenedictChess
       )
     ) && (
       !isAbsorption
@@ -174,6 +184,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isMadrasi
         && !isFrankfurt
         && !isCompensationChess
+        && !isBenedictChess
       )
     ) && (
       !isFrankfurt
@@ -182,6 +193,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
         !isCrazyhouse
         && !isAtomic
         && !isCirce
+        && !isBenedictChess
       )
     ) && (
       !isTwoFamilies
@@ -193,6 +205,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
       || (
         !isDarkChess
         && !isAtomic
+        && !isBenedictChess
       )
     ) && (
       !isCircularChess
@@ -211,6 +224,18 @@ export default class GameVariantsUtils extends GameCommonUtils {
       !isCompensationChess
       || (
         !isCrazyhouse
+        && !isDarkChess
+        && !isBenedictChess
+      )
+    ) && (
+      !isBenedictChess
+      || (
+        !isCrazyhouse
+        // TODO: maybe add support for madrasi + benedict
+        && !isMadrasi
+        // TODO: add support for patrol + benedict
+        && !isPatrol
+        // TODO: add support for dark + benedict
         && !isDarkChess
       )
     ));
@@ -234,6 +259,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
       this.isAtomic
       || this.isDarkChess
       || this.isAntichess
+      || this.isBenedictChess
     );
     this.is50MoveRuleUsed = !this.isCrazyhouse;
   }

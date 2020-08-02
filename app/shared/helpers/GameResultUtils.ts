@@ -316,6 +316,13 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
       };
     }
 
+    if (this.isBenedictChess && this.kings[this.turn].some(({ color }) => color !== this.turn)) {
+      return {
+        winner: prevTurn,
+        reason: ResultReasonEnum.KING_FLIPPED,
+      };
+    }
+
     return null;
   }
 }

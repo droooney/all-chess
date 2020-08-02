@@ -59,6 +59,14 @@ Object.defineProperties(proto, {
     },
   },
 
+  forEach: {
+    value: function forEach<T>(this: Generator<T>, callback: (value: T) => void): void {
+      for (const value of this) {
+        callback(value);
+      }
+    },
+  },
+
   map: {
     value: function* map<T, U>(this: Generator<T>, callback: (value: T) => U): Generator<U> {
       for (const value of this) {

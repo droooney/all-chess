@@ -43,13 +43,13 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
 
   registerAnyMove(move: Move, constructMoveNotation: boolean) {
     if (this.isDarkChess) {
-      this.registerDarkChessMove(move, constructMoveNotation);
+      this.registerDarkChessMove(move);
     } else {
       this.registerMove(move, constructMoveNotation);
     }
   }
 
-  registerDarkChessMove(move: Move, constructMoveNotation: boolean) {
+  registerDarkChessMove(move: Move) {
     const prevPieceLocations = this.pieces.map(({ location }) => location);
     const idMap = this.pieces.reduce<Dictionary<true>>((map, piece) => {
       map[piece.id] = true;
@@ -65,7 +65,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
       movedPiece: piece,
       isWin,
       isCapture,
-    } = this.registerMove(move, constructMoveNotation);
+    } = this.registerMove(move, true);
 
     const registeredMove = last(this.moves)!;
     const isPromotion = !!move.promotion;

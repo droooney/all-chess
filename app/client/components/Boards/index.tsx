@@ -99,7 +99,7 @@ class Boards extends React.Component<Props> {
       showKingAttack,
     } = this.props;
 
-    if (game.isAntichess || !showKingAttack) {
+    if (game.isAntichess || game.isBenedictChess || !showKingAttack) {
       return false;
     }
 

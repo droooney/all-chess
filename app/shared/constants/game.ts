@@ -51,6 +51,7 @@ export const GAME_VARIANT_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal chess',
   [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation chess',
   [GameVariantEnum.RETREAT_CHESS]: 'Retreat chess',
+  [GameVariantEnum.BENEDICT_CHESS]: 'Benedict chess',
 };
 
 export const GAME_VARIANT_SHORT_NAMES: Record<GameVariantEnum, string> = {
@@ -75,6 +76,7 @@ export const GAME_VARIANT_SHORT_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal',
   [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation',
   [GameVariantEnum.RETREAT_CHESS]: 'Retreat',
+  [GameVariantEnum.BENEDICT_CHESS]: 'Benedict',
 };
 
 export const GAME_VARIANT_PGN_NAMES: Record<GameVariantEnum, string> = {
@@ -99,6 +101,7 @@ export const GAME_VARIANT_PGN_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.HEXAGONAL_CHESS]: 'Hexagonal',
   [GameVariantEnum.COMPENSATION_CHESS]: 'Compensation',
   [GameVariantEnum.RETREAT_CHESS]: 'Retreat',
+  [GameVariantEnum.BENEDICT_CHESS]: 'Benedict',
 };
 
 export const GAME_VARIANT_LINKS: Record<GameVariantEnum, string> = {
@@ -123,6 +126,7 @@ export const GAME_VARIANT_LINKS: Record<GameVariantEnum, string> = {
   [GameVariantEnum.HEXAGONAL_CHESS]: 'hexagonal-chess',
   [GameVariantEnum.COMPENSATION_CHESS]: 'compensation-chess',
   [GameVariantEnum.RETREAT_CHESS]: 'retreat-chess',
+  [GameVariantEnum.BENEDICT_CHESS]: 'benedict-chess',
 };
 
 export const RESULT_REASON_NAMES: Record<ResultReasonEnum, string> = {
@@ -130,6 +134,7 @@ export const RESULT_REASON_NAMES: Record<ResultReasonEnum, string> = {
   [ResultReasonEnum.KING_IN_THE_CENTER]: 'king in the center',
   [ResultReasonEnum.KING_EXPLODED]: 'king exploded',
   [ResultReasonEnum.KING_CAPTURED]: 'king captured',
+  [ResultReasonEnum.KING_FLIPPED]: 'king flipped',
   [ResultReasonEnum.HORDE_DESTROYED]: 'horde destroyed',
   [ResultReasonEnum.NO_MORE_PIECES]: 'no more pieces',
   [ResultReasonEnum.THREE_CHECKS]: 'three checks',
