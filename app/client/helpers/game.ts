@@ -775,6 +775,16 @@ export class Game extends GameHelper {
     const castlingRook = this.getCastlingRook(piece, toLocation);
     const isCastling = !!castlingRook;
     const isKingSideCastling = isCastling && toX - (fromLocation as PieceBoardLocation).x > 0;
+    const newLocation: PieceBoardLocation = {
+      ...(
+        isCastling
+          ? isKingSideCastling
+            ? { board: toBoard, x: this.boardWidth - 2, y: toY }
+            : { board: toBoard, x: 2, y: toY }
+          : toLocation
+      ),
+      type: PieceLocationEnum.BOARD,
+    };
     const isRoyalKing = wasKing && !this.isAntichess;
     const isAnyCapture = (
       !castlingRook
@@ -861,10 +871,7 @@ export class Game extends GameHelper {
       piece.abilities = newAbilities;
     }
 
-    this.changePieceLocation(piece, {
-      type: PieceLocationEnum.BOARD,
-      ...toLocation,
-    });
+    this.changePieceLocation(piece, newLocation);
 
     movedPieces.forEach((piece) => {
       times(this.boardCount - 1, (board) => {
