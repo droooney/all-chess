@@ -20,8 +20,6 @@
       grid-template:
         "boards     " auto
         "description" auto
-        ".          " 10px
-        "moves      " auto
         ~"/" 100%;
 
       .boards .board {
@@ -32,6 +30,17 @@
         width: 100%;
       }
     }
+
+    &.with-moves {
+      .game-content {
+        grid-template:
+          "boards     " auto
+          "description" auto
+          ".          " 10px
+          "moves      " auto
+          ~"/" 100%;
+      }
+    }
   });
 
   .desktop({
@@ -39,13 +48,23 @@
 
     .game-content {
       grid-template:
-        "boards      moves" auto
-        "description moves" auto
-        ~"/" 2fr 1fr;
-      grid-column-gap: 20px;
+        ". boards      ." auto
+        ". description ." auto
+        ~"/" 1fr 4fr 1fr;
+      grid-column-gap: 10px;
 
       .moves-panel {
         min-height: 150px;
+      }
+    }
+
+    &.with-moves {
+      .game-content {
+        grid-template:
+          "boards      moves" auto
+          "description moves" auto
+          ~"/" 4fr 2fr;
+        grid-column-gap: 20px;
       }
     }
   });

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import classNames from 'classnames';
 
 import {
   GAME_VARIANT_PGN_NAMES,
@@ -64,13 +65,14 @@ export default class GameRulesExample extends React.Component<Props> {
   render() {
     const {
       description,
+      moves,
     } = this.props;
 
     return (
       <Game
-        className="game-rules-example"
+        className={classNames('game-rules-example', { 'with-moves': !!moves })}
         game={this.game}
-        showMovesPanel
+        showMovesPanel={!!moves}
         contentChildren={
           <div className="description">
             {description}
