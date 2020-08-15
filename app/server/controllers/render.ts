@@ -24,7 +24,7 @@ export async function render(
     ctx.body = html({
       jsBundlePath: `/public/${JS_BUNDLE_NAME}`,
       cssBundlePath: `/public/${CSS_BUNDLE_NAME}`,
-      user: JSON.stringify(ctx.state.session!.user || null).replace(/</g, '\\u003c'),
+      user: JSON.stringify(ctx.state.session?.user || null).replace(/</g, '\\u003c'),
     });
   } else {
     await next();

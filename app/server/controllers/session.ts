@@ -1,5 +1,5 @@
 import * as util from 'util';
-import { IncomingMessage, ServerResponse } from 'http';
+import { Request, Response } from 'express';
 import expressSession from 'express-session';
 import redis from 'connect-redis';
 
@@ -22,9 +22,9 @@ export const sessionMiddleware = util.promisify(expressSession({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: config.sessionExpires,
+    expires: new Date(Date.UTC(2038, 0)),
   },
-})) as (req: IncomingMessage, res: ServerResponse) => any;
+}));
 
 declare global {
   namespace Express {
@@ -37,11 +37,11 @@ declare global {
 
 const sessionPrototype: Express.Session = (expressSession as any).Session.prototype;
 
-sessionPrototype.asyncSave = util.promisify(sessionPrototype.save) as () => Promise<void>;
-sessionPrototype.asyncDestroy = util.promisify(sessionPrototype.destroy) as () => Promise<void>;
+sessionPrototype.asyncSave = util.promisify(sessionPrototype.save);
+sessionPrototype.asyncDestroy = util.promisify(sessionPrototype.destroy);
 
 export async function session(ctx: CustomContext, next: (err?: any) => Promise<any>) {
-  await sessionMiddleware(ctx.req, ctx.res);
+  await sessionMiddleware(ctx.req as Request, ctx.res as Response);
 
   ctx.state.session = (ctx.req as any).session;
 

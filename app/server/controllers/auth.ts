@@ -10,7 +10,10 @@ import { buildURL, sendEmail } from 'server/helpers';
 
 import { User } from 'server/db';
 
-const registerHTML = pug.compile(fs.readFileSync(path.resolve('./app/server/emails/register.pug'), 'utf8'));
+const registerHTML = pug.compile(fs.readFileSync(
+  path.resolve('./app/server/emails/register.pug'),
+  'utf8',
+));
 
 export async function confirmRegister(ctx: CustomContext) {
   const {
@@ -78,7 +81,9 @@ export async function login(ctx: CustomContext) {
 }
 
 export async function logout(ctx: CustomContext) {
-  await ctx.state.session!.asyncDestroy();
+  delete ctx.state.session?.user;
+
+  await ctx.state.session?.asyncSave();
 
   ctx.state.success();
 }
