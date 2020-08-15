@@ -1,4 +1,5 @@
 import * as React from 'react';
+import classNames from 'classnames';
 
 import {
   COLOR_NAMES,
@@ -7,6 +8,7 @@ import {
 
 import {
   GameResult,
+  Player,
 } from 'shared/types';
 
 import { Game } from 'client/helpers';
@@ -15,6 +17,7 @@ import GameVariantLink from '../GameVariantLink';
 
 export interface OwnProps {
   game: Game;
+  player: Player | null;
   result: GameResult | null;
 }
 
@@ -24,12 +27,21 @@ export default class GameInfo extends React.Component<Props> {
   render() {
     const {
       game,
+      player,
       result,
     } = this.props;
 
     return (
       <React.Fragment>
-        <div className="game-info">
+        <div
+          className={classNames('game-info', player && result && (
+            result.winner
+              ? result.winner === player.color
+                ? 'win'
+                : 'loss'
+              : 'tie'
+          ))}
+        >
           <div className="time-control">
             Time control: {Game.getTimeControlString(game.timeControl)}
           </div>
@@ -50,12 +62,14 @@ export default class GameInfo extends React.Component<Props> {
             )) : ' none'}
           </div>
 
-          {result && (
-            <div className="result">
-              {result.winner ? `${COLOR_NAMES[result.winner]} won` : 'Draw'}
-              {` (${RESULT_REASON_NAMES[result.reason]})`}
-            </div>
-          )}
+          <div className="result">
+            {result ? (
+              <React.Fragment>
+                {result.winner ? `${COLOR_NAMES[result.winner]} won` : 'Draw'}
+                {` (${RESULT_REASON_NAMES[result.reason]})`}
+              </React.Fragment>
+            ) : '\u00a0'}
+          </div>
         </div>
       </React.Fragment>
     );

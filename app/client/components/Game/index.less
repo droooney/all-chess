@@ -4,6 +4,19 @@
   .game-info {
     grid-area: game-info;
     padding: 8px 3px;
+    transition: background-color ease-in 0.2s;
+
+    &.win {
+      background-color: #e6eed9 !important;
+    }
+
+    &.loss {
+      background-color: #fee1d9 !important;
+    }
+
+    &.tie {
+      background-color: #e6e1d9 !important;
+    }
 
     .variants {
       .variants-header {

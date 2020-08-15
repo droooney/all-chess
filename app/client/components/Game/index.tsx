@@ -972,6 +972,7 @@ class Game extends React.Component<Props, State> {
         {showInfo && (
           <GameInfo
             game={game}
+            player={player}
             result={result}
           />
         )}
