@@ -1,5 +1,5 @@
-import * as Sequelize from 'sequelize';
-import * as bcrypt from 'bcryptjs';
+import { DataTypes, Model } from 'sequelize';
+import { hash } from 'bcryptjs';
 import pick from 'lodash/pick';
 
 import { PublicUser, User as UserAttributes } from 'shared/types';
@@ -10,7 +10,7 @@ export type UserAddAttributes = Partial<UserAttributes> & Pick<UserAttributes, '
 
 export interface User extends UserAttributes {}
 
-export class User extends Sequelize.Model<UserAttributes, UserAddAttributes> {
+export class User extends Model<UserAttributes, UserAddAttributes> {
   toJSON(): PublicUser {
     const user = super.toJSON() as UserAttributes;
 
@@ -20,13 +20,13 @@ export class User extends Sequelize.Model<UserAttributes, UserAddAttributes> {
 
 User.init({
   id: {
-    type: Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     allowNull: false,
     primaryKey: true,
     autoIncrement: true,
   },
   email: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     allowNull: false,
     unique: true,
     validate: {
@@ -34,7 +34,7 @@ User.init({
     },
   },
   login: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     allowNull: false,
     unique: true,
     validate: {
@@ -42,24 +42,29 @@ User.init({
     },
   },
   password: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
   },
   confirmToken: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     allowNull: true,
     defaultValue: '',
   },
   confirmed: {
-    type: Sequelize.BOOLEAN,
+    type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+  ratings: {
+    type: DataTypes.JSONB,
+    allowNull: false,
+    defaultValue: () => ({}),
+  },
   createdAt: {
-    type: Sequelize.DATE,
+    type: DataTypes.DATE,
     field: 'created_at',
     allowNull: false,
   },
   updatedAt: {
-    type: Sequelize.DATE,
+    type: DataTypes.DATE,
     field: 'updated_at',
     allowNull: false,
   },
@@ -68,12 +73,12 @@ User.init({
   tableName: 'users',
   hooks: {
     async beforeCreate(user) {
-      user.password = await bcrypt.hash(user.password, 5);
+      user.password = await hash(user.password, 5);
     },
     async beforeBulkCreate(users) {
       await Promise.all(
         users.map(async (user) => {
-          user.password = await bcrypt.hash(user.password, 5);
+          user.password = await hash(user.password, 5);
         }),
       );
     },

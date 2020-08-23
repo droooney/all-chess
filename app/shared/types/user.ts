@@ -1,3 +1,5 @@
+import { Ratings } from 'shared/types/game';
+
 export interface PublicUser {
   id: number;
   login: string;
@@ -9,5 +11,6 @@ export interface User extends PublicUser {
   password: string;
   confirmToken: string | null;
   confirmed: boolean;
+  ratings: Ratings;
   updatedAt: Date;
 }

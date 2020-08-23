@@ -2,9 +2,11 @@ import {
   ColorEnum,
   EachColor,
   EachPieceType,
+  EachVariant,
   GameStatusEnum,
   GameVariantEnum,
   PieceTypeEnum,
+  GlickoRating,
   ResultReasonEnum,
   TimeControlEnum,
 } from 'shared/types';
@@ -29,7 +31,7 @@ export const POSSIBLE_TIMER_BASES_IN_MILLISECONDS = POSSIBLE_TIMER_BASES_IN_MINU
 export const POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS = POSSIBLE_TIMER_INCREMENTS_IN_SECONDS.map((base) => base * 1000);
 export const POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS = POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS.map((base) => base * 24 * 60 * 60 * 1000);
 
-export const GAME_VARIANT_NAMES: Record<GameVariantEnum, string> = {
+export const GAME_VARIANT_NAMES: EachVariant<string> = {
   [GameVariantEnum.CHESS_960]: 'Chess 960',
   [GameVariantEnum.CRAZYHOUSE]: 'Crazyhouse',
   [GameVariantEnum.ATOMIC]: 'Atomic chess',
@@ -53,7 +55,7 @@ export const GAME_VARIANT_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.BENEDICT_CHESS]: 'Benedict chess',
 };
 
-export const GAME_VARIANT_SHORT_NAMES: Record<GameVariantEnum, string> = {
+export const GAME_VARIANT_SHORT_NAMES: EachVariant<string> = {
   [GameVariantEnum.CHESS_960]: '960',
   [GameVariantEnum.CRAZYHOUSE]: 'Crazyhouse',
   [GameVariantEnum.ATOMIC]: 'Atomic',
@@ -77,7 +79,7 @@ export const GAME_VARIANT_SHORT_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.BENEDICT_CHESS]: 'Benedict',
 };
 
-export const GAME_VARIANT_PGN_NAMES: Record<GameVariantEnum, string> = {
+export const GAME_VARIANT_PGN_NAMES: EachVariant<string> = {
   [GameVariantEnum.CHESS_960]: 'Chess960',
   [GameVariantEnum.CRAZYHOUSE]: 'Crazyhouse',
   [GameVariantEnum.ATOMIC]: 'Atomic',
@@ -101,7 +103,7 @@ export const GAME_VARIANT_PGN_NAMES: Record<GameVariantEnum, string> = {
   [GameVariantEnum.BENEDICT_CHESS]: 'Benedict',
 };
 
-export const GAME_VARIANT_LINKS: Record<GameVariantEnum, string> = {
+export const GAME_VARIANT_LINKS: EachVariant<string> = {
   [GameVariantEnum.CHESS_960]: 'chess-960',
   [GameVariantEnum.CRAZYHOUSE]: 'crazyhouse',
   [GameVariantEnum.ATOMIC]: 'atomic-chess',
@@ -195,4 +197,10 @@ export const PIECES_WORTH: Record<'orthodox' | 'circular' | 'hexagonal', EachPie
     [PieceTypeEnum.KNIGHT]: 4,
     [PieceTypeEnum.PAWN]: 1,
   },
+};
+
+export const DEFAULT_RATING: GlickoRating = {
+  r: 1500,
+  rd: 350,
+  vol: 0.06,
 };

@@ -163,6 +163,22 @@ export type Boards = (BoardPiece | null)[][][];
 
 export type GameKings = EachColor<Piece[]>;
 
+export enum SpeedType {
+  CORRESPONDENCE = 'CORRESPONDENCE',
+  CLASSICAL = 'CLASSICAL',
+  RAPID = 'RAPID',
+  BLITZ = 'BLITZ',
+  BULLET = 'BULLET',
+}
+
+export interface GlickoRating {
+  r: number;
+  rd: number;
+  vol: number;
+}
+
+export type Ratings = Partial<EachVariant<Partial<Record<SpeedType, GlickoRating>>>>;
+
 export interface TakebackRequest {
   player: ColorEnum;
   moveIndex: number;
@@ -244,6 +260,8 @@ export enum GameVariantEnum {
   RETREAT_CHESS = 'RETREAT_CHESS',
   BENEDICT_CHESS = 'BENEDICT_CHESS',
 }
+
+export type EachVariant<T> = Record<GameVariantEnum, T>;
 
 export interface BaseMove {
   from: RealPieceLocation;
