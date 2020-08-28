@@ -29,12 +29,12 @@ import {
 
 import GamePositionUtils from './GamePositionUtils';
 import {
-  KNIGHT_MOVE_INCREMENTS,
-  HEX_KNIGHT_MOVE_INCREMENTS,
   BISHOP_MOVE_INCREMENTS,
   HEX_BISHOP_MOVE_INCREMENTS,
-  ROOK_MOVE_INCREMENTS,
+  HEX_KNIGHT_MOVE_INCREMENTS,
   HEX_ROOK_MOVE_INCREMENTS,
+  KNIGHT_MOVE_INCREMENTS,
+  ROOK_MOVE_INCREMENTS,
 } from './GameBoardUtils';
 
 export interface PerformMoveOptions {
@@ -57,7 +57,88 @@ export interface RegisterMoveReturnValue {
   isCapture: boolean;
 }
 
+const UCI_REGEX = /^(?:(a-z)@|([₀-₉])([a-w])(\d+))([₀-₉])([a-w])(\d+)([a-z]?)$/i;
+
 export default abstract class GameMovesUtils extends GamePositionUtils {
+  static moveToUci(move: BaseMove): string {
+    let uci = '';
+
+    if (move.from.type === PieceLocationEnum.POCKET) {
+      uci += `${GameMovesUtils.getPieceLiteral(move.from.pieceType)}@`;
+    } else {
+      uci += (
+        GameMovesUtils.getBoardLiteral(move.from.board)
+        + GameMovesUtils.getFileLiteral(move.from.x)
+        + GameMovesUtils.getRankLiteral(move.from.y)
+      );
+    }
+
+    uci += (
+      GameMovesUtils.getBoardLiteral(move.to.board)
+      + GameMovesUtils.getFileLiteral(move.to.x)
+      + GameMovesUtils.getRankLiteral(move.to.y)
+    );
+
+    if (move.promotion) {
+      uci += GameMovesUtils.getPieceLiteral(move.promotion);
+    }
+
+    return uci;
+  }
+
+  static uciToMove(uci: string): BaseMove {
+    const match = uci.match(UCI_REGEX);
+
+    if (!match) {
+      throw new Error('Invalid uci');
+    }
+
+    const [, droppedPieceString, fromBoard, fromFile, fromRank, toBoard, toFile, toRank, promotionString] = match;
+    const toLocation: Square = {
+      board: GameMovesUtils.getBoardNumber(toBoard),
+      x: GameMovesUtils.getFileNumber(toFile),
+      y: GameMovesUtils.getRankNumber(toRank),
+    };
+    const promotionPiece = promotionString && GameMovesUtils.getPieceFromLiteral(promotionString);
+
+    if (promotionString && !promotionPiece) {
+      throw new Error('Invalid promotion');
+    }
+
+    const promotion = promotionPiece
+      ? { promotion: promotionPiece.type }
+      : {};
+
+    if (droppedPieceString) {
+      const droppedPiece = GameMovesUtils.getPieceFromLiteral(droppedPieceString);
+
+      if (!droppedPiece) {
+        throw new Error('Invalid dropped piece');
+      }
+
+      return {
+        from: {
+          type: PieceLocationEnum.POCKET,
+          pieceType: droppedPiece.type,
+          color: droppedPiece.color,
+        },
+        to: toLocation,
+        ...promotion,
+      };
+    }
+
+    return {
+      from: {
+        type: PieceLocationEnum.BOARD,
+        board: GameMovesUtils.getBoardNumber(fromBoard),
+        x: GameMovesUtils.getFileNumber(fromFile),
+        y: GameMovesUtils.getRankNumber(fromRank),
+      },
+      to: toLocation,
+      ...promotion,
+    };
+  }
+
   abstract players: GamePlayers;
 
   moves: RevertableMove[] = [];
@@ -594,7 +675,12 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
     };
     let needToReset50MoveRule = !this.isCrazyhouse && (
       isPawnPromotion
-      || (!this.isRetreatChess && !this.isCirce && GameMovesUtils.isPawn(piece))
+      || (
+        !this.isRetreatChess
+        && !this.isCirce
+        && !this.isBenedictChess
+        && GameMovesUtils.isPawn(piece)
+      )
     );
 
     if (this.isAtomic && isCapture) {

@@ -34,6 +34,15 @@ class Register extends React.Component<{}, State> {
     emailError: false,
   };
 
+  onLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const login = e.currentTarget.value;
+
+    this.setState({
+      login,
+      loginError: !/^[a-z0-9-_]+$/i.test(login),
+    });
+  };
+
   onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
@@ -64,7 +73,6 @@ class Register extends React.Component<{}, State> {
   render() {
     return (
       <div className="route register-route">
-
         <DocumentTitle value="AllChess - Register" />
 
         {this.state.success ? (
@@ -77,7 +85,6 @@ class Register extends React.Component<{}, State> {
             autoComplete="off"
             onSubmit={this.onSubmit}
           >
-
             <FormControl required error={this.state.loginError}>
               <InputLabel>
                 Login
@@ -86,7 +93,7 @@ class Register extends React.Component<{}, State> {
                 type="text"
                 autoComplete="off"
                 value={this.state.login}
-                onChange={(e) => this.setState({ login: e.currentTarget.value })}
+                onChange={this.onLoginChange}
               />
             </FormControl>
 
@@ -140,10 +147,8 @@ class Register extends React.Component<{}, State> {
             >
               Register
             </Button>
-
           </form>
         )}
-
       </div>
     );
   }

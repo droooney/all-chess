@@ -3,6 +3,7 @@ import { Ratings } from 'shared/types/game';
 export interface PublicUser {
   id: number;
   login: string;
+  ratings: Ratings;
   createdAt: Date;
 }
 

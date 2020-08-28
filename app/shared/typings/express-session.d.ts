@@ -1,9 +1,9 @@
-import { User } from 'shared/types';
+import { PublicUser } from 'shared/types';
 
 declare global {
   namespace Express {
     interface Session {
-      user?: User;
+      user?: PublicUser | null;
     }
   }
 }

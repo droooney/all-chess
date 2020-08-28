@@ -1,8 +1,6 @@
-import { Op } from 'sequelize';
+import { User, UserAddAttributes } from '../models';
 
-import { User } from '../';
-
-const users = [{
+const users: UserAddAttributes[] = [{
   email: 'a123@a.com',
   login: '123',
   password: '123',
@@ -18,11 +16,5 @@ export async function up() {
 }
 
 export async function down() {
-  await User.destroy({
-    where: {
-      login: {
-        [Op.in]: users.map(({ login }) => login),
-      },
-    },
-  });
+  await User.truncate();
 }

@@ -13,10 +13,9 @@ import Route from 'client/components/Route';
 import Header from 'client/components/App/Header';
 
 import GamesRules from 'client/pages/GamesRules';
-import Home from 'client/pages/Home';
 import BoardEditor from 'client/pages/BoardEditor';
 import Register from 'client/pages/Register';
-import Games from 'client/pages/Games';
+import Home from 'client/pages/Home';
 import Game from 'client/pages/Game';
 import Login from 'client/pages/Login';
 import Settings from 'client/pages/Settings';
@@ -70,8 +69,7 @@ class App extends React.Component<Props> {
                 <Route strict path="/settings/:settingsType?" component={Settings}/>
                 <Route exact strict path="/login" component={Login} />
                 <Route exact strict path="/register" component={Register} />
-                <Route exact strict path="/games" component={Games} />
-                <Route exact strict path="/games/:gameId" component={Game} />
+                <Route exact strict path="/game/:gameId" component={Game} />
                 <Redirect to="/"/>
               </Switch>
             </main>

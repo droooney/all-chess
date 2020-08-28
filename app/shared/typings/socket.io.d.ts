@@ -583,6 +583,7 @@ declare namespace SocketIO {
 
     on<K extends keyof SocketIOClientEventWithDataMap>(event: K, listener: (data: SocketIOClientEventWithDataMap[K]) => any): any;
     on<K extends SocketIOClientEventWithoutDataList>(event: K, listener: () => any): any;
+    on(event: 'disconnect', listener: () => any): any;
 
     /**
      * Sends a 'message' event

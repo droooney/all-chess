@@ -8,7 +8,7 @@ import { CustomContext } from 'server/types';
 
 import { buildURL, sendEmail } from 'server/helpers';
 
-import { User } from 'server/db';
+import { User } from 'server/db/models';
 
 const registerHTML = pug.compile(fs.readFileSync(
   path.resolve('./app/server/emails/register.pug'),
@@ -30,10 +30,7 @@ export async function confirmRegister(ctx: CustomContext) {
   });
 
   if (!user) {
-    ctx.status = 400;
-    ctx.body = 'Wrong email or token';
-
-    return;
+    ctx.throw(400, 'Wrong email or token');
   }
 
   await user.update({
@@ -47,12 +44,23 @@ export async function confirmRegister(ctx: CustomContext) {
 export async function login(ctx: CustomContext) {
   const {
     request: {
-      body: {
-        login = '',
-        password = '',
-      },
+      body,
     },
   } = ctx;
+
+  if (!body) {
+    ctx.throw(400);
+  }
+
+  const {
+    login,
+    password,
+  } = body;
+
+  if (typeof login !== 'string' || typeof password !== 'string') {
+    ctx.throw(400);
+  }
+
   const session = ctx.state.session!;
   const user = await User.findOne({
     where: {
@@ -88,16 +96,39 @@ export async function logout(ctx: CustomContext) {
   ctx.state.success();
 }
 
+export async function refreshUser(ctx: CustomContext, next: (err?: any) => Promise<any>) {
+  if (!ctx.state.session) {
+    ctx.throw(500, 'No session found');
+  }
+
+  if (ctx.state.session?.user) {
+    ctx.state.session.user = await User.findByPk(ctx.state.session.user.id);
+  }
+
+  await next();
+}
+
 export async function register(ctx: CustomContext) {
   const {
     request: {
-      body: {
-        email = '',
-        login = '',
-        password = '',
-      },
+      body,
     },
   } = ctx;
+
+  if (!body) {
+    ctx.throw(400);
+  }
+
+  const {
+    email,
+    login,
+    password,
+  } = body;
+
+  if (typeof email !== 'string' || typeof login !== 'string' || typeof password !== 'string') {
+    ctx.throw(400);
+  }
+
   let user: User;
 
   try {
@@ -145,7 +176,5 @@ async function sendConfirmationEmail(ctx: CustomContext, user: User) {
         }),
       }),
     });
-  } catch (err) {
-    /* empty */
-  }
+  } catch {}
 }

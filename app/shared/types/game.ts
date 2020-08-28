@@ -39,9 +39,10 @@ export type DrawnSymbol = Arrow | Circle;
 
 export interface Player {
   id: number | string;
-  mock: boolean;
   name: string;
   color: ColorEnum;
+  rating: number;
+  newRating: number | null;
   time: number | null;
 }
 
@@ -177,25 +178,36 @@ export interface GlickoRating {
   vol: number;
 }
 
-export type Ratings = Partial<EachVariant<Partial<Record<SpeedType, GlickoRating>>>>;
+export type Ratings = Partial<Record<GameVariantType, Partial<Record<SpeedType, GlickoRating>>>>;
 
 export interface TakebackRequest {
   player: ColorEnum;
   moveIndex: number;
 }
 
-export interface GameMinimalData {
+export interface Challenge {
   id: string;
-  status: GameStatusEnum;
-  players: GamePlayers;
-  result: GameResult | null;
+  challenger: {
+    id: number;
+    rating: number;
+    color: ColorEnum | null | undefined;
+  };
+  rated: boolean;
+  startingFen: string | null;
   timeControl: TimeControl;
   variants: readonly GameVariantEnum[];
 }
 
-export interface CommonGameData extends GameMinimalData {
-  startingData?: StartingData;
+export interface CommonGameData {
+  id: string;
+  status: GameStatusEnum;
+  players: GamePlayers;
   result: GameResult | null;
+  rated: boolean;
+  timeControl: TimeControl;
+  variants: readonly GameVariantEnum[];
+  startingData: StartingData | null;
+  startingFen: string | null;
   chat: ChatMessage[];
   takebackRequest: TakebackRequest | null;
   drawOffer: ColorEnum | null;
@@ -226,15 +238,19 @@ export interface DarkChessGameInitialData {
 export type PGNTags = Dictionary<string>;
 
 export interface GameCreateSettings {
+  rated: boolean;
   timeControl: TimeControl;
   variants: readonly GameVariantEnum[];
+  startingFen: string | null;
+  color?: ColorEnum | null;
 }
 
 export interface GameCreateOptions extends GameCreateSettings {
   id: string;
-  pgnTags?: PGNTags;
-  startingData?: StartingData;
-  startingFen?: string;
+  status: GameStatusEnum;
+  pgnTags: PGNTags;
+  startingData: StartingData | null;
+  startingFen: string | null;
 }
 
 export enum GameVariantEnum {
@@ -260,6 +276,8 @@ export enum GameVariantEnum {
   RETREAT_CHESS = 'RETREAT_CHESS',
   BENEDICT_CHESS = 'BENEDICT_CHESS',
 }
+
+export type GameVariantType = 'standard' | 'mixed' | GameVariantEnum;
 
 export type EachVariant<T> = Record<GameVariantEnum, T>;
 
@@ -329,9 +347,9 @@ export enum GetPossibleMovesMode {
 }
 
 export enum GameStatusEnum {
-  BEFORE_START = 'BEFORE_START',
   ONGOING = 'ONGOING',
   FINISHED = 'FINISHED',
+  ABORTED = 'ABORTED',
 }
 
 export enum ResultReasonEnum {

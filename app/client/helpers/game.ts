@@ -43,7 +43,7 @@ import {
   TimeControlEnum,
 } from 'shared/types';
 
-import { Game as GameHelper } from 'shared/helpers';
+import { Game as BaseGame, Game as GameHelper } from 'shared/helpers';
 import { Sound } from 'client/helpers/sounds';
 import { RegisterMoveReturnValue } from 'shared/helpers/GameMovesUtils';
 
@@ -78,6 +78,21 @@ export class Game extends GameHelper {
       variants1.length === variants2.length
       && variants1.every((variant) => variants2.includes(variant))
     );
+  }
+
+  static getGameFromFen(fen: string, variants: readonly GameVariantEnum[]): Game {
+    return new Game({
+      game: new BaseGame({
+        startingData: null,
+        startingFen: fen,
+        timeControl: null,
+        variants,
+        id: '',
+        status: GameStatusEnum.ONGOING,
+        pgnTags: {},
+        rated: false,
+      }),
+    });
   }
 
   static getGameFromPgn(pgn: string, id: string): Game {
@@ -150,8 +165,11 @@ export class Game extends GameHelper {
   }: InitGameOptions) {
     super({
       id: game.id,
+      status: GameStatusEnum.ONGOING,
       pgnTags: game.pgnTags,
-      startingData: game.startingData,
+      rated: game.rated,
+      startingData: game.startingData || null,
+      startingFen: game.startingFen,
       timeControl: game.timeControl,
       variants: game.variants,
     });
@@ -163,7 +181,7 @@ export class Game extends GameHelper {
     this.chat = game.chat;
     this.player = player || null;
     this.socket = socket;
-    this.isOngoingDarkChessGame = this.isDarkChess && game.status !== GameStatusEnum.FINISHED;
+    this.isOngoingDarkChessGame = this.isDarkChess && game.status === GameStatusEnum.ONGOING;
     this.showDarkChessHiddenPieces = !this.isOngoingDarkChessGame;
     this.boardSidesRenderedRatio = this.isCircularChess
       ? 1
@@ -307,11 +325,13 @@ export class Game extends GameHelper {
       });
 
       socket.on('darkChessMoves', (moves) => {
-        this.isOngoingDarkChessGame = false;
-        this.showDarkChessHiddenPieces = true;
+        setTimeout(() => {
+          this.isOngoingDarkChessGame = false;
+          this.showDarkChessHiddenPieces = true;
 
-        this.onDarkChessMoves(moves);
-        this.updateGame();
+          this.onDarkChessMoves(moves);
+          this.updateGame();
+        }, 0);
       });
 
       socket.on('newChatMessage', (chatMessage) => {
@@ -1026,7 +1046,7 @@ export class Game extends GameHelper {
   toggleIsBlackBase(changeDarkChessMode: boolean) {
     this.isBlackBase = !this.isBlackBase;
 
-    if (changeDarkChessMode && this.isDarkChess && this.status === GameStatusEnum.FINISHED) {
+    if (changeDarkChessMode && this.isDarkChess && !this.isOngoingDarkChessGame) {
       this.changeDarkChessMode(
         this.isBlackBase
           ? ColorEnum.BLACK

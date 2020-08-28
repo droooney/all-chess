@@ -2,6 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import io from 'socket.io-client';
 import { RouteComponentProps } from 'react-router-dom';
+import find from 'lodash/find';
 
 import {
   ALICE_CHESS_BOARDS_MARGIN,
@@ -16,15 +17,13 @@ import {
 import { GAME_VARIANT_NAMES } from 'shared/constants';
 
 import {
-  DarkChessGame,
   DarkChessGameInitialData,
-  Game as IGame,
   GameInitialData,
   GameStatusEnum,
   Player,
 } from 'shared/types';
 
-import { Game as GameHelper } from 'client/helpers';
+import { fetch, Game as GameHelper } from 'client/helpers';
 
 import { ReduxState } from 'client/store';
 
@@ -40,7 +39,6 @@ interface OwnProps {
 type Props = OwnProps & ReturnType<typeof mapStateToProps> & RouteComponentProps<{ gameId: string }>;
 
 interface State {
-  gameData: IGame | DarkChessGame | null;
   game: GameHelper | null;
   player: Player | null;
   boardsWidth: number;
@@ -53,7 +51,6 @@ interface State {
 class GamePage extends React.PureComponent<Props, State> {
   socket?: io.Socket;
   state: State = {
-    gameData: null,
     game: null,
     player: null,
     boardsWidth: 0,
@@ -63,37 +60,53 @@ class GamePage extends React.PureComponent<Props, State> {
     tabletPanelWidth: 0,
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     const {
+      history,
       match: {
         params: {
           gameId,
         },
       },
+      user,
     } = this.props;
-    const socket = this.socket = io.connect(`/games/${gameId}`);
-
-    socket.on('initialGameData', this.onGameData);
-    socket.on('initialDarkChessGameData', this.onGameData);
-
-    socket.on('startGame', (players) => {
-      const {
-        game,
-      } = this.state;
-
-      if (game) {
-        game.players = players;
-        game.status = GameStatusEnum.ONGOING;
-      }
-
-      this.setState(({ gameData }) => ({
-        gameData: gameData && {
-          ...gameData,
-          status: GameStatusEnum.ONGOING,
-          players,
-        },
-      }));
+    const {
+      success,
+      game,
+    } = await fetch({
+      url: '/api/game/{gameId}',
+      method: 'get',
+      urlParams: { gameId },
     });
+
+    if (!success) {
+      return;
+    }
+
+    if (!game) {
+      // TODO: show "game not found"
+
+      history.push('/');
+
+      return;
+    }
+
+    if (game.status === GameStatusEnum.ONGOING) {
+      const socket = this.socket = io.connect(`/game/${gameId}`);
+
+      socket.on('initialGameData', this.onGameData);
+      socket.on('initialDarkChessGameData', this.onGameData);
+    } else {
+      const player = find(game.players, { id: user?.id }) || null;
+
+      this.setState({
+        game: new GameHelper({
+          game,
+          player,
+        }),
+        player,
+      });
+    }
 
     this.updateGridLayout();
 
@@ -268,7 +281,6 @@ class GamePage extends React.PureComponent<Props, State> {
     });
 
     this.setState({
-      gameData,
       game,
       player,
     });
@@ -279,9 +291,7 @@ class GamePage extends React.PureComponent<Props, State> {
 
   render() {
     const {
-      gameData,
       game,
-      player,
       boardsWidth,
       gridMode,
       leftDesktopPanelWidth,
@@ -291,32 +301,25 @@ class GamePage extends React.PureComponent<Props, State> {
     let content: React.ReactNode;
     let title: string | null;
 
-    if (gameData && game) {
+    if (game) {
       const {
-        status,
         variants,
-      } = gameData;
+      } = game;
 
       title = `AllChess - ${variants.length > 1 ? 'Mixed' : variants.length ? GAME_VARIANT_NAMES[variants[0]] : 'Standard'} Game`;
 
-      if (status === GameStatusEnum.BEFORE_START) {
-        content = player
-          ? 'Waiting for the opponent...'
-          : 'Waiting for the players...';
-      } else {
-        content = (
-          <Game
-            game={game}
-            showBoard
-            showPlayers
-            showMovesPanel
-            showChat
-            showActions
-            showInfo
-            boardsWidth={boardsWidth}
-          />
-        );
-      }
+      content = (
+        <Game
+          game={game}
+          showBoard
+          showPlayers
+          showMovesPanel
+          showChat
+          showActions
+          showInfo
+          boardsWidth={boardsWidth}
+        />
+      );
     } else {
       content = (
         <div className="spinner">
@@ -347,6 +350,7 @@ class GamePage extends React.PureComponent<Props, State> {
 function mapStateToProps(state: ReduxState) {
   return {
     scrollSize: state.common.scrollSize,
+    user: state.user,
   };
 }
 

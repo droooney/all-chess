@@ -4,7 +4,7 @@
     "node": true,
     "browser": true
   },
-  "parser": "typescript-eslint-parser",
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "sourceType": "module",
     "ecmaFeatures": {
@@ -146,6 +146,10 @@
     "no-constant-condition": 0,
     "no-dupe-class-members": 0,
     "no-else-return": 2,
+    "no-empty": [
+      "error",
+      { "allowEmptyCatch": true }
+    ],
     "no-eval": 2,
     "no-extra-label": 2,
     "no-floating-decimal": 2,

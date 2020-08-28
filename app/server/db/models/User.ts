@@ -14,7 +14,7 @@ export class User extends Model<UserAttributes, UserAddAttributes> {
   toJSON(): PublicUser {
     const user = super.toJSON() as UserAttributes;
 
-    return pick(user, ['id', 'login', 'createdAt']);
+    return pick(user, ['id', 'login', 'ratings', 'createdAt']);
   }
 }
 
@@ -39,18 +39,21 @@ User.init({
     unique: true,
     validate: {
       notEmpty: true,
+      is: /^[a-z0-9-_]+$/i,
     },
   },
   password: {
     type: DataTypes.STRING,
+    allowNull: false,
   },
   confirmToken: {
     type: DataTypes.STRING,
     allowNull: true,
-    defaultValue: '',
+    defaultValue: null,
   },
   confirmed: {
     type: DataTypes.BOOLEAN,
+    allowNull: false,
     defaultValue: false,
   },
   ratings: {

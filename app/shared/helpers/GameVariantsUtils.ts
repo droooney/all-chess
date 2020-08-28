@@ -1,4 +1,9 @@
-import { BoardDimensions, GameCreateOptions, GameVariantEnum } from 'shared/types';
+import {
+  BoardDimensions,
+  GameCreateOptions,
+  GameVariantEnum,
+  GameVariantType,
+} from 'shared/types';
 
 import GameCommonUtils from './GameCommonUtils';
 
@@ -60,6 +65,14 @@ export default class GameVariantsUtils extends GameCommonUtils {
       boardWidth: dimensions.boardWidth / 2,
       boardHeight: dimensions.boardHeight * 2,
     };
+  }
+
+  static getVariantType(variants: readonly GameVariantEnum[]): GameVariantType {
+    return variants.length === 0
+      ? 'standard'
+      : variants.length === 1
+        ? variants[0]
+        : 'mixed';
   }
 
   static getVariantsInfo(variants: readonly GameVariantEnum[]): VariantsInfo {
@@ -195,6 +208,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
       || (
         !isCylinderChess
         && !isCirce
+        && !isBenedictChess
       )
     ) && (
       !isCompensationChess
@@ -213,6 +227,9 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isPatrol
         // TODO: add support for dark + benedict
         && !isDarkChess
+        // TODO: add support for two families + benedict
+        && !isTwoFamilies
+        && !isKingOfTheHill
       )
     ));
   }
@@ -238,5 +255,9 @@ export default class GameVariantsUtils extends GameCommonUtils {
       || this.isBenedictChess
     );
     this.is50MoveRuleUsed = !this.isCrazyhouse;
+  }
+
+  getVariantType(): GameVariantType {
+    return GameVariantsUtils.getVariantType(this.variants);
   }
 }

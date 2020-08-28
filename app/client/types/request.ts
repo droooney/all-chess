@@ -1,6 +1,7 @@
 export interface RequestOptions {
   url: string;
   method: 'get' | 'post';
+  urlParams?: object;
   data?: unknown;
 }
 
@@ -26,4 +27,10 @@ export interface RegisterRequestOptions extends RequestOptions {
     login: string;
     password: string;
   };
+}
+
+export interface GetGameRequestOptions extends RequestOptions {
+  url: '/api/game/{gameId}';
+  method: 'get';
+  urlParams: { gameId: string; };
 }

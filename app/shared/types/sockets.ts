@@ -1,14 +1,16 @@
 /// <reference path="../typings/socket.io.d.ts" />
 
+import { Dictionary } from 'shared/types/common';
+
 import {
   BaseMove,
+  Challenge,
   ChatMessage,
   ColorEnum,
   DarkChessGameInitialData,
   DarkChessMove,
   GameCreateSettings,
   GameInitialData,
-  GameMinimalData,
   GamePlayers,
   GameResult,
   Move,
@@ -19,7 +21,7 @@ import {
 declare global {
   interface SocketIOServerEventWithDataMap {
     gamePing: number;
-    gameList: GameMinimalData[];
+    challengeList: Dictionary<Challenge>;
     moveMade: {
       move: Move | DarkChessMove;
       moveIndex: number;
@@ -31,11 +33,16 @@ declare global {
       players: GamePlayers;
     };
     darkChessMoves: Move[];
-    startGame: GamePlayers;
     updatePlayers: GamePlayers;
     initialGameData: GameInitialData;
     initialDarkChessGameData: DarkChessGameInitialData;
-    gameCreated: GameMinimalData;
+    newChallenge: Challenge;
+    challengeAccepted: {
+      challengeId: string;
+      gameId: string;
+      acceptingUserId: number;
+    };
+    challengesCanceled: string[];
     newChatMessage: ChatMessage;
     takebackRequested: TakebackRequest;
     takebackAccepted: number;
@@ -51,9 +58,11 @@ declare global {
   interface SocketIOClientEventWithDataMap {
     gamePong: number;
     makeMove: BaseMove;
-    createGame: GameCreateSettings;
+    createChallenge: GameCreateSettings;
     addChatMessage: string;
     requestTakeback: number;
+    acceptChallenge: string;
+    cancelChallenge: string;
   }
 
   type SocketIOClientEventWithoutDataList = (

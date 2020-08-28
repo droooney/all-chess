@@ -1,10 +1,7 @@
 import findKey from 'lodash/findKey';
 import last from 'lodash/last';
 
-import {
-  COLOR_NAMES,
-  GAME_VARIANT_PGN_NAMES,
-} from 'shared/constants';
+import { COLOR_NAMES, GAME_VARIANT_PGN_NAMES } from 'shared/constants';
 
 import {
   CastlingTypeEnum,
@@ -12,8 +9,8 @@ import {
   ColorEnum,
   Game as IGame,
   GameCreateOptions,
-  GamePlayers,
   GameResult,
+  GameStatusEnum,
   GameVariantEnum,
   Move,
   PGNTags,
@@ -21,6 +18,7 @@ import {
   PieceTypeEnum,
   RealPiece,
   ResultReasonEnum,
+  SpeedType,
   Square,
   StartingData,
   TakebackRequest,
@@ -28,19 +26,20 @@ import {
   TimeControlEnum,
 } from 'shared/types';
 
-import GameResultUtils from './GameResultUtils';
+import GameTimeUtils from './GameTimeUtils';
 
 const DIGITS_REGEX = /^\d+$/;
 
 const PGN_TAG_REGEX = /^\[([a-z0-9]+) +"((?:[^"\\]|\\"|\\\\)*)"]$/i;
 const PGN_MOVE_REGEX = /^\S+(?=\s|$)/;
+// FIXME: split into drop and board move
 const PGN_MOVE_SQUARES_REGEX = /^(?:([A-Z]?)(@?)([₀-₉]*)([a-w]*)(\d*)x?([₀-₉]*)([a-w])(\d+)(?:=([A-Z]))?)|O-O(-O)?/;
 
 const RESULT_WIN_WHITE = '1-0';
 const RESULT_WIN_BLACK = '0-1';
 const RESULT_DRAW = '1/2-1/2';
 
-export class Game extends GameResultUtils implements IGame {
+export class Game extends GameTimeUtils implements IGame {
   static getGameFromPgn(pgn: string, id: string): Game {
     const pgnData = pgn
       .split('\n')
@@ -49,7 +48,6 @@ export class Game extends GameResultUtils implements IGame {
     const variants: GameVariantEnum[] = [];
     const pgnTags: PGNTags = {};
     let timeControl: TimeControl = null;
-    let startingData: StartingData;
     let fen = '';
     let i = 0;
 
@@ -127,12 +125,6 @@ export class Game extends GameResultUtils implements IGame {
       pgnTags[tagName] = trueTagValue;
     }
 
-    if (fen) {
-      startingData = Game.getStartingDataFromFen(fen, variants);
-    } else {
-      startingData = Game.getStartingData(variants);
-    }
-
     const resultString = 'Result' in pgnTags
       ? pgnTags.Result
       : null;
@@ -164,10 +156,16 @@ export class Game extends GameResultUtils implements IGame {
 
     const game = new Game({
       id,
-      startingData,
+      startingData: null,
+      startingFen: fen,
       variants,
       timeControl,
       pgnTags,
+      // TODO: parse from pgn
+      rated: false,
+      status: result
+        ? GameStatusEnum.FINISHED
+        : GameStatusEnum.ONGOING,
     });
 
     game.result = result;
@@ -220,7 +218,7 @@ export class Game extends GameResultUtils implements IGame {
         // move index including dots
         if (shouldBeMoveIndex) {
           const moveIndex = Math.floor(game.pliesCount / 2) + 1;
-          const moveIndexString = (startingData.startingMoveIndex && !wasMoveIndex) || game.pliesCount % 2 !== 0
+          const moveIndexString = (game.startingMoveIndex && !wasMoveIndex) || game.pliesCount % 2 !== 0
             ? `${moveIndex}...`
             : `${moveIndex}.`;
 
@@ -370,6 +368,15 @@ export class Game extends GameResultUtils implements IGame {
     return game;
   }
 
+  static getSpeedType(timeControl: TimeControl | null): SpeedType | null {
+    if (!timeControl) {
+      return null;
+    }
+
+    // TODO: add speed type detection
+    return SpeedType.BLITZ;
+  }
+
   static validateStartingData(startingData: StartingData, variants: readonly GameVariantEnum[]): void {
     const {
       isAliceChess,
@@ -466,7 +473,11 @@ export class Game extends GameResultUtils implements IGame {
       timeControl: null,
       id: '',
       startingData,
+      startingFen: null,
       variants,
+      status: GameStatusEnum.ONGOING,
+      pgnTags: {},
+      rated: false,
     });
 
     if (game.isInCheck(game.getOpponentColor())) {
@@ -486,86 +497,32 @@ export class Game extends GameResultUtils implements IGame {
 
   id: string;
   startingFen: string | null;
-  players: GamePlayers = {
-    [ColorEnum.WHITE]: {
-      id: 'white',
-      mock: true,
-      name: '',
-      color: ColorEnum.WHITE,
-      time: null,
-    },
-    [ColorEnum.BLACK]: {
-      id: 'black',
-      mock: true,
-      name: '',
-      color: ColorEnum.BLACK,
-      time: null,
-    },
-  };
-  timeControl: TimeControl;
+  rated: boolean;
   pgnTags: PGNTags;
   chat: ChatMessage[] = [];
   drawOffer: ColorEnum | null = null;
   takebackRequest: TakebackRequest | null = null;
-  lastMoveTimestamp: number = 0;
-  pawnTimeValue: number = 0;
 
   constructor(options: GameCreateOptions) {
-    super(options);
+    super({
+      ...options,
+      startingData: options.startingData || (
+        options.startingFen
+          ? Game.getStartingDataFromFen(options.startingFen, options.variants)
+          : null
+      ),
+    });
 
-    this.id = options.id || '';
-    this.startingFen = options.startingFen || null;
+    this.id = options.id;
+    this.startingFen = options.startingFen;
 
+    this.rated = options.rated;
     this.pgnTags = options.pgnTags || {};
-    this.timeControl = options.timeControl;
 
     this.setupStartingData();
-
-    if (this.isCompensationChess && this.timeControl?.type === TimeControlEnum.TIMER) {
-      this.pawnTimeValue = this.timeControl.base / 2 / this.getPiecesWorth()[ColorEnum.WHITE];
-    }
   }
 
-  changePlayerTime(averagePing: number = 0) {
-    if (this.needToChangeTime() && this.timeControl) {
-      const prevTurn = this.getOpponentColor();
-      const player = this.players[prevTurn];
-      const {
-        duration: actualDuration,
-        prevPiecesWorth,
-      } = last(this.getUsedMoves())!;
-      const duration = Math.max(actualDuration / 2, actualDuration - averagePing / 2);
-
-      if (this.isFinished()) {
-        player.time! -= duration;
-      } else if (this.timeControl.type === TimeControlEnum.TIMER) {
-        player.time! -= duration - this.timeControl.increment;
-
-        if (this.isCompensationChess) {
-          const newPiecesWorth = this.getPiecesWorth();
-          const gainedMaterial = newPiecesWorth[player.color] - prevPiecesWorth[player.color];
-          const takenMaterial = prevPiecesWorth[this.turn] - newPiecesWorth[this.turn];
-
-          player.time! -= (gainedMaterial + takenMaterial) * this.pawnTimeValue;
-        }
-      } else {
-        player.time = this.timeControl.base;
-      }
-
-      player.time = Math.max(player.time!, 0);
-    }
-  }
-
-  needToChangeTime(): boolean {
-    return this.getUsedMoves().length > 2;
-  }
-
-  setupStartingData() {
-    super.setupStartingData();
-
-    if (this.timeControl) {
-      this.players[ColorEnum.WHITE].time = this.timeControl.base;
-      this.players[ColorEnum.BLACK].time = this.timeControl.base;
-    }
+  getSpeedType(): SpeedType | null {
+    return Game.getSpeedType(this.timeControl);
   }
 }

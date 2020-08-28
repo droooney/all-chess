@@ -1,15 +1,9 @@
 import * as React from 'react';
 import classNames from 'classnames';
 
-import {
-  COLOR_NAMES,
-  RESULT_REASON_NAMES,
-} from 'shared/constants';
+import { COLOR_NAMES, RESULT_REASON_NAMES } from 'shared/constants';
 
-import {
-  GameResult,
-  Player,
-} from 'shared/types';
+import { GameResult, GameStatusEnum, Player } from 'shared/types';
 
 import { Game } from 'client/helpers';
 
@@ -19,6 +13,7 @@ export interface OwnProps {
   game: Game;
   player: Player | null;
   result: GameResult | null;
+  status: GameStatusEnum;
 }
 
 type Props = OwnProps;
@@ -29,6 +24,7 @@ export default class GameInfo extends React.Component<Props> {
       game,
       player,
       result,
+      status,
     } = this.props;
 
     return (
@@ -62,13 +58,17 @@ export default class GameInfo extends React.Component<Props> {
             )) : ' none'}
           </div>
 
-          <div className="result">
+          <div className={classNames('result', { aborted: status === GameStatusEnum.ABORTED })}>
             {result ? (
               <React.Fragment>
                 {result.winner ? `${COLOR_NAMES[result.winner]} won` : 'Draw'}
                 {` (${RESULT_REASON_NAMES[result.reason]})`}
               </React.Fragment>
-            ) : '\u00a0'}
+            ) : (
+              status === GameStatusEnum.ABORTED
+                ? 'Game aborted'
+                : null
+            )}
           </div>
         </div>
       </React.Fragment>

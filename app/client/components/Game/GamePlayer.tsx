@@ -11,7 +11,6 @@ import {
   AnyMove,
   ColorEnum,
   EachPieceType,
-  GameStatusEnum,
   Piece as IPiece,
   PieceTypeEnum,
   Player,
@@ -37,7 +36,7 @@ interface OwnProps {
   enableDnd: boolean;
   turn: ColorEnum;
   realTurn: ColorEnum;
-  status: GameStatusEnum;
+  isOngoing: boolean;
   currentMoveIndex: number;
   lastMoveTimestamp: number;
   isTop: boolean;
@@ -66,11 +65,11 @@ export default class GamePlayer extends React.Component<Props, State> {
 
   componentDidMount() {
     const {
-      status,
+      isOngoing,
       moves,
     } = this.props;
 
-    if (moves.length >= 2 && status === GameStatusEnum.ONGOING) {
+    if (moves.length >= 2 && isOngoing) {
       this.activateInterval();
     }
   }
@@ -81,11 +80,11 @@ export default class GamePlayer extends React.Component<Props, State> {
 
   componentDidUpdate(prevProps: Props) {
     const {
-      status,
+      isOngoing,
       moves,
     } = this.props;
 
-    if (status !== GameStatusEnum.ONGOING && prevProps.status === GameStatusEnum.ONGOING) {
+    if (!isOngoing && prevProps.isOngoing) {
       this.stopInterval();
     } else if (moves.length >= 2 && prevProps.moves.length < 2) {
       this.activateInterval();
@@ -96,7 +95,7 @@ export default class GamePlayer extends React.Component<Props, State> {
 
   activateInterval() {
     const {
-      status,
+      isOngoing,
       timeControl,
     } = this.props;
 
@@ -104,7 +103,7 @@ export default class GamePlayer extends React.Component<Props, State> {
       intervalActivated: true,
     });
 
-    if (status === GameStatusEnum.ONGOING && timeControl) {
+    if (isOngoing && timeControl) {
       this.timeControlInterval = setInterval(() => this.forceUpdate(), 100) as any;
     }
   }
@@ -175,7 +174,7 @@ export default class GamePlayer extends React.Component<Props, State> {
       enableDnd,
       turn,
       realTurn,
-      status,
+      isOngoing,
       selectedPiece,
       timeControl,
       isTop,
@@ -188,8 +187,11 @@ export default class GamePlayer extends React.Component<Props, State> {
     const allMaterialDiffRelativeToPlayer = player.color === ColorEnum.WHITE
       ? allMaterialDifference
       : -allMaterialDifference;
-    const active = player.color === realTurn && status === GameStatusEnum.ONGOING;
+    const active = player.color === realTurn && isOngoing;
     const time = this.getTime();
+    const ratingDiff = player.newRating === null
+      ? null
+      : Math.floor(player.newRating) - Math.floor(player.rating);
 
     return (
       <div
@@ -239,6 +241,7 @@ export default class GamePlayer extends React.Component<Props, State> {
             )}
           </div>
         )}
+
         {game.isPocketUsed && (
           <PlayerPocket
             game={game}
@@ -251,6 +254,7 @@ export default class GamePlayer extends React.Component<Props, State> {
             startDraggingPiece={startDraggingPiece}
           />
         )}
+
         {timeControl ? (
           <div className={classNames('timer', {
             correspondence: timeControl.type === TimeControlEnum.CORRESPONDENCE,
@@ -272,12 +276,31 @@ export default class GamePlayer extends React.Component<Props, State> {
             }
           </div>
         )}
-        <div className="name">
-          <div
-            className={classNames('color', { active: player.color === turn })}
-            style={{ backgroundColor: player.color }}
-          />
-          {player.name}
+
+        <div className="player-info">
+          <div className="name-and-color">
+            <div
+              className={classNames('color', { active: player.color === turn })}
+              style={{ backgroundColor: player.color }}
+            />
+
+            <span className="name">
+              {player.name}
+            </span>
+          </div>
+
+          <div className="rating">
+            {Math.floor(player.rating)}
+
+            {ratingDiff !== null && (
+              <span className={classNames(
+                'rating-diff',
+                ratingDiff > 0 ? 'positive' : ratingDiff ? 'negative' : null,
+              )}>
+                {' '}{ratingDiff >= 0 ? '+' : ''}{ratingDiff}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     );

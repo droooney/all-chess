@@ -152,9 +152,9 @@ export const COLOR_NAMES: EachColor<string> = {
 };
 
 export const GAME_STATUS_NAMES: Record<GameStatusEnum, string> = {
-  [GameStatusEnum.BEFORE_START]: 'Waiting for the opponent',
   [GameStatusEnum.ONGOING]: 'In progress',
   [GameStatusEnum.FINISHED]: 'Finished',
+  [GameStatusEnum.ABORTED]: 'Aborted',
 };
 
 export const TIME_CONTROL_NAMES: Record<TimeControlEnum, string> = {

@@ -11,8 +11,10 @@ import {
   confirmRegister,
   login,
   logout,
+  refreshUser,
   register,
 } from 'server/controllers/auth';
+import { getGame } from 'server/controllers/game';
 import { state } from 'server/controllers/state';
 import {
   session,
@@ -33,7 +35,10 @@ authApp.use(post('/register', compose([bodyParser, register])));
 
 apiApp.use(session);
 apiApp.use(sessionRequired);
+apiApp.use(refreshUser);
 apiApp.use(state);
+
 apiApp.use(mount('/auth', authApp));
+apiApp.use(get(/^\/game\/(?<gameId>[^/]+)$/, getGame));
 
 app.use(mount('/api', apiApp));

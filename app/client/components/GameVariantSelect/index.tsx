@@ -72,7 +72,7 @@ class GameVariantSelect extends React.Component<Props, State> {
       favouriteVariants,
     } = this.props;
 
-    return favouriteVariants.filter((variants) => variants.length > 1);
+    return favouriteVariants.filter((variants) => variants.length !== 1);
   }
 
   getFavouriteVariants(): GameVariantEnum[] {
@@ -204,7 +204,7 @@ class GameVariantSelect extends React.Component<Props, State> {
         {favouriteCombinationsGroup.map(({ variants, enabled, allowed }) => {
           const variantsString = variants
             .map((variant) => GAME_VARIANT_SHORT_NAMES[variant])
-            .join(' + ');
+            .join(' + ') || 'Standard';
 
           return (
             <MenuItem key={variants.join(',')} value={variants} tabIndex={-1} disabled={!allowed}>

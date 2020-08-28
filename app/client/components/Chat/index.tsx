@@ -8,7 +8,7 @@ import Input from '../Input';
 
 interface OwnProps {
   chat: ChatMessage[];
-  sendMessage(message: string): void;
+  sendMessage?(message: string): void;
 }
 
 type Props = OwnProps;
@@ -46,7 +46,7 @@ export default class Chat extends React.PureComponent<Props, State> {
       const message = this.state.message.trim();
 
       if (message) {
-        this.props.sendMessage(message);
+        this.props.sendMessage?.(message);
 
         this.setState({
           message: '',
@@ -64,6 +64,7 @@ export default class Chat extends React.PureComponent<Props, State> {
   render() {
     const {
       chat,
+      sendMessage,
     } = this.props;
 
     return (
@@ -87,14 +88,16 @@ export default class Chat extends React.PureComponent<Props, State> {
             );
           })}
         </div>
-        <Input
-          className="new-message-input"
-          placeholder="Type a message"
-          disableUnderline
-          value={this.state.message}
-          onChange={this.onMessageChange}
-          onKeyDown={this.onKeyDown}
-        />
+        {sendMessage && (
+          <Input
+            className="new-message-input"
+            placeholder="Type a message"
+            disableUnderline
+            value={this.state.message}
+            onChange={this.onMessageChange}
+            onKeyDown={this.onKeyDown}
+          />
+        )}
       </div>
     );
   }

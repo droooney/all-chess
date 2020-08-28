@@ -16,7 +16,6 @@ import {
   DrawnSymbol,
   DrawnSymbolColor,
   EachPieceType,
-  GameStatusEnum,
   GetPossibleMovesMode,
   PieceLocationEnum,
   PieceTypeEnum,
@@ -233,7 +232,7 @@ class Game extends React.Component<Props, State> {
       !!game.player
       // TODO: replace true with premovesEnabled
       && (game.player.color === game.turn || true)
-      && game.status === GameStatusEnum.ONGOING
+      && game.isOngoing()
       && game.currentMoveIndex === game.getUsedMoves().length - 1
     );
   }
@@ -643,9 +642,7 @@ class Game extends React.Component<Props, State> {
         if (element.classList.contains('allowed-square')) {
           squareElem = element;
         }
-      } catch {
-        /* empty */
-      }
+      } catch {}
     }
 
     if (this.state.drawingSymbolStart) {
@@ -911,7 +908,7 @@ class Game extends React.Component<Props, State> {
               timeControl={timeControl}
               turn={turn}
               realTurn={realTurn}
-              status={status}
+              isOngoing={game.isOngoing()}
               currentMoveIndex={currentMoveIndex}
               lastMoveTimestamp={lastMoveTimestamp}
               enableClick={enableClick && !!player && panelPlayer.id === player.id}
@@ -974,13 +971,14 @@ class Game extends React.Component<Props, State> {
             game={game}
             player={player}
             result={result}
+            status={status}
           />
         )}
 
         {showChat && (
           <Chat
             chat={chat}
-            sendMessage={this.sendMessage}
+            sendMessage={game.socket ? this.sendMessage : undefined}
           />
         )}
 

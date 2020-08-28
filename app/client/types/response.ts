@@ -1,4 +1,4 @@
-import { PublicUser } from './user';
+import { Game, PublicUser } from 'shared/types';
 
 export interface GenericResponse {
   success: boolean;
@@ -30,3 +30,7 @@ export interface RegisterFailedResponse extends FailedResponse {
 }
 
 export type RegisterResponse = RegisterSuccessfulResponse | RegisterFailedResponse;
+
+export interface GetGameResponse extends GenericResponse {
+  game: Game | null;
+}

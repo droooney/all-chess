@@ -26,9 +26,7 @@ export function getDefaultSettings(): GameSettings {
         localStorageValue = JSON.parse(storageValue);
         loadedFromStorage = true;
       }
-    } catch {
-      /* empty */
-    }
+    } catch {}
 
     if (loadedFromStorage) {
       settings[key as keyof GameSettings] = localStorageValue as never;

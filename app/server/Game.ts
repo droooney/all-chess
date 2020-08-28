@@ -1,15 +1,19 @@
+/// <reference path="../shared/typings/glicko2.d.ts"/>
+
 import { Namespace } from 'socket.io';
 import isEqual from 'lodash/isEqual';
 import find from 'lodash/find';
 import forEach from 'lodash/forEach';
 import keys from 'lodash/keys';
 import last from 'lodash/last';
+import omit from 'lodash/omit';
 import pick from 'lodash/pick';
-import some from 'lodash/some';
 import values from 'lodash/values';
+import { Glicko2, Player as GlickoPlayer } from 'glicko2';
 
 import {
   COLOR_NAMES,
+  DEFAULT_RATING,
   POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS,
   POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
   POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS,
@@ -19,15 +23,17 @@ import {
   BaseMove,
   ChatMessage,
   ColorEnum,
+  Dictionary,
   EachColor,
   Game as IGame,
   GameCreateOptions,
-  GameStatusEnum,
   GameVariantEnum,
+  GlickoRating,
   Move,
   PieceLocationEnum,
   Player,
   ResultReasonEnum,
+  SpeedType,
   TimeControlEnum,
   User,
 } from 'shared/types';
@@ -36,22 +42,98 @@ import { Game as GameHelper } from 'shared/helpers';
 
 import { sessionMiddleware } from 'server/controllers/session';
 
+import { Game as DBGame, User as DBUser } from 'server/db/models';
+
+import ioServer from 'server/io';
+
 const VARIANTS = values(GameVariantEnum);
 
 export default class Game extends GameHelper {
+  static games: Partial<Dictionary<Game>> = {};
+
+  static addGame(game: Game) {
+    Game.games[game.id] = game;
+  }
+
+  static fromDBInstance(dbInstance: DBGame, isLive: boolean): Game {
+    const game = new Game({
+      ...pick(dbInstance, ['id', 'variants', 'rated', 'timeControl', 'status', 'pgnTags']),
+      startingData: dbInstance.fen ? Game.getStartingDataFromFen(dbInstance.fen, dbInstance.variants) : null,
+      startingFen: dbInstance.fen,
+      isLive,
+    });
+
+    if (!dbInstance.playerNames) {
+      throw new Error('Player names not fetched');
+    }
+
+    game.result = dbInstance.result;
+    game.chat = dbInstance.chat;
+    game.takebackRequest = dbInstance.takebackRequest;
+    game.drawOffer = dbInstance.drawOffer;
+    game.lastMoveTimestamp = +dbInstance.lastMoveTimestamp;
+    game.players = {
+      [ColorEnum.WHITE]: {
+        ...pick(dbInstance.whitePlayer, ['id', 'color', 'rating', 'newRating', 'time']),
+        name: dbInstance.playerNames[ColorEnum.WHITE],
+      },
+      [ColorEnum.BLACK]: {
+        ...pick(dbInstance.blackPlayer, ['id', 'color', 'rating', 'newRating', 'time']),
+        name: dbInstance.playerNames[ColorEnum.BLACK],
+      },
+    };
+
+    for (const { uci, t } of dbInstance.moves) {
+      game.registerAnyMove({
+        ...Game.uciToMove(uci),
+        duration: t,
+      }, false);
+    }
+
+    return game;
+  }
+
+  static getNewGlickoRating(player: GlickoPlayer): GlickoRating {
+    return {
+      r: +player.getRating().toFixed(2),
+      rd: Math.min(350, Math.max(60, +player.getRd().toFixed(2))),
+      vol: Math.min(0.1, +player.getVol().toFixed(9)),
+    };
+  }
+
   static validateSettings(settings: any): boolean {
     if (!settings) {
       return false;
     }
 
     return (
-      this.validateTimeControl(settings.timeControl)
+      (
+        settings.color === ColorEnum.WHITE
+        || settings.color === ColorEnum.BLACK
+        || settings.color == null
+      )
+      && this.validateTimeControl(settings.timeControl)
       && this.validateVariants(settings.variants)
+      && this.validateStartingFen(settings.startingFen, settings.variants)
       && (
         settings.timeControl?.type === TimeControlEnum.TIMER
         || !settings.variants.includes(GameVariantEnum.COMPENSATION_CHESS)
       )
     );
+  }
+
+  static validateStartingFen(fen: any, variants: GameVariantEnum[]): boolean {
+    if (typeof fen !== 'string') {
+      return fen === null;
+    }
+
+    try {
+      this.validateStartingData(this.getStartingDataFromFen(fen, variants), variants);
+
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 
   static validateTimeControl(timeControl: any): boolean {
@@ -94,10 +176,11 @@ export default class Game extends GameHelper {
     return super.validateVariants(variants);
   }
 
+  isLive: boolean;
   isTimer: boolean;
   timerTimeout?: number;
   pingTimeout?: number;
-  io: Namespace;
+  io: Namespace | null;
   lastMoveTimestamp: number = Date.now();
   pingTimestamps = new Set<number>();
   playerPingTimes: EachColor<number[]> = {
@@ -105,17 +188,19 @@ export default class Game extends GameHelper {
     [ColorEnum.BLACK]: [],
   };
 
-  constructor(io: Namespace, options: GameCreateOptions) {
+  constructor(options: GameCreateOptions & { isLive: boolean; }) {
     super(options);
 
-    this.io = io;
+    const io = this.io = options.isLive ? ioServer.of(`/game/${options.id}`) : null;
+
+    this.isLive = options.isLive;
     this.isTimer = !!this.timeControl && this.timeControl.type === TimeControlEnum.TIMER;
 
     if (this.isTimer) {
       setInterval(this.pingPlayers, 1000);
     }
 
-    io.use(async (socket, next) => {
+    io?.use(async (socket, next) => {
       try {
         await sessionMiddleware(socket.request, socket.request.res);
 
@@ -123,46 +208,13 @@ export default class Game extends GameHelper {
           ? socket.request.session.user || null
           : null;
 
-        const existingPlayer = (user && find(this.players, { id: user.id })) || null;
-        const isNewPlayer = (
-          !existingPlayer
-          && this.status === GameStatusEnum.BEFORE_START
-          && some(this.players, { mock: true })
-        );
-        const isOngoingDarkChessGame = this.isDarkChess && this.status !== GameStatusEnum.FINISHED;
-        let player: Player | null = null;
-
-        if (isNewPlayer && user) {
-          const otherPlayer = find(this.players, { mock: false });
-          const color = otherPlayer
-            ? Game.getOppositeColor(otherPlayer.color)
-            : Math.random() > 0.5
-              ? ColorEnum.WHITE
-              : ColorEnum.BLACK;
-
-          player = {
-            id: user.id,
-            mock: false,
-            name: user.login,
-            color,
-            time: this.timeControl && this.timeControl.base,
-          };
-
-          this.players[player!.color] = player!;
-
-          if (otherPlayer) {
-            this.status = GameStatusEnum.ONGOING;
-
-            socket.broadcast.emit('startGame', this.players);
-          }
-        } else {
-          player = existingPlayer;
-        }
+        const isOngoingDarkChessGame = this.isDarkChess && this.isOngoing();
+        const player = (user && find(this.players, { id: user.id })) || null;
 
         if (player) {
           const {
             color: playerColor,
-          } = player!;
+          } = player;
 
           socket.on('gamePong', (timestamp) => {
             if (
@@ -220,7 +272,7 @@ export default class Game extends GameHelper {
                 login: null,
                 message: `${COLOR_NAMES[playerColor]} offered a draw`,
               });
-              this.io.emit('drawOffered', this.drawOffer);
+              io.emit('drawOffered', this.drawOffer);
             }
           });
 
@@ -253,7 +305,7 @@ export default class Game extends GameHelper {
               login: null,
               message: 'Draw offer declined',
             });
-            this.io.emit('drawDeclined');
+            io.emit('drawDeclined');
           });
 
           socket.on('cancelDraw', () => {
@@ -267,7 +319,7 @@ export default class Game extends GameHelper {
               login: null,
               message: 'Draw offer canceled',
             });
-            this.io.emit('drawCanceled');
+            io.emit('drawCanceled');
           });
 
           socket.on('requestTakeback', (moveIndex) => {
@@ -297,7 +349,7 @@ export default class Game extends GameHelper {
               login: null,
               message: `${COLOR_NAMES[playerColor]} requested a takeback${moveString}`,
             });
-            this.io.emit('takebackRequested', this.takebackRequest);
+            io.emit('takebackRequested', this.takebackRequest);
           });
 
           socket.on('acceptTakeback', () => {
@@ -324,7 +376,7 @@ export default class Game extends GameHelper {
               login: null,
               message: 'Takeback request accepted',
             });
-            this.io.emit('takebackAccepted', this.lastMoveTimestamp);
+            io.emit('takebackAccepted', this.lastMoveTimestamp);
           });
 
           socket.on('declineTakeback', () => {
@@ -342,7 +394,7 @@ export default class Game extends GameHelper {
               login: null,
               message: 'Takeback request declined',
             });
-            this.io.emit('takebackDeclined');
+            io.emit('takebackDeclined');
           });
 
           socket.on('cancelTakeback', () => {
@@ -360,16 +412,16 @@ export default class Game extends GameHelper {
               login: null,
               message: 'Takeback request canceled',
             });
-            this.io.emit('takebackCanceled');
+            io.emit('takebackCanceled');
           });
 
           socket.on('makeMove', (move) => {
             if (this.turn === playerColor && this.isOngoing()) {
-              this.move(player!, move);
+              this.move(player, move);
             }
           });
         } else if (isOngoingDarkChessGame) {
-          return next(new Error('DARK_CHESS_CANNOT_BE_OBSERVED'));
+          throw new Error('Dark chess game cannot be observed');
         }
 
         socket.player = player;
@@ -419,7 +471,7 @@ export default class Game extends GameHelper {
   addChatMessage(chatMessage: ChatMessage) {
     this.chat.push(chatMessage);
 
-    this.io.emit('newChatMessage', chatMessage);
+    this.io?.emit('newChatMessage', chatMessage);
   }
 
   clearPingTimeout() {
@@ -433,34 +485,89 @@ export default class Game extends GameHelper {
   end(winner: ColorEnum | null, reason: ResultReasonEnum) {
     super.end(winner, reason);
 
-    // anything that client can't recognize
-    if (
-      reason === ResultReasonEnum.RESIGN
-      || reason === ResultReasonEnum.AGREED_TO_DRAW
-      || reason === ResultReasonEnum.TIMEOUT
-      || reason === ResultReasonEnum.SELF_TIMEOUT
-      || reason === ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT
-    ) {
-      const player = this.players[this.turn];
+    const player = this.players[this.turn];
 
-      if (reason !== ResultReasonEnum.SELF_TIMEOUT) {
-        if (reason === ResultReasonEnum.TIMEOUT || reason === ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT) {
-          player.time = 0;
-        } else if (this.timeControl && this.timerTimeout) {
-          player.time! -= Date.now() - this.lastMoveTimestamp;
-        }
+    if (reason !== ResultReasonEnum.SELF_TIMEOUT) {
+      if (reason === ResultReasonEnum.TIMEOUT || reason === ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT) {
+        player.time = 0;
+      } else if (this.timeControl && this.timerTimeout) {
+        player.time! -= Date.now() - this.lastMoveTimestamp;
       }
-
-      this.io.emit('gameOver', {
-        result: this.result!,
-        players: this.players,
-      });
     }
 
-    if (this.isDarkChess) {
-      setTimeout(() => {
-        this.io.emit('darkChessMoves', this.moves);
-      }, 0);
+    if (this.isLive) {
+      (async () => {
+        if (this.rated) {
+          const variantType = this.getVariantType();
+          const speedType = this.getSpeedType() || SpeedType.CORRESPONDENCE;
+          const [whitePlayer, blackPlayer] = await Promise.all([
+            DBUser.findByPk(this.players[ColorEnum.WHITE].id),
+            DBUser.findByPk(this.players[ColorEnum.BLACK].id),
+          ]);
+
+          if (whitePlayer && blackPlayer && this.result) {
+            const glicko = new Glicko2({ tau: 0.75 });
+            const whiteRating = whitePlayer.ratings[variantType]?.[speedType] || DEFAULT_RATING;
+            const blackRating = blackPlayer.ratings[variantType]?.[speedType] || DEFAULT_RATING;
+
+            const whiteGlickoPlayer = glicko.makePlayer(
+              whiteRating.r, whiteRating.rd, whiteRating.vol,
+            );
+            const blackGlickoPlayer = glicko.makePlayer(
+              blackRating.r, blackRating.rd, blackRating.vol,
+            );
+
+            glicko.updateRatings([
+              [
+                whiteGlickoPlayer,
+                blackGlickoPlayer,
+                this.result.winner === ColorEnum.WHITE
+                  ? 1
+                  : this.result.winner === ColorEnum.BLACK
+                    ? 0
+                    : 0.5,
+              ],
+            ]);
+
+            const whiteNewRating = Game.getNewGlickoRating(whiteGlickoPlayer);
+            const blackNewRating = Game.getNewGlickoRating(blackGlickoPlayer);
+
+            this.players[ColorEnum.WHITE].newRating = whiteNewRating.r;
+            this.players[ColorEnum.BLACK].newRating = blackNewRating.r;
+
+            whitePlayer.ratings = {
+              ...whitePlayer.ratings,
+              [variantType]: {
+                ...whitePlayer.ratings[variantType],
+                [speedType]: whiteNewRating,
+              },
+            };
+            blackPlayer.ratings = {
+              ...blackPlayer.ratings,
+              [variantType]: {
+                ...blackPlayer.ratings[variantType],
+                [speedType]: blackNewRating,
+              },
+            };
+
+            Promise.all([
+              whitePlayer.save(),
+              blackPlayer.save(),
+            ]);
+          }
+        }
+
+        this.io?.emit('gameOver', {
+          result: this.result!,
+          players: this.players,
+        });
+
+        if (this.isDarkChess) {
+          this.io?.emit('darkChessMoves', this.moves);
+        }
+
+        await this.saveToDB();
+      })();
     }
 
     this.clearPingTimeout();
@@ -512,7 +619,7 @@ export default class Game extends GameHelper {
     this.lastMoveTimestamp = newTimestamp;
 
     if (this.isDarkChess) {
-      forEach(this.io.sockets, (socket) => {
+      forEach(this.io?.sockets || {}, (socket) => {
         const socketPlayer = socket.player;
 
         if (socketPlayer) {
@@ -524,7 +631,7 @@ export default class Game extends GameHelper {
         }
       });
     } else {
-      this.io.emit('moveMade', {
+      this.io?.emit('moveMade', {
         move,
         moveIndex: this.moves.length - 1,
         lastMoveTimestamp: this.lastMoveTimestamp,
@@ -535,6 +642,10 @@ export default class Game extends GameHelper {
       this.end(this.turn, ResultReasonEnum.SELF_TIMEOUT);
 
       return;
+    }
+
+    if (this.isOngoing() && this.timeControl?.type === TimeControlEnum.CORRESPONDENCE) {
+      this.saveToDB();
     }
 
     this.setTimerTimeout();
@@ -551,8 +662,24 @@ export default class Game extends GameHelper {
 
     this.pingTimestamps.add(now);
 
-    this.io.emit('gamePing', now);
+    this.io?.emit('gamePing', now);
   };
+
+  remove() {
+    delete Game.games[this.id];
+
+    // TODO: destroy server, disconnect sockets, etc
+  }
+
+  async saveToDB() {
+    const dbGame = this.toDBInstance();
+
+    await DBGame.update(omit(dbGame.toJSON(), 'id'), {
+      where: {
+        id: dbGame.id,
+      },
+    });
+  }
 
   setTimerTimeout() {
     if (
@@ -580,22 +707,46 @@ export default class Game extends GameHelper {
     }
   }
 
+  toDBInstance(): DBGame {
+    const whitePlayer = this.players[ColorEnum.WHITE];
+    const blackPlayer = this.players[ColorEnum.BLACK];
+
+    if (typeof whitePlayer.id === 'string' || typeof blackPlayer.id === 'string') {
+      throw new Error('Wrong player id');
+    }
+
+    return new DBGame({
+      ...pick(this, [
+        'id', 'status', 'result', 'timeControl', 'rated',
+        'chat', 'drawOffer', 'takebackRequest', 'pgnTags',
+      ]),
+      variants: [...this.variants],
+      fen: this.startingFen,
+      whitePlayer: {
+        ...pick(whitePlayer, ['color', 'rating', 'newRating', 'time']),
+        id: whitePlayer.id,
+      },
+      blackPlayer: {
+        ...pick(blackPlayer, ['color', 'rating', 'newRating', 'time']),
+        id: blackPlayer.id,
+      },
+      lastMoveTimestamp: new Date(this.lastMoveTimestamp),
+      moves: this.moves.map((move) => ({
+        uci: Game.moveToUci(move),
+        t: move.duration,
+      })),
+    });
+  }
+
   toJSON(): IGame {
-    return pick(this, [
-      'id',
-      'startingData',
-      'variants',
-      'status',
-      'players',
-      'result',
-      'timeControl',
-      'pgnTags',
-      'drawOffer',
-      'takebackRequest',
-      'lastMoveTimestamp',
-      'moves',
-      'chat',
-    ]);
+    return {
+      ...pick(this, [
+        'id', 'startingFen', 'variants', 'status', 'players',
+        'result', 'rated', 'timeControl', 'pgnTags', 'drawOffer',
+        'takebackRequest', 'lastMoveTimestamp', 'moves', 'chat',
+      ]),
+      startingData: null,
+    };
   }
 
   unregisterLastMove() {

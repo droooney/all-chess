@@ -22,14 +22,16 @@ export async function up(queryInterface: QueryInterface) {
     },
     password: {
       type: DataTypes.STRING,
+      allowNull: false,
     },
     confirmToken: {
       type: DataTypes.STRING,
       allowNull: true,
-      defaultValue: '',
+      defaultValue: null,
     },
     confirmed: {
       type: DataTypes.BOOLEAN,
+      allowNull: false,
       defaultValue: false,
     },
     createdAt: {

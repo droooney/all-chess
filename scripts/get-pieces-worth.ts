@@ -6,6 +6,7 @@ import {
   BoardPiece,
   CastlingTypeEnum,
   ColorEnum,
+  GameStatusEnum,
   GameVariantEnum,
   GetPossibleMovesMode,
   PieceLocationEnum,
@@ -80,8 +81,12 @@ boardTypes.forEach((boardType) => {
         },
         pieces: [],
       },
+      startingFen: null,
       timeControl: null,
       variants,
+      status: GameStatusEnum.ONGOING,
+      pgnTags: {},
+      rated: false,
     });
 
     game.pieces = [{

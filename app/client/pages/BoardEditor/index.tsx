@@ -17,7 +17,6 @@ import {
 } from 'shared/types';
 
 import { Game, isNotUndefined } from 'client/helpers';
-import { Game as BaseGame } from 'shared/helpers';
 
 import Boards from '../../components/Boards';
 import DocumentTitle from '../../components/DocumentTitle';
@@ -98,14 +97,7 @@ class BoardEditor extends React.Component<Props, State> {
   }
 
   getStandardGame(): Game {
-    return new Game({
-      game: new BaseGame({
-        startingData: Game.getStartingDataFromFen(STANDARD_FEN, []),
-        timeControl: null,
-        variants: [],
-        id: '',
-      }),
-    });
+    return Game.getGameFromFen(STANDARD_FEN, []);
   }
 
   getGameFromFen(): Game | null {
@@ -128,14 +120,7 @@ class BoardEditor extends React.Component<Props, State> {
     }
 
     try {
-      return new Game({
-        game: new BaseGame({
-          startingData: Game.getStartingDataFromFen(fen, []),
-          timeControl: null,
-          variants,
-          id: '',
-        }),
-      });
+      return Game.getGameFromFen(fen, variants);
     } catch (err) {
       return null;
     }

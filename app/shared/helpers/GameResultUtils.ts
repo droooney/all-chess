@@ -1,5 +1,6 @@
 import {
   ColorEnum,
+  GameCreateOptions,
   GameResult,
   GameStatusEnum,
   ResultReasonEnum,
@@ -9,8 +10,14 @@ import {
 import GameDarkChessUtils from './GameDarkChessUtils';
 
 export default abstract class GameResultUtils extends GameDarkChessUtils {
-  status: GameStatusEnum = GameStatusEnum.BEFORE_START;
+  status: GameStatusEnum;
   result: GameResult | null = null;
+
+  protected constructor(options: GameCreateOptions) {
+    super(options);
+
+    this.status = options.status;
+  }
 
   end(winner: ColorEnum | null, reason: ResultReasonEnum) {
     this.result = {
@@ -196,6 +203,10 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
     }
 
     return true;
+  }
+
+  isAborted(): boolean {
+    return this.status === GameStatusEnum.ABORTED;
   }
 
   isCheckmate(): boolean {
