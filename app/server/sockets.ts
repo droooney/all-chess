@@ -9,7 +9,6 @@ import {
   Dictionary,
   GameStatusEnum,
   Player,
-  SpeedType,
   User,
 } from 'shared/types';
 
@@ -65,7 +64,7 @@ games.on('connection', (socket) => {
     }
 
     const variantType = Game.getVariantType(settings.variants);
-    const speedType = Game.getSpeedType(settings.timeControl) || SpeedType.CORRESPONDENCE;
+    const speedType = Game.getSpeedType(settings.timeControl);
     const challengeId = Game.generateUid(challenges);
     const challenge: Challenge = {
       ...settings,
@@ -103,7 +102,7 @@ games.on('connection', (socket) => {
     // TODO: remove challenges by challenger and accepting
 
     const variantType = Game.getVariantType(challenge.variants);
-    const speedType = Game.getSpeedType(challenge.timeControl) || SpeedType.CORRESPONDENCE;
+    const speedType = Game.getSpeedType(challenge.timeControl);
     const challengerColor: ColorEnum.WHITE | ColorEnum.BLACK = challenge.challenger.color || (
       Math.random() > 0.5
         ? ColorEnum.WHITE

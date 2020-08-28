@@ -1,7 +1,7 @@
 import * as React from 'react';
 import classNames from 'classnames';
 
-import { COLOR_NAMES, RESULT_REASON_NAMES } from 'shared/constants';
+import { COLOR_NAMES, RESULT_REASON_NAMES, SPEED_TYPE_NAMES } from 'shared/constants';
 
 import { GameResult, GameStatusEnum, Player } from 'shared/types';
 
@@ -38,8 +38,9 @@ export default class GameInfo extends React.Component<Props> {
               : 'tie'
           ))}
         >
-          <div className="time-control">
-            Time control: {Game.getTimeControlString(game.timeControl)}
+          <div className="game-type">
+            {game.rated ? 'Rated' : 'Unrated'} {SPEED_TYPE_NAMES[game.getSpeedType()]}
+            {' '}- {Game.getTimeControlString(game.timeControl)}
           </div>
 
           <div className="variants">

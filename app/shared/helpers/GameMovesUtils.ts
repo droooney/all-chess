@@ -246,6 +246,15 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       : this.startingData.turn;
   }
 
+  getTakebackRequestMoveIndex(forColor: ColorEnum): number | null {
+    const currentMoveIndex = this.getUsedMoves().length - 1;
+    const moveIndex = this.turn === forColor
+      ? currentMoveIndex - 2
+      : currentMoveIndex - 1;
+
+    return moveIndex >= -1 ? moveIndex : null;
+  }
+
   // do not call this anywhere except getFilteredPossibleMoves (allowed to call for premoves)
   *getPossibleMoves(piece: RealPiece, mode: GetPossibleMovesMode): Generator<Square> {
     const forMove = mode === GetPossibleMovesMode.FOR_MOVE;

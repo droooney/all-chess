@@ -5,9 +5,10 @@ import {
   EachVariant,
   GameStatusEnum,
   GameVariantEnum,
-  PieceTypeEnum,
   GlickoRating,
+  PieceTypeEnum,
   ResultReasonEnum,
+  SpeedType,
   TimeControlEnum,
 } from 'shared/types';
 
@@ -161,6 +162,14 @@ export const TIME_CONTROL_NAMES: Record<TimeControlEnum, string> = {
   [TimeControlEnum.NONE]: 'None',
   [TimeControlEnum.TIMER]: 'Real time',
   [TimeControlEnum.CORRESPONDENCE]: 'Correspondence',
+};
+
+export const SPEED_TYPE_NAMES: Record<SpeedType, string> = {
+  [SpeedType.CORRESPONDENCE]: 'Correspondence',
+  [SpeedType.CLASSICAL]: 'Classical',
+  [SpeedType.RAPID]: 'Rapid',
+  [SpeedType.BLITZ]: 'Blitz',
+  [SpeedType.BULLET]: 'Bullet',
 };
 
 export const PIECES_WORTH: Record<'orthodox' | 'circular' | 'hexagonal', EachPieceType<number>> = {

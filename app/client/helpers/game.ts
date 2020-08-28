@@ -974,11 +974,7 @@ export class Game extends GameHelper {
   }
 
   requestTakeback() {
-    this.socket?.emit('requestTakeback', this.getUsedMoves().length - 2);
-  }
-
-  requestTakebackUpToCurrentMove() {
-    this.socket?.emit('requestTakeback', this.currentMoveIndex);
+    this.socket?.emit('requestTakeback');
   }
 
   removeListeners() {

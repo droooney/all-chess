@@ -3,13 +3,10 @@ import { connect } from 'react-redux';
 import classNames from 'classnames';
 
 import {
-  COLOR_NAMES,
-} from 'shared/constants';
-
-import {
   ColorEnum,
   GamePlayers,
   GameResult,
+  GameStatusEnum,
   PieceTypeEnum,
   Player,
   TakebackRequest,
@@ -17,9 +14,7 @@ import {
 
 import { Game } from 'client/helpers';
 
-import {
-  changeSettings,
-} from 'client/actions';
+import { changeSettings } from 'client/actions';
 import { DispatchProps, ReduxState } from 'client/store';
 
 import Piece from '../Piece';
@@ -28,14 +23,13 @@ import Dialog from '../Dialog';
 export interface OwnProps {
   game: Game;
   result: GameResult | null;
+  status: GameStatusEnum;
   players: GamePlayers;
   isBlackBase: boolean;
-  isNoMovesMade: boolean;
-  isCurrentMoveLast: boolean;
   boardToShow: number | 'all';
   drawOffer: ColorEnum | null;
   takebackRequest: TakebackRequest | null;
-  isBasicTakeback: boolean;
+  takebackMoveIndex: number | null;
   darkChessMode: ColorEnum | null;
   showDarkChessHiddenPieces: boolean;
   player: Player | null;
@@ -57,75 +51,40 @@ class GameActions extends React.Component<Props, State> {
     resignModalVisible: false,
   };
 
-  offerDraw = () => {
+  onDrawOfferClick = () => {
     const {
       game,
       drawOffer,
+      player,
     } = this.props;
 
-    if (!drawOffer) {
-      game.offerDraw();
+    if (player) {
+      if (drawOffer === player.color) {
+        game.cancelDraw();
+      } else if (drawOffer === Game.getOppositeColor(player.color)) {
+        game.acceptDraw();
+      } else {
+        game.offerDraw();
+      }
     }
   };
 
-  acceptDraw = () => {
-    this.props.game.acceptDraw();
-  };
-
-  cancelDraw = () => {
-    this.props.game.cancelDraw();
-  };
-
-  declineDraw = () => {
-    this.props.game.declineDraw();
-  };
-
-  navigateToTakebackRequestMove = () => {
+  onTakebackRequestClick = () => {
     const {
       game,
       takebackRequest,
+      player,
     } = this.props;
 
-    if (takebackRequest) {
-      game.navigateToMove(takebackRequest.moveIndex);
+    if (player) {
+      if (takebackRequest?.player === player.color) {
+        game.cancelTakeback();
+      } else if (takebackRequest?.player === Game.getOppositeColor(player.color)) {
+        game.acceptTakeback();
+      } else {
+        game.requestTakeback();
+      }
     }
-  };
-
-  requestTakeback = () => {
-    const {
-      game,
-      isNoMovesMade,
-      takebackRequest,
-    } = this.props;
-
-    if (!isNoMovesMade && !takebackRequest) {
-      game.requestTakeback();
-    }
-  };
-
-  requestTakebackUpToCurrentMove = () => {
-    const {
-      game,
-      isNoMovesMade,
-      isCurrentMoveLast,
-      takebackRequest,
-    } = this.props;
-
-    if (!isNoMovesMade && !isCurrentMoveLast && !takebackRequest) {
-      game.requestTakebackUpToCurrentMove();
-    }
-  };
-
-  acceptTakeback = () => {
-    this.props.game.acceptTakeback();
-  };
-
-  cancelTakeback = () => {
-    this.props.game.cancelTakeback();
-  };
-
-  declineTakeback = () => {
-    this.props.game.declineTakeback();
   };
 
   openResignModal = () => {
@@ -192,18 +151,13 @@ class GameActions extends React.Component<Props, State> {
     setBoardsShiftX(boardsShiftX + (isBlackBase ? -incrementX : incrementX));
   };
 
-  normalizeBoardsShift = () => {
-    this.props.setBoardsShiftX(0);
-  };
-
   render() {
     const {
       game,
       result,
-      isBasicTakeback,
+      status,
       isBlackBase,
-      isNoMovesMade,
-      isCurrentMoveLast,
+      takebackMoveIndex,
       boardToShow,
       drawOffer,
       takebackRequest,
@@ -216,21 +170,8 @@ class GameActions extends React.Component<Props, State> {
       ? 'boards'
       : 'board';
     const buttons: JSX.Element[] = [];
-    const takebackMoveLink = !!takebackRequest && (
-      isBasicTakeback
-        ? ''
-        : takebackRequest.moveIndex === -1
-          ? ' up to the start of the game'
-          : (
-            <React.Fragment>
-              {' '}up to move <span className="takeback-move-link" onClick={this.navigateToTakebackRequestMove}>
-                {game.getUsedMoves()[takebackRequest.moveIndex].notation}
-              </span>
-            </React.Fragment>
-          )
-    );
 
-    if (!result && player) {
+    if (player && status === GameStatusEnum.ONGOING) {
       buttons.push(
         <div
           key="resign"
@@ -242,27 +183,38 @@ class GameActions extends React.Component<Props, State> {
         </div>,
         <div
           key="offer-draw"
-          className={classNames('button', { disabled: drawOffer })}
-          title="Offer a draw"
-          onClick={this.offerDraw}
+          className={classNames('button', {
+            'offering-draw': drawOffer === player.color,
+            'offered-draw': drawOffer === Game.getOppositeColor(player.color),
+          })}
+          title={
+            drawOffer === player.color
+              ? 'Cancel draw offer'
+              : drawOffer === Game.getOppositeColor(player.color)
+                ? 'Accept draw offer'
+                : 'Offer draw'
+          }
+          onClick={this.onDrawOfferClick}
         >
           <i className="fa fa-handshake-o" />
         </div>,
         <div
           key="request-takeback"
-          className={classNames('button', { disabled: isNoMovesMade || takebackRequest })}
-          title="Request a takeback"
-          onClick={this.requestTakeback}
+          className={classNames('button', {
+            disabled: !takebackRequest && takebackMoveIndex === null,
+            'requesting-takeback': takebackRequest?.player === player.color,
+            'requested-takeback': takebackRequest?.player === Game.getOppositeColor(player.color),
+          })}
+          title={
+            takebackRequest?.player === player.color
+              ? 'Cancel takeback'
+              : takebackRequest?.player === Game.getOppositeColor(player.color)
+                ? 'Accept takeback'
+                : 'Request takeback'
+          }
+          onClick={this.onTakebackRequestClick}
         >
           <i className="fa fa-reply" />
-        </div>,
-        <div
-          key="request-takeback-up-to-move"
-          className={classNames('button', { disabled: isNoMovesMade || isCurrentMoveLast || takebackRequest })}
-          title="Request a takeback up to the current position"
-          onClick={this.requestTakebackUpToCurrentMove}
-        >
-          <i className="fa fa-reply-all" />
         </div>,
       );
     }
@@ -311,14 +263,6 @@ class GameActions extends React.Component<Props, State> {
           onClick={() => this.shiftBoard(1)}
         >
           <i className="fa fa-arrow-left" />
-        </div>,
-        <div
-          key="normalize-board-shift"
-          className="button"
-          title={`Normalize the ${boardsString}`}
-          onClick={this.normalizeBoardsShift}
-        >
-          <i className="fa fa-balance-scale" />
         </div>,
         <div
           key="shift-board-right"
@@ -382,72 +326,6 @@ class GameActions extends React.Component<Props, State> {
           {!!buttons.length && (
             <div className="buttons">
               {buttons}
-            </div>
-          )}
-          {player && !result && (
-            <div className="action">
-              {
-                takebackRequest ? player.color === takebackRequest.player ? (
-                  <React.Fragment>
-                    You requested a takeback{takebackMoveLink}
-                    <i
-                      className="fa fa-times"
-                      title="Cancel"
-                      onClick={this.cancelTakeback}
-                    />
-                  </React.Fragment>
-                ) : (
-                  <React.Fragment>
-                    <span>
-                      {COLOR_NAMES[takebackRequest.player]} requested a takeback{takebackMoveLink}
-                    </span>
-                    <span className="icons">
-                      <i
-                        className="fa fa-check"
-                        title="Accept"
-                        onClick={this.acceptTakeback}
-                      />
-                      <i
-                        className="fa fa-times"
-                        title="Decline"
-                        onClick={this.declineTakeback}
-                      />
-                    </span>
-                  </React.Fragment>
-                ) : '\u00a0'
-              }
-            </div>
-          )}
-          {player && !result && (
-            <div className="action">
-              {
-                drawOffer ? player.color === drawOffer ? (
-                  <React.Fragment>
-                    You offered a draw
-                    <i
-                      className="fa fa-times"
-                      title="Cancel"
-                      onClick={this.cancelDraw}
-                    />
-                  </React.Fragment>
-                ) : (
-                  <React.Fragment>
-                    {COLOR_NAMES[drawOffer]} offered a draw
-                    <span className="icons">
-                      <i
-                        className="fa fa-check"
-                        title="Accept"
-                        onClick={this.acceptDraw}
-                      />
-                      <i
-                        className="fa fa-times"
-                        title="Decline"
-                        onClick={this.declineDraw}
-                      />
-                    </span>
-                  </React.Fragment>
-                ) : '\u00a0'
-              }
             </div>
           )}
         </div>

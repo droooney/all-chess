@@ -12,8 +12,8 @@ import { SquareColorTheme, GameSettings } from 'client/types';
 
 export const GAME_DEFAULT_SETTINGS: { [key in keyof GameSettings]: GameSettings[key]; } = {
   showFantomPieces: true,
-  rated: false,
-  timeControl: null,
+  lastPlayedRated: false,
+  lastPlayedTimeControl: null,
   favouriteVariants: [],
   lastPlayedVariants: [],
   squareColorTheme: SquareColorTheme.CLASSIC,

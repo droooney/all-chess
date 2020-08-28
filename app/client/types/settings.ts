@@ -3,8 +3,8 @@ import { SquareColorTheme } from 'client/types/game';
 
 export interface GameSettings {
   showFantomPieces: boolean;
-  rated: boolean;
-  timeControl: TimeControl;
+  lastPlayedRated: boolean;
+  lastPlayedTimeControl: TimeControl;
   favouriteVariants: GameVariantEnum[][];
   lastPlayedVariants: GameVariantEnum[];
   squareColorTheme: SquareColorTheme;

@@ -55,9 +55,8 @@ class Login extends React.Component<Props, State> {
     });
 
     if (success) {
-      history.replace(typeof from === 'string' ? from : '/');
-
       dispatch(setUserData(user));
+      history.replace(typeof from === 'string' ? from : '/');
     } else {
       this.setState({
         error: true,

@@ -33,7 +33,6 @@ import {
   PieceLocationEnum,
   Player,
   ResultReasonEnum,
-  SpeedType,
   TimeControlEnum,
   User,
 } from 'shared/types';
@@ -107,7 +106,8 @@ export default class Game extends GameHelper {
     }
 
     return (
-      (
+      typeof settings.rated === 'boolean'
+      && (
         settings.color === ColorEnum.WHITE
         || settings.color === ColorEnum.BLACK
         || settings.color == null
@@ -119,6 +119,7 @@ export default class Game extends GameHelper {
         settings.timeControl?.type === TimeControlEnum.TIMER
         || !settings.variants.includes(GameVariantEnum.COMPENSATION_CHESS)
       )
+      && (settings.timeControl !== null || !settings.rated)
     );
   }
 
@@ -277,11 +278,7 @@ export default class Game extends GameHelper {
           });
 
           socket.on('acceptDraw', () => {
-            if (
-              !this.isOngoing()
-              || !this.drawOffer
-              || this.drawOffer === playerColor
-            ) {
+            if (!this.isOngoing() || this.drawOffer !== Game.getOppositeColor(playerColor)) {
               return;
             }
 
@@ -291,43 +288,21 @@ export default class Game extends GameHelper {
           });
 
           socket.on('declineDraw', () => {
-            if (
-              !this.isOngoing()
-              || !this.drawOffer
-              || this.drawOffer === playerColor
-            ) {
-              return;
-            }
-
-            this.drawOffer = null;
-
-            this.addChatMessage({
-              login: null,
-              message: 'Draw offer declined',
-            });
-            io.emit('drawDeclined');
+            this.declineDraw(playerColor);
           });
 
           socket.on('cancelDraw', () => {
-            if (!this.isOngoing() || this.drawOffer !== playerColor) {
+            this.cancelDraw(playerColor);
+          });
+
+          socket.on('requestTakeback', () => {
+            if (!this.isOngoing() || this.takebackRequest) {
               return;
             }
 
-            this.drawOffer = null;
+            const moveIndex = this.getTakebackRequestMoveIndex(playerColor);
 
-            this.addChatMessage({
-              login: null,
-              message: 'Draw offer canceled',
-            });
-            io.emit('drawCanceled');
-          });
-
-          socket.on('requestTakeback', (moveIndex) => {
-            if (
-              !this.isOngoing()
-              || this.takebackRequest
-              || !this.validateTakebackRequest(moveIndex)
-            ) {
+            if (moveIndex === null) {
               return;
             }
 
@@ -336,28 +311,15 @@ export default class Game extends GameHelper {
               moveIndex,
             };
 
-            const move = this.moves[moveIndex];
-            const moveString = moveIndex === this.moves.length - 2
-              ? ''
-              : this.isDarkChess
-                ? ' up to ?'
-                : move
-                  ? ` up to move ${move.notation}`
-                  : ' up to the start of the game';
-
             this.addChatMessage({
               login: null,
-              message: `${COLOR_NAMES[playerColor]} requested a takeback${moveString}`,
+              message: `${COLOR_NAMES[playerColor]} requested a takeback`,
             });
             io.emit('takebackRequested', this.takebackRequest);
           });
 
           socket.on('acceptTakeback', () => {
-            if (
-              !this.isOngoing()
-              || !this.takebackRequest
-              || this.takebackRequest.player === playerColor
-            ) {
+            if (!this.isOngoing() || this.takebackRequest?.player !== Game.getOppositeColor(playerColor)) {
               return;
             }
 
@@ -380,39 +342,11 @@ export default class Game extends GameHelper {
           });
 
           socket.on('declineTakeback', () => {
-            if (
-              !this.isOngoing()
-              || !this.takebackRequest
-              || this.takebackRequest.player === playerColor
-            ) {
-              return;
-            }
-
-            this.takebackRequest = null;
-
-            this.addChatMessage({
-              login: null,
-              message: 'Takeback request declined',
-            });
-            io.emit('takebackDeclined');
+            this.declineTakeback(playerColor);
           });
 
           socket.on('cancelTakeback', () => {
-            if (
-              !this.isOngoing()
-              || !this.takebackRequest
-              || this.takebackRequest.player !== playerColor
-            ) {
-              return;
-            }
-
-            this.takebackRequest = null;
-
-            this.addChatMessage({
-              login: null,
-              message: 'Takeback request canceled',
-            });
-            io.emit('takebackCanceled');
+            this.cancelTakeback(playerColor);
           });
 
           socket.on('makeMove', (move) => {
@@ -474,12 +408,68 @@ export default class Game extends GameHelper {
     this.io?.emit('newChatMessage', chatMessage);
   }
 
+  cancelDraw(byColor: ColorEnum) {
+    if (!this.isOngoing() || this.drawOffer !== byColor) {
+      return;
+    }
+
+    this.drawOffer = null;
+
+    this.addChatMessage({
+      login: null,
+      message: 'Draw offer canceled',
+    });
+    this.io?.emit('drawCanceled');
+  }
+
+  cancelTakeback(byColor: ColorEnum) {
+    if (!this.isOngoing() || this.takebackRequest?.player !== byColor) {
+      return;
+    }
+
+    this.takebackRequest = null;
+
+    this.addChatMessage({
+      login: null,
+      message: 'Takeback request canceled',
+    });
+    this.io?.emit('takebackCanceled');
+  }
+
   clearPingTimeout() {
     clearTimeout(this.pingTimeout);
   }
 
   clearTimerTimeout() {
     clearTimeout(this.timerTimeout);
+  }
+
+  declineDraw(byColor: ColorEnum) {
+    if (!this.isOngoing() || this.drawOffer !== Game.getOppositeColor(byColor)) {
+      return;
+    }
+
+    this.drawOffer = null;
+
+    this.addChatMessage({
+      login: null,
+      message: 'Draw offer declined',
+    });
+    this.io?.emit('drawDeclined');
+  }
+
+  declineTakeback(byColor: ColorEnum) {
+    if (!this.isOngoing() || this.takebackRequest?.player !== Game.getOppositeColor(byColor)) {
+      return;
+    }
+
+    this.takebackRequest = null;
+
+    this.addChatMessage({
+      login: null,
+      message: 'Takeback request declined',
+    });
+    this.io?.emit('takebackDeclined');
   }
 
   end(winner: ColorEnum | null, reason: ResultReasonEnum) {
@@ -499,7 +489,7 @@ export default class Game extends GameHelper {
       (async () => {
         if (this.rated) {
           const variantType = this.getVariantType();
-          const speedType = this.getSpeedType() || SpeedType.CORRESPONDENCE;
+          const speedType = this.getSpeedType();
           const [whitePlayer, blackPlayer] = await Promise.all([
             DBUser.findByPk(this.players[ColorEnum.WHITE].id),
             DBUser.findByPk(this.players[ColorEnum.BLACK].id),
@@ -649,6 +639,13 @@ export default class Game extends GameHelper {
     }
 
     this.setTimerTimeout();
+
+    if (this.isOngoing()) {
+      this.cancelDraw(player.color);
+      this.declineDraw(player.color);
+      this.cancelTakeback(player.color);
+      this.declineTakeback(player.color);
+    }
   }
 
   pingPlayers = () => {
@@ -794,14 +791,6 @@ export default class Game extends GameHelper {
         && typeof move.from.x === 'number'
         && !this.isNullSquare(move.from)
       ))
-    );
-  }
-
-  validateTakebackRequest(moveIndex: any): boolean {
-    return (
-      typeof moveIndex === 'number'
-      && moveIndex < this.moves.length - 1
-      && (!!this.moves[moveIndex] || moveIndex === -1)
     );
   }
 }

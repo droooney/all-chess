@@ -796,7 +796,6 @@ class Game extends React.Component<Props, State> {
       isDragging,
     } = this.state;
     const usedMoves = game.getUsedMoves();
-    const isCurrentMoveLast = currentMoveIndex === usedMoves.length - 1;
     const readOnly = !this.isAbleToMove();
     const enableClick = !readOnly;
     const enableDnd = !readOnly;
@@ -847,14 +846,13 @@ class Game extends React.Component<Props, State> {
             <GameActions
               game={game}
               result={result}
+              status={status}
               players={players}
               isBlackBase={isBlackBase}
-              isNoMovesMade={usedMoves.length === 0}
-              isCurrentMoveLast={isCurrentMoveLast}
               boardToShow={boardToShow}
               drawOffer={drawOffer}
               takebackRequest={takebackRequest}
-              isBasicTakeback={!!takebackRequest && takebackRequest.moveIndex === usedMoves.length - 2}
+              takebackMoveIndex={player && game.getTakebackRequestMoveIndex(player.color)}
               darkChessMode={darkChessMode}
               showDarkChessHiddenPieces={showDarkChessHiddenPieces}
               player={player}

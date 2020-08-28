@@ -39,6 +39,9 @@ const RESULT_WIN_WHITE = '1-0';
 const RESULT_WIN_BLACK = '0-1';
 const RESULT_DRAW = '1/2-1/2';
 
+const AVERAGE_GAME_MOVES = 40;
+const ONE_MINUTE = 60 * 1000;
+
 export class Game extends GameTimeUtils implements IGame {
   static getGameFromPgn(pgn: string, id: string): Game {
     const pgnData = pgn
@@ -368,13 +371,24 @@ export class Game extends GameTimeUtils implements IGame {
     return game;
   }
 
-  static getSpeedType(timeControl: TimeControl | null): SpeedType | null {
-    if (!timeControl) {
-      return null;
+  static getSpeedType(timeControl: TimeControl | null): SpeedType {
+    if (timeControl?.type !== TimeControlEnum.TIMER) {
+      return SpeedType.CORRESPONDENCE;
     }
 
-    // TODO: add speed type detection
-    return SpeedType.BLITZ;
+    if (timeControl.base + timeControl.increment * AVERAGE_GAME_MOVES < ONE_MINUTE * 3) {
+      return SpeedType.BULLET;
+    }
+
+    if (timeControl.base + timeControl.increment * AVERAGE_GAME_MOVES < ONE_MINUTE * 8) {
+      return SpeedType.BLITZ;
+    }
+
+    if (timeControl.base + timeControl.increment * AVERAGE_GAME_MOVES < ONE_MINUTE * 25) {
+      return SpeedType.RAPID;
+    }
+
+    return SpeedType.CLASSICAL;
   }
 
   static validateStartingData(startingData: StartingData, variants: readonly GameVariantEnum[]): void {
@@ -522,7 +536,7 @@ export class Game extends GameTimeUtils implements IGame {
     this.setupStartingData();
   }
 
-  getSpeedType(): SpeedType | null {
+  getSpeedType(): SpeedType {
     return Game.getSpeedType(this.timeControl);
   }
 }

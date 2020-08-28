@@ -60,7 +60,6 @@ declare global {
     makeMove: BaseMove;
     createChallenge: GameCreateSettings;
     addChatMessage: string;
-    requestTakeback: number;
     acceptChallenge: string;
     cancelChallenge: string;
   }
@@ -71,6 +70,7 @@ declare global {
     | 'cancelDraw'
     | 'offerDraw'
     | 'resign'
+    | 'requestTakeback'
     | 'acceptTakeback'
     | 'declineTakeback'
     | 'cancelTakeback'

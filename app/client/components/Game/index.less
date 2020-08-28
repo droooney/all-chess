@@ -31,7 +31,7 @@
       }
     }
 
-    .result, .time-control {
+    .result, .game-type {
       margin-left: 18px;
     }
 
@@ -109,8 +109,6 @@
     }
 
     .game-actions {
-      .flex-col-stretch();
-
       grid-area: actions;
 
       .buttons {
@@ -130,6 +128,7 @@
           font-size: 24px;
           cursor: pointer;
           background-color: rgba(0,0,0,0);
+          transition: background-color 0.15s ease-in;
 
           &.enabled {
             background-color: #0c0;
@@ -138,6 +137,14 @@
           &.disabled {
             cursor: not-allowed;
             opacity: 0.25;
+          }
+
+          &.offered-draw, &.requested-takeback {
+            background-color: #0c0a;
+          }
+
+          &.offering-draw, &.requesting-takeback {
+            background-color: #c00a;
           }
 
           &:not(.disabled) {
@@ -161,41 +168,6 @@
               }
             }
           }
-        }
-      }
-
-      .action {
-        text-align: center;
-
-        &:not(:first-child) {
-          margin-top: 5px;
-        }
-
-        &:last-child {
-          margin-bottom: 5px;
-        }
-
-        .takeback-move-link {
-          color: green;
-          cursor: pointer;
-        }
-
-        .icons {
-          white-space: nowrap;
-        }
-
-        .fa-check,
-        .fa-times {
-          cursor: pointer;
-          margin-left: 5px;
-        }
-
-        .fa-check {
-          color: green;
-        }
-
-        .fa-times {
-          color: red;
         }
       }
     }

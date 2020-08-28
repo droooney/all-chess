@@ -7,6 +7,7 @@ import map from 'lodash/map';
 import omit from 'lodash/omit';
 
 import {
+  COLOR_NAMES,
   TIME_CONTROL_NAMES,
   POSSIBLE_TIMER_BASES_IN_MINUTES,
   POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
@@ -18,6 +19,7 @@ import {
 
 import {
   Challenge,
+  ColorEnum,
   CorrespondenceTimeControl,
   Dictionary,
   GameVariantEnum,
@@ -44,21 +46,23 @@ import './index.less';
 
 type Props = RouteComponentProps<any> & ReturnType<typeof mapStateToProps> & DispatchProps;
 
-interface State {
-  createChallengeModalVisible: boolean;
-  challenges: Dictionary<Challenge>;
+interface CreateChallengeValues {
   rated: boolean;
+  playForColor: ColorEnum | null;
   timeControl: TimeControl;
   variants: GameVariantEnum[];
+}
+
+interface State extends CreateChallengeValues {
+  createChallengeModalVisible: boolean;
+  challenges: Dictionary<Challenge>;
 }
 
 class Games extends React.Component<Props, State> {
   socket?: io.Socket;
   state: State = {
+    ...this.getDefaultValues(),
     createChallengeModalVisible: false,
-    rated: true,
-    timeControl: this.props.timeControl,
-    variants: [],
     challenges: {},
   };
 
@@ -115,9 +119,24 @@ class Games extends React.Component<Props, State> {
     this.socket?.disconnect();
   }
 
+  getDefaultValues(): CreateChallengeValues {
+    const {
+      lastPlayedRated,
+      lastPlayedTimeControl,
+      lastPlayedVariants,
+    } = this.props;
+
+    return {
+      rated: lastPlayedRated,
+      playForColor: null,
+      timeControl: lastPlayedTimeControl,
+      variants: lastPlayedVariants,
+    };
+  }
+
   openModal = () => {
     this.setState({
-      variants: this.props.lastPlayedVariants,
+      ...this.getDefaultValues(),
       createChallengeModalVisible: true,
     });
   };
@@ -135,6 +154,7 @@ class Games extends React.Component<Props, State> {
     } = this.props;
     const {
       rated,
+      playForColor,
       variants,
       timeControl,
     } = this.state;
@@ -142,6 +162,8 @@ class Games extends React.Component<Props, State> {
     this.closeModal();
 
     dispatch(changeSettings('lastPlayedVariants', variants));
+    dispatch(changeSettings('lastPlayedTimeControl', timeControl));
+    dispatch(changeSettings('lastPlayedRated', rated));
 
     if (user) {
       this.socket?.emit('createChallenge', {
@@ -149,23 +171,18 @@ class Games extends React.Component<Props, State> {
         timeControl,
         variants,
         startingFen: null,
-        color: null,
+        color: playForColor,
       });
     }
   };
 
   onTimeControlChange = (e: React.ChangeEvent<{ value: unknown; }>) => {
-    const {
-      dispatch,
-    } = this.props;
     const timeControl = e.target.value as TimeControlEnum;
     const newTimeControl: TimeControl = timeControl === TimeControlEnum.NONE
       ? null
       : timeControl === TimeControlEnum.TIMER
         ? { type: TimeControlEnum.TIMER, base: 10 * 60 * 1000, increment: 5 * 1000 }
         : { type: TimeControlEnum.CORRESPONDENCE, base: 2 * 24 * 60 * 60 * 1000 };
-
-    dispatch(changeSettings('timeControl', newTimeControl));
 
     this.setState(({ timeControl, rated }) => {
       if (timeControl?.type === newTimeControl?.type) {
@@ -180,46 +197,25 @@ class Games extends React.Component<Props, State> {
   };
 
   onTimeControlBaseChange = (e: React.ChangeEvent<{ value: unknown; }>) => {
-    const {
-      dispatch,
-    } = this.props;
     const newBase = +(e.target.value as string);
 
-    this.setState(({ timeControl }) => {
-      const newTimeControl = {
+    this.setState(({ timeControl }) => ({
+      timeControl: {
         ...timeControl as CorrespondenceTimeControl | TimerTimeControl,
         base: newBase,
-      };
-
-      dispatch(changeSettings('timeControl', newTimeControl));
-
-      return {
-        timeControl: newTimeControl,
-      };
-    });
+      },
+    }));
   };
 
   onTimeControlIncrementChange = (e: React.ChangeEvent<{ value: unknown; }>) => {
-    const {
-      dispatch,
-    } = this.props;
     const newIncrement = +(e.target.value as string);
 
-    this.setState(({ timeControl }) => {
-      const newTimeControl = {
+    this.setState(({ timeControl }) => ({
+      timeControl: {
         ...timeControl as TimerTimeControl,
         increment: newIncrement,
-      };
-
-      dispatch(changeSettings('timeControl', newTimeControl));
-
-      return {
-        timeControl: {
-          ...timeControl as TimerTimeControl,
-          increment: newIncrement,
-        },
-      };
-    });
+      },
+    }));
   };
 
   onVariantsChange = (variants: GameVariantEnum[]) => {
@@ -229,14 +225,17 @@ class Games extends React.Component<Props, State> {
   };
 
   onRatedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const {
-      dispatch,
-    } = this.props;
-    const rated = e.target.checked;
+    this.setState({ rated: e.target.checked });
+  };
 
-    dispatch(changeSettings('rated', rated));
-
-    this.setState({ rated });
+  onColorChange = (e: React.ChangeEvent<{ value: unknown; }>) => {
+    this.setState({
+      playForColor: e.target.value === ColorEnum.WHITE
+        ? ColorEnum.WHITE
+        : e.target.value === ColorEnum.BLACK
+          ? ColorEnum.BLACK
+          : null,
+    });
   };
 
   onChallengeClick(challengeId: string) {
@@ -263,6 +262,7 @@ class Games extends React.Component<Props, State> {
       createChallengeModalVisible,
       challenges,
       rated,
+      playForColor,
       timeControl,
       variants,
     } = this.state;
@@ -347,6 +347,27 @@ class Games extends React.Component<Props, State> {
                 </tr>
 
                 <tr>
+                  <td>Color</td>
+                  <td>
+                    <Select
+                      value={playForColor || 'random'}
+                      onChange={this.onColorChange}
+                      renderValue={() => playForColor ? COLOR_NAMES[playForColor] : 'Random'}
+                    >
+                      <MenuItem value="random">
+                        Random
+                      </MenuItem>
+                      <MenuItem value={ColorEnum.WHITE}>
+                        {COLOR_NAMES[ColorEnum.WHITE]}
+                      </MenuItem>
+                      <MenuItem value={ColorEnum.BLACK}>
+                        {COLOR_NAMES[ColorEnum.BLACK]}
+                      </MenuItem>
+                    </Select>
+                  </td>
+                </tr>
+
+                <tr>
                   <td>Time control</td>
                   <td>
                     <Select
@@ -369,9 +390,7 @@ class Games extends React.Component<Props, State> {
 
                 {timeControl && (
                   <tr style={{ marginTop: 15 }}>
-                    <td>
-                      {timeControl.type === TimeControlEnum.TIMER ? 'Minutes' : 'Days'}
-                    </td>
+                    <td />
                     <td>
                       <Select
                         value={timeControl.base}
@@ -391,24 +410,28 @@ class Games extends React.Component<Props, State> {
                           </MenuItem>
                         ))}
                       </Select>
-                    </td>
-                  </tr>
-                )}
 
-                {timeControl?.type === TimeControlEnum.TIMER && (
-                  <tr>
-                    <td>Increment (sec)</td>
-                    <td>
-                      <Select
-                        value={timeControl.increment}
-                        onChange={this.onTimeControlIncrementChange}
-                      >
-                        {POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS.map((increment, ix) => (
-                          <MenuItem key={ix} value={increment}>
-                            {POSSIBLE_TIMER_INCREMENTS_IN_SECONDS[ix]}
-                          </MenuItem>
-                        ))}
-                      </Select>
+                      {' '}{timeControl.type === TimeControlEnum.TIMER ? 'min' : 'days'}
+
+                      {timeControl?.type === TimeControlEnum.TIMER && (
+                        <React.Fragment>
+                          <span style={{ margin: '0 12px' }}>+</span>
+
+                          <Select
+                            value={timeControl.increment}
+                            onChange={this.onTimeControlIncrementChange}
+                            style={{ marginLeft: 0 }}
+                          >
+                            {POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS.map((increment, ix) => (
+                              <MenuItem key={ix} value={increment}>
+                                {POSSIBLE_TIMER_INCREMENTS_IN_SECONDS[ix]}
+                              </MenuItem>
+                            ))}
+                          </Select>
+
+                          {' sec'}
+                        </React.Fragment>
+                      )}
                     </td>
                   </tr>
                 )}
@@ -446,8 +469,9 @@ class Games extends React.Component<Props, State> {
 function mapStateToProps(state: ReduxState) {
   return {
     user: state.user,
-    timeControl: state.gameSettings.timeControl,
+    lastPlayedTimeControl: state.gameSettings.lastPlayedTimeControl,
     lastPlayedVariants: state.gameSettings.lastPlayedVariants,
+    lastPlayedRated: state.gameSettings.lastPlayedRated,
   };
 }
 
