@@ -40,7 +40,7 @@ export default class GameInfo extends React.Component<Props> {
         >
           <div className="game-type">
             {game.rated ? 'Rated' : 'Unrated'} {SPEED_TYPE_NAMES[game.getSpeedType()]}
-            {' '}- {Game.getTimeControlString(game.timeControl)}
+            {' - '}{Game.getTimeControlString(game.timeControl)}
           </div>
 
           <div className="variants">

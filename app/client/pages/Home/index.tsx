@@ -8,6 +8,7 @@ import omit from 'lodash/omit';
 
 import {
   COLOR_NAMES,
+  SPEED_TYPE_NAMES,
   TIME_CONTROL_NAMES,
   POSSIBLE_TIMER_BASES_IN_MINUTES,
   POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
@@ -292,7 +293,8 @@ class Games extends React.Component<Props, State> {
         <table className="games">
           <thead>
             <tr>
-              <th className="time-control">Time control</th>
+              <th className="player">Player</th>
+              <th className="type">Type</th>
               <th className="variants">Variants</th>
             </tr>
           </thead>
@@ -302,7 +304,17 @@ class Games extends React.Component<Props, State> {
                 return;
               }
 
-              const { id, timeControl, variants } = challenge;
+              const {
+                id,
+                challenger: {
+                  login,
+                  rating,
+                  color,
+                },
+                rated,
+                timeControl,
+                variants,
+              } = challenge;
 
               return (
                 <tr
@@ -310,7 +322,13 @@ class Games extends React.Component<Props, State> {
                   className="game"
                   onClick={() => this.onChallengeClick(id)}
                 >
-                  <td className="time-control">{Game.getTimeControlString(timeControl)}</td>
+                  <td className="player">
+                    {login}, {Math.floor(rating)} ({color === null ? 'Random' : COLOR_NAMES[color]})
+                  </td>
+                  <td className="type">
+                    {rated ? 'Rated' : 'Unrated'} {SPEED_TYPE_NAMES[Game.getSpeedType(timeControl)]}
+                    {' - '}{Game.getTimeControlString(timeControl)}
+                  </td>
                   <td className="variants">{variants.length ? variants.map((variant, ix) => (
                     <React.Fragment key={variant}>
                       {' '}

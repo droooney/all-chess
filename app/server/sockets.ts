@@ -71,8 +71,9 @@ games.on('connection', (socket) => {
       id: challengeId,
       challenger: {
         id: user.id,
+        login: user.login,
         rating: (user.ratings[variantType]?.[speedType] || DEFAULT_RATING).r,
-        color: settings.color,
+        color: settings.color || null,
       },
     };
 

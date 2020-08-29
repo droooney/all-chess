@@ -16,7 +16,7 @@ export async function up(queryInterface: QueryInterface) {
       unique: true,
     },
     login: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(20),
       allowNull: false,
       unique: true,
     },

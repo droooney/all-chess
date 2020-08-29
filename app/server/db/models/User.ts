@@ -34,12 +34,12 @@ User.init({
     },
   },
   login: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(20),
     allowNull: false,
     unique: true,
     validate: {
       notEmpty: true,
-      is: /^[a-z0-9-_]+$/i,
+      is: /^[a-z0-9-_]{1,20}$/i,
     },
   },
   password: {

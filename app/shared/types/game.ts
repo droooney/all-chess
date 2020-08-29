@@ -189,8 +189,9 @@ export interface Challenge {
   id: string;
   challenger: {
     id: number;
+    login: string;
     rating: number;
-    color: ColorEnum | null | undefined;
+    color: ColorEnum | null;
   };
   rated: boolean;
   startingFen: string | null;

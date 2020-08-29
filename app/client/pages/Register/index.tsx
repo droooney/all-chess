@@ -15,6 +15,7 @@ interface State {
   email: string;
   password: string;
   passwordConfirmation: string;
+  loginChanged: boolean;
   emailChanged: boolean;
   success: boolean;
   loginError: boolean;
@@ -23,11 +24,13 @@ interface State {
 
 class Register extends React.Component<{}, State> {
   emailInputRef = React.createRef<HTMLInputElement>();
+  loginInputRef = React.createRef<HTMLInputElement>();
   state: State = {
     login: '',
     email: '',
     password: '',
     passwordConfirmation: '',
+    loginChanged: false,
     emailChanged: false,
     success: false,
     loginError: false,
@@ -37,10 +40,7 @@ class Register extends React.Component<{}, State> {
   onLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const login = e.currentTarget.value;
 
-    this.setState({
-      login,
-      loginError: !/^[a-z0-9-_]+$/i.test(login),
-    });
+    this.setState({ login });
   };
 
   onSubmit = async (e: React.SyntheticEvent) => {
@@ -85,7 +85,13 @@ class Register extends React.Component<{}, State> {
             autoComplete="off"
             onSubmit={this.onSubmit}
           >
-            <FormControl required error={this.state.loginError}>
+            <FormControl
+              required
+              error={
+                (!!this.loginInputRef.current && !this.loginInputRef.current.validity.valid && this.state.loginChanged)
+                || this.state.emailError
+              }
+            >
               <InputLabel>
                 Login
               </InputLabel>
@@ -93,7 +99,11 @@ class Register extends React.Component<{}, State> {
                 type="text"
                 autoComplete="off"
                 value={this.state.login}
-                onChange={this.onLoginChange}
+                inputProps={{
+                  ref: this.loginInputRef,
+                  pattern: '[a-z0-9-_]{1,20}',
+                }}
+                onChange={(e) => this.setState({ login: e.currentTarget.value, loginChanged: true })}
               />
             </FormControl>
 
