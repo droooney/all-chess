@@ -131,7 +131,8 @@ games.on('connection', (socket) => {
     while (true) {
       try {
         game = new Game({
-          ...pick(challenge, ['startingFen', 'rated', 'timeControl', 'variants']),
+          ...pick(challenge, ['startingFen', 'rated', 'timeControl']),
+          variants: [...challenge.variants].sort(),
           id: Game.generateUid({}),
           status: GameStatusEnum.ONGOING,
           pgnTags: {},
