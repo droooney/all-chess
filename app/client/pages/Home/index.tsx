@@ -35,7 +35,7 @@ import { DispatchProps, ReduxState } from 'client/store';
 import { changeSettings } from 'client/actions';
 
 import Button from '../../components/Button';
-import CheckBox from '../../components/CheckBox';
+import Checkbox from '../../components/Checkbox';
 import DocumentTitle from '../../components/DocumentTitle';
 import GameVariantLink from '../../components/GameVariantLink';
 import GameVariantSelect from '../../components/GameVariantSelect';
@@ -360,7 +360,7 @@ class Games extends React.Component<Props, State> {
                 <tr>
                   <td>Rated</td>
                   <td>
-                    <CheckBox checked={rated} disabled={!ratedAllowed} onChange={this.onRatedChange} />
+                    <Checkbox checked={rated} disabled={!ratedAllowed} onChange={this.onRatedChange} />
                   </td>
                 </tr>
 
