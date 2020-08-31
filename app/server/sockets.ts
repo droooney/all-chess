@@ -1,20 +1,14 @@
 import forEach from 'lodash/forEach';
-import pick from 'lodash/pick';
 
 import { DEFAULT_RATING } from 'shared/constants';
 
 import {
   Challenge,
-  ColorEnum,
   Dictionary,
-  GameStatusEnum,
-  Player,
   User,
 } from 'shared/types';
 
 import { sessionMiddleware } from 'server/controllers/session';
-
-import { User as DBUser } from 'server/db/models';
 
 import Game from 'server/Game';
 import { games } from 'server/io';
@@ -91,66 +85,12 @@ games.on('connection', (socket) => {
       return;
     }
 
-    const [challenger, accepting] = await Promise.all([
-      DBUser.findByPk(challenge.challenger.id),
-      DBUser.findByPk(user.id),
-    ]);
-
-    if (!challenger || !accepting) {
-      return;
-    }
-
     // TODO: remove challenges by challenger and accepting
 
-    const variantType = Game.getVariantType(challenge.variants);
-    const speedType = Game.getSpeedType(challenge.timeControl);
-    const challengerColor: ColorEnum.WHITE | ColorEnum.BLACK = challenge.challenger.color || (
-      Math.random() > 0.5
-        ? ColorEnum.WHITE
-        : ColorEnum.BLACK
-    );
-    const acceptingColor = Game.getOppositeColor(challengerColor);
-    const challengingPlayer: Player = {
-      id: challenger.id,
-      name: challenger.login,
-      color: challengerColor,
-      rating: (challenger.ratings[variantType]?.[speedType] || DEFAULT_RATING).r,
-      newRating: null,
-      time: challenge.timeControl && challenge.timeControl.base,
-    };
-    const acceptingPlayer: Player = {
-      id: accepting.id,
-      name: accepting.login,
-      color: acceptingColor,
-      rating: (accepting.ratings[variantType]?.[speedType] || DEFAULT_RATING).r,
-      newRating: null,
-      time: challenge.timeControl && challenge.timeControl.base,
-    };
-    let game: Game;
+    const game = await Game.createGameFromChallenge(challenge, user.id);
 
-    while (true) {
-      try {
-        game = new Game({
-          ...pick(challenge, ['startingFen', 'rated', 'timeControl']),
-          variants: [...challenge.variants].sort(),
-          id: Game.generateUid({}),
-          status: GameStatusEnum.ONGOING,
-          pgnTags: {},
-          startingData: null,
-          isLive: true,
-        });
-
-        game.players[challengerColor] = challengingPlayer;
-        game.players[acceptingColor] = acceptingPlayer;
-
-        if (game.is960 && !game.startingFen) {
-          game.startingFen = game.getFen();
-        }
-
-        await game.toDBInstance().save();
-
-        break;
-      } catch {}
+    if (!game) {
+      return;
     }
 
     delete challenges[challengeId];
@@ -159,7 +99,7 @@ games.on('connection', (socket) => {
     games.emit('challengeAccepted', {
       challengeId,
       gameId: game.id,
-      acceptingUserId: accepting.id,
+      acceptingUserId: user.id,
     });
   });
 

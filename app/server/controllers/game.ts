@@ -10,9 +10,20 @@ export async function getGame(ctx: CustomContext) {
       urlKeyGroups,
     },
   } = ctx;
+  const gameId = urlKeyGroups?.gameId || '';
+
+  if (Game.games[gameId]) {
+    ctx.body = {
+      success: true,
+      game: 'active',
+    };
+
+    return;
+  }
+
   const game = await DBGame.findByPk(urlKeyGroups?.gameId || '');
 
-  await game?.getPlayers();
+  await game?.getPlayerNames();
 
   ctx.body = {
     success: true,

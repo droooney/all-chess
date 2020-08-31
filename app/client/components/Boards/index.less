@@ -19,14 +19,6 @@
   grid-area: boards;
   width: var(--boards-width);
 
-  &.antichess {
-    .board {
-      .center-border {
-        stroke: red;
-      }
-    }
-  }
-
   .board {
     width: calc((100% - (@shown-board-count - 1) * @board-margin) / @shown-board-count);
 

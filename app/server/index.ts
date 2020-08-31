@@ -36,7 +36,7 @@ import 'server/sockets';
       } else {
         correspondenceGames.push(game);
 
-        await game.getPlayers();
+        await game.getPlayerNames();
       }
     }),
   );

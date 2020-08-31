@@ -172,11 +172,11 @@
 
         --material-row: ". . ." 0;
 
-        &:not(.with-pocket) {
-          &.with-material {
-            --material-row: "material . timer-or-turn" max-content;
-          }
+        &.with-material {
+          --material-row: "material material material" max-content;
+        }
 
+        &:not(.with-pocket) {
           grid-template:
             "name . timer-or-turn" max-content
             var(--material-row)
@@ -184,10 +184,6 @@
         }
 
         &.with-pocket {
-          &.with-material {
-            --material-row: "material material material" max-content;
-          }
-
           grid-template:
             "name          . pocket" max-content
             "timer-or-turn . pocket" auto

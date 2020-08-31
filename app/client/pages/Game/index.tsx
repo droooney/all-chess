@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import io from 'socket.io-client';
 import { RouteComponentProps } from 'react-router-dom';
 import find from 'lodash/find';
+import omit from 'lodash/omit';
 
 import {
   ALICE_CHESS_BOARDS_MARGIN,
@@ -19,7 +20,6 @@ import { GAME_VARIANT_NAMES } from 'shared/constants';
 import {
   DarkChessGameInitialData,
   GameInitialData,
-  GameStatusEnum,
   Player,
 } from 'shared/types';
 
@@ -36,7 +36,11 @@ interface OwnProps {
 
 }
 
-type Props = OwnProps & ReturnType<typeof mapStateToProps> & RouteComponentProps<{ gameId: string }>;
+type Props = (
+  OwnProps
+  & ReturnType<typeof mapStateToProps>
+  & RouteComponentProps<{ gameId: string }, any, { rematch?: boolean; } | undefined>
+);
 
 interface State {
   game: GameHelper | null;
@@ -60,16 +64,52 @@ class GamePage extends React.PureComponent<Props, State> {
     tabletPanelWidth: 0,
   };
 
-  async componentDidMount() {
+  componentDidMount() {
+    this.loadGame();
+
+    window.addEventListener('resize', this.onWindowResize);
+  }
+
+  componentDidUpdate(prevProps: Props) {
     const {
       history,
-      match: {
-        params: {
-          gameId,
-        },
-      },
+      location,
+    } = this.props;
+
+    if (this.getGameId() !== this.getGameId(prevProps)) {
+      this.state.game?.destroy();
+
+      const isRematch = location.state?.rematch;
+
+      if (isRematch) {
+        history.replace({
+          ...location,
+          state: omit(location.state, 'rematch'),
+        });
+
+        this.setupSocket();
+      } else {
+        this.loadGame();
+      }
+    }
+  }
+
+  componentWillUnmount() {
+    this.state.game?.destroy();
+
+    window.removeEventListener('resize', this.onWindowResize);
+  }
+
+  getGameId(props: Props = this.props): string {
+    return props.match.params.gameId;
+  }
+
+  async loadGame() {
+    const {
+      history,
       user,
     } = this.props;
+    const gameId = this.getGameId();
     const {
       success,
       game,
@@ -91,11 +131,8 @@ class GamePage extends React.PureComponent<Props, State> {
       return;
     }
 
-    if (game.status === GameStatusEnum.ONGOING) {
-      const socket = this.socket = io.connect(`/game/${gameId}`);
-
-      socket.on('initialGameData', this.onGameData);
-      socket.on('initialDarkChessGameData', this.onGameData);
+    if (game === 'active') {
+      this.setupSocket();
     } else {
       const player = find(game.players, { id: user?.id }) || null;
 
@@ -109,15 +146,13 @@ class GamePage extends React.PureComponent<Props, State> {
     }
 
     this.updateGridLayout();
-
-    window.addEventListener('resize', this.onWindowResize);
   }
 
-  componentWillUnmount() {
-    this.socket?.disconnect();
-    this.state.game?.destroy();
+  setupSocket() {
+    const socket = this.socket = io.connect(`/game/${this.getGameId()}`);
 
-    window.removeEventListener('resize', this.onWindowResize);
+    socket.on('initialGameData', this.onGameData);
+    socket.on('initialDarkChessGameData', this.onGameData);
   }
 
   updateGridLayout() {
@@ -268,9 +303,7 @@ class GamePage extends React.PureComponent<Props, State> {
       game: gameData,
     } = gameInitialData;
 
-    if (this.state.game) {
-      this.state.game.removeListeners();
-    }
+    this.state.game?.removeListeners();
 
     const game = new GameHelper({
       game: gameData,

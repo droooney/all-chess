@@ -269,9 +269,7 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
 
     if (this.isKingOfTheHill && this.isKingInTheCenter(prevTurn)) {
       return {
-        winner: this.isAntichess
-          ? currentTurn
-          : prevTurn,
+        winner: prevTurn,
         reason: ResultReasonEnum.KING_IN_THE_CENTER,
       };
     }

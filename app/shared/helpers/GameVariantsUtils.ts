@@ -126,10 +126,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
     } = GameVariantsUtils.getVariantsInfo(variants);
 
     return ((
-      !isKingOfTheHill
-      || isAntichess
-      || !isDarkChess
-    ) && (
       !isHexagonalChess
       || !is960
       || (
@@ -161,8 +157,8 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isThreeCheck
         && !isCompensationChess
         && !isAbsorption
-        // TODO: add anti + benedict
         && !isBenedictChess
+        && !isKingOfTheHill
       )
     ) && (
       !isAbsorption

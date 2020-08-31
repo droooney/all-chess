@@ -19,10 +19,12 @@ export async function up(queryInterface: QueryInterface) {
     },
     whitePlayer: {
       type: DataTypes.JSONB,
+      field: 'white_player',
       allowNull: false,
     },
     blackPlayer: {
       type: DataTypes.JSONB,
+      field: 'black_player',
       allowNull: false,
     },
     timeControl: {

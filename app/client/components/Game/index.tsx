@@ -598,7 +598,7 @@ class Game extends React.Component<Props, State> {
         || this.state.allowedMoves.every(({ square }) => !GameHelper.areSquaresEqual(draggedPiece.location, square))
       )
     ) {
-      e.preventDefault();
+      // e.preventDefault();
 
       this.draggingPieceTranslate = this.getDraggingPieceTranslate(e);
 
@@ -779,6 +779,8 @@ class Game extends React.Component<Props, State> {
       isDarkChess,
       drawOffer,
       takebackRequest,
+      rematchOffer,
+      rematchAllowed,
       timeControl,
       result,
       startingMoveIndex,
@@ -852,6 +854,8 @@ class Game extends React.Component<Props, State> {
               boardToShow={boardToShow}
               drawOffer={drawOffer}
               takebackRequest={takebackRequest}
+              rematchOffer={rematchOffer}
+              rematchAllowed={rematchAllowed}
               takebackMoveIndex={player && game.getTakebackRequestMoveIndex(player.color)}
               darkChessMode={darkChessMode}
               showDarkChessHiddenPieces={showDarkChessHiddenPieces}

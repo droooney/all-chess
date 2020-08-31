@@ -46,6 +46,8 @@ declare global {
     newChatMessage: ChatMessage;
     takebackRequested: TakebackRequest;
     takebackAccepted: number;
+    rematchOffered: ColorEnum;
+    rematchAccepted: string;
   }
 
   type SocketIOServerEventWithoutDataList = (
@@ -53,6 +55,9 @@ declare global {
     | 'drawCanceled'
     | 'takebackDeclined'
     | 'takebackCanceled'
+    | 'rematchDeclined'
+    | 'rematchCanceled'
+    | 'rematchNotAllowed'
   );
 
   interface SocketIOClientEventWithDataMap {
@@ -74,6 +79,10 @@ declare global {
     | 'acceptTakeback'
     | 'declineTakeback'
     | 'cancelTakeback'
+    | 'offerRematch'
+    | 'acceptRematch'
+    | 'declineRematch'
+    | 'cancelRematch'
   );
 }
 

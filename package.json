@@ -10,6 +10,7 @@
 
     "server:run": "npm run ts:run app/server/index.ts",
 
+    "db:execute-sql": "npm run ts:run scripts/execute-sql.ts",
     "db:migrate": "sequelize db:migrate --debug",
     "db:migrate:create": "sequelize migration:create --debug --name",
     "db:migrate:undo": "sequelize db:migrate:undo --debug",
@@ -26,6 +27,8 @@
     "db:drop": "sequelize db:drop --debug",
 
     "calc:pieces-worth": "npm run ts:run scripts/get-pieces-worth.ts",
+
+    "games:remove": "npm run ts:run scripts/remove-games.ts",
 
     "lint": "eslint . --ext .ts --ext .tsx",
     "lint:fix": "eslint . --ext .ts --ext .tsx --fix",

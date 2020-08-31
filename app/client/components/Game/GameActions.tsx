@@ -29,6 +29,8 @@ export interface OwnProps {
   boardToShow: number | 'all';
   drawOffer: ColorEnum | null;
   takebackRequest: TakebackRequest | null;
+  rematchOffer: ColorEnum | null;
+  rematchAllowed: boolean;
   takebackMoveIndex: number | null;
   darkChessMode: ColorEnum | null;
   showDarkChessHiddenPieces: boolean;
@@ -83,6 +85,24 @@ class GameActions extends React.Component<Props, State> {
         game.acceptTakeback();
       } else {
         game.requestTakeback();
+      }
+    }
+  };
+
+  onRematchOfferClick = () => {
+    const {
+      game,
+      rematchOffer,
+      player,
+    } = this.props;
+
+    if (player) {
+      if (rematchOffer === player.color) {
+        game.cancelRematch();
+      } else if (rematchOffer === Game.getOppositeColor(player.color)) {
+        game.acceptRematch();
+      } else {
+        game.offerRematch();
       }
     }
   };
@@ -161,6 +181,8 @@ class GameActions extends React.Component<Props, State> {
       boardToShow,
       drawOffer,
       takebackRequest,
+      rematchOffer,
+      rematchAllowed,
       darkChessMode,
       player,
       showDarkChessHiddenPieces,
@@ -215,6 +237,27 @@ class GameActions extends React.Component<Props, State> {
           onClick={this.onTakebackRequestClick}
         >
           <i className="fa fa-reply" />
+        </div>,
+      );
+    } else if (player && status === GameStatusEnum.FINISHED) {
+      buttons.push(
+        <div
+          key="offer-rematch"
+          className={classNames('button', {
+            disabled: !rematchAllowed,
+            'offering-rematch': rematchOffer === player.color,
+            'offered-rematch': rematchOffer === Game.getOppositeColor(player.color),
+          })}
+          title={
+            rematchOffer === player.color
+              ? 'Cancel rematch offer'
+              : rematchOffer === Game.getOppositeColor(player.color)
+                ? 'Accept rematch offer'
+                : 'Offer rematch'
+          }
+          onClick={this.onRematchOfferClick}
+        >
+          <i className="fa fa-refresh" />
         </div>,
       );
     }

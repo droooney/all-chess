@@ -169,6 +169,7 @@ export class Game extends GameTimeUtils implements IGame {
       status: result
         ? GameStatusEnum.FINISHED
         : GameStatusEnum.ONGOING,
+      isLive: false,
     });
 
     game.result = result;
@@ -492,6 +493,7 @@ export class Game extends GameTimeUtils implements IGame {
       status: GameStatusEnum.ONGOING,
       pgnTags: {},
       rated: false,
+      isLive: false,
     });
 
     if (game.isInCheck(game.getOpponentColor())) {
@@ -516,6 +518,9 @@ export class Game extends GameTimeUtils implements IGame {
   chat: ChatMessage[] = [];
   drawOffer: ColorEnum | null = null;
   takebackRequest: TakebackRequest | null = null;
+  rematchOffer: ColorEnum | null = null;
+  rematchAllowed: boolean = true;
+  isLive: boolean;
 
   constructor(options: GameCreateOptions) {
     super({
@@ -532,6 +537,7 @@ export class Game extends GameTimeUtils implements IGame {
 
     this.rated = options.rated;
     this.pgnTags = options.pgnTags || {};
+    this.isLive = options.isLive;
 
     this.setupStartingData();
   }

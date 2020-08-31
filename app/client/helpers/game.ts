@@ -46,6 +46,7 @@ import {
 import { Game as BaseGame, Game as GameHelper } from 'shared/helpers';
 import { Sound } from 'client/helpers/sounds';
 import { RegisterMoveReturnValue } from 'shared/helpers/GameMovesUtils';
+import { history } from 'client/helpers/history';
 
 type GameEvent = 'updateChat' | 'updateGame';
 
@@ -91,6 +92,7 @@ export class Game extends GameHelper {
         status: GameStatusEnum.ONGOING,
         pgnTags: {},
         rated: false,
+        isLive: false,
       }),
     });
   }
@@ -172,10 +174,15 @@ export class Game extends GameHelper {
       startingFen: game.startingFen,
       timeControl: game.timeControl,
       variants: game.variants,
+      isLive: game.isLive,
     });
+
+    const now = Date.now();
 
     this.drawOffer = game.drawOffer;
     this.takebackRequest = game.takebackRequest;
+    this.rematchOffer = game.rematchOffer;
+    this.rematchAllowed = game.rematchAllowed;
     this.lastMoveTimestamp = game.lastMoveTimestamp;
     this.currentMoveIndex = game.moves.length - 1;
     this.chat = game.chat;
@@ -231,18 +238,23 @@ export class Game extends GameHelper {
     }
 
     if (typeof timestamp === 'number') {
-      this.timeDiff = Date.now() - timestamp;
+      this.timeDiff = now - timestamp;
     }
 
     if (socket) {
       socket.on('gamePing', (timestamp) => {
         socket.emit('gamePong', timestamp);
 
-        this.timeDiff = Date.now() - timestamp;
+        const newDiff = Date.now() - timestamp;
+
+        if (Math.abs(newDiff - this.timeDiff) > 700) {
+          this.timeDiff = newDiff;
+        }
       });
 
       socket.on('moveMade', ({ move, moveIndex, lastMoveTimestamp }) => {
         this.lastMoveTimestamp = lastMoveTimestamp;
+        this.timeDiff = Date.now() - lastMoveTimestamp;
 
         if (moveIndex === this.getUsedMoves().length - 1) {
           const lastMove = last(this.getUsedMoves())!;
@@ -405,11 +417,44 @@ export class Game extends GameHelper {
 
         this.updateGame();
       });
+
+      socket.on('rematchOffered', (color) => {
+        this.rematchOffer = color;
+
+        this.updateGame();
+      });
+
+      socket.on('rematchAccepted', (gameId) => {
+        history.push(`/game/${gameId}`, { rematch: true });
+      });
+
+      socket.on('rematchDeclined', () => {
+        this.rematchOffer = null;
+
+        this.updateGame();
+      });
+
+      socket.on('rematchCanceled', () => {
+        this.rematchOffer = null;
+
+        this.updateGame();
+      });
+
+      socket.on('rematchNotAllowed', () => {
+        this.rematchOffer = null;
+        this.rematchAllowed = false;
+
+        this.updateGame();
+      });
     }
   }
 
   acceptDraw() {
     this.socket?.emit('acceptDraw');
+  }
+
+  acceptRematch() {
+    this.socket?.emit('acceptRematch');
   }
 
   acceptTakeback() {
@@ -432,6 +477,10 @@ export class Game extends GameHelper {
     }
   }
 
+  cancelRematch() {
+    this.socket?.emit('cancelRematch');
+  }
+
   cancelTakeback() {
     this.socket?.emit('cancelTakeback');
   }
@@ -446,6 +495,10 @@ export class Game extends GameHelper {
 
   declineDraw() {
     this.socket?.emit('declineDraw');
+  }
+
+  declineRematch() {
+    this.socket?.emit('declineRematch');
   }
 
   declineTakeback() {
@@ -680,6 +733,10 @@ export class Game extends GameHelper {
 
   offerDraw() {
     this.socket?.emit('offerDraw');
+  }
+
+  offerRematch() {
+    this.socket?.emit('offerRematch');
   }
 
   off<K extends GameEvent>(event: K, listener: () => void) {

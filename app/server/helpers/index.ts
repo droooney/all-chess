@@ -3,3 +3,4 @@ export * from './fs';
 export * from './koa';
 export * from './redis';
 export * from './sendEmail';
+export * from './socket-io';

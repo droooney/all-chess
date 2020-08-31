@@ -47,15 +47,14 @@ export default class GameTimeUtils extends GameResultUtils {
     }
   }
 
-  changePlayerTime(averagePing: number = 0) {
+  changePlayerTime() {
     if (this.needToChangeTime() && this.timeControl) {
       const prevTurn = this.getOpponentColor();
       const player = this.players[prevTurn];
       const {
-        duration: actualDuration,
+        duration,
         prevPiecesWorth,
       } = last(this.getUsedMoves())!;
-      const duration = Math.max(actualDuration / 2, actualDuration - averagePing / 2);
 
       if (this.isFinished()) {
         player.time! -= duration;

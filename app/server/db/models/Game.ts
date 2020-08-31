@@ -3,7 +3,8 @@ import { DataTypes, Model } from 'sequelize';
 import {
   ChatMessage,
   ColorEnum,
-  EachColor, GameResult,
+  EachColor,
+  GameResult,
   GameStatusEnum,
   GameVariantEnum,
   PGNTags,
@@ -50,7 +51,7 @@ export interface Game extends GameAttributes {}
 export class Game extends Model<GameAttributes, GameAddAttributes> {
   playerNames?: EachColor<string>;
 
-  async getPlayers() {
+  async getPlayerNames() {
     const [whitePlayer, blackPlayer] = await Promise.all([
       User.findByPk(this.whitePlayer.id),
       User.findByPk(this.blackPlayer.id),
@@ -84,10 +85,12 @@ Game.init({
   },
   whitePlayer: {
     type: DataTypes.JSONB,
+    field: 'white_player',
     allowNull: false,
   },
   blackPlayer: {
     type: DataTypes.JSONB,
+    field: 'black_player',
     allowNull: false,
   },
   timeControl: {

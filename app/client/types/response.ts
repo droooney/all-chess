@@ -32,5 +32,6 @@ export interface RegisterFailedResponse extends FailedResponse {
 export type RegisterResponse = RegisterSuccessfulResponse | RegisterFailedResponse;
 
 export interface GetGameResponse extends GenericResponse {
-  game: Game | null;
+  // TODO: add ongoing dark chess game
+  game: Game | 'active' | null;
 }

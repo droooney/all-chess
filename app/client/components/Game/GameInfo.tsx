@@ -68,7 +68,7 @@ export default class GameInfo extends React.Component<Props> {
             ) : (
               status === GameStatusEnum.ABORTED
                 ? 'Game aborted'
-                : null
+                : '\u00a0'
             )}
           </div>
         </div>

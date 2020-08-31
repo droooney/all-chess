@@ -73,20 +73,16 @@ class Boards extends React.Component<Props> {
 
   boardsRef = React.createRef<HTMLDivElement>();
   prevMoveIndexes: [number, number] = [-1, this.props.currentMoveIndex];
+  prevIsBlackBase = this.props.isBlackBase;
+  prevIsDragging = this.props.isDragging;
+  prevGame = this.props.game;
+  prevPremovesCount = this.props.premoves.length;
 
   componentDidUpdate(prevProps: Props) {
-    if (
-      prevProps.isBlackBase !== this.props.isBlackBase
-      || prevProps.isDragging !== this.props.isDragging
-      || prevProps.game !== this.props.game
-      || prevProps.premoves.length !== this.props.premoves.length
-    ) {
-      this.boardsRef.current!.classList.add('no-transition');
-
-      setTimeout(() => {
-        this.boardsRef.current!.classList.remove('no-transition');
-      }, 0);
-    }
+    this.prevIsBlackBase = this.props.isBlackBase;
+    this.prevIsDragging = this.props.isDragging;
+    this.prevGame = this.props.game;
+    this.prevPremovesCount = this.props.premoves.length;
 
     if (this.props.currentMoveIndex !== prevProps.currentMoveIndex) {
       this.prevMoveIndexes = [prevProps.currentMoveIndex, this.props.currentMoveIndex];
@@ -148,7 +144,6 @@ class Boards extends React.Component<Props> {
         id: gameId,
         isAliceChess,
         isDarkChess,
-        isAntichess,
         isKingOfTheHill,
         boardCount,
         boardWidth,
@@ -222,16 +217,25 @@ class Boards extends React.Component<Props> {
       }
     });
 
+    const showTransition = (
+      this.prevIsBlackBase === isBlackBase
+      && this.prevIsDragging === isDragging
+      && this.prevGame === game
+      && this.prevPremovesCount === premoves.length
+    );
+
     const movedPieceIdsSelector = piecesSelector(movedPieceIds);
     const capturedPieceIdsSelector = piecesSelector(capturedPieceIds);
-    const movedAndCapturedPieceIdsSelector = piecesSelector(intersection(movedPieceIds, capturedPieceIds));
+    const movedAndCapturedPieceIdsSelector = piecesSelector(
+      intersection(movedPieceIds, capturedPieceIds),
+    );
 
     return (
       <div
         ref={this.boardsRef}
         id={`boards-${gameId}`}
         className={classNames('boards', `theme-${squareColorTheme}`, {
-          antichess: isAntichess,
+          'no-transition': !showTransition,
           'no-fantom': !showFantomPieces,
         })}
         style={{

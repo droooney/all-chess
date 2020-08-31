@@ -2,6 +2,7 @@
 
 import { Namespace } from 'socket.io';
 import isEqual from 'lodash/isEqual';
+import isEmpty from 'lodash/isEmpty';
 import find from 'lodash/find';
 import forEach from 'lodash/forEach';
 import keys from 'lodash/keys';
@@ -21,12 +22,14 @@ import {
 
 import {
   BaseMove,
+  Challenge,
   ChatMessage,
   ColorEnum,
   Dictionary,
   EachColor,
   Game as IGame,
   GameCreateOptions,
+  GameStatusEnum,
   GameVariantEnum,
   GlickoRating,
   Move,
@@ -38,6 +41,7 @@ import {
 } from 'shared/types';
 
 import { Game as GameHelper } from 'shared/helpers';
+import { deleteNamespace } from 'server/helpers';
 
 import { sessionMiddleware } from 'server/controllers/session';
 
@@ -50,8 +54,70 @@ const VARIANTS = values(GameVariantEnum);
 export default class Game extends GameHelper {
   static games: Partial<Dictionary<Game>> = {};
 
-  static addGame(game: Game) {
+  static async createGameFromChallenge(challenge: Challenge, toUserId: number): Promise<Game | undefined> {
+    const [challenger, accepting] = await Promise.all([
+      DBUser.findByPk(challenge.challenger.id),
+      DBUser.findByPk(toUserId),
+    ]);
+
+    if (!challenger || !accepting) {
+      return;
+    }
+
+    const variantType = Game.getVariantType(challenge.variants);
+    const speedType = Game.getSpeedType(challenge.timeControl);
+    const challengerColor: ColorEnum.WHITE | ColorEnum.BLACK = challenge.challenger.color || (
+      Math.random() > 0.5
+        ? ColorEnum.WHITE
+        : ColorEnum.BLACK
+    );
+    const acceptingColor = Game.getOppositeColor(challengerColor);
+    const challengingPlayer: Player = {
+      id: challenger.id,
+      name: challenger.login,
+      color: challengerColor,
+      rating: (challenger.ratings[variantType]?.[speedType] || DEFAULT_RATING).r,
+      newRating: null,
+      time: challenge.timeControl && challenge.timeControl.base,
+    };
+    const acceptingPlayer: Player = {
+      id: accepting.id,
+      name: accepting.login,
+      color: acceptingColor,
+      rating: (accepting.ratings[variantType]?.[speedType] || DEFAULT_RATING).r,
+      newRating: null,
+      time: challenge.timeControl && challenge.timeControl.base,
+    };
+    let game: Game;
+
+    while (true) {
+      try {
+        game = new Game({
+          ...pick(challenge, ['startingFen', 'rated', 'timeControl']),
+          variants: [...challenge.variants].sort(),
+          id: Game.generateUid({}),
+          status: GameStatusEnum.ONGOING,
+          pgnTags: {},
+          startingData: null,
+          isLive: true,
+        });
+
+        game.players[challengerColor] = challengingPlayer;
+        game.players[acceptingColor] = acceptingPlayer;
+
+        if (game.is960 && !game.startingFen) {
+          game.startingFen = game.getFen();
+        }
+
+        await game.toDBInstance().save();
+
+        break;
+      } catch {}
+    }
+
     Game.games[game.id] = game;
+
+    return game;
   }
 
   static fromDBInstance(dbInstance: DBGame, isLive: boolean): Game {
@@ -177,7 +243,6 @@ export default class Game extends GameHelper {
     return super.validateVariants(variants);
   }
 
-  isLive: boolean;
   isTimer: boolean;
   timerTimeout?: number;
   pingTimeout?: number;
@@ -189,16 +254,15 @@ export default class Game extends GameHelper {
     [ColorEnum.BLACK]: [],
   };
 
-  constructor(options: GameCreateOptions & { isLive: boolean; }) {
+  constructor(options: GameCreateOptions) {
     super(options);
 
     const io = this.io = options.isLive ? ioServer.of(`/game/${options.id}`) : null;
 
-    this.isLive = options.isLive;
     this.isTimer = !!this.timeControl && this.timeControl.type === TimeControlEnum.TIMER;
 
     if (this.isTimer) {
-      setInterval(this.pingPlayers, 1000);
+      this.pingTimeout = setInterval(this.pingPlayers, 1000) as any;
     }
 
     io?.use(async (socket, next) => {
@@ -216,6 +280,37 @@ export default class Game extends GameHelper {
           const {
             color: playerColor,
           } = player;
+
+          socket.on('disconnect', () => {
+            if (this.isFinished() && this.io) {
+              if (this.rematchAllowed) {
+                let whitePresent = false;
+                let blackPresent = false;
+
+                forEach(this.io.sockets, (socket) => {
+                  const socketPlayer = socket.player;
+
+                  if (socketPlayer?.id === this.players[ColorEnum.WHITE].id) {
+                    whitePresent = true;
+                  } else if (socketPlayer?.id === this.players[ColorEnum.BLACK].id) {
+                    blackPresent = true;
+                  }
+                });
+
+                if (!whitePresent || !blackPresent) {
+                  this.rematchAllowed = false;
+                  this.rematchOffer = null;
+
+                  this.io.emit('rematchNotAllowed');
+                }
+              }
+
+              if (isEmpty(this.io.sockets)) {
+                this.remove();
+                this.saveToDB();
+              }
+            }
+          });
 
           socket.on('gamePong', (timestamp) => {
             if (
@@ -347,6 +442,62 @@ export default class Game extends GameHelper {
 
           socket.on('cancelTakeback', () => {
             this.cancelTakeback(playerColor);
+          });
+
+          socket.on('offerRematch', () => {
+            if (!this.isFinished() || !this.rematchAllowed) {
+              return;
+            }
+
+            if (this.rematchOffer) {
+              if (this.rematchOffer !== playerColor) {
+                this.rematchOffer = null;
+
+                this.setupRematch();
+              }
+            } else {
+              this.rematchOffer = playerColor;
+
+              this.addChatMessage({
+                login: null,
+                message: `${COLOR_NAMES[playerColor]} offered a rematch`,
+              });
+              io.emit('rematchOffered', this.rematchOffer);
+            }
+          });
+
+          socket.on('acceptRematch', () => {
+            if (this.rematchOffer === Game.getOppositeColor(playerColor)) {
+              this.setupRematch();
+            }
+          });
+
+          socket.on('declineRematch', () => {
+            if (this.rematchOffer !== Game.getOppositeColor(playerColor)) {
+              return;
+            }
+
+            this.rematchOffer = null;
+
+            this.addChatMessage({
+              login: null,
+              message: 'Rematch offer declined',
+            });
+            this.io?.emit('rematchDeclined');
+          });
+
+          socket.on('cancelRematch', () => {
+            if (this.rematchOffer !== playerColor) {
+              return;
+            }
+
+            this.rematchOffer = null;
+
+            this.addChatMessage({
+              login: null,
+              message: 'Rematch offer canceled',
+            });
+            this.io?.emit('rematchCanceled');
           });
 
           socket.on('makeMove', (move) => {
@@ -588,23 +739,24 @@ export default class Game extends GameHelper {
     }
 
     const newTimestamp = Date.now();
+    const serverMoveDuration = newTimestamp - this.lastMoveTimestamp;
+    const pingTimes = this.playerPingTimes[player.color];
+    const averagePing = Math.round(this.playerPingTimes[player.color].reduce(
+      (sum, ping) => sum + ping,
+      0,
+    ) / pingTimes.length) || 0;
     const move: Move = {
       from: fromLocation,
       to: toLocation,
-      duration: newTimestamp - this.lastMoveTimestamp,
+      duration: Math.max(serverMoveDuration / 2, serverMoveDuration - averagePing / 2),
     };
 
     if (promotion) {
       move.promotion = promotion;
     }
 
-    const pingTimes = this.playerPingTimes[player.color];
-    const averagePing = pingTimes.length
-      ? Math.round(this.playerPingTimes[player.color].reduce((sum, ping) => sum + ping, 0) / pingTimes.length)
-      : 0;
-
     this.registerAnyMove(move, false);
-    this.changePlayerTime(averagePing);
+    this.changePlayerTime();
 
     this.lastMoveTimestamp = newTimestamp;
 
@@ -665,7 +817,9 @@ export default class Game extends GameHelper {
   remove() {
     delete Game.games[this.id];
 
-    // TODO: destroy server, disconnect sockets, etc
+    if (this.io) {
+      deleteNamespace(this.io);
+    }
   }
 
   async saveToDB() {
@@ -704,6 +858,31 @@ export default class Game extends GameHelper {
     }
   }
 
+  async setupRematch() {
+    this.rematchOffer = null;
+    this.rematchAllowed = false;
+
+    const challenger = this.players[ColorEnum.WHITE];
+    const game = await Game.createGameFromChallenge({
+      // only id and color matter
+      challenger: {
+        id: +challenger.id || 0,
+        login: challenger.name,
+        rating: 0,
+        color: ColorEnum.BLACK,
+      },
+      id: '',
+      rated: this.rated,
+      startingFen: this.startingFen,
+      timeControl: this.timeControl,
+      variants: this.variants,
+    }, +this.players[ColorEnum.BLACK].id || 0);
+
+    if (game) {
+      this.io?.emit('rematchAccepted', game.id);
+    }
+  }
+
   toDBInstance(): DBGame {
     const whitePlayer = this.players[ColorEnum.WHITE];
     const blackPlayer = this.players[ColorEnum.BLACK];
@@ -738,9 +917,9 @@ export default class Game extends GameHelper {
   toJSON(): IGame {
     return {
       ...pick(this, [
-        'id', 'startingFen', 'variants', 'status', 'players',
-        'result', 'rated', 'timeControl', 'pgnTags', 'drawOffer',
-        'takebackRequest', 'lastMoveTimestamp', 'moves', 'chat',
+        'id', 'startingFen', 'variants', 'status', 'players', 'result',
+        'rated', 'timeControl', 'pgnTags', 'drawOffer', 'rematchOffer', 'rematchAllowed',
+        'takebackRequest', 'lastMoveTimestamp', 'moves', 'chat', 'isLive',
       ]),
       startingData: null,
     };

@@ -2,9 +2,8 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Router, Switch } from 'react-router-dom';
 import { ThemeProvider } from '@material-ui/styles';
-import { createBrowserHistory } from 'history';
 
-import { getDefaultSettings, isMobileDevice } from 'client/helpers';
+import { getDefaultSettings, history, isMobileDevice } from 'client/helpers';
 
 import { loadSettings, setIsMobile } from 'client/actions';
 import { DispatchProps, ReduxState } from 'client/store';
@@ -23,8 +22,6 @@ import Settings from 'client/pages/Settings';
 import lightTheme from 'client/themes/light';
 
 import './index.less';
-
-const history = createBrowserHistory();
 
 type Props = ReturnType<typeof mapStateToProps> & DispatchProps;
 

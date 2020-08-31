@@ -87,6 +87,7 @@ boardTypes.forEach((boardType) => {
       status: GameStatusEnum.ONGOING,
       pgnTags: {},
       rated: false,
+      isLive: false,
     });
 
     game.pieces = [{

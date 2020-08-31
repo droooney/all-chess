@@ -212,8 +212,11 @@ export interface CommonGameData {
   chat: ChatMessage[];
   takebackRequest: TakebackRequest | null;
   drawOffer: ColorEnum | null;
+  rematchOffer: ColorEnum | null;
+  rematchAllowed: boolean;
   pgnTags: PGNTags;
   lastMoveTimestamp: number;
+  isLive: boolean;
 }
 
 export interface Game extends CommonGameData {
@@ -252,6 +255,7 @@ export interface GameCreateOptions extends GameCreateSettings {
   pgnTags: PGNTags;
   startingData: StartingData | null;
   startingFen: string | null;
+  isLive: boolean;
 }
 
 export enum GameVariantEnum {
