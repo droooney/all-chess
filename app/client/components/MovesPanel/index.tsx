@@ -1,18 +1,17 @@
 import * as React from 'react';
 import classNames from 'classnames';
-import chunk from 'lodash/chunk';
 
-import {
-  AnyMove,
-} from 'shared/types';
+import { AnyMove } from 'shared/types';
 
 import { Game } from 'client/helpers';
 
-import MovesRow from './MovesRow';
+import MoveListByTurn from './MoveListByTurn';
+import TextMoveList from './TextMoveList';
 
 import './index.less';
 
 interface OwnProps {
+  type: 'byTurn' | 'text';
   game: Game;
   currentMoveIndex: number;
   moves: AnyMove[];
@@ -21,47 +20,15 @@ interface OwnProps {
 type Props = OwnProps;
 
 export default class MovesPanel extends React.Component<Props> {
-  movesRef = React.createRef<HTMLDivElement>();
-  currentMoveRef = React.createRef<HTMLDivElement>();
-
-  componentDidMount() {
-    const movesElem = this.movesRef.current!;
-
-    movesElem.scrollTop = movesElem.scrollHeight - movesElem.clientHeight;
-  }
-
-  componentDidUpdate(prevProps: Props) {
-    const {
-      currentMoveIndex,
-    } = this.props;
-
-    if (currentMoveIndex !== prevProps.currentMoveIndex) {
-      const movesElem = this.movesRef.current!;
-      const currentMoveElem = this.currentMoveRef.current;
-
-      if (currentMoveElem) {
-        const moveRow = [...movesElem.children].indexOf(currentMoveElem.parentElement!);
-        const moveHeight = currentMoveElem.clientHeight;
-        const newScrollTop = moveRow * moveHeight - (movesElem.clientHeight - moveHeight) / 2;
-
-        movesElem.scrollTop = Math.max(0, Math.min(newScrollTop, movesElem.scrollHeight - movesElem.clientHeight));
-      } else {
-        movesElem.scrollTop = 0;
-      }
-    }
-  }
-
   render() {
     const {
+      type,
       game,
       currentMoveIndex,
       moves,
     } = this.props;
     const isBeforeFirstMove = currentMoveIndex === -1;
     const isAfterLastMove = currentMoveIndex === moves.length - 1;
-    const startingMoveIndex = game.startingData.startingMoveIndex;
-    const startingMoveOffset = startingMoveIndex % 2;
-    const restMoves = chunk(moves.slice(startingMoveOffset), 2);
 
     return (
       <div className="moves-panel">
@@ -91,20 +58,20 @@ export default class MovesPanel extends React.Component<Props> {
             <i className="fa fa-fast-forward" />
           </div>
         </div>
-        <div className="moves-container" ref={this.movesRef}>
-          {(startingMoveOffset ? [
-            moves.slice(0, startingMoveOffset),
-            ...restMoves,
-          ] : restMoves).map((moves, moveRow) => (
-            <MovesRow
-              key={moveRow}
+        <div className="moves-container">
+          {type === 'byTurn' ? (
+            <MoveListByTurn
               game={game}
-              moveRow={moveRow}
               currentMoveIndex={currentMoveIndex}
-              currentMoveRef={this.currentMoveRef}
               moves={moves}
             />
-          ))}
+          ) : (
+            <TextMoveList
+              game={game}
+              currentMoveIndex={currentMoveIndex}
+              moves={moves}
+            />
+          )}
         </div>
       </div>
     );

@@ -1,13 +1,9 @@
 import * as React from 'react';
 import classNames from 'classnames';
 
-import {
-  GAME_VARIANT_PGN_NAMES,
-} from 'shared/constants';
+import { GAME_VARIANT_PGN_NAMES } from 'shared/constants';
 
-import {
-  GameVariantEnum,
-} from 'shared/types';
+import { GameVariantEnum } from 'shared/types';
 
 import { Game as GameHelper } from 'client/helpers';
 
@@ -25,7 +21,6 @@ interface OwnProps {
 
   fen?: string;
   moves?: string;
-  startingMoveIndex?: number;
 }
 
 type Props = OwnProps;
@@ -53,9 +48,7 @@ export default class GameRulesExample extends React.Component<Props> {
       ${props.moves || ''}
     `, props.id);
 
-    if ('startingMoveIndex' in props) {
-      this.game.navigateToMove(props.startingMoveIndex || 0);
-    }
+    this.game.navigateToMove(-1);
 
     this.game.on('updateGame', () => {
       this.forceUpdate();
@@ -72,12 +65,14 @@ export default class GameRulesExample extends React.Component<Props> {
       <Game
         className={classNames('game-rules-example', { 'with-moves': !!moves })}
         game={this.game}
+        useKeyboard={false}
         showMovesPanel={!!moves}
         contentChildren={
           <div className="description">
             {description}
           </div>
         }
+        movesPanelType="text"
       />
     );
   }

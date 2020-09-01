@@ -64,7 +64,10 @@ export default class MovesRow extends React.Component<Props> {
 
     return (
       <div key={moveRow} className="move-row">
-        <div className="move-index">{startingMove + moveRow + 1}</div>
+        <div className="move-index">
+          {startingMove + moveRow + 1}
+        </div>
+
         {moves.map((move, turn) => {
           const moveIndex = moveRow * 2 + turn - (moveRow === 0 ? 0 : startingMoveOffset);
           const isCurrent = moveIndex === currentMoveIndex;

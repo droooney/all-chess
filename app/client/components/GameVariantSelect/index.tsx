@@ -2,6 +2,7 @@ import * as React from 'react';
 import MuiDivider from '@material-ui/core/Divider';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
+import Tooltip from '@material-ui/core/Tooltip';
 import styled from '@material-ui/core/styles/styled';
 import { connect } from 'react-redux';
 
@@ -166,9 +167,11 @@ class GameVariantSelect extends React.Component<Props, State> {
       <MenuItem key={variant} value={variant} disabled={!allowed} tabIndex={-1}>
         <Checkbox checked={enabled} />
 
-        <ListItemText title={GAME_VARIANT_NAMES[variant]}>
-          {GAME_VARIANT_NAMES[variant]}
-        </ListItemText>
+        <Tooltip title={GAME_VARIANT_NAMES[variant]}>
+          <ListItemText>
+            {GAME_VARIANT_NAMES[variant]}
+          </ListItemText>
+        </Tooltip>
 
         <GameVariantStar variants={variant} />
       </MenuItem>
@@ -188,7 +191,11 @@ class GameVariantSelect extends React.Component<Props, State> {
         multiple
         value={selectedVariants}
         onChange={this.onVariantChange}
-        renderValue={() => selectedVariantsString}
+        renderValue={() => (
+          <Tooltip title={selectedVariantsString}>
+            <span>{selectedVariantsString}</span>
+          </Tooltip>
+        )}
         MenuProps={{
           MenuListProps: {
             classes: {
@@ -198,7 +205,6 @@ class GameVariantSelect extends React.Component<Props, State> {
           disableAutoFocusItem: true,
           getContentAnchorEl: null,
         }}
-        title={selectedVariantsString}
         onOpen={this.saveFavouriteVariants}
       >
         {favouriteCombinationsGroup.map(({ variants, enabled, allowed }) => {
@@ -210,9 +216,11 @@ class GameVariantSelect extends React.Component<Props, State> {
             <MenuItem key={variants.join(',')} value={variants} tabIndex={-1} disabled={!allowed}>
               <Checkbox checked={enabled} />
 
-              <ListItemText title={variantsString}>
-                {variantsString}
-              </ListItemText>
+              <Tooltip title={variantsString}>
+                <ListItemText>
+                  {variantsString}
+                </ListItemText>
+              </Tooltip>
 
               <GameVariantStar variants={variants} />
             </MenuItem>

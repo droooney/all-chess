@@ -42,8 +42,8 @@ export default class AtomicGameRules extends React.Component {
           id="1"
           description="Example 1. Explosion in atomic chess"
           variants={[GameVariantEnum.ATOMIC]}
-          moves="1. Nc3 Nf6 2. Nb5 Ne4 3. Nxc7 Nxd2#"
-          startingMoveIndex={3}
+          fen="rnbqkb1r/pppppppp/8/1N6/4n3/8/PPPPPPPP/R1BQKBNR w KQkq - 4 3"
+          moves="3. Nxc7 Nxd2#"
         />
 
         <p>
@@ -67,7 +67,6 @@ export default class AtomicGameRules extends React.Component {
           variants={[GameVariantEnum.ATOMIC]}
           fen="r1bqkb1r/p1pnpppp/1p1p1n2/3P4/8/2N2N2/PPPBPPPP/R2QKB1R b KQkq - 0 5"
           moves="5... e5 6. dxe6"
-          startingMoveIndex={-1}
         />
 
         <h3 id="winning-conditions">

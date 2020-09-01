@@ -185,7 +185,6 @@ export class Game extends GameTimeUtils implements IGame {
         .filter(Boolean)
         .join(' ');
       let shouldBeMoveIndex = true;
-      let wasMoveIndex = false;
 
       while (movesString) {
         const whitespace = movesString.match(/^\s+/);
@@ -222,9 +221,9 @@ export class Game extends GameTimeUtils implements IGame {
         // move index including dots
         if (shouldBeMoveIndex) {
           const moveIndex = Math.floor(game.pliesCount / 2) + 1;
-          const moveIndexString = (game.startingMoveIndex && !wasMoveIndex) || game.pliesCount % 2 !== 0
-            ? `${moveIndex}...`
-            : `${moveIndex}.`;
+          const moveIndexString = game.pliesCount % 2 === 0
+            ? `${moveIndex}.`
+            : `${moveIndex}...`;
 
           if (movesString.indexOf(moveIndexString) !== 0) {
             throw new Error('Invalid PGN: wrong move index');
@@ -232,7 +231,6 @@ export class Game extends GameTimeUtils implements IGame {
 
           movesString = movesString.slice(moveIndexString.length);
           shouldBeMoveIndex = false;
-          wasMoveIndex = true;
 
           continue;
         }
@@ -519,7 +517,7 @@ export class Game extends GameTimeUtils implements IGame {
   drawOffer: ColorEnum | null = null;
   takebackRequest: TakebackRequest | null = null;
   rematchOffer: ColorEnum | null = null;
-  rematchAllowed: boolean = true;
+  rematchAllowed: boolean;
   isLive: boolean;
 
   constructor(options: GameCreateOptions) {
@@ -538,6 +536,7 @@ export class Game extends GameTimeUtils implements IGame {
     this.rated = options.rated;
     this.pgnTags = options.pgnTags || {};
     this.isLive = options.isLive;
+    this.rematchAllowed = this.isLive;
 
     this.setupStartingData();
   }

@@ -344,6 +344,7 @@ class GamePage extends React.PureComponent<Props, State> {
       content = (
         <Game
           game={game}
+          useKeyboard
           showBoard
           showPlayers
           showMovesPanel
@@ -351,6 +352,7 @@ class GamePage extends React.PureComponent<Props, State> {
           showActions
           showInfo
           boardsWidth={boardsWidth}
+          movesPanelType={gridMode === 'mobile' ? 'text' : 'byTurn'}
         />
       );
     } else {

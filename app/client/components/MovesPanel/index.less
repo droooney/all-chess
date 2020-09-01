@@ -47,36 +47,67 @@
 
     overflow-y: auto;
 
-    .move-row {
-      .flex-stretch(@justify-content: flex-start);
+    .moves-by-turn {
+      .move-row {
+        .flex-stretch(@justify-content: flex-start);
 
-      min-height: 25px;
-      width: 100%;
+        min-height: 25px;
+        width: 100%;
 
-      .move-index {
-        .flex();
-        .flex-child-fixed(12%);
-      }
-
-      .move {
-        .flex(@justify-content: flex-start);
-        .flex-child-fixed(44%);
-
-        padding: 0 5px;
-        word-break: break-word;
-        cursor: pointer;
-
-        .hover({
-          background-color: #eee;
-        });
-
-        &.current {
-          background-color: #ccc;
+        .move-index {
+          .flex();
+          .flex-child-fixed(12%);
         }
 
-        .piece {
-          width: 16px;
-          height: 16px;
+        .move {
+          .flex(@justify-content: flex-start);
+          .flex-child-fixed(44%);
+
+          padding: 0 5px;
+          word-break: break-word;
+          cursor: pointer;
+
+          .hover({
+            background-color: #eee;
+          });
+
+          &.current {
+            background-color: #ccc;
+          }
+
+          .piece {
+            width: 16px;
+            height: 16px;
+          }
+        }
+      }
+    }
+
+    .moves-text {
+      .flex(@align-items: flex-start, @justify-content: flex-start);
+
+      flex-wrap: wrap;
+      padding: 5px 0;
+
+      .move-container {
+        margin-bottom: 4px;
+        white-space: nowrap;
+
+        .move-index {
+          padding: 1px 2px;
+        }
+
+        .move {
+          padding: 1px 2px;
+          cursor: pointer;
+
+          .hover({
+            background-color: #eee;
+          });
+
+          &.current {
+            background-color: #ccc;
+          }
         }
       }
     }

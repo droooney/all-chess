@@ -97,27 +97,24 @@ export default class Chess960GameRules extends React.Component {
           id="2"
           description="Example 2. The white king and rook end up on previously empty squares. The black king and rook swap places."
           variants={[GameVariantEnum.CHESS_960]}
-          fen="nnrkrqbb/pppppppp/8/8/8/8/PPPPPPPP/NNRKRQBB w KQkq - 0 1"
-          moves="1. f4 Nb6 2. Bxb6 axb6 3. Qf3 Nc6 4. O-O O-O-O"
-          startingMoveIndex={5}
+          fen="2rkrqbb/1ppppppp/1pn5/8/5P2/5Q2/PPPPP1PP/NNRKR2B w KQkq - 2 4"
+          moves="4. O-O O-O-O"
         />
 
         <GameRulesExample
           id="3"
           description="Example 3. The white king ends up on the rook's initial square. he black king doesn't move during castling."
           variants={[GameVariantEnum.CHESS_960]}
-          fen="bbrnnqkr/pppppppp/8/8/8/8/PPPPPPPP/BBRNNQKR w KQkq - 0 1"
-          moves="1. e4 e5 2. Qd3 Nd6 3. Nf3 Nc6 4. Ne3 Qe7 5. O-O-O O-O"
-          startingMoveIndex={7}
+          fen="bbr3kr/ppppqppp/2nn4/4p3/4P3/3QNN2/PPPP1PPP/BBR3KR w KQkq - 6 5"
+          moves="5. O-O-O O-O"
         />
 
         <GameRulesExample
           id="4"
           description="Example 4. The white rook doesn't move during castling. The black rook ends up on the king's initial square."
           variants={[GameVariantEnum.CHESS_960]}
-          fen="bbnrnkqr/pppppppp/8/8/8/8/PPPPPPPP/BBNRNKQR w KQkq - 0 1"
-          moves="1. Ncd3 f5 2. Nf3 Qf7 3. O-O-O O-O"
-          startingMoveIndex={3}
+          fen="bbnrnk1r/pppppqpp/8/5p2/8/3N1N2/PPPPPPPP/BB1R1KQR w KQkq - 2 3"
+          moves="3. O-O-O O-O"
         />
 
         <h2 id="combinations">

@@ -4,9 +4,7 @@ import classNames from 'classnames';
 import forEach from 'lodash/forEach';
 import map from 'lodash/map';
 
-import {
-  ALICE_CHESS_BOARDS_MARGIN,
-} from 'client/constants';
+import { ALICE_CHESS_BOARDS_MARGIN } from 'client/constants';
 
 import {
   BaseMove,
@@ -48,6 +46,7 @@ interface OwnProps {
   contentChildren?: React.ReactNode;
   className?: string;
 
+  useKeyboard?: boolean;
   showBoard?: boolean;
   showPlayers?: boolean;
   showMovesPanel?: boolean;
@@ -55,6 +54,7 @@ interface OwnProps {
   showActions?: boolean;
   showInfo?: boolean;
   boardsWidth?: number;
+  movesPanelType?: 'byTurn' | 'text';
 }
 
 type Props = OwnProps & ReturnType<typeof mapStateToProps>;
@@ -76,6 +76,7 @@ const INPUT_ELEMENTS = ['input', 'textarea'];
 
 class Game extends React.Component<Props, State> {
   static defaultProps = {
+    useKeyboard: false,
     showBoard: true,
     showPlayers: false,
     showMovesPanel: false,
@@ -83,6 +84,7 @@ class Game extends React.Component<Props, State> {
     showActions: false,
     showInfo: false,
     boardsWidth: 0,
+    movesPanelType: 'byTurn' as const,
   };
 
   draggingPieceRef = React.createRef<SVGSVGElement>();
@@ -240,7 +242,12 @@ class Game extends React.Component<Props, State> {
   onKeyDown = (e: KeyboardEvent) => {
     const {
       game,
+      useKeyboard,
     } = this.props;
+
+    if (!useKeyboard) {
+      return;
+    }
 
     if (!e.target || !INPUT_ELEMENTS.includes((e.target as HTMLElement).tagName.toLowerCase())) {
       let preventDefault = true;
@@ -766,6 +773,7 @@ class Game extends React.Component<Props, State> {
       showChat,
       showActions,
       showInfo,
+      movesPanelType = 'byTurn',
     } = this.props;
     const {
       player,
@@ -931,6 +939,7 @@ class Game extends React.Component<Props, State> {
 
           {showMovesPanel && (
             <MovesPanel
+              type={movesPanelType}
               game={game}
               currentMoveIndex={currentMoveIndex}
               moves={usedMoves}
