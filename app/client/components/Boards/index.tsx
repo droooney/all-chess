@@ -192,7 +192,7 @@ class Boards extends React.Component<Props> {
     const isAllowed = (square: Square): boolean => (
       allowedMoves.some(({ square: allowedSquare }) => Game.areSquaresEqual(square, allowedSquare))
     );
-    const piecesSelector = (ids: string[]) => ids.map((id) => `#boards-${gameId}  #piece-${id}`).join(',');
+    const piecesSelector = (ids: string[]) => ids.map((id) => `#boards-${gameId} #piece-${id}`).join(',');
 
     const boardPieces = pieces.filter(Game.isBoardPiece);
 
@@ -441,10 +441,12 @@ class Boards extends React.Component<Props> {
                   <stop offset="0%" stopColor="rgba(0,255,255,0.5)" />
                   <stop offset="100%" stopColor="rgba(0,0,0,0)" />
                 </radialGradient>
+
                 <radialGradient id="check-grad" r="80%" cx="50%" cy="50%">
                   <stop offset="0%" stopColor="red" />
                   <stop offset="100%" stopColor="rgba(0,0,0,0)" />
                 </radialGradient>
+
                 {map(DrawnSymbolColor, (color) => (
                   <marker
                     key={color}

@@ -279,7 +279,6 @@ class Games extends React.Component<Props, State> {
 
     return (
       <div className="route home-route">
-
         <DocumentTitle value="AllChess - Home" />
 
         <Button
@@ -478,7 +477,6 @@ class Games extends React.Component<Props, State> {
             </Button>
           </div>
         </Modal>
-
       </div>
     );
   }
