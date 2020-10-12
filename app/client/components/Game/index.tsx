@@ -429,7 +429,9 @@ class Game extends React.Component<Props, State> {
     }
 
     const isPremove = game.player.color !== game.turn;
-    const allowedMove = allowedMoves.find(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
+    const allowedMove = allowedMoves.find(
+      ({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare),
+    );
     const resetGameState = {
       isDragging: false,
       selectedPiece: null,
@@ -526,9 +528,12 @@ class Game extends React.Component<Props, State> {
     if (
       GameHelper.isBoardPiece(selectedPiece)
       && GameHelper.areSquaresEqual(square, { ...selectedPiece.location, board: selectedPieceBoard })
-      && !enableDnd
     ) {
-      return this.selectPiece(null);
+      if (!enableDnd) {
+        return this.selectPiece(null);
+      }
+
+      return;
     }
 
     const allowedMove = allowedMoves.find(({ square: allowedSquare }) => GameHelper.areSquaresEqual(square, allowedSquare));
@@ -804,6 +809,7 @@ class Game extends React.Component<Props, State> {
     const {
       selectedPiece,
       isDragging,
+      allowedMoves,
     } = this.state;
     const usedMoves = game.getUsedMoves();
     const readOnly = !this.isAbleToMove();
@@ -886,7 +892,7 @@ class Game extends React.Component<Props, State> {
                   : null
               }
               selectedPieceBoard={this.state.selectedPieceBoard}
-              allowedMoves={this.state.allowedMoves}
+              allowedMoves={allowedMoves}
               premoves={premoves}
               drawnSymbols={
                 this.state.drawingSymbol

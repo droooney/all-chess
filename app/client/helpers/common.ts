@@ -1,4 +1,4 @@
-export function isNotUndefined<T>(value: T): value is Exclude<T, undefined> {
+export function isDefined<T>(value: T): value is Exclude<T, undefined | null> {
   return value !== undefined;
 }
 

@@ -16,7 +16,7 @@ import {
   Square,
 } from 'shared/types';
 
-import { Game, isNotUndefined } from 'client/helpers';
+import { Game, isDefined } from 'client/helpers';
 
 import Boards from '../../components/Boards';
 import DocumentTitle from '../../components/DocumentTitle';
@@ -112,8 +112,8 @@ class BoardEditor extends React.Component<Props, State> {
 
     const variants = variantsString
       .split('+')
-      .map((variant) => findKey(GAME_VARIANT_PGN_NAMES, (pgnName) => pgnName === variant))
-      .filter(isNotUndefined) as GameVariantEnum[];
+      .map((variant) => findKey(GAME_VARIANT_PGN_NAMES, (pgnName) => pgnName === variant) as GameVariantEnum | undefined)
+      .filter(isDefined);
 
     if (!Game.validateVariants(variants)) {
       return null;

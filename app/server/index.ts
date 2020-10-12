@@ -54,4 +54,8 @@ import 'server/sockets';
   });
 
   console.log(`Listening on ${config.port}...`);
-})();
+})().catch((err) => {
+  console.log('Init error', err);
+
+  process.exit(1);
+});

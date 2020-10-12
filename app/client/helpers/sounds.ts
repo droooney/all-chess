@@ -2,7 +2,7 @@ import { Howl } from 'howler';
 
 import { Dictionary } from 'shared/types';
 
-import { isNotUndefined } from 'client/helpers/common';
+import { isDefined } from 'client/helpers/common';
 
 // @ts-ignore
 import mp3Sounds from '../sounds/*/*.mp3';
@@ -27,7 +27,7 @@ export class Sound {
     this.loadPromise = new Promise((resolve) => res = resolve);
 
     this.sound = new Howl({
-      src: ([mp3Sounds, oggSounds] as Sounds[]).map((sounds) => sounds[type]?.index).filter(isNotUndefined),
+      src: ([mp3Sounds, oggSounds] as Sounds[]).map((sounds) => sounds[type]?.index).filter(isDefined),
       preload: true,
       volume: volumes[type] || 1,
       onload: res,
