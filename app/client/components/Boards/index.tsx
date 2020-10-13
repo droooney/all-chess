@@ -19,6 +19,7 @@ import {
   ColorEnum,
   DrawnSymbol as IDrawnSymbol,
   DrawnSymbolColor,
+  DrawnSymbolType,
   Piece as IPiece,
   PieceLocationEnum,
   Premove,
@@ -508,8 +509,8 @@ class Boards extends React.Component<Props> {
               </g>
               <g className="symbols">
                 {[
-                  ...drawnSymbols.filter(({ type }) => type === 'circle'),
-                  ...drawnSymbols.filter(({ type }) => type === 'arrow'),
+                  ...drawnSymbols.filter(({ type }) => type === DrawnSymbolType.CIRCLE),
+                  ...drawnSymbols.filter(({ type }) => type === DrawnSymbolType.ARROW),
                 ].map((symbol) => (
                   <DrawnSymbol
                     key={symbol.id}

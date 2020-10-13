@@ -6,7 +6,7 @@ import {
   SVG_SQUARE_SIZE,
 } from 'client/constants';
 
-import { DrawnSymbol as IDrawnSymbol, Square } from 'shared/types';
+import { DrawnSymbol as IDrawnSymbol, DrawnSymbolType, Square } from 'shared/types';
 
 import { Game } from 'client/helpers';
 
@@ -42,7 +42,7 @@ export default class DrawnSymbol extends React.Component<Props> {
       stroke: DRAWN_SYMBOL_COLORS[symbol.color],
     };
 
-    if (symbol.type === 'circle') {
+    if (symbol.type === DrawnSymbolType.CIRCLE) {
       const strokeWidth = SVG_SQUARE_SIZE / 20;
       const center = this.getSquareCenter(symbol.square);
 

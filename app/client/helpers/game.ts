@@ -24,6 +24,8 @@ import {
   DarkChessLocalMove,
   DarkChessMove,
   Dictionary,
+  DrawnSymbol,
+  DrawnSymbolType,
   EachColor,
   Game as IGame,
   GameStatusEnum,
@@ -57,6 +59,7 @@ export interface InitGameOptions {
   player?: Player | null;
   currentMoveIndex?: number;
   timestamp?: number;
+  startingPositionSymbols?: DrawnSymbol[];
 }
 
 interface Point {
@@ -146,6 +149,7 @@ export class Game extends GameHelper {
     [ColorEnum.WHITE]: {},
     [ColorEnum.BLACK]: {},
   };
+  symbolsByMove: Partial<Record<number, DrawnSymbol[]>> = {};
   currentMoveIndex: number;
   isOngoingDarkChessGame: boolean;
   boardSidesRenderedRatio: number;
@@ -171,6 +175,7 @@ export class Game extends GameHelper {
     player,
     currentMoveIndex,
     timestamp,
+    startingPositionSymbols,
   }: InitGameOptions) {
     super({
       id: game.id,
@@ -219,6 +224,7 @@ export class Game extends GameHelper {
     this.boardToShow = 'all';
     this.darkChessMode = this.isDarkChess && player ? player.color : null;
     this.piecesBeforePremoves = this.pieces;
+    this.symbolsByMove[-1] = startingPositionSymbols;
 
     this.savePieces();
 
@@ -399,6 +405,7 @@ export class Game extends GameHelper {
         this.navigateToMove(this.getUsedMoves().length - 1, false);
 
         while (takebackRequest.moveIndex < this.getUsedMoves().length - 1) {
+          this.clearSymbols(false);
           this.unregisterLastMove();
 
           if (this.currentMoveIndex === this.getUsedMoves().length) {
@@ -468,6 +475,30 @@ export class Game extends GameHelper {
     this.socket?.emit('acceptTakeback');
   }
 
+  addOrRemoveSymbol(drawnSymbol: DrawnSymbol) {
+    const drawnSymbols = this.getDrawnSymbols();
+    const existingIndex = drawnSymbols.findIndex((symbol) => (
+      drawnSymbol.type === DrawnSymbolType.CIRCLE
+      && symbol.type === DrawnSymbolType.CIRCLE
+      && GameHelper.areSquaresEqual(drawnSymbol.square, symbol.square, false)
+    ) || (
+      drawnSymbol.type === DrawnSymbolType.ARROW
+      && symbol.type === DrawnSymbolType.ARROW
+      && GameHelper.areSquaresEqual(drawnSymbol.from, symbol.from, false)
+      && GameHelper.areSquaresEqual(drawnSymbol.to, symbol.to, false)
+    ));
+
+    if (existingIndex === -1) {
+      drawnSymbols.push(drawnSymbol);
+    } else if (drawnSymbols[existingIndex].color === drawnSymbol.color) {
+      drawnSymbols.splice(existingIndex, 1);
+    } else {
+      drawnSymbols[existingIndex] = drawnSymbol;
+    }
+
+    this.symbolsByMove[this.currentMoveIndex] = [...drawnSymbols];
+  }
+
   cancelDraw() {
     this.socket?.emit('cancelDraw');
   }
@@ -497,6 +528,18 @@ export class Game extends GameHelper {
 
     if (!darkChessMode) {
       this.showDarkChessHiddenPieces = true;
+    }
+  }
+
+  clearSymbols(updateGame: boolean) {
+    const hasSymbols = this.getDrawnSymbols().length !== 0;
+
+    if (hasSymbols) {
+      this.symbolsByMove[this.currentMoveIndex] = [];
+
+      if (updateGame) {
+        this.updateGame();
+      }
     }
   }
 
@@ -559,6 +602,10 @@ export class Game extends GameHelper {
       innerSecond: getCirclePoint(rInner, nextAngle),
       innerFirst: getCirclePoint(rInner, angle),
     };
+  }
+
+  getDrawnSymbols(): DrawnSymbol[] {
+    return this.symbolsByMove[this.currentMoveIndex] = this.symbolsByMove[this.currentMoveIndex] || [];
   }
 
   getHexPoints(square: Square): HexPoints {

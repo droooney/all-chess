@@ -19,19 +19,24 @@ export enum SquareColor {
   HALF_DARK = 'HALF_DARK',
 }
 
+export enum DrawnSymbolType {
+  ARROW = 'ARROW',
+  CIRCLE = 'CIRCLE',
+}
+
 export interface BaseDrawnSymbol {
   id: number;
   color: DrawnSymbolColor;
 }
 
 export interface Arrow extends BaseDrawnSymbol {
-  type: 'arrow';
+  type: DrawnSymbolType.ARROW;
   from: Square;
   to: Square;
 }
 
 export interface Circle extends BaseDrawnSymbol {
-  type: 'circle';
+  type: DrawnSymbolType.CIRCLE;
   square: Square;
 }
 
