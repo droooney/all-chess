@@ -53,10 +53,10 @@ export default class BoardPiece extends React.Component<Props> {
     });
     const squareCenter = game.getSquareCenter(location);
     const translateX = `calc(${
-      this.ifBlackBase(`${squareCenter.x}px`, `100% - ${squareCenter.x}px`)
+      this.ifBlackBase(`100% - ${squareCenter.x}px`, `${squareCenter.x}px`)
     } - ${pieceSize / 2}px)`;
     const translateY = `calc(${
-      this.ifBlackBase(`${squareCenter.y}px`, `100% - ${squareCenter.y}px`)
+      this.ifBlackBase(`100% - ${squareCenter.y}px`, `${squareCenter.y}px`)
     } - ${pieceSize / 2}px)`;
 
     return (
