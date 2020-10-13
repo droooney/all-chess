@@ -646,8 +646,13 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       promotion,
     } = move;
     const piece = fromLocation.type === PieceLocationEnum.BOARD
-      ? this.getBoardPiece(fromLocation)!
-      : this.getPocketPiece(fromLocation.pieceType, this.turn)!;
+      ? this.getBoardPiece(fromLocation)
+      : this.getPocketPiece(fromLocation.pieceType, this.turn);
+
+    if (!piece) {
+      throw new Error('No piece found');
+    }
+
     const opponentPiece = this.getCapturedPiece(piece, toLocation);
     const isCapture = !!opponentPiece;
     const changedPieces: Piece[] = [];

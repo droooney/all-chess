@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { SVG_SQUARE_SIZE, CIRCULAR_CHESS_EMPTY_CENTER_RATIO } from 'client/constants';
+import { SVG_SQUARE_SIZE } from 'client/constants';
 
 import { PieceBoardLocation, PieceLocationEnum, RealPieceLocation, Square } from 'shared/types';
 
@@ -32,9 +32,7 @@ export default class BoardSquare extends React.PureComponent<Props> {
     const {
       isCircularChess,
       isHexagonalChess,
-      boardWidth,
       boardHeight,
-      boardOrthodoxWidth,
     } = game;
     const square: Square = {
       board,
@@ -71,30 +69,17 @@ export default class BoardSquare extends React.PureComponent<Props> {
     let pathD = '';
 
     if (isCircularChess) {
-      const rOuter = boardWidth * SVG_SQUARE_SIZE;
-      const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE;
-      const r = rOuter - fileX * rDiff;
-      const nextR = r - rDiff;
-      const angle = rankY * 2 * Math.PI / game.boardHeight;
-      const nextAngle = (rankY + 1) * 2 * Math.PI / game.boardHeight;
-      const getCirclePoint = (r: number, angle: number) => {
-        const x = game.boardCenterX - r * Math.sin(angle);
-        const y = game.boardCenterY - r * Math.cos(angle);
-
-        return { x, y: boardOrthodoxWidth * SVG_SQUARE_SIZE - y };
-      };
-      const circlePoints = [
-        getCirclePoint(r, angle),
-        getCirclePoint(r, nextAngle),
-        getCirclePoint(nextR, nextAngle),
-        getCirclePoint(nextR, angle),
-      ];
+      const {
+        outer: rOuter,
+        inner: rInner,
+      } = game.getCircularRadiuses(square);
+      const circularPoints = game.getCircularPoints(square);
 
       pathD = `
-        M ${circlePoints[0].x},${circlePoints[0].y}
-        A ${r} ${r} 0 0 1 ${circlePoints[1].x} ${circlePoints[1].y}
-        L ${circlePoints[2].x},${circlePoints[2].y}
-        A ${nextR} ${nextR} 0 0 0 ${circlePoints[3].x} ${circlePoints[3].y}
+        M ${circularPoints.outerFirst.x},${circularPoints.outerFirst.y}
+        A ${rOuter} ${rOuter} 0 0 1 ${circularPoints.outerSecond.x} ${circularPoints.outerSecond.y}
+        L ${circularPoints.innerSecond.x},${circularPoints.innerSecond.y}
+        A ${rInner} ${rInner} 0 0 0 ${circularPoints.innerFirst.x} ${circularPoints.innerFirst.y}
         Z
       `;
     } else if (isHexagonalChess) {

@@ -73,6 +73,13 @@ interface HexPoints {
   topRight: Point;
 }
 
+interface CircularPoints {
+  outerFirst: Point;
+  outerSecond: Point;
+  innerSecond: Point;
+  innerFirst: Point;
+}
+
 export class Game extends GameHelper {
   static areSameVariants(variants1: GameVariantEnum[], variants2: GameVariantEnum[]): boolean {
     return (
@@ -521,6 +528,39 @@ export class Game extends GameHelper {
     this.cancelPremoves(false);
   }
 
+  getCircularRadiuses(square: Square): { outer: number; inner: number; } {
+    const rBoard = this.boardWidth * SVG_SQUARE_SIZE;
+    const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE;
+    const r = rBoard - square.x * rDiff;
+
+    return {
+      outer: r,
+      inner: r - rDiff,
+    };
+  }
+
+  getCircularPoints(square: Square): CircularPoints {
+    const {
+      outer: rOuter,
+      inner: rInner,
+    } = this.getCircularRadiuses(square);
+    const angle = square.y * 2 * Math.PI / this.boardHeight;
+    const nextAngle = (square.y + 1) * 2 * Math.PI / this.boardHeight;
+    const getCirclePoint = (r: number, angle: number) => {
+      const x = this.boardCenterX - r * Math.sin(angle);
+      const y = this.boardCenterY - r * Math.cos(angle);
+
+      return { x, y: this.boardOrthodoxWidth * SVG_SQUARE_SIZE - y };
+    };
+
+    return {
+      outerFirst: getCirclePoint(rOuter, angle),
+      outerSecond: getCirclePoint(rOuter, nextAngle),
+      innerSecond: getCirclePoint(rInner, nextAngle),
+      innerFirst: getCirclePoint(rInner, angle),
+    };
+  }
+
   getHexPoints(square: Square): HexPoints {
     const a = SVG_SQUARE_SIZE / 2 / Math.sqrt(3);
     const x0 = (square.x * 3 + 1) * a;
@@ -581,29 +621,27 @@ export class Game extends GameHelper {
         : SVG_SQUARE_SIZE;
   }
 
-  getSquareCenter(square: Square): { x: number; y: number; } {
+  getSquareCenter(square: Square): Point {
     if (this.isCircularChess) {
-      const rOuter = this.boardWidth * SVG_SQUARE_SIZE;
-      const rDiff = (1 - CIRCULAR_CHESS_EMPTY_CENTER_RATIO) * SVG_SQUARE_SIZE;
-      const r = rOuter - square.x * rDiff;
-      const centerR = r - rDiff / 2;
-      const centerAngle = (square.y + 0.5) * 2 * Math.PI / this.boardHeight;
+      const {
+        outer: rOuter,
+        inner: rInner,
+      } = this.getCircularRadiuses(square);
+      const rMiddle = (rOuter + rInner) / 2;
+      const angleMiddle = (square.y + 0.5) * 2 * Math.PI / this.boardHeight;
 
       return {
-        x: this.boardCenterX - centerR * Math.sin(centerAngle),
-        y: this.boardOrthodoxWidth * SVG_SQUARE_SIZE - (this.boardCenterY - centerR * Math.cos(centerAngle)),
+        x: this.boardCenterX - rMiddle * Math.sin(angleMiddle),
+        y: this.boardOrthodoxWidth * SVG_SQUARE_SIZE - (this.boardCenterY - rMiddle * Math.cos(angleMiddle)),
       };
     }
 
     if (this.isHexagonalChess) {
-      const a = SVG_SQUARE_SIZE / 2 / Math.sqrt(3);
-      const x0 = (square.x * 3 + 1) * a;
-      const rankAdjustmentY = 1 / 2 * Math.abs(square.x - this.middleFileX);
-      const y0 = (this.boardHeight - square.y - rankAdjustmentY) * SVG_SQUARE_SIZE;
+      const hexPoints = this.getHexPoints(square);
 
       return {
-        x: x0 + a,
-        y: y0 - SVG_SQUARE_SIZE / 2,
+        x: (hexPoints.left.x + hexPoints.right.x) / 2,
+        y: (hexPoints.left.y + hexPoints.right.y) / 2,
       };
     }
 
@@ -844,8 +882,13 @@ export class Game extends GameHelper {
       promotion,
     } = move;
     const piece = fromLocation.type === PieceLocationEnum.BOARD
-      ? this.getBoardPiece(fromLocation)!
-      : this.getPocketPiece(fromLocation.pieceType, fromLocation.color)!;
+      ? this.getBoardPiece(fromLocation)
+      : this.getPocketPiece(fromLocation.pieceType, fromLocation.color);
+
+    if (!piece) {
+      throw new Error('No piece found');
+    }
+
     const pieceInSquare = this.getBoardPiece(toLocation);
     const isPawnPromotion = this.isPromoting(piece, toLocation);
     const wasKing = Game.isKing(piece);
