@@ -10,6 +10,7 @@ interface OwnProps {
   move: AnyMove;
   moveIndex: number;
   isCurrent: boolean;
+  currentMoveRef: React.RefObject<HTMLDivElement>;
 }
 
 type Props = OwnProps;
@@ -30,6 +31,7 @@ class TextMove extends React.PureComponent<Props> {
       move,
       moveIndex,
       isCurrent,
+      currentMoveRef,
     } = this.props;
     const startingMoveIndex = game.startingData.startingMoveIndex;
     const startingMove = Math.floor(startingMoveIndex / 2);
@@ -38,7 +40,7 @@ class TextMove extends React.PureComponent<Props> {
     const moveAbsoluteIndex = startingMove + moveRelativeIndex + 1;
 
     return (
-      <div className="move-container">
+      <div className="move-container" ref={isCurrent ? currentMoveRef : undefined}>
         {(moveIndex === 0 || game.getMoveColor(moveIndex) === ColorEnum.WHITE) && (
           <span className="move-index">
             {moveAbsoluteIndex}{moveIndex === 0 && startingMoveOffset ? '...' : '.'}

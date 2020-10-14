@@ -20,6 +20,36 @@ interface OwnProps {
 type Props = OwnProps;
 
 export default class MovesPanel extends React.Component<Props> {
+  movesRef = React.createRef<HTMLDivElement>();
+  currentMoveRef = React.createRef<HTMLDivElement>();
+
+  componentDidMount() {
+    this.setupScroll();
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    const {
+      currentMoveIndex,
+    } = this.props;
+
+    if (currentMoveIndex !== prevProps.currentMoveIndex) {
+      this.setupScroll();
+    }
+  }
+
+  setupScroll() {
+    const movesElem = this.movesRef.current!;
+    const currentMoveElem = this.currentMoveRef.current;
+
+    if (currentMoveElem) {
+      const newScrollTop = currentMoveElem.offsetTop - (movesElem.clientHeight - currentMoveElem.clientHeight) / 2;
+
+      movesElem.scrollTop = Math.max(0, Math.min(newScrollTop, movesElem.scrollHeight - movesElem.clientHeight));
+    } else {
+      movesElem.scrollTop = 0;
+    }
+  }
+
   render() {
     const {
       type,
@@ -58,17 +88,20 @@ export default class MovesPanel extends React.Component<Props> {
             <i className="fa fa-fast-forward" />
           </div>
         </div>
-        <div className="moves-container">
+
+        <div className="moves-container" ref={this.movesRef}>
           {type === 'byTurn' ? (
             <MoveListByTurn
               game={game}
               currentMoveIndex={currentMoveIndex}
+              currentMoveRef={this.currentMoveRef}
               moves={moves}
             />
           ) : (
             <TextMoveList
               game={game}
               currentMoveIndex={currentMoveIndex}
+              currentMoveRef={this.currentMoveRef}
               moves={moves}
             />
           )}

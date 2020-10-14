@@ -9,6 +9,7 @@ import TextMove from './TextMove';
 interface OwnProps {
   game: Game;
   currentMoveIndex: number;
+  currentMoveRef: React.RefObject<HTMLDivElement>;
   moves: AnyMove[];
 }
 
@@ -19,6 +20,7 @@ class TextMoveList extends React.PureComponent<Props> {
     const {
       game,
       currentMoveIndex,
+      currentMoveRef,
       moves,
     } = this.props;
 
@@ -31,6 +33,7 @@ class TextMoveList extends React.PureComponent<Props> {
             move={move}
             moveIndex={index}
             isCurrent={currentMoveIndex === index}
+            currentMoveRef={currentMoveRef}
           />
         ))}
       </div>
