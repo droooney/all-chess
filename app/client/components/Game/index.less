@@ -112,7 +112,7 @@
       grid-area: actions;
 
       .buttons {
-        @button-size: 40px;
+        @button-size: 30px;
 
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(@button-size, 1fr));;
@@ -125,7 +125,7 @@
           line-height: @button-size;
           width: @button-size;
           height: @button-size;
-          font-size: 24px;
+          font-size: @button-size * 0.6;
           cursor: pointer;
           background-color: rgba(0,0,0,0);
           transition: background-color 0.15s ease-in;

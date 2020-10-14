@@ -6,9 +6,9 @@ import { GameVariantEnum } from 'shared/types';
 
 import GameVariantLink from '../../components/GameVariantLink';
 
-import GameRulesExample from './GameRulesExample';
+import RulesExample from './RulesExample';
 
-export default class AtomicGameRules extends React.Component {
+export default class AtomicRules extends React.Component {
   render() {
     return (
       <React.Fragment>
@@ -38,12 +38,16 @@ export default class AtomicGameRules extends React.Component {
           - any other piece (not pawns) that is located on a neighbor square to the captured piece square (exception is en passant, see below)
         </p>
 
-        <GameRulesExample
+        <RulesExample
           id="1"
           description="Example 1. Explosion in atomic chess"
           variants={[GameVariantEnum.ATOMIC]}
           fen="rnbqkb1r/pppppppp/8/1N6/4n3/8/PPPPPPPP/R1BQKBNR w KQkq - 4 3"
           moves="3. Nxc7 Nxd2#"
+          symbols={[
+            ['b5->c7', 'c7:r', 'c7->b8:r', 'c7->c8:r', 'c7->d8:r'],
+            ['e4->d2', 'd2:r', 'd2->c1:r', 'd2->d1:r', 'd2->e1:r'],
+          ]}
         />
 
         <p>
@@ -61,12 +65,16 @@ export default class AtomicGameRules extends React.Component {
           {' '}(see <a href="#game-2">example 2</a>).
         </p>
 
-        <GameRulesExample
+        <RulesExample
           id="2"
           description="Example 2. Capturing en passant"
           variants={[GameVariantEnum.ATOMIC]}
           fen="r1bqkb1r/p1pnpppp/1p1p1n2/3P4/8/2N2N2/PPPBPPPP/R2QKB1R b KQkq - 0 5"
           moves="5... e5 6. dxe6"
+          symbols={[
+            null,
+            ['d5->e6', 'e6:r', 'e6->d7:r', 'e6->f6:r', 'e5:r'],
+          ]}
         />
 
         <h3 id="winning-conditions">

@@ -13,12 +13,12 @@ import {
 
 import DocumentTitle from '../../components/DocumentTitle';
 
-import Chess960GameRules from './Chess960';
-import AtomicGameRules from './Atomic';
+import Chess960Rules from './Chess960';
+import AtomicRules from './Atomic';
 
 type Props = RouteComponentProps<{ gameLink: string; }>;
 
-export default class GameRules extends React.Component<Props> {
+export default class VariantRules extends React.Component<Props> {
   render() {
     const {
       match: {
@@ -40,13 +40,13 @@ export default class GameRules extends React.Component<Props> {
 
     switch (gameType) {
       case GameVariantEnum.CHESS_960: {
-        Component = Chess960GameRules;
+        Component = Chess960Rules;
 
         break;
       }
 
       case GameVariantEnum.ATOMIC: {
-        Component = AtomicGameRules;
+        Component = AtomicRules;
 
         break;
       }

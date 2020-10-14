@@ -100,42 +100,24 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
         throw new Error('Invalid FEN: wrong en passant');
       }
 
-      const enPassantSquareMatch = possibleEnPassantString.match(FEN_SQUARE_REGEX);
-
-      if (!enPassantSquareMatch) {
+      if (!FEN_SQUARE_REGEX.test(possibleEnPassantString)) {
         throw new Error('Invalid FEN: wrong en passant');
       }
 
-      const file = GamePositionUtils.getFileNumber(enPassantSquareMatch[1]);
-      const rank = GamePositionUtils.getFileNumber(enPassantSquareMatch[2]);
-
-      if (
-        !(file >= 0)
-        || !(file < boardWidth)
-        || (
-          rank !== 2
-          && rank !== boardHeight - 3
-        )
-      ) {
-        throw new Error('Invalid FEN: wrong en passant');
-      }
+      const enPassantSquare = GamePositionUtils.getSquare(possibleEnPassantString);
 
       startingData.possibleEnPassant = {
-        enPassantSquare: {
-          board: 0,
-          x: file,
-          y: rank,
-        },
+        enPassantSquare,
         pieceLocation: {
           board: 0,
-          x: file,
+          x: enPassantSquare.x,
           y: startingData.turn === ColorEnum.WHITE
-            ? isCircularChess && rank >= boardHeight / 2
-              ? rank + 1
-              : rank - 1
-            : isCircularChess && rank >= boardHeight / 2
-              ? rank - 1
-              : rank + 1,
+            ? isCircularChess && enPassantSquare.y >= boardHeight / 2
+              ? enPassantSquare.y + 1
+              : enPassantSquare.y - 1
+            : isCircularChess && enPassantSquare.y >= boardHeight / 2
+              ? enPassantSquare.y - 1
+              : enPassantSquare.y + 1,
         },
       };
     }
@@ -242,6 +224,9 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
     }
 
     if (startingData.possibleEnPassant) {
+      // TODO: validate en passant (turn and color)
+      // TODO: validate file, rank (don't forget about hex)
+
       const enPassantPieceLocation = startingData.possibleEnPassant.pieceLocation;
       const enPassantPiece = pieces.find((piece) => (
         GamePositionUtils.isPawn(piece)

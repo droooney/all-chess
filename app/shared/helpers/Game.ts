@@ -343,9 +343,11 @@ export class Game extends GameTimeUtils implements IGame {
         }
 
         if (!isDrop && pieces.length !== 1) {
-          throw pieces.length
-            ? new Error('Invalid PGN: ambiguous move')
-            : new Error('Invalid PGN: no pieces to move');
+          throw new Error(
+            pieces.length
+              ? 'Invalid PGN: ambiguous move'
+              : 'Invalid PGN: no pieces to move',
+          );
         }
 
         const piece = pieces[0];

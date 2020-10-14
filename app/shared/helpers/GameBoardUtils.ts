@@ -154,6 +154,23 @@ export default abstract class GameBoardUtils extends GamePieceUtils {
     return (Number(rankLiteral) || 0) - 1;
   }
 
+  static getSquare(squareLiteral: string): Square {
+    let boardNumber = GameBoardUtils.getBoardNumber(squareLiteral[0]);
+    let squareLiteralWithoutBoard = squareLiteral;
+
+    if (boardNumber === -1) {
+      boardNumber = 0;
+    } else {
+      squareLiteralWithoutBoard = squareLiteral.slice(1);
+    }
+
+    return {
+      board: boardNumber,
+      x: GameBoardUtils.getFileNumber(squareLiteralWithoutBoard[0]),
+      y: GameBoardUtils.getRankNumber(squareLiteralWithoutBoard.slice(1)),
+    };
+  }
+
   boards: Boards = [];
   boardCount: number;
   boardHeight: number;

@@ -18,13 +18,13 @@ import DocumentTitle from '../../components/DocumentTitle';
 import GameVariantLink from '../../components/GameVariantLink';
 import Select from '../../components/Select';
 
-import GameRules from 'client/pages/GameRules';
+import VariantRules from 'client/pages/Rules/VariantRules';
 
 import './index.less';
 
 type Props = RouteComponentProps<{ gameLink?: string; }>;
 
-export default class GamesRules extends React.Component<Props> {
+export default class AllRules extends React.Component<Props> {
   render() {
     const {
       history,
@@ -65,7 +65,7 @@ export default class GamesRules extends React.Component<Props> {
               exact
               strict
               path={`/rules/:gameLink(${map(GAME_VARIANT_LINKS).join('|')})`}
-              component={GameRules}
+              component={VariantRules}
             />
 
             <Route

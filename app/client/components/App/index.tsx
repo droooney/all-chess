@@ -11,7 +11,7 @@ import { DispatchProps, ReduxState } from 'client/store';
 import Route from 'client/components/Route';
 import Header from 'client/components/App/Header';
 
-import GamesRules from 'client/pages/GamesRules';
+import AllRules from 'client/pages/Rules/AllRules';
 import BoardEditor from 'client/pages/BoardEditor';
 import Register from 'client/pages/Register';
 import Home from 'client/pages/Home';
@@ -62,7 +62,7 @@ class App extends React.Component<Props> {
               <Switch>
                 <Route exact strict path="/" component={Home} />
                 <Route strict path="/editor" component={BoardEditor} />
-                <Route strict path="/rules/:gameLink?" component={GamesRules} />
+                <Route strict path="/rules/:gameLink?" component={AllRules} />
                 <Route strict path="/settings/:settingsType?" component={Settings}/>
                 <Route exact strict path="/login" component={Login} />
                 <Route exact strict path="/register" component={Register} />

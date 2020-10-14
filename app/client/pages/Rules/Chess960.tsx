@@ -4,9 +4,9 @@ import { GameVariantEnum } from 'shared/types';
 
 import GameVariantLink from '../../components/GameVariantLink';
 
-import GameRulesExample from './GameRulesExample';
+import RulesExample from './RulesExample';
 
-export default class Chess960GameRules extends React.Component {
+export default class Chess960Rules extends React.Component {
   render() {
     return (
       <React.Fragment>
@@ -36,7 +36,7 @@ export default class Chess960GameRules extends React.Component {
           Then Black's pieces are placed symmetrically.
         </p>
 
-        <GameRulesExample
+        <RulesExample
           id="1"
           description="Example 1. Random chess 960 position"
           variants={[GameVariantEnum.CHESS_960]}
@@ -93,28 +93,40 @@ export default class Chess960GameRules extends React.Component {
           To avoid castling ambiguities, the castling in Chess 960 is performed by first clicking on the king and then on the castling rook.
         </p>
 
-        <GameRulesExample
+        <RulesExample
           id="2"
           description="Example 2. The white king and rook end up on previously empty squares. The black king and rook swap places."
           variants={[GameVariantEnum.CHESS_960]}
           fen="2rkrqbb/1ppppppp/1pn5/8/5P2/5Q2/PPPPP1PP/NNRKR2B w KQkq - 2 4"
           moves="4. O-O O-O-O"
+          symbols={[
+            ['d1->g1', 'e1->f1:r'],
+            ['d8->c8', 'c8->d8:r'],
+          ]}
         />
 
-        <GameRulesExample
+        <RulesExample
           id="3"
           description="Example 3. The white king ends up on the rook's initial square. he black king doesn't move during castling."
           variants={[GameVariantEnum.CHESS_960]}
           fen="bbr3kr/ppppqppp/2nn4/4p3/4P3/3QNN2/PPPP1PPP/BBR3KR w KQkq - 6 5"
           moves="5. O-O-O O-O"
+          symbols={[
+            ['g1->c1', 'c1->d1:r'],
+            ['g8', 'h8->f8:r'],
+          ]}
         />
 
-        <GameRulesExample
+        <RulesExample
           id="4"
           description="Example 4. The white rook doesn't move during castling. The black rook ends up on the king's initial square."
           variants={[GameVariantEnum.CHESS_960]}
           fen="bbnrnk1r/pppppqpp/8/5p2/8/3N1N2/PPPPPPPP/BB1R1KQR w KQkq - 2 3"
           moves="3. O-O-O O-O"
+          symbols={[
+            ['f1->c1', 'd1:r'],
+            ['f8->g8', 'h8->f8:r'],
+          ]}
         />
 
         <h2 id="combinations">

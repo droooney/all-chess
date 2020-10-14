@@ -28,10 +28,8 @@
 ### Minor Improvements/Refactor
 
 - don't store material in move for each player (store diff)
-- add double check win reason
+- add double check win reason (?)
 - migrate from font-awesome
-- remove moves panel from 960 example
-- merge gamesrules and gamerules (rename to rules)
 - tooltip wrapper component
 - move gamevariant option (for gamevariantselect) to separate component
 - change switch board button icon
@@ -53,6 +51,7 @@
 - review 50-move rule and variant combinations
 - remove allowed moves after the game
 - validate en passant square right
+- investigate firefox max-content
 
 ### Variants
 
