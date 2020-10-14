@@ -16,5 +16,5 @@ export async function up() {
 }
 
 export async function down() {
-  await User.truncate();
+  await User.truncate({ restartIdentity: true });
 }

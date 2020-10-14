@@ -64,30 +64,12 @@ export default class Game extends GameHelper {
       return;
     }
 
-    const variantType = Game.getVariantType(challenge.variants);
-    const speedType = Game.getSpeedType(challenge.timeControl);
     const challengerColor: ColorEnum.WHITE | ColorEnum.BLACK = challenge.challenger.color || (
       Math.random() > 0.5
         ? ColorEnum.WHITE
         : ColorEnum.BLACK
     );
     const acceptingColor = Game.getOppositeColor(challengerColor);
-    const challengingPlayer: Player = {
-      id: challenger.id,
-      name: challenger.login,
-      color: challengerColor,
-      rating: (challenger.ratings[variantType]?.[speedType] || DEFAULT_RATING).r,
-      newRating: null,
-      time: challenge.timeControl && challenge.timeControl.base,
-    };
-    const acceptingPlayer: Player = {
-      id: accepting.id,
-      name: accepting.login,
-      color: acceptingColor,
-      rating: (accepting.ratings[variantType]?.[speedType] || DEFAULT_RATING).r,
-      newRating: null,
-      time: challenge.timeControl && challenge.timeControl.base,
-    };
     let game: Game;
 
     while (true) {
@@ -102,8 +84,8 @@ export default class Game extends GameHelper {
           isLive: true,
         });
 
-        game.players[challengerColor] = challengingPlayer;
-        game.players[acceptingColor] = acceptingPlayer;
+        game.players[challengerColor] = game.getPlayerFromUser(challenger, challengerColor);
+        game.players[acceptingColor] = game.getPlayerFromUser(accepting, acceptingColor);
 
         if (game.is960 && !game.startingFen) {
           game.startingFen = game.getFen();
@@ -156,6 +138,12 @@ export default class Game extends GameHelper {
     }
 
     return game;
+  }
+
+  static getGameFromPgn(pgn: string, id: string): Game {
+    const game = super.getGameFromPgn(pgn, id);
+
+    return new Game(game);
   }
 
   static getNewGlickoRating(player: GlickoPlayer): GlickoRating {
@@ -713,6 +701,17 @@ export default class Game extends GameHelper {
 
     this.clearPingTimeout();
     this.clearTimerTimeout();
+  }
+
+  getPlayerFromUser(user: User, color: ColorEnum): Player {
+    return {
+      id: user.id,
+      name: user.login,
+      color,
+      rating: (user.ratings[this.getVariantType()]?.[this.getSpeedType()] || DEFAULT_RATING).r,
+      newRating: null,
+      time: this.timeControl && this.timeControl.base,
+    };
   }
 
   move(player: Player, moveForServer: BaseMove) {
