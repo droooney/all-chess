@@ -20,7 +20,6 @@
 - add more logging
 - forgot/reset password
 - start drag on touchmove/mousemove
-- add symbols in examples
 - finish rules
 - improve rematch system for correspondence
 - remove unlimited games

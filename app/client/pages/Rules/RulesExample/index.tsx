@@ -15,9 +15,6 @@ interface OwnProps {
   id: string;
   description: string;
   variants: GameVariantEnum[];
-  boardCount: number;
-  boardWidth: number;
-  boardHeight: number;
 
   fen?: string;
   moves?: string;
@@ -35,12 +32,6 @@ const SYMBOL_COLORS: Partial<Record<string, DrawnSymbolColor>> = {
 };
 
 export default class RulesExample extends React.Component<Props> {
-  static defaultProps = {
-    boardCount: 1,
-    boardWidth: 8,
-    boardHeight: 8,
-  };
-
   game: GameHelper;
 
   constructor(props: Props) {
