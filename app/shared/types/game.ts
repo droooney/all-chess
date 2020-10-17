@@ -178,9 +178,17 @@ export enum SpeedType {
 }
 
 export interface GlickoRating {
+  // rating
   r: number;
+
+  // rating deviation
   rd: number;
+
+  // volatility
   vol: number;
+
+  // last game date
+  lg: number;
 }
 
 export type Ratings = Partial<Record<GameVariantType, Partial<Record<SpeedType, GlickoRating>>>>;

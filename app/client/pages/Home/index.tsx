@@ -7,6 +7,7 @@ import map from 'lodash/map';
 import omit from 'lodash/omit';
 
 import {
+  ONE_DAY,
   COLOR_NAMES,
   SPEED_TYPE_NAMES,
   TIME_CONTROL_NAMES,
@@ -183,7 +184,7 @@ class Games extends React.Component<Props, State> {
       ? null
       : timeControl === TimeControlEnum.TIMER
         ? { type: TimeControlEnum.TIMER, base: 10 * 60 * 1000, increment: 5 * 1000 }
-        : { type: TimeControlEnum.CORRESPONDENCE, base: 2 * 24 * 60 * 60 * 1000 };
+        : { type: TimeControlEnum.CORRESPONDENCE, base: 2 * ONE_DAY };
 
     this.setState(({ timeControl, rated }) => {
       if (timeControl?.type === newTimeControl?.type) {

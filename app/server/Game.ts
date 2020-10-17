@@ -15,6 +15,7 @@ import { Glicko2, Player as GlickoPlayer } from 'glicko2';
 import {
   COLOR_NAMES,
   DEFAULT_RATING,
+  ONE_DAY,
   POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS,
   POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
   POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS,
@@ -50,6 +51,7 @@ import { Game as DBGame, User as DBUser } from 'server/db/models';
 import ioServer from 'server/io';
 
 const VARIANTS = values(GameVariantEnum);
+const MAX_RATING_DEVIATION = 350;
 
 export default class Game extends GameHelper {
   static games: Partial<Dictionary<Game>> = {};
@@ -149,8 +151,9 @@ export default class Game extends GameHelper {
   static getNewGlickoRating(player: GlickoPlayer): GlickoRating {
     return {
       r: +player.getRating().toFixed(2),
-      rd: Math.min(350, Math.max(60, +player.getRd().toFixed(2))),
+      rd: Math.min(MAX_RATING_DEVIATION, Math.max(60, +player.getRd().toFixed(2))),
       vol: Math.min(0.1, +player.getVol().toFixed(9)),
+      lg: Date.now(),
     };
   }
 
@@ -638,6 +641,15 @@ export default class Game extends GameHelper {
             const glicko = new Glicko2({ tau: 0.75 });
             const whiteRating = whitePlayer.ratings[variantType]?.[speedType] || DEFAULT_RATING;
             const blackRating = blackPlayer.ratings[variantType]?.[speedType] || DEFAULT_RATING;
+
+            whiteRating.rd = Math.min(
+              MAX_RATING_DEVIATION,
+              whiteRating.rd + Math.floor((Date.now() - whiteRating.lg) / ONE_DAY) * 0.21436,
+            );
+            blackRating.rd = Math.min(
+              MAX_RATING_DEVIATION,
+              blackRating.rd + Math.floor((Date.now() - blackRating.lg) / ONE_DAY) * 0.21436,
+            );
 
             const whiteGlickoPlayer = glicko.makePlayer(
               whiteRating.r, whiteRating.rd, whiteRating.vol,

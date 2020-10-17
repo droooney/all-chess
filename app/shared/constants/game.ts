@@ -12,6 +12,8 @@ import {
   TimeControlEnum,
 } from 'shared/types';
 
+export const ONE_DAY = 24 * 60 * 60 * 1000;
+
 export const SHORT_PIECE_NAMES: EachPieceType<string> = {
   [PieceTypeEnum.KING]: 'K',
   [PieceTypeEnum.AMAZON]: 'A',
@@ -30,7 +32,7 @@ export const POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS = [1, 2, 3, 4, 5, 6, 7, 8, 9,
 
 export const POSSIBLE_TIMER_BASES_IN_MILLISECONDS = POSSIBLE_TIMER_BASES_IN_MINUTES.map((base) => base * 60 * 1000);
 export const POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS = POSSIBLE_TIMER_INCREMENTS_IN_SECONDS.map((base) => base * 1000);
-export const POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS = POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS.map((base) => base * 24 * 60 * 60 * 1000);
+export const POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS = POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS.map((base) => base * ONE_DAY);
 
 export const GAME_VARIANT_NAMES: EachVariant<string> = {
   [GameVariantEnum.CHESS_960]: 'Chess 960',
@@ -212,4 +214,5 @@ export const DEFAULT_RATING: GlickoRating = {
   r: 1500,
   rd: 350,
   vol: 0.06,
+  lg: 0,
 };
