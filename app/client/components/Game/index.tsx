@@ -71,8 +71,6 @@ interface State {
   isDragging: boolean;
 }
 
-const INPUT_ELEMENTS = ['input', 'textarea'];
-
 class Game extends React.Component<Props, State> {
   static defaultProps = {
     useKeyboard: false,
@@ -221,32 +219,8 @@ class Game extends React.Component<Props, State> {
       useKeyboard,
     } = this.props;
 
-    if (!useKeyboard) {
-      return;
-    }
-
-    if (!e.target || !INPUT_ELEMENTS.includes((e.target as HTMLElement).tagName.toLowerCase())) {
-      let preventDefault = true;
-
-      if (e.key === 'ArrowLeft') {
-        game.moveBack();
-      } else if (e.key === 'ArrowRight') {
-        game.moveForward(true, true);
-      } else if (e.key === 'ArrowUp') {
-        game.navigateToMove(-1);
-      } else if (e.key === 'ArrowDown') {
-        game.navigateToMove(game.getUsedMoves().length - 1);
-      } else if (e.key === '1' || e.key === '2') {
-        if (game.boardToShow !== 'all') {
-          this.switchBoard(+e.key - 1);
-        }
-      } else {
-        preventDefault = false;
-      }
-
-      if (preventDefault) {
-        e.preventDefault();
-      }
+    if (useKeyboard) {
+      game.handleKeyPress(e);
     }
   };
 

@@ -19,6 +19,7 @@ interface OwnProps {
   fen?: string;
   moves?: string;
   symbols?: (string[] | null | undefined)[];
+  gameRef?(game: GameHelper): void;
 }
 
 type Props = OwnProps;
@@ -37,23 +38,31 @@ export default class RulesExample extends React.Component<Props> {
   constructor(props: Props) {
     super(props);
 
-    const variantsString = props.variants.length
-      ? props.variants.map((variant) => GAME_VARIANT_PGN_NAMES[variant]).join(' + ')
+    const {
+      id,
+      variants,
+      fen,
+      moves,
+      symbols,
+      gameRef,
+    } = props;
+    const variantsString = variants.length
+      ? variants.map((variant) => GAME_VARIANT_PGN_NAMES[variant]).join(' + ')
       : 'Standard';
 
     const game = this.game = GameHelper.getGameFromPgn(`
-      ${props.fen ? `[FEN "${props.fen}"]` : ''}
+      ${fen ? `[FEN "${fen}"]` : ''}
       [Variant "${variantsString}"]
 
-      ${props.moves || ''}
-    `, props.id);
+      ${moves || ''}
+    `, id);
 
     game.navigateToMove(-1);
 
-    if (props.symbols) {
+    if (symbols) {
       let symbolId = 0;
 
-      props.symbols.forEach((positionSymbols, index) => {
+      symbols.forEach((positionSymbols, index) => {
         if (positionSymbols) {
           game.navigateToMove(index - 1);
 
@@ -94,6 +103,8 @@ export default class RulesExample extends React.Component<Props> {
     game.on('updateGame', () => {
       this.forceUpdate();
     });
+
+    gameRef?.(this.game);
   }
 
   render() {
@@ -104,7 +115,7 @@ export default class RulesExample extends React.Component<Props> {
 
     return (
       <Game
-        className={classNames('game-rules-example', { 'with-moves': !!moves })}
+        className={classNames('rules-example', { 'with-moves': !!moves })}
         game={this.game}
         useKeyboard={false}
         showMovesPanel={!!moves}

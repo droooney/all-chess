@@ -2,12 +2,24 @@ import * as React from 'react';
 
 import { GameVariantEnum } from 'shared/types';
 
+import { Game } from 'client/helpers';
+
 import GameVariantLink from '../../components/GameVariantLink';
 
 import RulesExample from './RulesExample';
 
-export default class Chess960Rules extends React.Component {
+interface OwnProps {
+  gameRef(game: Game): void;
+}
+
+type Props = OwnProps;
+
+export default class Chess960Rules extends React.Component<Props> {
   render() {
+    const {
+      gameRef,
+    } = this.props;
+
     return (
       <React.Fragment>
         <h2 id="overview">
@@ -90,7 +102,7 @@ export default class Chess960Rules extends React.Component {
           <br />
           <br />
 
-          To avoid castling ambiguities, the castling in Chess 960 is performed by first clicking on the king and then on the castling rook.
+          To avoid castling ambiguities, the castling in Chess 960 is performed by moving the king onto the castling rook.
         </p>
 
         <RulesExample
@@ -103,6 +115,7 @@ export default class Chess960Rules extends React.Component {
             ['d1->g1', 'e1->f1:r'],
             ['d8->c8', 'c8->d8:r'],
           ]}
+          gameRef={gameRef}
         />
 
         <RulesExample
@@ -115,6 +128,7 @@ export default class Chess960Rules extends React.Component {
             ['g1->c1', 'c1->d1:r'],
             ['g8', 'h8->f8:r'],
           ]}
+          gameRef={gameRef}
         />
 
         <RulesExample
@@ -127,6 +141,7 @@ export default class Chess960Rules extends React.Component {
             ['f1->c1', 'd1:r'],
             ['f8->g8', 'h8->f8:r'],
           ]}
+          gameRef={gameRef}
         />
 
         <h2 id="combinations">

@@ -4,12 +4,24 @@ import { GAME_VARIANT_NAMES } from 'shared/constants';
 
 import { GameVariantEnum } from 'shared/types';
 
+import { Game } from 'client/helpers';
+
 import GameVariantLink from '../../components/GameVariantLink';
 
 import RulesExample from './RulesExample';
 
-export default class AtomicRules extends React.Component {
+interface OwnProps {
+  gameRef(game: Game): void;
+}
+
+type Props = OwnProps;
+
+export default class AtomicRules extends React.Component<Props> {
   render() {
+    const {
+      gameRef,
+    } = this.props;
+
     return (
       <React.Fragment>
 
@@ -48,6 +60,7 @@ export default class AtomicRules extends React.Component {
             ['b5->c7', 'c7:r', 'c7->b8:r', 'c7->c8:r', 'c7->d8:r'],
             ['e4->d2', 'd2:r', 'd2->c1:r', 'd2->d1:r', 'd2->e1:r'],
           ]}
+          gameRef={gameRef}
         />
 
         <p>
@@ -75,6 +88,7 @@ export default class AtomicRules extends React.Component {
             null,
             ['d5->e6', 'e6:r', 'e6->d7:r', 'e6->f6:r', 'e5:r'],
           ]}
+          gameRef={gameRef}
         />
 
         <h3 id="winning-conditions">

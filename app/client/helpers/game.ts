@@ -83,6 +83,8 @@ interface CircularPoints {
   innerFirst: Point;
 }
 
+const INPUT_ELEMENTS = ['input', 'textarea'];
+
 export class Game extends GameHelper {
   static areSameVariants(variants1: GameVariantEnum[], variants2: GameVariantEnum[]): boolean {
     return (
@@ -605,7 +607,7 @@ export class Game extends GameHelper {
   }
 
   getDrawnSymbols(): DrawnSymbol[] {
-    return this.symbolsByMove[this.currentMoveIndex] = this.symbolsByMove[this.currentMoveIndex] || [];
+    return this.symbolsByMove[this.currentMoveIndex] ||= [];
   }
 
   getHexPoints(square: Square): HexPoints {
@@ -702,6 +704,37 @@ export class Game extends GameHelper {
     return this.darkChessMode && !this.showDarkChessHiddenPieces
       ? this.colorMoves[this.darkChessMode]
       : this.moves;
+  }
+
+  handleKeyPress(e: KeyboardEvent) {
+    if (
+      e.target instanceof HTMLElement
+      && INPUT_ELEMENTS.includes(e.target.tagName.toLowerCase())
+    ) {
+      return;
+    }
+
+    let preventDefault = true;
+
+    if (e.key === 'ArrowLeft') {
+      this.moveBack();
+    } else if (e.key === 'ArrowRight') {
+      this.moveForward(true, true);
+    } else if (e.key === 'ArrowUp') {
+      this.navigateToMove(-1);
+    } else if (e.key === 'ArrowDown') {
+      this.navigateToMove(this.getUsedMoves().length - 1);
+    } else if (e.key === '1' || e.key === '2') {
+      if (this.boardToShow !== 'all') {
+        this.setBoardToShow(+e.key - 1);
+      }
+    } else {
+      preventDefault = false;
+    }
+
+    if (preventDefault) {
+      e.preventDefault();
+    }
   }
 
   isMaterialDiffShown(): boolean {
