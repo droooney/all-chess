@@ -74,7 +74,7 @@ class BenedictRules extends React.PureComponent<Props> {
 
             <RulesExample
               id="2"
-              description="After Qg5 both queens become paralysed and the black queen no longer flips any piece"
+              description="After Qg5 both queens become paralysed and the black queen no longer flips any pieces"
               variants={[GameVariantEnum.BENEDICT_CHESS, GameVariantEnum.MADRASI]}
               fen="rnbqkbnr/pppp1PpP/8/4P2Q/4P3/8/PPPP1PPP/RNB1KBNR b KQkq - 3 2"
               moves="2... Qg5"
@@ -94,7 +94,7 @@ class BenedictRules extends React.PureComponent<Props> {
 
             <RulesExample
               id="2"
-              description="After Qg5 both queens the queen is not patrolled at g5 so it doesn't flip any piece"
+              description="After Qg5 the queen is not patrolled at g5 so it doesn't flip any pieces"
               variants={[GameVariantEnum.BENEDICT_CHESS, GameVariantEnum.PATROL]}
               fen="rnbqkbnr/pppp1PpP/8/4P2Q/4P3/8/PPPP1PPP/RNB1KBNR b KQkq - 3 2"
               moves="2... Qg5"
