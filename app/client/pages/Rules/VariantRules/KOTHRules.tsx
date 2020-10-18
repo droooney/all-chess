@@ -7,10 +7,12 @@ import { Game } from 'client/helpers';
 import GameVariantLinks from 'client/components/GameVariantLinks';
 
 import RulesExample from '../RulesExample';
+import RulesExampleLink from '../RulesExampleLink';
 import Overview from '../Overview';
 import Moves from '../Moves';
 import WinningConditions from '../WinningConditions';
 import Combinations from '../Combinations';
+import Combination from '../Combination';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -40,7 +42,7 @@ class KOTHRules extends React.PureComponent<Props> {
 
         <WinningConditions>
           <p>
-            Everything is the same as in standard chess. Note: the king can't move to the center if it's an illegal move.
+            Additional way to win the game is moving the king to the 4 center squares.
           </p>
 
           <RulesExample
@@ -54,8 +56,22 @@ class KOTHRules extends React.PureComponent<Props> {
         </WinningConditions>
 
         <Combinations>
-          King of the Hill is a pretty neutral variant. It can't be combined with
-          {' '}<GameVariantLinks variants={[GameVariantEnum.ANTICHESS, GameVariantEnum.BENEDICT_CHESS, GameVariantEnum.CIRCULAR_CHESS]} />.
+          <p>
+            King of the Hill is a pretty neutral variant, so it can be combined with almost any variant. Exceptions are
+            {' '}<GameVariantLinks variants={[GameVariantEnum.ANTICHESS, GameVariantEnum.BENEDICT_CHESS, GameVariantEnum.CIRCULAR_CHESS]} />.
+          </p>
+
+          <Combination variant={GameVariantEnum.HEXAGONAL_CHESS}>
+            <p>
+              In King of the Hill + Hexagonal chess there are 7 center squares (see <RulesExampleLink id="2" />)
+            </p>
+
+            <RulesExample
+              id="2"
+              description="Center squares in Hexagonal chess"
+              variants={[GameVariantEnum.KING_OF_THE_HILL, GameVariantEnum.HEXAGONAL_CHESS]}
+            />
+          </Combination>
         </Combinations>
       </React.Fragment>
     );

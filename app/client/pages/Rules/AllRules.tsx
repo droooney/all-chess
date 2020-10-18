@@ -25,30 +25,39 @@ import './index.less';
 type Props = RouteComponentProps<{ gameLink?: string; }>;
 
 export default class AllRules extends React.Component<Props> {
-  render() {
+  getChosenVariant(): GameVariantEnum | undefined {
     const {
-      history,
       match: {
         params: {
           gameLink,
         },
       },
     } = this.props;
-    const gameType = findKey(GAME_VARIANT_LINKS, (link) => link === gameLink) as GameVariantEnum | undefined;
+
+    return findKey(GAME_VARIANT_LINKS, (link) => link === gameLink) as GameVariantEnum | undefined;
+  }
+
+  render() {
+    const {
+      history,
+    } = this.props;
+    const chosenVariant = this.getChosenVariant();
 
     return (
       <div className="route rules-route">
         <div className="desktop-variants">
           {map(GameVariantEnum, (variant) => (
-            <GameVariantLink key={variant} variant={variant} />
+            variant === chosenVariant
+              ? <span key={variant} style={{ fontWeight: 'bold' }}>{GAME_VARIANT_NAMES[variant]}</span>
+              : <GameVariantLink key={variant} variant={variant} />
           ))}
         </div>
 
         <div className="mobile-variants">
           <Select
             displayEmpty
-            value={gameType || ''}
-            renderValue={() => gameType ? GAME_VARIANT_NAMES[gameType] : 'Select variant'}
+            value={chosenVariant || ''}
+            renderValue={() => chosenVariant ? GAME_VARIANT_NAMES[chosenVariant] : 'Select variant'}
             onChange={(e) => history.push(`/rules/${GAME_VARIANT_LINKS[e.target.value as GameVariantEnum]}`)}
           >
             {map(GameVariantEnum, (variant) => (

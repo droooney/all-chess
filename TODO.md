@@ -24,6 +24,7 @@
 - improve rematch system for correspondence
 - improve rematch for 960
 - remove unlimited games
+- table of contents for rules
 
 ### Minor Improvements/Refactor
 

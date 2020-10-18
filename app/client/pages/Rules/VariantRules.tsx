@@ -22,6 +22,10 @@ type Props = RouteComponentProps<{ gameLink: string; }>;
 
 const EXAMPLE_BOARDS_ON_SCREEN_THRESHOLD = 0.9;
 
+// TODO: easy: 3check, retreat, crazy, circe, capablanca
+// TODO: medium: cylinder, circular, anti, patrol, madrasi, hex
+// TODO: hard: alice, two families, dark, absorb, frankfurt, comp
+
 const VARIANT_RULES: Partial<EachVariant<React.ComponentType<{ gameRef(game: Game): void; }>>> = {
   [GameVariantEnum.CHESS_960]: Chess960Rules,
   [GameVariantEnum.ATOMIC]: AtomicRules,
@@ -40,7 +44,7 @@ export default class VariantRules extends React.Component<Props> {
     document.removeEventListener('keydown', this.onKeyDown);
   }
 
-  getVariant(): GameVariantEnum | undefined {
+  getChosenVariant(): GameVariantEnum | undefined {
     const {
       match: {
         params: {
@@ -53,25 +57,25 @@ export default class VariantRules extends React.Component<Props> {
   }
 
   gameRef = (game: Game) => {
-    const gameType = this.getVariant();
+    const chosenVariant = this.getChosenVariant();
 
-    if (gameType) {
-      const variantExamples = this.examples.get(gameType) || new Map<string, Game>();
+    if (chosenVariant) {
+      const variantExamples = this.examples.get(chosenVariant) || new Map<string, Game>();
 
       variantExamples.set(game.id, game);
 
-      this.examples.set(gameType, variantExamples);
+      this.examples.set(chosenVariant, variantExamples);
     }
   };
 
   onKeyDown = (e: KeyboardEvent) => {
-    const variant = this.getVariant();
+    const chosenVariant = this.getChosenVariant();
 
-    if (!variant) {
+    if (!chosenVariant) {
       return;
     }
 
-    const variantExamples = this.examples.get(variant);
+    const variantExamples = this.examples.get(chosenVariant);
 
     if (!variantExamples) {
       return;
@@ -108,16 +112,16 @@ export default class VariantRules extends React.Component<Props> {
   };
 
   render() {
-    const variant = this.getVariant();
+    const chosenVariant = this.getChosenVariant();
 
-    if (!variant) {
+    if (!chosenVariant) {
       return (
         <Redirect to="/rules" />
       );
     }
 
-    const gameName = GAME_VARIANT_NAMES[variant];
-    const Component = VARIANT_RULES[variant] || (
+    const gameName = GAME_VARIANT_NAMES[chosenVariant];
+    const Component = VARIANT_RULES[chosenVariant] || (
       () => (
         <div>
           The rules section for this variant is not ready yet.
