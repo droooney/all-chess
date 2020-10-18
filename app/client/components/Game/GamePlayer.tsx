@@ -147,7 +147,7 @@ export default class GamePlayer extends React.Component<Props, State> {
     const minutes = padStart(`${duration.minutes()}`, 2, '0');
     const seconds = padStart(`${duration.seconds()}`, 2, '0');
 
-    if (time > ONE_HOUR) {
+    if (time >= ONE_HOUR) {
       const hours = padStart(`${duration.hours()}`, 2, '0');
 
       return `${hours}:${minutes}:${seconds}`;

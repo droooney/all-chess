@@ -258,6 +258,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
   // do not call this anywhere except getFilteredPossibleMoves (allowed to call for premoves)
   *getPossibleMoves(piece: RealPiece, mode: GetPossibleMovesMode): Generator<Square> {
     const forMove = mode === GetPossibleMovesMode.FOR_MOVE;
+    const onlyAttacked = mode === GetPossibleMovesMode.ATTACKED;
     const onlyVisible = mode === GetPossibleMovesMode.VISIBLE;
     const onlyPossible = mode === GetPossibleMovesMode.POSSIBLE;
     const onlyPremove = mode === GetPossibleMovesMode.PREMOVES;
@@ -443,35 +444,37 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         }
       }
 
-      for (const incrementX of [1, -1]) {
-        // capture
-        const square = {
-          board,
-          x: this.adjustFileX(pieceX + incrementX),
-          y: this.isHexagonalChess && ((
-            pieceColor === ColorEnum.WHITE
-            && (pieceX - this.middleFileX) * incrementX >= 0
-          ) || (
-            pieceColor === ColorEnum.BLACK
-            && (pieceX - this.middleFileX) * incrementX < 0
-          ))
-            ? rankY - forwardDirection
-            : rankY,
-        };
+      if (onlyAttacked || !this.isBenedictChess) {
+        for (const incrementX of [1, -1]) {
+          // capture
+          const square = {
+            board,
+            x: this.adjustFileX(pieceX + incrementX),
+            y: this.isHexagonalChess && ((
+              pieceColor === ColorEnum.WHITE
+              && (pieceX - this.middleFileX) * incrementX >= 0
+            ) || (
+              pieceColor === ColorEnum.BLACK
+              && (pieceX - this.middleFileX) * incrementX < 0
+            ))
+              ? rankY - forwardDirection
+              : rankY,
+          };
 
-        if (!this.isNullSquare(square)) {
-          const pieceInSquare = this.getBoardPiece(square);
-          const isEnPassant = (
-            !!this.possibleEnPassant
-            && GameMovesUtils.areSquaresEqual(square, this.possibleEnPassant.enPassantSquare)
-          );
+          if (!this.isNullSquare(square)) {
+            const pieceInSquare = this.getBoardPiece(square);
+            const isEnPassant = (
+              !!this.possibleEnPassant
+              && GameMovesUtils.areSquaresEqual(square, this.possibleEnPassant.enPassantSquare)
+            );
 
-          if (
-            (!forMove && !onlyPossible)
-            || (!!pieceInSquare && pieceInSquare.color !== pieceColor)
-            || isEnPassant
-          ) {
-            yield square;
+            if (
+              (!forMove && !onlyPossible)
+              || (!!pieceInSquare && pieceInSquare.color !== pieceColor)
+              || isEnPassant
+            ) {
+              yield square;
+            }
           }
         }
       }
@@ -1139,7 +1142,11 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       });
     }
 
-    if (this.isBenedictChess) {
+    if (
+      this.isBenedictChess
+      && (!this.isMadrasi || !this.isParalysed(piece))
+      && (!this.isPatrol || this.isPatrolledByFriendlyPiece(piece.location as PieceBoardLocation, piece.color))
+    ) {
       this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.ATTACKED).forEach((square) => {
         const boardPiece = this.getBoardPiece(square);
 

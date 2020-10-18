@@ -928,11 +928,10 @@ class Game extends React.Component<Props, State> {
           />
 
           {isDragging && selectedPiece && (
-            <FixedElement>
+            <FixedElement style={{ pointerEvents: 'none' }}>
               <svg
                 ref={this.draggingPieceRef}
                 style={{
-                  pointerEvents: 'none',
                   transform: this.draggingPieceTranslate,
                 }}
               >

@@ -16,6 +16,7 @@ import DocumentTitle from '../../components/DocumentTitle';
 import Chess960Rules from './VariantRules/Chess960Rules';
 import AtomicRules from './VariantRules/AtomicRules';
 import KOTHRules from './VariantRules/KOTHRules';
+import BenedictRules from './VariantRules/BenedictRules';
 
 type Props = RouteComponentProps<{ gameLink: string; }>;
 
@@ -25,6 +26,7 @@ const VARIANT_RULES: Partial<EachVariant<React.ComponentType<{ gameRef(game: Gam
   [GameVariantEnum.CHESS_960]: Chess960Rules,
   [GameVariantEnum.ATOMIC]: AtomicRules,
   [GameVariantEnum.KING_OF_THE_HILL]: KOTHRules,
+  [GameVariantEnum.BENEDICT_CHESS]: BenedictRules,
 };
 
 export default class VariantRules extends React.Component<Props> {

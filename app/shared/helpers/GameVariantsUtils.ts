@@ -217,14 +217,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
       !isBenedictChess
       || (
         !isCrazyhouse
-        // TODO: maybe add support for madrasi + benedict
-        && !isMadrasi
-        // TODO: add support for patrol + benedict
-        && !isPatrol
-        // TODO: add support for dark + benedict
-        && !isDarkChess
-        // TODO: add support for two families + benedict
-        && !isTwoFamilies
         && !isKingOfTheHill
       )
     ));
