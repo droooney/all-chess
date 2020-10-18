@@ -1,14 +1,15 @@
 import * as React from 'react';
 
-import { GAME_VARIANT_NAMES } from 'shared/constants';
-
 import { GameVariantEnum } from 'shared/types';
 
 import { Game } from 'client/helpers';
 
-import GameVariantLink from '../../components/GameVariantLink';
+import GameVariantLinks from 'client/components/GameVariantLinks';
+
+import RulesExampleLink from 'client/pages/Rules/RulesExampleLink';
 
 import RulesExample from './RulesExample';
+import CombinationHeader from './CombinationHeader';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -24,7 +25,6 @@ export default class AtomicRules extends React.Component<Props> {
 
     return (
       <React.Fragment>
-
         <h2 id="overview">
           Overview
         </h2>
@@ -52,7 +52,7 @@ export default class AtomicRules extends React.Component<Props> {
 
         <RulesExample
           id="1"
-          description="Example 1. Explosion in atomic chess"
+          description="Explosion in atomic chess"
           variants={[GameVariantEnum.ATOMIC]}
           fen="rnbqkb1r/pppppppp/8/1N6/4n3/8/PPPPPPPP/R1BQKBNR w KQkq - 4 3"
           moves="3. Nxc7 Nxd2#"
@@ -75,17 +75,17 @@ export default class AtomicRules extends React.Component<Props> {
 
         <p>
           When a pawn is capturing en passant the explosion center is not the captured pawn square, but the capturing pawn destination square
-          {' '}(see <a href="#game-2">example 2</a>).
+          {' '}(see <RulesExampleLink id="2" />).
         </p>
 
         <RulesExample
           id="2"
-          description="Example 2. Capturing en passant"
+          description="Capturing en passant"
           variants={[GameVariantEnum.ATOMIC]}
           fen="r1bqkb1r/p1pnpppp/1p1p1n2/3P4/8/2N2N2/PPPBPPPP/R2QKB1R b KQkq - 0 5"
           moves="5... e5 6. dxe6"
           symbols={[
-            null,
+            [],
             ['d5->e6', 'e6:r', 'e6->d7:r', 'e6->f6:r', 'e5:r'],
           ]}
           gameRef={gameRef}
@@ -96,7 +96,7 @@ export default class AtomicRules extends React.Component<Props> {
         </h3>
 
         <p>
-          A player wins by exploding the opponent's king, not necessarily directly (see <a href="#game-1">example 1</a>).
+          A player wins by exploding the opponent's king, not necessarily directly (see <RulesExampleLink id="1" />).
 
           <br />
           <br />
@@ -110,21 +110,42 @@ export default class AtomicRules extends React.Component<Props> {
 
         <p>
           Though White has more advantage over Black than in standard chess, Atomic chess combines well with some variants. Exceptions are:
-          {' '}<GameVariantLink variant={GameVariantEnum.ALICE_CHESS} />, <GameVariantLink variant={GameVariantEnum.BENEDICT_CHESS} />,
-          {' '}<GameVariantLink variant={GameVariantEnum.DARK_CHESS} />, <GameVariantLink variant={GameVariantEnum.ABSORPTION} />,
-          {' '}<GameVariantLink variant={GameVariantEnum.FRANKFURT} />, <GameVariantLink variant={GameVariantEnum.HEXAGONAL_CHESS} />,
-          {' '}<GameVariantLink variant={GameVariantEnum.THREE_CHECK} />, <GameVariantLink variant={GameVariantEnum.CRAZYHOUSE} />.
+          {' '}<GameVariantLinks variants={[
+            GameVariantEnum.ALICE_CHESS, GameVariantEnum.BENEDICT_CHESS, GameVariantEnum.DARK_CHESS,
+            GameVariantEnum.ABSORPTION, GameVariantEnum.FRANKFURT,  GameVariantEnum.THREE_CHECK,
+            GameVariantEnum.CRAZYHOUSE,
+          ]} />.
         </p>
 
-        <h3 id="combinations-antichess">
-          {GAME_VARIANT_NAMES[GameVariantEnum.ANTICHESS]}
-        </h3>
+        <CombinationHeader variant={GameVariantEnum.ANTICHESS} />
 
         <p>
           In Atomic + Antichess combination the Antichess insufficient material draw rules are used.
           Also there can be a draw if there are no pieces on the board.
         </p>
 
+        <CombinationHeader variant={GameVariantEnum.HEXAGONAL_CHESS} />
+
+        <p>
+          In Atomic + Hexagonal combination the capture explodes 12 squares:
+          6 squares around and 6 closest squares of same color (see <RulesExampleLink id="3" />).
+        </p>
+
+        <RulesExample
+          id="3"
+          description="Explosion in Hexagonal chess"
+          variants={[GameVariantEnum.ATOMIC, GameVariantEnum.HEXAGONAL_CHESS]}
+          fen="b/q1k/2b1n/r2nb1r/ppppppppp/11/5P5/4P1PN3/3P1B1P3/2P2B2P2/1PR1QBKNRP1 w - - 4 3"
+          moves="3. Nxg7"
+          symbols={[
+            [
+              'h4->g7', 'g7:r', 'g7->f8:r', 'g7->g8:r', 'g7->f9:r',
+              'g6:y', 'h6:y', 'f7:y', 'h7:y', 'f8:y', 'g8:y',
+              'h5:y', 'f6:y', 'i6:y', 'e7:y', 'h8:y', 'f9:y',
+            ],
+          ]}
+          gameRef={gameRef}
+        />
       </React.Fragment>
     );
   }

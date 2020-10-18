@@ -18,7 +18,7 @@ interface OwnProps {
 
   fen?: string;
   moves?: string;
-  symbols?: (string[] | null | undefined)[];
+  symbols?: string[][];
   gameRef?(game: GameHelper): void;
 }
 
@@ -63,38 +63,36 @@ export default class RulesExample extends React.Component<Props> {
       let symbolId = 0;
 
       symbols.forEach((positionSymbols, index) => {
-        if (positionSymbols) {
-          game.navigateToMove(index - 1);
+        game.navigateToMove(index - 1);
 
-          positionSymbols.forEach((symbol) => {
-            const match = symbol.match(SYMBOL_REGEX);
+        positionSymbols.forEach((symbol) => {
+          const match = symbol.match(SYMBOL_REGEX);
 
-            if (match) {
-              const [, fromSquareString, toSquareString, colorString] = match;
-              const color = SYMBOL_COLORS[colorString] || DrawnSymbolColor.GREEN;
-              const fromSquare = GameHelper.getSquare(fromSquareString);
+          if (match) {
+            const [, fromSquareString, toSquareString, colorString] = match;
+            const color = SYMBOL_COLORS[colorString] || DrawnSymbolColor.GREEN;
+            const fromSquare = GameHelper.getSquare(fromSquareString);
 
-              if (toSquareString) {
-                game.addOrRemoveSymbol({
-                  type: DrawnSymbolType.ARROW,
-                  id: ++symbolId,
-                  from: fromSquare,
-                  to: GameHelper.getSquare(toSquareString),
-                  color,
-                });
-              } else {
-                game.addOrRemoveSymbol({
-                  type: DrawnSymbolType.CIRCLE,
-                  id: ++symbolId,
-                  square: fromSquare,
-                  color,
-                });
-              }
+            if (toSquareString) {
+              game.addOrRemoveSymbol({
+                type: DrawnSymbolType.ARROW,
+                id: ++symbolId,
+                from: fromSquare,
+                to: GameHelper.getSquare(toSquareString),
+                color,
+              });
             } else {
-              console.error(`Not parsed symbol: ${symbol}`);
+              game.addOrRemoveSymbol({
+                type: DrawnSymbolType.CIRCLE,
+                id: ++symbolId,
+                square: fromSquare,
+                color,
+              });
             }
-          });
-        }
+          } else {
+            console.error(`Not parsed symbol: ${symbol}`);
+          }
+        });
       });
 
       game.navigateToMove(-1);
@@ -109,6 +107,7 @@ export default class RulesExample extends React.Component<Props> {
 
   render() {
     const {
+      id,
       description,
       moves,
     } = this.props;
@@ -121,7 +120,7 @@ export default class RulesExample extends React.Component<Props> {
         showMovesPanel={!!moves}
         contentChildren={
           <div className="description">
-            {description}
+            Example {id}. {description}
           </div>
         }
         movesPanelType="text"

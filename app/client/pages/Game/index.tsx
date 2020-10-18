@@ -112,7 +112,7 @@ class GamePage extends React.PureComponent<Props, State> {
     const gameId = this.getGameId();
     const {
       success,
-      game,
+      game: gameData,
     } = await fetch({
       url: '/api/game/{gameId}',
       method: 'get',
@@ -123,7 +123,7 @@ class GamePage extends React.PureComponent<Props, State> {
       return;
     }
 
-    if (!game) {
+    if (!gameData) {
       // TODO: show "game not found"
 
       history.push('/');
@@ -131,18 +131,21 @@ class GamePage extends React.PureComponent<Props, State> {
       return;
     }
 
-    if (game === 'active') {
+    if (gameData === 'active') {
       this.setupSocket();
     } else {
-      const player = find(game.players, { id: user?.id }) || null;
-
-      this.setState({
-        game: new GameHelper({
-          game,
-          player,
-        }),
+      const player = find(gameData.players, { id: user?.id }) || null;
+      const game = new GameHelper({
+        game: gameData,
         player,
       });
+
+      this.setState({
+        game,
+        player,
+      });
+
+      console.log(game);
     }
 
     this.updateGridLayout();
