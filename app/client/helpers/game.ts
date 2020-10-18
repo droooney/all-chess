@@ -167,8 +167,8 @@ export class Game extends GameHelper {
     updateGame: [],
   };
   sounds = {
-    pieceMove: new Sound('piece-move2'),
-    pieceCapture: new Sound('piece-capture4'),
+    pieceMove: new Sound('pieceMove'),
+    pieceCapture: new Sound('pieceCapture'),
   };
 
   constructor({

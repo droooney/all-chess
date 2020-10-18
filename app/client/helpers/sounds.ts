@@ -1,20 +1,15 @@
 import { Howl } from 'howler';
 
-import { Dictionary } from 'shared/types';
+import mp3MoveSound from 'client/sounds/piece-move2/index.mp3';
+import mp3CaptureSound from 'client/sounds/piece-capture4/index.mp3';
+import oggMoveSound from 'client/sounds/piece-move2/index.ogg';
+import oggCaptureSound from 'client/sounds/piece-capture4/index.ogg';
 
-import { isDefined } from 'client/helpers/common';
+type SoundType = 'pieceMove' | 'pieceCapture';
 
-// @ts-ignore
-import mp3Sounds from '../sounds/*/*.mp3';
-// @ts-ignore
-import oggSounds from '../sounds/*/*.ogg';
-
-type SoundType = 'piece-move' | 'piece-move2' | 'piece-move3' | 'piece-capture' | 'piece-capture2' | 'piece-capture3' | 'piece-capture4';
-
-type Sounds = Partial<Dictionary<{ index: string; }>>;
-
-const volumes: Partial<Record<SoundType, number>> = {
-  'piece-capture': 0.3,
+const sounds: Record<SoundType, [string, ...string[]]> = {
+  pieceMove: [mp3MoveSound, oggMoveSound],
+  pieceCapture: [mp3CaptureSound, oggCaptureSound],
 };
 
 export class Sound {
@@ -27,9 +22,8 @@ export class Sound {
     this.loadPromise = new Promise((resolve) => res = resolve);
 
     this.sound = new Howl({
-      src: ([mp3Sounds, oggSounds] as Sounds[]).map((sounds) => sounds[type]?.index).filter(isDefined),
+      src: sounds[type],
       preload: true,
-      volume: volumes[type] || 1,
       onload: res,
     });
   }

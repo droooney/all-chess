@@ -5,8 +5,8 @@
     "start:dev": "run-p client:watch server:run",
     "start:prod": "run-s client:build server:run",
 
-    "client:watch": "parcel watch parcel-entry.html --cache-dir .parcel-cache --out-dir ./public --public-url /public",
-    "client:build": "parcel build parcel-entry.html --cache-dir .parcel-cache --out-dir ./public --public-url /public",
+    "client:watch": "parcel watch parcel-entry.html --cache-dir .parcel-cache --dist-dir ./public --public-url /public",
+    "client:build": "parcel build parcel-entry.html --cache-dir .parcel-cache --dist-dir ./public --public-url /public",
 
     "server:run": "npm run ts:run app/server/index.ts",
 
@@ -80,8 +80,10 @@
   },
   "devDependencies": {
     "@babel/core": "^7.10.5",
+    "@babel/plugin-proposal-logical-assignment-operators": "^7.12.1",
     "@babel/preset-env": "^7.10.4",
     "@babel/preset-react": "^7.10.4",
+    "@babel/preset-typescript": "^7.12.1",
     "@types/autoprefixer": "^6.7.3",
     "@types/bcryptjs": "^2.4.2",
     "@types/classnames": "^2.2.10",
@@ -117,7 +119,7 @@
     "eslint-plugin-typescript": "^0.12.0",
     "less": "^3.12.2",
     "npm-run-all": "^4.1.5",
-    "parcel-bundler": "^1.12.4",
+    "parcel": "^2.0.0-beta.1",
     "sequelize-cli": "^6.2.0",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^4.0.3"
