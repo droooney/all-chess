@@ -7,18 +7,25 @@ import {
   GAME_VARIANT_LINKS,
 } from 'shared/constants';
 
-import { GameVariantEnum } from 'shared/types';
+import { EachVariant, GameVariantEnum } from 'shared/types';
 
 import { Game } from 'client/helpers';
 
 import DocumentTitle from '../../components/DocumentTitle';
 
-import Chess960Rules from './Chess960';
-import AtomicRules from './Atomic';
+import Chess960Rules from './VariantRules/Chess960Rules';
+import AtomicRules from './VariantRules/AtomicRules';
+import KOTHRules from './VariantRules/KOTHRules';
 
 type Props = RouteComponentProps<{ gameLink: string; }>;
 
 const EXAMPLE_BOARDS_ON_SCREEN_THRESHOLD = 0.9;
+
+const VARIANT_RULES: Partial<EachVariant<React.ComponentType<{ gameRef(game: Game): void; }>>> = {
+  [GameVariantEnum.CHESS_960]: Chess960Rules,
+  [GameVariantEnum.ATOMIC]: AtomicRules,
+  [GameVariantEnum.KING_OF_THE_HILL]: KOTHRules,
+};
 
 export default class VariantRules extends React.Component<Props> {
   examples: Map<GameVariantEnum, Map<string, Game>> = new Map();
@@ -108,29 +115,13 @@ export default class VariantRules extends React.Component<Props> {
     }
 
     const gameName = GAME_VARIANT_NAMES[variant];
-    let Component: React.ComponentType<{ gameRef(game: Game): void; }>;
-
-    switch (variant) {
-      case GameVariantEnum.CHESS_960: {
-        Component = Chess960Rules;
-
-        break;
-      }
-
-      case GameVariantEnum.ATOMIC: {
-        Component = AtomicRules;
-
-        break;
-      }
-
-      default: {
-        Component = () => (
-          <div>
-            The rules section for this variant is not ready yet.
-          </div>
-        );
-      }
-    }
+    const Component = VARIANT_RULES[variant] || (
+      () => (
+        <div>
+          The rules section for this variant is not ready yet.
+        </div>
+      )
+    );
 
     return (
       <React.Fragment>

@@ -22,6 +22,7 @@
 - start drag on touchmove/mousemove
 - finish rules
 - improve rematch system for correspondence
+- improve rematch for 960
 - remove unlimited games
 
 ### Minor Improvements/Refactor
