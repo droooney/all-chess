@@ -18,12 +18,13 @@ import AtomicRules from './VariantRules/AtomicRules';
 import KOTHRules from './VariantRules/KOTHRules';
 import BenedictRules from './VariantRules/BenedictRules';
 import ThreeCheckRules from './VariantRules/ThreeCheckRules';
+import RetreatRules from './VariantRules/RetreatRules';
 
 type Props = RouteComponentProps<{ gameLink: string; }>;
 
 const EXAMPLE_BOARDS_ON_SCREEN_THRESHOLD = 0.9;
 
-// TODO: easy: retreat, crazy, circe, capablanca
+// TODO: easy: crazy, circe, capablanca
 // TODO: medium: cylinder, circular, anti, patrol, madrasi, hex
 // TODO: hard: alice, two families, dark, absorb, frankfurt, comp
 
@@ -33,6 +34,7 @@ const VARIANT_RULES: Partial<EachVariant<React.ComponentType<{ gameRef(game: Gam
   [GameVariantEnum.KING_OF_THE_HILL]: KOTHRules,
   [GameVariantEnum.BENEDICT_CHESS]: BenedictRules,
   [GameVariantEnum.THREE_CHECK]: ThreeCheckRules,
+  [GameVariantEnum.RETREAT_CHESS]: RetreatRules,
 };
 
 export default class VariantRules extends React.Component<Props> {
