@@ -11,7 +11,7 @@ interface OwnProps {
 
 type Props = OwnProps;
 
-class Combinations extends React.PureComponent<Props> {
+class Combination extends React.PureComponent<Props> {
   render() {
     const {
       variant,
@@ -30,4 +30,4 @@ class Combinations extends React.PureComponent<Props> {
   }
 }
 
-export default Combinations;
+export default Combination;

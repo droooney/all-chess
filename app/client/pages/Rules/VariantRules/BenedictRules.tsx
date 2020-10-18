@@ -12,6 +12,7 @@ import Overview from '../Overview';
 import Moves from '../Moves';
 import Combinations from '../Combinations';
 import Combination from '../Combination';
+import SpecialRules from '../SpecialRules';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -54,6 +55,12 @@ class BenedictRules extends React.PureComponent<Props> {
           />
         </Moves>
 
+        <SpecialRules>
+          <p>
+            Pawn moves (if it's not promotion) do not reset 50-move rule, as they are indirectly revertable.
+          </p>
+        </SpecialRules>
+
         <Combinations>
           <p>
             Benedict chess can't be combined with any variant that involves special rules for captures. This includes
@@ -62,7 +69,7 @@ class BenedictRules extends React.PureComponent<Props> {
               GameVariantEnum.CIRCE, GameVariantEnum.COMPENSATION_CHESS, GameVariantEnum.CRAZYHOUSE,
               GameVariantEnum.FRANKFURT,
             ]} />. Additionally it can't be combined with <GameVariantLinks variants={[
-              GameVariantEnum.KING_OF_THE_HILL, GameVariantEnum.THREE_CHECK, GameVariantEnum.HEXAGONAL_CHESS,
+              GameVariantEnum.THREE_CHECK, GameVariantEnum.HEXAGONAL_CHESS,
             ]} />.
           </p>
 

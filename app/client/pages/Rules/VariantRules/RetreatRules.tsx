@@ -8,6 +8,7 @@ import RulesExample from '../RulesExample';
 import Combinations from '../Combinations';
 import Overview from '../Overview';
 import Moves from '../Moves';
+import SpecialRules from '../SpecialRules';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -46,6 +47,12 @@ class RetreatRules extends React.PureComponent<Props> {
             gameRef={gameRef}
           />
         </Moves>
+
+        <SpecialRules>
+          <p>
+            Pawn moves (if it's not promotion) do not reset 50-move rule, as they are revertable.
+          </p>
+        </SpecialRules>
 
         <Combinations>
           <p>

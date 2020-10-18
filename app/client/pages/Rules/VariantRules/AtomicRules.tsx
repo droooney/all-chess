@@ -13,6 +13,7 @@ import Combination from '../Combination';
 import Overview from '../Overview';
 import Moves from '../Moves';
 import WinningConditions from '../WinningConditions';
+import CombinationLinkSection from '../CombinationLinkSection';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -142,6 +143,11 @@ export default class AtomicRules extends React.Component<Props> {
               gameRef={gameRef}
             />
           </Combination>
+
+          <CombinationLinkSection
+            from={GameVariantEnum.ATOMIC}
+            to={GameVariantEnum.CIRCE}
+          />
         </Combinations>
       </React.Fragment>
     );

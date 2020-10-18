@@ -58,7 +58,7 @@ class KOTHRules extends React.PureComponent<Props> {
         <Combinations>
           <p>
             King of the Hill is a pretty neutral variant, so it can be combined with almost any variant. Exceptions are
-            {' '}<GameVariantLinks variants={[GameVariantEnum.ANTICHESS, GameVariantEnum.BENEDICT_CHESS, GameVariantEnum.CIRCULAR_CHESS]} />.
+            {' '}<GameVariantLinks variants={[GameVariantEnum.ANTICHESS, GameVariantEnum.CIRCULAR_CHESS]} />.
           </p>
 
           <Combination variant={GameVariantEnum.HEXAGONAL_CHESS}>

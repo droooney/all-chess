@@ -19,6 +19,7 @@ import KOTHRules from './VariantRules/KOTHRules';
 import BenedictRules from './VariantRules/BenedictRules';
 import ThreeCheckRules from './VariantRules/ThreeCheckRules';
 import RetreatRules from './VariantRules/RetreatRules';
+import CirceRules from './VariantRules/CirceRules';
 
 type Props = RouteComponentProps<{ gameLink: string; }>;
 
@@ -35,6 +36,7 @@ const VARIANT_RULES: Partial<EachVariant<React.ComponentType<{ gameRef(game: Gam
   [GameVariantEnum.BENEDICT_CHESS]: BenedictRules,
   [GameVariantEnum.THREE_CHECK]: ThreeCheckRules,
   [GameVariantEnum.RETREAT_CHESS]: RetreatRules,
+  [GameVariantEnum.CIRCE]: CirceRules,
 };
 
 export default class VariantRules extends React.Component<Props> {

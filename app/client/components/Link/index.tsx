@@ -3,6 +3,7 @@ import { Link as RouterLink, LinkProps } from 'react-router-dom';
 import { LocationDescriptorObject } from 'history';
 
 interface OwnProps extends LinkProps {
+  hashLink?: boolean;
   to: string | LocationDescriptorObject<any>;
 }
 
@@ -24,6 +25,7 @@ export default class Link extends React.Component<Props> {
   render() {
     const {
       to,
+      hashLink,
       ...props
     } = this.props;
 
@@ -37,7 +39,7 @@ export default class Link extends React.Component<Props> {
               : to
           ),
           state: {
-            resetScroll: true,
+            ...(hashLink ? { hashLink: true } : { resetScroll: true }),
             ...(typeof to === 'object' && to.state ? to.state : {}),
           },
         }}

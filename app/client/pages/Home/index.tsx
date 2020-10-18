@@ -7,6 +7,7 @@ import map from 'lodash/map';
 import omit from 'lodash/omit';
 
 import {
+  GAME_VARIANT_SHORT_NAMES,
   ONE_DAY,
   COLOR_NAMES,
   SPEED_TYPE_NAMES,
@@ -38,7 +39,6 @@ import { changeSettings } from 'client/actions';
 import Button from '../../components/Button';
 import Checkbox from '../../components/Checkbox';
 import DocumentTitle from '../../components/DocumentTitle';
-import GameVariantLink from '../../components/GameVariantLink';
 import GameVariantSelect from '../../components/GameVariantSelect';
 import Modal from '../../components/Modal';
 import Select from '../../components/Select';
@@ -329,16 +329,15 @@ class Games extends React.Component<Props, State> {
                     {rated ? 'Rated' : 'Unrated'} {SPEED_TYPE_NAMES[Game.getSpeedType(timeControl)]}
                     {' - '}{Game.getTimeControlString(timeControl)}
                   </td>
-                  <td className="variants">{variants.length ? variants.map((variant, ix) => (
-                    <React.Fragment key={variant}>
-                      {' '}
-                      <GameVariantLink
-                        variant={variant}
-                        className="variant"
-                      />
-                      {ix === variants.length - 1 ? '' : ','}
-                    </React.Fragment>
-                  )) : 'Standard'}</td>
+                  <td className="variants">
+                    {variants.length ? variants.map((variant, index) => (
+                      <React.Fragment key={variant}>
+                        {index !== 0 && ' + '}
+
+                        {GAME_VARIANT_SHORT_NAMES[variant]}
+                      </React.Fragment>
+                    )) : 'Standard'}
+                  </td>
                 </tr>
               );
             })}

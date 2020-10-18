@@ -7,10 +7,10 @@ import {
 } from 'react-router-dom';
 import omit from 'lodash/omit';
 
-type Props = RouteProps & RouteComponentProps<any, any, { resetScroll?: boolean; } | undefined>;
+type Props = RouteProps & RouteComponentProps<any, any, { resetScroll?: boolean; hashLink?: boolean; } | undefined>;
 
 class Route extends React.Component<Props> {
-  componentDidUpdate() {
+  componentDidUpdate(prevProps: Props) {
     const {
       history,
       location: {
@@ -19,12 +19,23 @@ class Route extends React.Component<Props> {
       },
     } = this.props;
 
-    if (state && state.resetScroll) {
+    if (state?.resetScroll && !prevProps.location.state?.resetScroll) {
       window.scrollTo(0, 0);
       history.replace({
         ...location,
         state: omit(state, 'resetScroll'),
       });
+    } else if (state?.hashLink && !prevProps.location.state?.hashLink) {
+      if (location.hash) {
+        const element = document.getElementById(location.hash.slice(1));
+
+        element?.scrollIntoView();
+
+        history.replace({
+          ...location,
+          state: omit(state, 'hashLink'),
+        });
+      }
     }
   }
 

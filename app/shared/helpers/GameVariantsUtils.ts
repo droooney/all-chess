@@ -165,6 +165,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
       || (
         !isCrazyhouse
         && !isAtomic
+        // TODO: add support for absorb + circe
         && !isCirce
         && !isMadrasi
         && !isFrankfurt
@@ -177,6 +178,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
         // TODO: add support for frankfurt + crazyhouse
         !isCrazyhouse
         && !isAtomic
+        // TODO: add support for frankfurt + circe
         && !isCirce
         && !isBenedictChess
       )
@@ -217,7 +219,6 @@ export default class GameVariantsUtils extends GameCommonUtils {
       !isBenedictChess
       || (
         !isCrazyhouse
-        && !isKingOfTheHill
       )
     ));
   }
