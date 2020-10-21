@@ -511,7 +511,7 @@ export default class Game extends GameHelper {
             player,
             game: {
               ...this.toJSON(),
-              moves: this.colorMoves[player!.color],
+              moves: this.colorMoves[player!.color].map((move) => this.prepareDarkChessMoveForClient(move)),
             },
           });
         } else {
@@ -777,7 +777,7 @@ export default class Game extends GameHelper {
 
         if (socketPlayer) {
           socket.emit('moveMade', {
-            move: last(this.colorMoves[socketPlayer.color])!,
+            move: this.prepareDarkChessMoveForClient(last(this.colorMoves[socketPlayer.color])!),
             moveIndex: this.moves.length - 1,
             lastMoveTimestamp: this.lastMoveTimestamp,
           });

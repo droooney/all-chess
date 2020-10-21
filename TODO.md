@@ -39,6 +39,7 @@
 - show piece worth for comp chess
 - improve check display in 3check
 - optimize fetching players for correspondence (id: in ids)
+- remove prepareDarkChessMoveForClient
 
 ### Bugs/Important Features or Improvements
 

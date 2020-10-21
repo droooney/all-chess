@@ -3,6 +3,7 @@ import last from 'lodash/last';
 
 import {
   ColorEnum,
+  DarkChessMove,
   DarkChessRevertableMove,
   DarkChessVisiblePiece,
   Dictionary,
@@ -40,6 +41,13 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         && visibleSquares.some(GameDarkChessUtils.equalToSquare(piece.location))
       )
     ));
+  }
+
+  prepareDarkChessMoveForClient(move: DarkChessMove): DarkChessMove {
+    return {
+      ...move,
+      pieces: move.pieces.map((piece) => ({ ...piece, realId: piece.id })),
+    };
   }
 
   registerAnyMove(move: Move, constructMoveNotation: boolean) {
@@ -172,7 +180,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         to: toLocationVisible || isCapture ? move.to : null,
         notation,
         isCapture,
-        pieces: newPieces.map((piece) => ({ ...piece, realId: piece.id })),
+        pieces: newPieces,
         prevPiecesWorth: this.isFrankfurt || this.isAbsorption || this.isAtomic || this.isCirce
           ? { [ColorEnum.WHITE]: 0, [ColorEnum.BLACK]: 0 }
           : registeredMove.prevPiecesWorth,

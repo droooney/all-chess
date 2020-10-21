@@ -428,7 +428,9 @@ class Games extends React.Component<Props, State> {
                         ))}
                       </Select>
 
-                      {' '}{timeControl.type === TimeControlEnum.TIMER ? 'min' : 'days'}
+                      <span>
+                        {' '}{timeControl.type === TimeControlEnum.TIMER ? 'min' : 'days'}
+                      </span>
 
                       {timeControl?.type === TimeControlEnum.TIMER && (
                         <React.Fragment>
@@ -446,7 +448,9 @@ class Games extends React.Component<Props, State> {
                             ))}
                           </Select>
 
-                          {' sec'}
+                          <span>
+                            {' sec'}
+                          </span>
                         </React.Fragment>
                       )}
                     </td>
