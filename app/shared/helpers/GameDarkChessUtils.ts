@@ -181,9 +181,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         notation,
         isCapture,
         pieces: newPieces,
-        prevPiecesWorth: this.isFrankfurt || this.isAbsorption || this.isAtomic || this.isCirce
-          ? { [ColorEnum.WHITE]: 0, [ColorEnum.BLACK]: 0 }
-          : registeredMove.prevPiecesWorth,
+        prevPiecesWorth: { [ColorEnum.WHITE]: 0, [ColorEnum.BLACK]: 0 },
         timeBeforeMove: registeredMove.timeBeforeMove,
         revertMove() {},
       });
