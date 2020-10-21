@@ -334,7 +334,7 @@ export interface DarkChessMove {
   promotion?: PieceTypeEnum;
   duration: number;
   notation: string;
-  pieces: readonly Piece[];
+  pieces: readonly DarkChessVisiblePiece[];
   isCapture: boolean;
   prevPiecesWorth: EachColor<number>;
   timeBeforeMove: EachColor<number | null>;

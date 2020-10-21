@@ -259,6 +259,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
   *getPossibleMoves(piece: RealPiece, mode: GetPossibleMovesMode): Generator<Square> {
     const forMove = mode === GetPossibleMovesMode.FOR_MOVE;
     const onlyAttacked = mode === GetPossibleMovesMode.ATTACKED;
+    const onlyControlled = mode === GetPossibleMovesMode.CONTROLLED;
     const onlyVisible = mode === GetPossibleMovesMode.VISIBLE;
     const onlyPossible = mode === GetPossibleMovesMode.POSSIBLE;
     const onlyPremove = mode === GetPossibleMovesMode.PREMOVES;
@@ -444,7 +445,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         }
       }
 
-      if (onlyAttacked || !this.isBenedictChess) {
+      if (onlyAttacked || onlyControlled || !this.isBenedictChess) {
         for (const incrementX of [1, -1]) {
           // capture
           const square = {
@@ -1142,11 +1143,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       });
     }
 
-    if (
-      this.isBenedictChess
-      && (!this.isMadrasi || !this.isParalysed(piece))
-      && (!this.isPatrol || this.isPatrolledByFriendlyPiece(piece.location as PieceBoardLocation, piece.color))
-    ) {
+    if (this.isBenedictChess) {
       this.getFilteredPossibleMoves(piece, GetPossibleMovesMode.ATTACKED).forEach((square) => {
         const boardPiece = this.getBoardPiece(square);
 

@@ -1,6 +1,5 @@
 import forEach from 'lodash/forEach';
 import last from 'lodash/last';
-import omit from 'lodash/omit';
 
 import {
   ColorEnum,
@@ -21,14 +20,16 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: [],
   };
-  visiblePieces: EachColor<readonly DarkChessVisiblePiece[]> = {
-    [ColorEnum.WHITE]: [],
-    [ColorEnum.BLACK]: [],
-  };
   startingVisiblePieces: EachColor<readonly DarkChessVisiblePiece[]> = {
     [ColorEnum.WHITE]: [],
     [ColorEnum.BLACK]: [],
   };
+
+  getMoveVisiblePieces(moveIndex: number, color: ColorEnum): readonly DarkChessVisiblePiece[] {
+    return moveIndex === -1
+      ? this.startingVisiblePieces[color]
+      : this.colorMoves[color][moveIndex]?.pieces || [];
+  }
 
   getVisiblePieces(forColor: ColorEnum): Piece[] {
     const visibleSquares = this.getVisibleSquares(forColor);
@@ -72,11 +73,11 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
 
     forEach(ColorEnum, (color) => {
       const isOwnMove = color === piece.color;
-      const oldVisiblePieces = this.visiblePieces[color];
+      const oldVisiblePieces = this.getMoveVisiblePieces(this.moves.length - 2, color);
       const newVisiblePieces = this.getVisiblePieces(color);
       const visibleSquares = this.getVisibleSquares(color);
 
-      const newPieces = newVisiblePieces.map((piece) => {
+      const newPieces: DarkChessVisiblePiece[] = newVisiblePieces.map((piece) => {
         const isOwnPiece = piece.color === color;
         const oldPiece = oldVisiblePieces.find(({ realId }) => realId === piece.id);
         const prevPieceLocation = prevPieceLocations[this.pieces.findIndex(({ id }) => id === piece.id)];
@@ -165,22 +166,18 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         notation = '?';
       }
 
-      this.visiblePieces[color] = newPieces;
-
       this.colorMoves[color].push({
         ...move,
         from: fromLocationVisible ? move.from : null,
         to: toLocationVisible || isCapture ? move.to : null,
         notation,
         isCapture,
-        pieces: newPieces.map((piece) => omit(piece, 'realId')),
+        pieces: newPieces.map((piece) => ({ ...piece, realId: piece.id })),
         prevPiecesWorth: this.isFrankfurt || this.isAbsorption || this.isAtomic || this.isCirce
           ? { [ColorEnum.WHITE]: 0, [ColorEnum.BLACK]: 0 }
           : registeredMove.prevPiecesWorth,
         timeBeforeMove: registeredMove.timeBeforeMove,
-        revertMove: () => {
-          this.visiblePieces[color] = oldVisiblePieces;
-        },
+        revertMove() {},
       });
     });
   }
@@ -190,7 +187,7 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
 
     if (this.isDarkChess) {
       forEach(ColorEnum, (color) => {
-        this.visiblePieces[color] = this.startingVisiblePieces[color] = this.getVisiblePieces(color).map((piece) => ({
+        this.startingVisiblePieces[color] = this.getVisiblePieces(color).map((piece) => ({
           ...piece,
           realId: piece.id,
         }));

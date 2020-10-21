@@ -101,7 +101,7 @@ class Register extends React.Component<{}, State> {
                 value={this.state.login}
                 inputProps={{
                   ref: this.loginInputRef,
-                  pattern: '[a-z0-9-_]{1,20}',
+                  pattern: '[A-Za-z0-9-_]{1,20}',
                 }}
                 onChange={(e) => this.setState({ login: e.currentTarget.value, loginChanged: true })}
               />

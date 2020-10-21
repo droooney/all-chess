@@ -932,7 +932,7 @@ export default class Game extends GameHelper {
         'rated', 'timeControl', 'pgnTags', 'drawOffer', 'rematchOffer', 'rematchAllowed',
         'takebackRequest', 'lastMoveTimestamp', 'moves', 'chat', 'isLive',
       ]),
-      startingData: null,
+      startingData: this.startingFen ? this.startingData : null,
     };
   }
 
