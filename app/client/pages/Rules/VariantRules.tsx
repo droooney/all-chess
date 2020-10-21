@@ -20,13 +20,15 @@ import BenedictRules from './VariantRules/BenedictRules';
 import ThreeCheckRules from './VariantRules/ThreeCheckRules';
 import RetreatRules from './VariantRules/RetreatRules';
 import CirceRules from './VariantRules/CirceRules';
+import CapablancaRules from './VariantRules/CapablancaRules';
+import AntichessRules from './VariantRules/AntichessRules';
 
 type Props = RouteComponentProps<{ gameLink: string; }>;
 
 const EXAMPLE_BOARDS_ON_SCREEN_THRESHOLD = 0.9;
 
-// TODO: easy: crazy, circe, capablanca
-// TODO: medium: cylinder, circular, anti, patrol, madrasi, hex
+// TODO: easy: crazy
+// TODO: medium: cylinder, circular, patrol, madrasi, hex
 // TODO: hard: alice, two families, dark, absorb, frankfurt, comp
 
 const VARIANT_RULES: Partial<EachVariant<React.ComponentType<{ gameRef(game: Game): void; }>>> = {
@@ -37,6 +39,8 @@ const VARIANT_RULES: Partial<EachVariant<React.ComponentType<{ gameRef(game: Gam
   [GameVariantEnum.THREE_CHECK]: ThreeCheckRules,
   [GameVariantEnum.RETREAT_CHESS]: RetreatRules,
   [GameVariantEnum.CIRCE]: CirceRules,
+  [GameVariantEnum.CAPABLANCA]: CapablancaRules,
+  [GameVariantEnum.ANTICHESS]: AntichessRules,
 };
 
 export default class VariantRules extends React.Component<Props> {

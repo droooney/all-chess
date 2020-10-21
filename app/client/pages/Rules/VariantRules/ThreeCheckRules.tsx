@@ -8,7 +8,7 @@ import GameVariantLinks from 'client/components/GameVariantLinks';
 
 import RulesExample from '../RulesExample';
 import Overview from '../Overview';
-import WinningConditions from '../WinningConditions';
+import GameEnd from '../GameEnd';
 import Combinations from '../Combinations';
 
 interface OwnProps {
@@ -31,9 +31,9 @@ class ThreeCheckRules extends React.PureComponent<Props> {
           </p>
         </Overview>
 
-        <WinningConditions>
+        <GameEnd>
           <p>
-            Additional way to win the game is making 3 checks.
+            Additional way to win the game is making 3 checks throughout the whole game.
           </p>
 
           <RulesExample
@@ -44,7 +44,7 @@ class ThreeCheckRules extends React.PureComponent<Props> {
             moves="3. Bxf7+ Kxf7 4. Qh5+ g6 5. Qxg6#"
             gameRef={gameRef}
           />
-        </WinningConditions>
+        </GameEnd>
 
         <Combinations>
           <p>
@@ -52,7 +52,7 @@ class ThreeCheckRules extends React.PureComponent<Props> {
             {' '}<GameVariantLinks variants={[
               GameVariantEnum.DARK_CHESS, GameVariantEnum.ATOMIC,
               GameVariantEnum.BENEDICT_CHESS, GameVariantEnum.ANTICHESS,
-            ]} />
+            ]} />.
           </p>
         </Combinations>
       </React.Fragment>

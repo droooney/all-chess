@@ -48,8 +48,6 @@ games.on('connection', (socket) => {
     }
   });
 
-  socket.emit('challengeList', challenges);
-
   socket.on('createChallenge', async (settings) => {
     const user: User | undefined = socket.request.session?.user;
 
@@ -116,4 +114,6 @@ games.on('connection', (socket) => {
 
     games.emit('challengesCanceled', [challengeId]);
   });
+
+  socket.emit('challengeList', challenges);
 });

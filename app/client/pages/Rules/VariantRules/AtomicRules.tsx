@@ -12,7 +12,7 @@ import Combinations from '../Combinations';
 import Combination from '../Combination';
 import Overview from '../Overview';
 import Moves from '../Moves';
-import WinningConditions from '../WinningConditions';
+import GameEnd from '../GameEnd';
 import CombinationLinkSection from '../CombinationLinkSection';
 
 interface OwnProps {
@@ -93,7 +93,7 @@ export default class AtomicRules extends React.Component<Props> {
           />
         </section>
 
-        <WinningConditions>
+        <GameEnd>
           <p>
             A player wins by exploding the opponent's king, not necessarily directly (see <RulesExampleLink id="1" />).
 
@@ -102,7 +102,7 @@ export default class AtomicRules extends React.Component<Props> {
 
             Also because king may move into check there is only one insufficient material draw condition: king(s) vs king(s).
           </p>
-        </WinningConditions>
+        </GameEnd>
 
         <Combinations>
           <p>
@@ -114,12 +114,10 @@ export default class AtomicRules extends React.Component<Props> {
             ]} />.
           </p>
 
-          <Combination variant={GameVariantEnum.ANTICHESS}>
-            <p>
-              In Atomic + Antichess combination the Antichess insufficient material draw rules are used.
-              Also there can be a draw if there are no pieces on the board.
-            </p>
-          </Combination>
+          <CombinationLinkSection
+            from={GameVariantEnum.ATOMIC}
+            to={GameVariantEnum.ANTICHESS}
+          />
 
           <Combination variant={GameVariantEnum.HEXAGONAL_CHESS}>
             <p>

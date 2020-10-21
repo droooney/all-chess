@@ -50,7 +50,7 @@ class CirceRules extends React.PureComponent<Props> {
             - if a pawn was captured - the starting pawn square on the file it was captured on (see <RulesExampleLink id="3" />)
             <br />
             - in <GameVariantLink variant={GameVariantEnum.CAPABLANCA} /> if an empress/cardinal was captured -
-            {' '} the piece initial square (see <RulesExampleLink id="4" />)
+            {' '}the piece initial square (see <RulesExampleLink id="4" />)
           </p>
 
           <RulesExample

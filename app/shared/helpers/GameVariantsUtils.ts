@@ -153,6 +153,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
         !isCrazyhouse
         && !isCirce
         && !isPatrol
+        // TODO: add support for anti + madrasi
         && !isMadrasi
         && !isThreeCheck
         && !isCompensationChess

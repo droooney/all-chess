@@ -10,7 +10,7 @@ import RulesExample from '../RulesExample';
 import RulesExampleLink from '../RulesExampleLink';
 import Overview from '../Overview';
 import Moves from '../Moves';
-import WinningConditions from '../WinningConditions';
+import GameEnd from '../GameEnd';
 import Combinations from '../Combinations';
 import Combination from '../Combination';
 
@@ -40,7 +40,7 @@ class KOTHRules extends React.PureComponent<Props> {
           </p>
         </Moves>
 
-        <WinningConditions>
+        <GameEnd>
           <p>
             Additional way to win the game is moving the king to the 4 center squares.
           </p>
@@ -53,7 +53,7 @@ class KOTHRules extends React.PureComponent<Props> {
             moves="28. Ke4#"
             gameRef={gameRef}
           />
-        </WinningConditions>
+        </GameEnd>
 
         <Combinations>
           <p>

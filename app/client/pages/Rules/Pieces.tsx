@@ -6,7 +6,7 @@ interface OwnProps {
 
 type Props = OwnProps;
 
-class WinningConditions extends React.PureComponent<Props> {
+class GameEnd extends React.PureComponent<Props> {
   render() {
     const {
       children,
@@ -14,8 +14,8 @@ class WinningConditions extends React.PureComponent<Props> {
 
     return (
       <section>
-        <h2 id="winning-conditions">
-          Winning conditions
+        <h2 id="pieces">
+          Pieces
         </h2>
 
         {children}
@@ -24,4 +24,4 @@ class WinningConditions extends React.PureComponent<Props> {
   }
 }
 
-export default WinningConditions;
+export default GameEnd;

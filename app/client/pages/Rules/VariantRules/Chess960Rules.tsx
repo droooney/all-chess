@@ -11,6 +11,7 @@ import RulesExampleLink from '../RulesExampleLink';
 import RulesExample from '../RulesExample';
 import Overview from '../Overview';
 import Combinations from '../Combinations';
+import Setup from '../Setup';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -32,11 +33,7 @@ export default class Chess960Rules extends React.Component<Props> {
           </p>
         </Overview>
 
-        <section>
-          <h2 id="setup">
-            Setup
-          </h2>
-
+        <Setup>
           <p>
             White's pieces are placed according to the following rules:
 
@@ -57,7 +54,7 @@ export default class Chess960Rules extends React.Component<Props> {
             variants={[GameVariantEnum.CHESS_960]}
             fen="nnbrqbkr/pppppppp/8/8/8/8/PPPPPPPP/NNBRQBKR w KQkq - 0 1"
           />
-        </section>
+        </Setup>
 
         <section>
           <h2 id="castling">
