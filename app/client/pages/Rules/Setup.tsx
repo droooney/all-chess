@@ -6,7 +6,7 @@ interface OwnProps {
 
 type Props = OwnProps;
 
-class Overview extends React.PureComponent<Props> {
+class Setup extends React.PureComponent<Props> {
   render() {
     const {
       children,
@@ -24,4 +24,4 @@ class Overview extends React.PureComponent<Props> {
   }
 }
 
-export default Overview;
+export default Setup;

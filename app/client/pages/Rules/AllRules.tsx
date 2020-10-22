@@ -8,6 +8,7 @@ import {
   GAME_VARIANT_NAMES,
   GAME_VARIANT_LINKS,
 } from 'shared/constants';
+import { ALL_VARIANTS } from 'client/constants';
 
 import {
   GameVariantEnum,
@@ -46,7 +47,7 @@ export default class AllRules extends React.Component<Props> {
     return (
       <div className="route rules-route">
         <div className="desktop-variants">
-          {map(GameVariantEnum, (variant) => (
+          {ALL_VARIANTS.map((variant) => (
             variant === chosenVariant
               ? <span key={variant} style={{ fontWeight: 'bold' }}>{GAME_VARIANT_NAMES[variant]}</span>
               : <GameVariantLink key={variant} variant={variant} />
@@ -60,7 +61,7 @@ export default class AllRules extends React.Component<Props> {
             renderValue={() => chosenVariant ? GAME_VARIANT_NAMES[chosenVariant] : 'Select variant'}
             onChange={(e) => history.push(`/rules/${GAME_VARIANT_LINKS[e.target.value as GameVariantEnum]}`)}
           >
-            {map(GameVariantEnum, (variant) => (
+            {ALL_VARIANTS.map((variant) => (
               <MenuItem key={variant} value={variant}>
                 {GAME_VARIANT_NAMES[variant]}
               </MenuItem>

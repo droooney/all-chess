@@ -12,6 +12,7 @@ import Overview from '../Overview';
 import Moves from '../Moves';
 import Setup from '../Setup';
 import RulesExampleLink from '../RulesExampleLink';
+import List from '../List';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -44,27 +45,16 @@ class CircularRules extends React.PureComponent<Props> {
         <Moves>
           <p>
             Pawn moves (see <RulesExampleLink id="2" />):
+          </p>
 
-            <br />
-            <br />
+          <List elements={[
+            'white pawns on the 2nd rank move to the 8th rank promoting on the 8th',
+            'white pawns on the 15th rank move to the 9th rank promoting on the 9th',
+            'black pawns on the 7th rank move to the 1st rank promoting on the 1st',
+            'black pawns on the 10th rank move to the 16th rank promoting on the 16th',
+          ]} />
 
-            - white pawns on the 2nd rank move to the 8th rank promoting on the 8th
-
-            <br />
-
-            - white pawns on the 15th rank move to the 9th rank promoting on the 9th
-
-            <br />
-
-            - black pawns on the 7th rank move to the 1st rank promoting on the 1st
-
-            <br />
-
-            - black pawns on the 10th rank move to the 16th rank promoting on the 16th
-
-            <br />
-            <br />
-
+          <p>
             The rest of the pieces move exactly as in standard chess except pieces can't make full circle around the board stopping at the same square.
             There is no castling in Circular chess.
           </p>

@@ -6,7 +6,7 @@ interface OwnProps {
 
 type Props = OwnProps;
 
-class GameEnd extends React.PureComponent<Props> {
+class Pieces extends React.PureComponent<Props> {
   render() {
     const {
       children,
@@ -24,4 +24,4 @@ class GameEnd extends React.PureComponent<Props> {
   }
 }
 
-export default GameEnd;
+export default Pieces;

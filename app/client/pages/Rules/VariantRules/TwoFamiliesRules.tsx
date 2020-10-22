@@ -14,6 +14,7 @@ import Overview from '../Overview';
 import Moves from '../Moves';
 import GameEnd from '../GameEnd';
 import Setup from '../Setup';
+import List from '../List';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -66,20 +67,13 @@ class TwoFamiliesRules extends React.PureComponent<Props> {
           <p>
             If one side can't make a move without leaving their king(s) in check they lose.
             There are a few different looking wins in Two Families:
-
-            <br />
-            <br />
-
-            - regular checkmate: one or both kings are checkmated
-
-            <br />
-
-            - forked kings (see <RulesExampleLink id="2" />)
-
-            <br />
-
-            - skewered kings (see <RulesExampleLink id="3" />)
           </p>
+
+          <List elements={[
+            'regular checkmate: one or both kings are checkmated',
+            <>forked kings (see <RulesExampleLink id="2" />)</>,
+            <>skewered kings (see <RulesExampleLink id="3" />)</>,
+          ]} />
 
           <RulesExample
             id="2"
@@ -117,7 +111,7 @@ class TwoFamiliesRules extends React.PureComponent<Props> {
             </p>
 
             <RulesExample
-              id="3"
+              id="4"
               description="Two Families + Atomic chess win"
               variants={[GameVariantEnum.TWO_FAMILIES, GameVariantEnum.ATOMIC]}
               fen="r1bqkqkbnr/pppppppppp/10/6N3/3n6/2N7/PPPPPPPPPP/R1BQKQKB1R b KQkq - 5 3"
@@ -135,7 +129,7 @@ class TwoFamiliesRules extends React.PureComponent<Props> {
             </p>
 
             <RulesExample
-              id="4"
+              id="5"
               description="Two Families + Benedict chess win"
               variants={[GameVariantEnum.TWO_FAMILIES, GameVariantEnum.BENEDICT_CHESS]}
               fen="rnbqkqkbnr/ppppp1pppp/5p4/10/4P5/10/PPPP1PPPPP/RNBQKQKBNR w KQkq - 2 2"
@@ -154,7 +148,7 @@ class TwoFamiliesRules extends React.PureComponent<Props> {
             </p>
 
             <RulesExample
-              id="5"
+              id="6"
               description="After Qxc5 the black queen returns to d8; after the Qxf5 the white queen returns to f1"
               variants={[GameVariantEnum.TWO_FAMILIES, GameVariantEnum.CIRCE]}
               fen="rnb1k1kbnr/pppp1ppppp/10/2q1p2Q2/2Q1P2q2/10/PPPP1PPPPP/RNB1K1KBNR w KQkq - 6 4"
@@ -173,7 +167,7 @@ class TwoFamiliesRules extends React.PureComponent<Props> {
             </p>
 
             <RulesExample
-              id="6"
+              id="7"
               description="Two Families + Dark chess win"
               variants={[GameVariantEnum.TWO_FAMILIES, GameVariantEnum.DARK_CHESS]}
               fen="10/10/3k6/5k4/4K5/6K3/10/10 w - - 0 40"
@@ -192,7 +186,7 @@ class TwoFamiliesRules extends React.PureComponent<Props> {
             </p>
 
             <RulesExample
-              id="7"
+              id="8"
               description="Two Families + King of the Hill win"
               variants={[GameVariantEnum.TWO_FAMILIES, GameVariantEnum.KING_OF_THE_HILL]}
               fen="10/10/3k2k3/10/10/3K2K3/10/10 b - - 0 40"

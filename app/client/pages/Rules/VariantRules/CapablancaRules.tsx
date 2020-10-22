@@ -12,6 +12,7 @@ import Overview from '../Overview';
 import Setup from '../Setup';
 import RulesExampleLink from '../RulesExampleLink';
 import Pieces from '../Pieces';
+import List from '../List';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -44,16 +45,12 @@ class CapablancaRules extends React.PureComponent<Props> {
         <Pieces>
           <p>
             There are two additional pieces in Capablanca chess:
-
-            <br />
-            <br />
-
-            - Empress is a combination of Rook and Knight (see <RulesExampleLink id="2" />)
-
-            <br />
-
-            - Cardinal is a combination of Bishop and Knight (see <RulesExampleLink id="3" />)
           </p>
+
+          <List elements={[
+            <>Empress is a combination of Rook and Knight (see <RulesExampleLink id="2" />)</>,
+            <>Cardinal is a combination of Bishop and Knight (see <RulesExampleLink id="3" />)</>,
+          ]} />
 
           <RulesExample
             id="2"

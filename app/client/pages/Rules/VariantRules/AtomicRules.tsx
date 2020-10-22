@@ -14,6 +14,7 @@ import Overview from '../Overview';
 import Moves from '../Moves';
 import GameEnd from '../GameEnd';
 import CombinationLinkSection from '../CombinationLinkSection';
+import List from '../List';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -37,17 +38,15 @@ export default class AtomicRules extends React.Component<Props> {
 
         <Moves>
           <p>
-            Any non-capturing move is performed the same way as in standard chess. But any capturing move explodes multiple pieces:
-
-            <br />
-            <br />
-
-            - the captured piece
-            <br />
-            - the capturing piece
-            <br />
-            - any other piece (not pawns) that is located on a neighbor square to the captured piece square (exception is en passant, see below)
+            Any non-capturing move is performed the same way as in standard chess.
+            But any capturing move explodes multiple pieces:
           </p>
+
+          <List elements={[
+            'the captured piece',
+            'the capturing piece',
+            'any other piece (not pawns) that is located on a neighbor square to the captured piece square (exception is en passant, see below)',
+          ]} />
 
           <RulesExample
             id="1"
@@ -121,7 +120,7 @@ export default class AtomicRules extends React.Component<Props> {
 
           <Combination variant={GameVariantEnum.HEXAGONAL_CHESS}>
             <p>
-              In Atomic + Hexagonal combination the capture explodes 12 squares:
+              In Atomic + Hexagonal combination the capture explodes 12 squares besides the destination square:
               6 squares around and 6 closest squares of same color (see <RulesExampleLink id="3" />).
             </p>
 

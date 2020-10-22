@@ -15,6 +15,7 @@ import Overview from '../Overview';
 import Moves from '../Moves';
 import SpecialRules from '../SpecialRules';
 import CombinationLinkSection from '../CombinationLinkSection';
+import List from '../List';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -39,20 +40,20 @@ class CirceRules extends React.PureComponent<Props> {
         <Moves>
           <p>
             After the move if there was a piece captured it will return to the following square if it's empty:
-
-            <br />
-            <br />
-
-            - if a queen was captured - the queen initial square (see <RulesExampleLink id="1" />)
-            <br />
-            - if a rook/bishop/knight was captured - the square on the initial rank of the same piece type of the same
-            color as the piece was captured on (see <RulesExampleLink id="2" />)
-            <br />
-            - if a pawn was captured - the starting pawn square on the file it was captured on (see <RulesExampleLink id="3" />)
-            <br />
-            - in <GameVariantLink variant={GameVariantEnum.CAPABLANCA} /> if an empress/cardinal was captured -
-            the piece initial square (see <RulesExampleLink id="4" />)
           </p>
+
+          <List elements={[
+            <>if a queen was captured - the queen initial square (see <RulesExampleLink id="1" />)</>,
+            <>
+              if a rook/bishop/knight was captured - the square on the initial rank of the same piece type of the same
+              color as the piece was captured on (see <RulesExampleLink id="2" />)
+            </>,
+            <>if a pawn was captured - the starting pawn square on the file it was captured on (see <RulesExampleLink id="3" />)</>,
+            <>
+              in <GameVariantLink variant={GameVariantEnum.CAPABLANCA} /> if an empress/cardinal was captured -
+              the piece initial square (see <RulesExampleLink id="4" />)
+            </>,
+          ]} />
 
           <RulesExample
             id="1"

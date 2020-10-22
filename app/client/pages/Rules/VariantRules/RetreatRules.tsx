@@ -33,6 +33,7 @@ class RetreatRules extends React.PureComponent<Props> {
         <Moves>
           <p>
             Everything is the same as in standard chess except pawns can move backwards one square as well.
+            A pawn can't move backwards if it's on the initial pawn rank.
           </p>
 
           <RulesExample

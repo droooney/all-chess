@@ -160,7 +160,6 @@ export default abstract class GameDarkChessUtils extends GameMovesUtils {
         const promotionVisible = (
           isPromotion
           && fromLocationVisible
-          && (!this.isHexagonalChess || toLocationVisible)
         );
 
         if (promotionVisible) {
