@@ -101,13 +101,13 @@ class BenedictRules extends React.PureComponent<Props> {
 
             <RulesExample
               id="2"
-              description="After Qg5 the queen is not patrolled on g5 so it doesn't flip any pieces"
+              description="After Qh5 the queen is not patrolled on h5 so it doesn't flip any pieces"
               variants={[GameVariantEnum.BENEDICT_CHESS, GameVariantEnum.PATROL]}
-              fen="rnbqkbnr/pppp1PpP/8/4P2Q/4P3/8/PPPP1PPP/RNB1KBNR b KQkq - 3 2"
-              moves="2... Qg5"
+              fen="rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 2 2"
+              moves="2. Qh5"
               symbols={[
-                ['d8->g5'],
-                ['g5:y'],
+                ['d1->h5'],
+                ['h5:y'],
               ]}
               gameRef={gameRef}
             />
