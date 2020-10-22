@@ -3,11 +3,12 @@ import classNames from 'classnames';
 
 import { GAME_VARIANT_PGN_NAMES } from 'shared/constants';
 
-import { ColorEnum, DrawnSymbolColor, DrawnSymbolType, GameVariantEnum } from 'shared/types';
+import { ColorEnum, DrawnSymbolColor, DrawnSymbolType, GameVariantEnum, PocketPiece } from 'shared/types';
 
 import { Game as GameHelper } from 'client/helpers';
 
 import Game from 'client/components/Game';
+import PlayerPocket from 'client/components/PlayerPocket';
 
 import './index.less';
 
@@ -123,17 +124,42 @@ export default class RulesExample extends React.Component<Props> {
       description,
       moves,
     } = this.props;
+    const game = this.game;
 
     return (
       <Game
-        className={classNames('rules-example', { 'with-moves': !!moves })}
-        game={this.game}
+        className={classNames('rules-example', {
+          'with-moves': !!moves,
+          'with-pocket': game.isPocketUsed,
+        })}
+        game={game}
         useKeyboard={false}
         showMovesPanel={!!moves}
         contentChildren={
-          <div className="description">
-            Example {id}. {description}
-          </div>
+          <React.Fragment>
+            <div className="description">
+              Example {id}. {description}
+            </div>
+
+            {game.isPocketUsed && (
+              Object.values(ColorEnum).map((color) => (
+                <PlayerPocket
+                  key={color}
+                  className={`pocket-${color}`}
+                  game={game}
+                  color={color}
+                  pocket={game.pieces.filter(
+                    (piece) => GameHelper.isPocketPiece(piece) && piece.color === color,
+                  ) as PocketPiece[]}
+                  enableClick={false}
+                  enableDnd={false}
+                  selectedPiece={null}
+                  selectPiece={() => {}}
+                  startDraggingPiece={() => {}}
+                />
+              ))
+            )}
+          </React.Fragment>
         }
         movesPanelType="text"
       />

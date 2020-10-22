@@ -158,8 +158,8 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
         throw new Error(`Invalid FEN: wrong ranks blocks count on board ${board}`);
       }
 
-      for (let rank = ranksCount - boardHeight; rank < ranks.length; rank++) {
-        const fileData = ranks[rank];
+      for (let rank = 0; rank < boardHeight; rank++) {
+        const fileData = ranks[rank + ranksCount - boardHeight];
         let file = isHexagonalChess && rank > 5 ? rank - 5 : 0;
         let string = fileData;
 
@@ -349,7 +349,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
         .reverse()
         .join('/')
       + (
-        board === 0 && this.isPocketUsed ? (
+        board === 0 && this.isPocketUsed ? `/${
           this.pieces
             .filter(GamePositionUtils.isPocketPiece)
             .map((piece) => {
@@ -360,7 +360,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
                 : pieceLiteral.toLowerCase();
             })
             .join('')
-        ) : ''
+        }` : ''
       )
     )).join(' ');
   }

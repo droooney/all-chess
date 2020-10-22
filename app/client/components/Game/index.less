@@ -177,59 +177,6 @@
       justify-items: start;
       padding: 10px;
 
-      .pocket {
-        .flex();
-
-        grid-area: pocket;
-        width: 100%;
-
-        .piece-container {
-          .flex();
-          .flex-child();
-
-          position: relative;
-          cursor: pointer;
-          background-color: lightskyblue;
-
-          &.disabled {
-            opacity: 0.2;
-          }
-
-          .selected-square {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(115,125,105,0.5);
-            z-index: 1;
-            pointer-events: none;
-          }
-
-          .piece {
-            width: 100%;
-            z-index: 2;
-            pointer-events: none;
-          }
-
-          .count {
-            .flex();
-
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 15px;
-            height: 15px;
-            font-size: 10px;
-            background-color: red;
-            color: #fff;
-            border-radius: 100%;
-            z-index: 3;
-            pointer-events: none;
-          }
-        }
-      }
-
       .material-advantage {
         .flex(@justify-content: flex-start);
 
@@ -348,6 +295,59 @@
       grid-area: moves;
       min-height: 100px;
       padding: 0 8px;
+    }
+
+    .pocket {
+      .flex();
+
+      grid-area: pocket;
+      width: 100%;
+
+      .piece-container {
+        .flex();
+        .flex-child(calc(100% / var(--pocket-size)));
+
+        position: relative;
+        cursor: pointer;
+        background-color: lightskyblue;
+
+        &.disabled {
+          opacity: 0.2;
+        }
+
+        .selected-square {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(115,125,105,0.5);
+          z-index: 1;
+          pointer-events: none;
+        }
+
+        .piece {
+          width: 100%;
+          z-index: 2;
+          pointer-events: none;
+        }
+
+        .count {
+          .flex();
+
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          width: 15px;
+          height: 15px;
+          font-size: 12px;
+          background-color: red;
+          color: #fff;
+          border-radius: 100%;
+          z-index: 3;
+          pointer-events: none;
+        }
+      }
     }
   }
 }

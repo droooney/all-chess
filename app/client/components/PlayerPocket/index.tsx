@@ -24,6 +24,8 @@ interface OwnProps {
   selectedPiece: PocketPiece | null;
   selectPiece(piece: IPiece | null): void;
   startDraggingPiece(e: React.MouseEvent | React.TouchEvent, location: RealPieceLocation): void;
+
+  className?: string;
 }
 
 type Props = OwnProps;
@@ -57,10 +59,11 @@ export default class PlayerPocket extends React.Component<Props> {
       enableDnd,
       selectedPiece,
       startDraggingPiece,
+      className,
     } = this.props;
 
     return (
-      <div key="pocket" className="pocket">
+      <div className={classNames('pocket', className)}>
         {game.pocketPiecesUsed.map((pieceType) => {
           const pieces = pocket.filter(({ type }) => pieceType === type);
           const piece = pieces.length ? pieces[0] : pocketPieces[color][pieceType];

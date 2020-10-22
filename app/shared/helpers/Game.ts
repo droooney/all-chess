@@ -329,7 +329,8 @@ export class Game extends GameTimeUtils implements IGame {
                 isDrop
                 && Game.isPocketPiece(piece)
               ) || (
-                Game.isBoardPiece(piece)
+                !isDrop
+                && Game.isBoardPiece(piece)
                 && (!fromBoardLiteral || piece.location.board === fromBoard)
                 && (!fromFileLiteral || piece.location.x === fromFile)
                 && (!fromRankLiteral || piece.location.x === fromRank)

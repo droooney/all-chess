@@ -14,12 +14,42 @@
     align-self: center;
   }
 
+  .pocket {
+    &.pocket-WHITE {
+      grid-area: pocket-WHITE !important;
+      align-self: start;
+    }
+
+    &.pocket-BLACK {
+      grid-area: pocket-BLACK !important;
+      align-self: end;
+    }
+  }
+
   .not-desktop({
+    --moves-row: ". ." 0;
+    --pocket-row: ". ." 0;
+
+    &.with-pocket {
+      --pocket-row:
+        ".            .           " 10px
+        "pocket-WHITE pocket-BLACK" auto;
+    }
+
+    &.with-moves {
+      --moves-row:
+        ".     .    " 10px
+        "moves moves" auto;
+    }
+
     .game-content {
       grid-template:
-        "boards     " auto
-        "description" auto
-        ~"/" 100%;
+        "boards      boards     " auto
+        "description description" auto
+        var(--pocket-row)
+        var(--moves-row)
+        ~"/" 1fr 1fr;
+      grid-column-gap: 10px;
 
       .boards .board {
         max-height: 80vh;
@@ -29,37 +59,54 @@
         width: 100%;
       }
     }
-
-    &.with-moves {
-      .game-content {
-        grid-template:
-          "boards     " auto
-          "description" auto
-          ".          " 10px
-          "moves      " auto
-          ~"/" 100%;
-      }
-    }
   });
 
   .desktop({
     padding: 0 10%;
 
     .game-content {
-      grid-template:
-        ". boards      ." auto
-        ". description ." auto
-        ~"/" 1fr 4fr 1fr;
-      grid-column-gap: 10px;
+      grid-column-gap: 20px;
+    }
+
+    &:not(.with-moves) {
+      .game-content {
+        grid-template:
+          ". boards      ." auto
+          ". description ." auto
+          ~"/" 1fr 4fr 1fr;
+      }
+
+      &.with-pocket {
+        .game-content {
+          grid-template:
+            "boards      pocket-BLACK" auto
+            "boards      .           " 20px
+            "boards      pocket-WHITE" auto
+            "description .           " auto
+            ~"/" 4fr 2fr;
+        }
+      }
     }
 
     &.with-moves {
       .game-content {
         grid-template:
           "boards      moves" auto
-          "description moves" auto
+          "description .    " auto
           ~"/" 4fr 2fr;
-        grid-column-gap: 20px;
+      }
+
+      &.with-pocket {
+        .game-content {
+          grid-template:
+            "boards      pocket-BLACK" auto
+            "boards      .           " 10px
+            "boards      moves       " max-content
+            "boards      .           " 10px
+            "boards      pocket-WHITE" auto
+            "description .           " auto
+            ~"/" 4fr 2fr;
+        }
       }
     }
   });
