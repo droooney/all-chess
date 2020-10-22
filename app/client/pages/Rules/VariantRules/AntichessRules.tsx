@@ -53,7 +53,7 @@ class AntichessRules extends React.PureComponent<Props> {
         <GameEnd>
           <p>
             Game ends when one side can't make a move: no pieces left (<RulesExampleLink id="2" />)
-            {' '}or no piece can make a move (stalemate, <RulesExampleLink id="3" />). In this case this side wins.
+            or no piece can make a move (stalemate, <RulesExampleLink id="3" />). In this case this side wins.
           </p>
 
           <RulesExample

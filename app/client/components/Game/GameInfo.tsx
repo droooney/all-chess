@@ -47,14 +47,14 @@ export default class GameInfo extends React.Component<Props> {
             <span className="variants-header">
               Variants:
             </span>
-            {game.variants.length ? game.variants.map((variant, ix) => (
+            {game.variants.length ? game.variants.map((variant, index) => (
               <React.Fragment key={variant}>
-                {' '}
+                {index !== 0 && ', '}
+
                 <GameVariantLink
                   variant={variant}
                   className="variant"
                 />
-                {ix === game.variants.length - 1 ? '' : ','}
               </React.Fragment>
             )) : ' none'}
           </div>

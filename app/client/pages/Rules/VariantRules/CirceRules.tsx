@@ -14,6 +14,7 @@ import Combination from '../Combination';
 import Overview from '../Overview';
 import Moves from '../Moves';
 import SpecialRules from '../SpecialRules';
+import CombinationLinkSection from '../CombinationLinkSection';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -45,12 +46,12 @@ class CirceRules extends React.PureComponent<Props> {
             - if a queen was captured - the queen initial square (see <RulesExampleLink id="1" />)
             <br />
             - if a rook/bishop/knight was captured - the square on the initial rank of the same piece type of the same
-            {' '}color as the piece was captured on (see <RulesExampleLink id="2" />)
+            color as the piece was captured on (see <RulesExampleLink id="2" />)
             <br />
             - if a pawn was captured - the starting pawn square on the file it was captured on (see <RulesExampleLink id="3" />)
             <br />
             - in <GameVariantLink variant={GameVariantEnum.CAPABLANCA} /> if an empress/cardinal was captured -
-            {' '}the piece initial square (see <RulesExampleLink id="4" />)
+            the piece initial square (see <RulesExampleLink id="4" />)
           </p>
 
           <RulesExample
@@ -145,6 +146,11 @@ class CirceRules extends React.PureComponent<Props> {
               In Circe + Crazyhouse if the captured piece didn't disappear from the board, it doesn't go into the opponent's pocket.
             </p>
           </Combination>
+
+          <CombinationLinkSection
+            from={GameVariantEnum.CIRCE}
+            to={GameVariantEnum.TWO_FAMILIES}
+          />
         </Combinations>
       </React.Fragment>
     );

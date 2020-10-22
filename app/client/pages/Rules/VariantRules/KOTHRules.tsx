@@ -13,6 +13,7 @@ import Moves from '../Moves';
 import GameEnd from '../GameEnd';
 import Combinations from '../Combinations';
 import Combination from '../Combination';
+import CombinationLinkSection from '../CombinationLinkSection';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -77,6 +78,11 @@ class KOTHRules extends React.PureComponent<Props> {
               variants={[GameVariantEnum.KING_OF_THE_HILL, GameVariantEnum.HEXAGONAL_CHESS]}
             />
           </Combination>
+
+          <CombinationLinkSection
+            from={GameVariantEnum.KING_OF_THE_HILL}
+            to={GameVariantEnum.TWO_FAMILIES}
+          />
         </Combinations>
       </React.Fragment>
     );

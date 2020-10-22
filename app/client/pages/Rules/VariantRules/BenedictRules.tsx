@@ -13,6 +13,7 @@ import Moves from '../Moves';
 import Combinations from '../Combinations';
 import Combination from '../Combination';
 import SpecialRules from '../SpecialRules';
+import CombinationLinkSection from '../CombinationLinkSection';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -76,7 +77,7 @@ class BenedictRules extends React.PureComponent<Props> {
           <Combination variant={GameVariantEnum.MADRASI}>
             <p>
               In Benedict chess + Madrasi if the moved piece is paralysed after the move it doesn't flip any opponent pieces
-              {' '}(see <RulesExampleLink id="2" />).
+              (see <RulesExampleLink id="2" />).
             </p>
 
             <RulesExample
@@ -96,7 +97,7 @@ class BenedictRules extends React.PureComponent<Props> {
           <Combination variant={GameVariantEnum.PATROL}>
             <p>
               In Benedict chess + Patrol chess if the moved piece is not patrolled after the move it doesn't flip any opponent pieces
-              {' '}(see <RulesExampleLink id="3" />).
+              (see <RulesExampleLink id="3" />).
             </p>
 
             <RulesExample
@@ -118,6 +119,11 @@ class BenedictRules extends React.PureComponent<Props> {
               In Benedict chess + Dark chess pawns do not "see" diagonally because diagonal moves do not exist in Benedict chess.
             </p>
           </Combination>
+
+          <CombinationLinkSection
+            from={GameVariantEnum.BENEDICT_CHESS}
+            to={GameVariantEnum.TWO_FAMILIES}
+          />
         </Combinations>
       </React.Fragment>
     );

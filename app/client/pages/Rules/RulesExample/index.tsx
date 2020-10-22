@@ -3,7 +3,7 @@ import classNames from 'classnames';
 
 import { GAME_VARIANT_PGN_NAMES } from 'shared/constants';
 
-import { DrawnSymbolColor, DrawnSymbolType, GameVariantEnum } from 'shared/types';
+import { ColorEnum, DrawnSymbolColor, DrawnSymbolType, GameVariantEnum } from 'shared/types';
 
 import { Game as GameHelper } from 'client/helpers';
 
@@ -20,6 +20,7 @@ interface OwnProps {
   moves?: string;
   symbols?: string[][];
   startBoardsFile?: string;
+  darkChessMode?: ColorEnum | null;
   gameRef?(game: GameHelper): void;
 }
 
@@ -46,6 +47,7 @@ export default class RulesExample extends React.Component<Props> {
       moves,
       symbols,
       startBoardsFile,
+      darkChessMode,
       gameRef,
     } = props;
     const variantsString = variants.length
@@ -102,6 +104,10 @@ export default class RulesExample extends React.Component<Props> {
       });
 
       game.navigateToMove(-1);
+    }
+
+    if (darkChessMode) {
+      game.changeDarkChessMode(darkChessMode);
     }
 
     game.on('updateGame', () => {

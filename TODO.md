@@ -29,7 +29,7 @@
 ### Minor Improvements/Refactor
 
 - don't store material in move for each player (store diff)
-- add double check win reason (?)
+- add forked kings/skewered kings win reason
 - migrate from font-awesome
 - tooltip wrapper component
 - move gamevariant option (for gamevariantselect) to separate component
@@ -40,6 +40,7 @@
 - improve check display in 3check
 - optimize fetching players for correspondence (id: in ids)
 - remove prepareDarkChessMoveForClient
+- remove piece.moved
 
 ### Bugs/Important Features or Improvements
 

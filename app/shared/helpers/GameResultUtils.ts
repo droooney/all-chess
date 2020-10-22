@@ -32,11 +32,9 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
       this.isCrazyhouse
       || this.isAbsorption
       || this.isFrankfurt
+      || this.isKingOfTheHill
       || (
-        !this.isAntichess && (
-          this.isKingOfTheHill
-          || this.isDarkChess
-        )
+        this.isDarkChess && !this.isAntichess
       )
     ) {
       return true;
@@ -72,7 +70,7 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
       return false;
     }
 
-    if (this.isAtomic || this.isMadrasi || this.isThreeCheck) {
+    if (this.isAtomic || this.isMadrasi || this.isThreeCheck || this.isTwoFamilies) {
       return true;
     }
 
