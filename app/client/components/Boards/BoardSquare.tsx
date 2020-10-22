@@ -44,7 +44,7 @@ export default class BoardSquare extends React.PureComponent<Props> {
       type: PieceLocationEnum.BOARD,
     };
 
-    const translateX = `calc(${SVG_SQUARE_SIZE}px * var(--rendered-file-${fileX}, ${fileX}))`;
+    const translateX = `calc(${SVG_SQUARE_SIZE}px * ${fileX} + var(--file-${fileX}-transform))`;
     const translateY = `calc(${SVG_SQUARE_SIZE}px * ${boardHeight - 1 - rankY})`;
     const baseParams = {
       'data-square': JSON.stringify(square),

@@ -64,7 +64,7 @@ export default class AtomicRules extends React.Component<Props> {
 
           <p>
             Any pseudo-legal move is legal in Atomic chess if a player doesn't explode their own king.
-            That means that there are no checks in Atomic chess so a king may move into &quot;check&quot; and castle through an attacked square.
+            That means that there are no checks in Atomic chess so a king may move into "check" and castle through an attacked square.
             But that also means that a king may not capture.
           </p>
         </Moves>

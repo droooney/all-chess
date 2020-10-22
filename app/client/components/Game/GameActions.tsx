@@ -170,7 +170,7 @@ class GameActions extends React.Component<Props, State> {
       setBoardsShiftX,
     } = this.props;
 
-    setBoardsShiftX((boardsShiftX + (isBlackBase ? -incrementX : incrementX) + game.boardWidth) % game.boardWidth);
+    setBoardsShiftX((boardsShiftX + (isBlackBase ? incrementX : -incrementX) + game.boardWidth) % game.boardWidth);
   };
 
   render() {

@@ -34,7 +34,7 @@ export default class BoardSquares extends React.PureComponent<Props> {
         const hexPoints = game.getHexPoints(square);
 
         if (centerSquareParams) {
-          const translateX = `calc(${SVG_SQUARE_SIZE}px * var(--rendered-file-${fileX}, ${fileX}))`;
+          const translateX = `calc(${SVG_SQUARE_SIZE}px * ${fileX} + var(--file-${fileX}-transform))`;
           const translateY = `calc(${SVG_SQUARE_SIZE}px * ${boardHeight - 1 - rankY})`;
           const style: React.CSSProperties = {
             transform: [

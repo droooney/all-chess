@@ -19,6 +19,7 @@ interface OwnProps {
   fen?: string;
   moves?: string;
   symbols?: string[][];
+  startBoardsFile?: string;
   gameRef?(game: GameHelper): void;
 }
 
@@ -44,6 +45,7 @@ export default class RulesExample extends React.Component<Props> {
       fen,
       moves,
       symbols,
+      startBoardsFile,
       gameRef,
     } = props;
     const variantsString = variants.length
@@ -58,6 +60,10 @@ export default class RulesExample extends React.Component<Props> {
     `, id);
 
     game.navigateToMove(-1);
+
+    if (startBoardsFile) {
+      game.setBoardsShiftX(-GameHelper.getFileNumber(startBoardsFile));
+    }
 
     if (symbols) {
       let symbolId = 0;

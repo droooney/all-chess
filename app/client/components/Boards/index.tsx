@@ -78,12 +78,14 @@ class Boards extends React.Component<Props> {
   prevIsDragging = this.props.isDragging;
   prevGame = this.props.game;
   prevPremovesCount = this.props.premoves.length;
+  prevBoardsShiftX = this.props.boardsShiftX;
 
   componentDidUpdate(prevProps: Props) {
     this.prevIsBlackBase = this.props.isBlackBase;
     this.prevIsDragging = this.props.isDragging;
     this.prevGame = this.props.game;
     this.prevPremovesCount = this.props.premoves.length;
+    this.prevBoardsShiftX = this.props.boardsShiftX;
 
     if (this.props.currentMoveIndex !== prevProps.currentMoveIndex) {
       this.prevMoveIndexes = [prevProps.currentMoveIndex, this.props.currentMoveIndex];
@@ -223,6 +225,7 @@ class Boards extends React.Component<Props> {
       && this.prevIsDragging === isDragging
       && this.prevGame === game
       && this.prevPremovesCount === premoves.length
+      && this.prevBoardsShiftX === boardsShiftX
     );
 
     const movedPieceIdsSelector = piecesSelector(movedPieceIds);
@@ -247,10 +250,14 @@ class Boards extends React.Component<Props> {
           '--board-orthodox-width': boardOrthodoxWidth,
           '--board-height': boardOrthodoxHeight,
           '--board-orthodox-height': boardHeight,
-          ...times(boardWidth).reduce((files, fileX) => ({
-            ...files,
-            [`--rendered-file-${fileX}`]: game.adjustFileX(fileX + boardsShiftX),
-          }), {}),
+          ...times(boardWidth).reduce((files, fileX) => {
+            const adjustedFileX = game.adjustFileX(fileX + boardsShiftX);
+
+            return {
+              ...files,
+              [`--file-${fileX}-transform`]: `${(adjustedFileX - fileX) * SVG_SQUARE_SIZE}px`,
+            };
+          }, {}),
           '--boards-margin': `${ALICE_CHESS_BOARDS_MARGIN}px`,
         } as React.CSSProperties}
         onContextMenu={(e) => e.preventDefault()}
