@@ -138,11 +138,16 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
 
     let id = 0;
     const pieces: RealPiece[] = [];
-    const addPiece = (color: ColorEnum, type: PieceTypeEnum, location: RealPieceLocation) => {
+    const addPiece = (
+      color: ColorEnum,
+      type: PieceTypeEnum,
+      location: RealPieceLocation,
+      originalType: PieceTypeEnum = type,
+    ) => {
       pieces.push({
         id: `${++id}`,
         type,
-        originalType: type,
+        originalType,
         color,
         moved: false,
         abilities: null,
@@ -179,6 +184,13 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
               throw new Error(`Invalid FEN: wrong piece literal (${character})`);
             }
 
+            let originalPieceType = piece.type;
+
+            if (string[1] === '~') {
+              originalPieceType = PieceTypeEnum.PAWN;
+              string = string.slice(1);
+            }
+
             addPiece(
               piece.color,
               piece.type,
@@ -188,6 +200,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
                 x: file,
                 y: rank,
               },
+              originalPieceType,
             );
 
             file += 1;
@@ -337,6 +350,14 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
             rankString += pieceInSquare.color === ColorEnum.WHITE
               ? pieceLiteral
               : pieceLiteral.toLowerCase();
+
+            if (
+              this.isCrazyhouse
+              && pieceInSquare.originalType === PieceTypeEnum.PAWN
+              && !GamePositionUtils.isPawn(pieceInSquare)
+            ) {
+              rankString += '~';
+            }
           } else {
             emptySpaces++;
           }

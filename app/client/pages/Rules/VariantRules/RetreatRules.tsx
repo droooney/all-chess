@@ -51,7 +51,7 @@ class RetreatRules extends React.PureComponent<Props> {
 
         <SpecialRules>
           <p>
-            Pawn moves (if it's not promotion) do not reset 50-move rule, as they are revertable.
+            Pawn moves (if it's not promotion) do not reset 50-move rule, as they are reversible.
           </p>
         </SpecialRules>
 

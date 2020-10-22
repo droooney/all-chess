@@ -55,6 +55,7 @@
 - remove allowed moves after the game
 - validate en passant square right
 - investigate firefox max-content
+- fix promotion modal for circular & hex
 
 ### Variants
 

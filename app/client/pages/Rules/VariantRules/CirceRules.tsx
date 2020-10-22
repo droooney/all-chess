@@ -110,7 +110,7 @@ class CirceRules extends React.PureComponent<Props> {
 
         <SpecialRules>
           <p>
-            Pawn moves (if it's not promotion) do not reset 50-move rule, as they are indirectly revertable.
+            Pawn moves (if it's not promotion) do not reset 50-move rule, as they are indirectly reversible.
             Also 50-move rule isn't reset if the captured piece returned.
           </p>
         </SpecialRules>

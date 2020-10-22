@@ -11,6 +11,7 @@ import Combinations from '../Combinations';
 import Overview from '../Overview';
 import Moves from '../Moves';
 import CombinationLinkSection from '../CombinationLinkSection';
+import SpecialRules from '../SpecialRules';
 
 interface OwnProps {
   gameRef(game: Game): void;
@@ -41,6 +42,11 @@ class CrazyhouseRules extends React.PureComponent<Props> {
             of the pieces can be dropped on any empty square.
           </p>
 
+          <p>
+            If a pawn promotes to a piece and later this piece is captured it goes to the player's pocket as a pawn.
+            Such pieces are indicated by a pawn symbol in the corner.
+          </p>
+
           <RulesExample
             id="1"
             description="White captures the black pawn - it goes to the player's pocket; Black does the same; White drops the pawn back on the board"
@@ -50,6 +56,13 @@ class CrazyhouseRules extends React.PureComponent<Props> {
             gameRef={gameRef}
           />
         </Moves>
+
+        <SpecialRules>
+          <p>
+            In Crazyhouse the 50-move rule is not in effect, as any pawn move (even promotion) or capture
+            is indirectly reversible.
+          </p>
+        </SpecialRules>
 
         <Combinations>
           <p>

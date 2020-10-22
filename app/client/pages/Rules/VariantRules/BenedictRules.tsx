@@ -58,7 +58,7 @@ class BenedictRules extends React.PureComponent<Props> {
 
         <SpecialRules>
           <p>
-            Pawn moves (if it's not promotion) do not reset 50-move rule, as they are indirectly revertable.
+            Pawn moves (if it's not promotion) do not reset 50-move rule, as they are indirectly reversible.
           </p>
         </SpecialRules>
 
