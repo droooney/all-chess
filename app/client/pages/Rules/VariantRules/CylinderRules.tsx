@@ -34,6 +34,11 @@ class CylinderRules extends React.PureComponent<Props> {
         <Moves>
           <p>
             Everything is the same as in standard chess except pieces can move as if "a" and "h" files were adjacent.
+            Also there is no castling.
+
+            <br />
+            <br />
+
             Note: pieces can't make full circle around the board stopping at the same square.
           </p>
 

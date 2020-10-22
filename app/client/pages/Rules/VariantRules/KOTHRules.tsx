@@ -36,7 +36,12 @@ class KOTHRules extends React.PureComponent<Props> {
 
         <Moves>
           <p>
-            Everything is the same as in standard chess. Note: the king can't move to the center if it's an illegal move.
+            Everything is the same as in standard chess.
+
+            <br />
+            <br />
+
+            Note: the king can't move to the center if it's an illegal move.
           </p>
         </Moves>
 
