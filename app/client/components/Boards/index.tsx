@@ -1,10 +1,10 @@
-import * as React from 'react';
-import { connect } from 'react-redux';
 import classNames from 'classnames';
 import intersection from 'lodash/intersection';
 import map from 'lodash/map';
 import sortBy from 'lodash/sortBy';
 import times from 'lodash/times';
+import * as React from 'react';
+import { connect } from 'react-redux';
 
 import {
   ALICE_CHESS_BOARDS_MARGIN,
@@ -32,12 +32,12 @@ import { Game } from 'client/helpers';
 
 import { ReduxState } from 'client/store';
 
+import DrawnSymbol from '../DrawnSymbol';
 import BoardCenterSquares from './BoardCenterSquares';
 import BoardLiterals from './BoardLiterals';
 import BoardPiece from './BoardPiece';
 import BoardSquare, { BoardSquareProps } from './BoardSquare';
 import BoardSquares from './BoardSquares';
-import DrawnSymbol from '../DrawnSymbol';
 
 import './index.less';
 

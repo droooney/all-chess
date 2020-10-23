@@ -1,8 +1,8 @@
-import * as React from 'react';
-import { connect } from 'react-redux';
 import classNames from 'classnames';
 import forEach from 'lodash/forEach';
 import map from 'lodash/map';
+import * as React from 'react';
+import { connect } from 'react-redux';
 
 import { ALICE_CHESS_BOARDS_MARGIN } from 'client/constants';
 
@@ -27,15 +27,15 @@ import { Game as GameHelper } from 'client/helpers';
 
 import { ReduxState } from 'client/store';
 
-import MovesPanel from 'client/components/MovesPanel';
-import FixedElement from 'client/components/FixedElement';
-import Chat from 'client/components/Chat';
 import Boards from 'client/components/Boards';
+import Chat from 'client/components/Chat';
+import FixedElement from 'client/components/FixedElement';
+import MovesPanel from 'client/components/MovesPanel';
 
-import GamePlayer from './GamePlayer';
-import GameInfo from './GameInfo';
 import GameActions from './GameActions';
+import GameInfo from './GameInfo';
 import GamePiece from './GamePiece';
+import GamePlayer from './GamePlayer';
 import PromotionModal from './PromotionModal';
 
 import './index.less';

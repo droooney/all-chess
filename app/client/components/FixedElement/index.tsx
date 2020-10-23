@@ -1,6 +1,6 @@
+import classNames from 'classnames';
 import * as React from 'react';
 import { createPortal } from 'react-dom';
-import classNames from 'classnames';
 
 import './index.less';
 

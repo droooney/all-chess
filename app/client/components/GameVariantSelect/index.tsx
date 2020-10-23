@@ -1,13 +1,13 @@
-import * as React from 'react';
 import MuiDivider from '@material-ui/core/Divider';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import styled from '@material-ui/core/styles/styled';
+import * as React from 'react';
 import { connect } from 'react-redux';
 
-import { GAME_VARIANT_NAMES, GAME_VARIANT_SHORT_NAMES } from 'shared/constants';
 import { ALL_VARIANTS } from 'client/constants';
+import { GAME_VARIANT_NAMES, GAME_VARIANT_SHORT_NAMES } from 'shared/constants';
 
 import { GameVariantEnum } from 'shared/types';
 
@@ -15,8 +15,8 @@ import { Game } from 'client/helpers';
 
 import { ReduxState } from 'client/store';
 
-import GameVariantStar from '../GameVariantStar';
 import Checkbox from '../Checkbox';
+import GameVariantStar from '../GameVariantStar';
 import Select from '../Select';
 
 import './index.less';

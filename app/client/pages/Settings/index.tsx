@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { Link, Redirect, RouteComponentProps, Switch } from 'react-router-dom';
 import List from '@material-ui/core/List';
 import MenuItem from '@material-ui/core/MenuItem';
+import * as React from 'react';
+import { Link, Redirect, RouteComponentProps, Switch } from 'react-router-dom';
 
 import Route from '../../components/Route';
 

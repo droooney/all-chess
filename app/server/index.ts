@@ -6,8 +6,8 @@ import { Game as DBGame } from 'server/db/models';
 
 import config from 'server/config';
 
-import server from 'server/server';
 import Game from 'server/Game';
+import server from 'server/server';
 
 import 'server/routes';
 import 'server/sockets';

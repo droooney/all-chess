@@ -1,16 +1,16 @@
 /// <reference path="../shared/typings/glicko2.d.ts"/>
 
-import { Namespace } from 'socket.io';
-import isEqual from 'lodash/isEqual';
-import isEmpty from 'lodash/isEmpty';
+import { Glicko2, Player as GlickoPlayer } from 'glicko2';
 import find from 'lodash/find';
 import forEach from 'lodash/forEach';
+import isEmpty from 'lodash/isEmpty';
+import isEqual from 'lodash/isEqual';
 import keys from 'lodash/keys';
 import last from 'lodash/last';
 import omit from 'lodash/omit';
 import pick from 'lodash/pick';
 import values from 'lodash/values';
-import { Glicko2, Player as GlickoPlayer } from 'glicko2';
+import { Namespace } from 'socket.io';
 
 import {
   COLOR_NAMES,
@@ -41,8 +41,8 @@ import {
   User,
 } from 'shared/types';
 
-import { Game as GameHelper } from 'shared/helpers';
 import { deleteNamespace } from 'server/helpers';
+import { Game as GameHelper } from 'shared/helpers';
 
 import { sessionMiddleware } from 'server/controllers/session';
 

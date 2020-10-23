@@ -1,5 +1,5 @@
-import * as React from 'react';
 import classNames from 'classnames';
+import * as React from 'react';
 
 import {
   ColorEnum,
@@ -7,15 +7,15 @@ import {
   PieceTypeEnum,
 } from 'shared/types';
 
-import King from './King';
 import Amazon from './Amazon';
-import Queen from './Queen';
-import Empress from './Empress';
-import Cardinal from './Cardinal';
-import Rook from './Rook';
 import Bishop from './Bishop';
+import Cardinal from './Cardinal';
+import Empress from './Empress';
+import King from './King';
 import Knight from './Knight';
 import Pawn from './Pawn';
+import Queen from './Queen';
+import Rook from './Rook';
 
 interface OwnProps<T extends PieceLocation> {
   color: ColorEnum;

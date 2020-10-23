@@ -1,10 +1,11 @@
-import { Socket } from 'socket.io-client';
 import clone from 'lodash/clone';
 import forEach from 'lodash/forEach';
 import isEqual from 'lodash/isEqual';
 import last from 'lodash/last';
 import times from 'lodash/times';
+import { Socket } from 'socket.io-client';
 
+import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from 'client/constants';
 import {
   POSSIBLE_TIMER_BASES_IN_MINUTES,
   POSSIBLE_TIMER_BASES_IN_MILLISECONDS,
@@ -13,7 +14,6 @@ import {
   POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS,
   POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS,
 } from 'shared/constants';
-import { CIRCULAR_CHESS_EMPTY_CENTER_RATIO, SVG_SQUARE_SIZE } from 'client/constants';
 
 import {
   AnyMove,
@@ -46,10 +46,10 @@ import {
   TimeControlEnum,
 } from 'shared/types';
 
-import { Game as BaseGame, Game as GameHelper } from 'shared/helpers';
-import { Sound } from 'client/helpers/sounds';
-import { RegisterMoveReturnValue } from 'shared/helpers/GameMovesUtils';
 import { history } from 'client/helpers/history';
+import { Sound } from 'client/helpers/sounds';
+import { Game as BaseGame, Game as GameHelper } from 'shared/helpers';
+import { RegisterMoveReturnValue } from 'shared/helpers/GameMovesUtils';
 
 type GameEvent = 'updateChat' | 'updateGame';
 

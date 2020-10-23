@@ -1,6 +1,6 @@
+import { LocationDescriptorObject } from 'history';
 import * as React from 'react';
 import { Link as RouterLink, LinkProps } from 'react-router-dom';
-import { LocationDescriptorObject } from 'history';
 
 interface OwnProps extends LinkProps {
   hashLink?: boolean;

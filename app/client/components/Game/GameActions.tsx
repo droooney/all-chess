@@ -1,7 +1,7 @@
+import Tooltip from '@material-ui/core/Tooltip';
+import classNames from 'classnames';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import classNames from 'classnames';
-import Tooltip from '@material-ui/core/Tooltip';
 
 import {
   ColorEnum,
@@ -18,8 +18,8 @@ import { Game } from 'client/helpers';
 import { changeSettings } from 'client/actions';
 import { DispatchProps, ReduxState } from 'client/store';
 
-import Piece from '../Piece';
 import Dialog from '../Dialog';
+import Piece from '../Piece';
 
 export interface OwnProps {
   game: Game;

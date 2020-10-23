@@ -6,15 +6,15 @@ import { Game } from 'client/helpers';
 
 import GameVariantLinks from 'client/components/GameVariantLinks';
 
-import RulesExampleLink from '../RulesExampleLink';
-import RulesExample from '../RulesExample';
-import Combinations from '../Combinations';
 import Combination from '../Combination';
-import Overview from '../Overview';
-import Moves from '../Moves';
-import GameEnd from '../GameEnd';
 import CombinationLinkSection from '../CombinationLinkSection';
+import Combinations from '../Combinations';
+import GameEnd from '../GameEnd';
 import List from '../List';
+import Moves from '../Moves';
+import Overview from '../Overview';
+import RulesExample from '../RulesExample';
+import RulesExampleLink from '../RulesExampleLink';
 
 interface OwnProps {
   gameRef(game: Game): void;

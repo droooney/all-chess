@@ -1,6 +1,7 @@
 import mapValues from 'lodash/mapValues';
 import values from 'lodash/values';
 
+import { SquareColorTheme, GameSettings } from 'client/types';
 import {
   ColorEnum,
   DrawnSymbolColor,
@@ -8,7 +9,6 @@ import {
   PieceLocationEnum,
   PieceTypeEnum,
 } from 'shared/types';
-import { SquareColorTheme, GameSettings } from 'client/types';
 
 export const GAME_DEFAULT_SETTINGS: { [key in keyof GameSettings]: GameSettings[key]; } = {
   showFantomPieces: true,

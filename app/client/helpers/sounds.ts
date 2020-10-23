@@ -1,9 +1,9 @@
 import { Howl } from 'howler';
 
-import mp3MoveSound from 'client/sounds/piece-move2/index.mp3';
 import mp3CaptureSound from 'client/sounds/piece-capture4/index.mp3';
-import oggMoveSound from 'client/sounds/piece-move2/index.ogg';
 import oggCaptureSound from 'client/sounds/piece-capture4/index.ogg';
+import mp3MoveSound from 'client/sounds/piece-move2/index.mp3';
+import oggMoveSound from 'client/sounds/piece-move2/index.ogg';
 
 type SoundType = 'pieceMove' | 'pieceCapture';
 

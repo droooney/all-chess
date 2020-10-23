@@ -7,11 +7,11 @@ import { Game } from 'client/helpers';
 import GameVariantLink from 'client/components/GameVariantLink';
 import GameVariantLinks from 'client/components/GameVariantLinks';
 
-import RulesExample from '../RulesExample';
-import Overview from '../Overview';
 import Combinations from '../Combinations';
-import Setup from '../Setup';
 import List from '../List';
+import Overview from '../Overview';
+import RulesExample from '../RulesExample';
+import Setup from '../Setup';
 
 interface OwnProps {
   gameRef(game: Game): void;

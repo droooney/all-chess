@@ -1,7 +1,7 @@
 import Application from 'koa';
-import mount from 'koa-mount';
 import BodyParser from 'koa-bodyparser';
 import compose from 'koa-compose';
+import mount from 'koa-mount';
 
 import { CustomState, CustomContext } from 'server/types';
 
@@ -15,11 +15,11 @@ import {
   register,
 } from 'server/controllers/auth';
 import { getGame } from 'server/controllers/game';
-import { state } from 'server/controllers/state';
 import {
   session,
   sessionRequired,
 } from 'server/controllers/session';
+import { state } from 'server/controllers/state';
 
 import app from '../app';
 

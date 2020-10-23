@@ -1,7 +1,7 @@
-import * as util from 'util';
+import redis from 'connect-redis';
 import { Request, Response } from 'express';
 import expressSession from 'express-session';
-import redis from 'connect-redis';
+import * as util from 'util';
 
 import { CustomContext } from 'server/types';
 

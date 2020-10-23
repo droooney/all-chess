@@ -1,6 +1,6 @@
+import findKey from 'lodash/findKey';
 import * as React from 'react';
 import { Redirect, RouteComponentProps } from 'react-router-dom';
-import findKey from 'lodash/findKey';
 
 import {
   GAME_VARIANT_NAMES,
@@ -13,21 +13,21 @@ import { Game } from 'client/helpers';
 
 import DocumentTitle from '../../components/DocumentTitle';
 
-import Chess960Rules from './VariantRules/Chess960Rules';
-import AtomicRules from './VariantRules/AtomicRules';
-import KOTHRules from './VariantRules/KOTHRules';
-import BenedictRules from './VariantRules/BenedictRules';
-import ThreeCheckRules from './VariantRules/ThreeCheckRules';
-import RetreatRules from './VariantRules/RetreatRules';
-import CirceRules from './VariantRules/CirceRules';
-import CapablancaRules from './VariantRules/CapablancaRules';
 import AntichessRules from './VariantRules/AntichessRules';
-import CylinderRules from './VariantRules/CylinderRules';
+import AtomicRules from './VariantRules/AtomicRules';
+import BenedictRules from './VariantRules/BenedictRules';
+import CapablancaRules from './VariantRules/CapablancaRules';
+import Chess960Rules from './VariantRules/Chess960Rules';
+import CirceRules from './VariantRules/CirceRules';
 import CircularRules from './VariantRules/CircularRules';
-import TwoFamiliesRules from './VariantRules/TwoFamiliesRules';
-import HexagonalRules from './VariantRules/HexagonalRules';
 import CrazyhouseRules from './VariantRules/CrazyhouseRules';
+import CylinderRules from './VariantRules/CylinderRules';
+import HexagonalRules from './VariantRules/HexagonalRules';
+import KOTHRules from './VariantRules/KOTHRules';
 import MadrasiRules from './VariantRules/MadrasiRules';
+import RetreatRules from './VariantRules/RetreatRules';
+import ThreeCheckRules from './VariantRules/ThreeCheckRules';
+import TwoFamiliesRules from './VariantRules/TwoFamiliesRules';
 
 type Props = RouteComponentProps<{ gameLink: string; }>;
 

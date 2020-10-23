@@ -4,10 +4,10 @@ import { GameVariantEnum } from 'shared/types';
 
 import { Game } from 'client/helpers';
 
-import RulesExample from '../RulesExample';
 import Combinations from '../Combinations';
-import Overview from '../Overview';
 import Moves from '../Moves';
+import Overview from '../Overview';
+import RulesExample from '../RulesExample';
 import SpecialRules from '../SpecialRules';
 
 interface OwnProps {

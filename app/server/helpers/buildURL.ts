@@ -1,5 +1,5 @@
-import * as qs from 'querystring';
 import isEmpty from 'lodash/isEmpty';
+import * as qs from 'querystring';
 
 import { Dictionary } from 'shared/types';
 

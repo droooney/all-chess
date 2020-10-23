@@ -1,3 +1,4 @@
+import omit from 'lodash/omit';
 import * as React from 'react';
 import {
   withRouter,
@@ -5,7 +6,6 @@ import {
   RouteProps,
   RouteComponentProps,
 } from 'react-router-dom';
-import omit from 'lodash/omit';
 
 type Props = RouteProps & RouteComponentProps<any, any, { resetScroll?: boolean; hashLink?: boolean; } | undefined>;
 

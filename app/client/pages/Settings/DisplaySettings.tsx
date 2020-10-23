@@ -1,7 +1,7 @@
+import classNames from 'classnames';
+import map from 'lodash/map';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import map from 'lodash/map';
-import classNames from 'classnames';
 
 import { SVG_SQUARE_SIZE } from 'client/constants';
 
@@ -9,8 +9,8 @@ import { SquareColorTheme } from 'client/types';
 
 import { Game } from 'client/helpers';
 
-import { DispatchProps, ReduxState } from 'client/store';
 import { changeSettings } from 'client/actions';
+import { DispatchProps, ReduxState } from 'client/store';
 
 import BoardSquare from '../../components/Boards/BoardSquare';
 

@@ -1,7 +1,7 @@
+import findKey from 'lodash/findKey';
 import * as qs from 'querystring';
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import findKey from 'lodash/findKey';
 
 import { STANDARD_FEN } from 'client/constants';
 import { GAME_VARIANT_PGN_NAMES } from 'shared/constants';

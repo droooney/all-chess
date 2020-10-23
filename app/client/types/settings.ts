@@ -1,5 +1,5 @@
-import { GameVariantEnum, TimeControl } from 'shared/types/game';
 import { SquareColorTheme } from 'client/types/game';
+import { GameVariantEnum, TimeControl } from 'shared/types/game';
 
 export interface GameSettings {
   showFantomPieces: boolean;

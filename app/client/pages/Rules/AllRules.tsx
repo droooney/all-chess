@@ -1,22 +1,22 @@
-import * as React from 'react';
-import { Redirect, RouteComponentProps, Switch } from 'react-router-dom';
 import MenuItem from '@material-ui/core/MenuItem';
 import findKey from 'lodash/findKey';
 import map from 'lodash/map';
+import * as React from 'react';
+import { Redirect, RouteComponentProps, Switch } from 'react-router-dom';
 
+import { ALL_VARIANTS } from 'client/constants';
 import {
   GAME_VARIANT_NAMES,
   GAME_VARIANT_LINKS,
 } from 'shared/constants';
-import { ALL_VARIANTS } from 'client/constants';
 
 import {
   GameVariantEnum,
 } from 'shared/types';
 
-import Route from '../../components/Route';
 import DocumentTitle from '../../components/DocumentTitle';
 import GameVariantLink from '../../components/GameVariantLink';
+import Route from '../../components/Route';
 import Select from '../../components/Select';
 
 import VariantRules from 'client/pages/Rules/VariantRules';

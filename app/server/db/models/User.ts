@@ -1,6 +1,6 @@
-import { DataTypes, Model } from 'sequelize';
 import { hash } from 'bcryptjs';
 import pick from 'lodash/pick';
+import { DataTypes, Model } from 'sequelize';
 
 import { PublicUser, User as UserAttributes } from 'shared/types';
 

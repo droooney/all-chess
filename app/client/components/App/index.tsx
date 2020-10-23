@@ -1,22 +1,22 @@
+import { ThemeProvider } from '@material-ui/styles';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Router, Switch } from 'react-router-dom';
-import { ThemeProvider } from '@material-ui/styles';
 
 import { getDefaultSettings, history, isMobileDevice } from 'client/helpers';
 
 import { loadSettings, setIsMobile } from 'client/actions';
 import { DispatchProps, ReduxState } from 'client/store';
 
-import Route from 'client/components/Route';
 import Header from 'client/components/App/Header';
+import Route from 'client/components/Route';
 
-import AllRules from 'client/pages/Rules/AllRules';
 import BoardEditor from 'client/pages/BoardEditor';
-import Register from 'client/pages/Register';
-import Home from 'client/pages/Home';
 import Game from 'client/pages/Game';
+import Home from 'client/pages/Home';
 import Login from 'client/pages/Login';
+import Register from 'client/pages/Register';
+import AllRules from 'client/pages/Rules/AllRules';
 import Settings from 'client/pages/Settings';
 
 import lightTheme from 'client/themes/light';

@@ -1,15 +1,15 @@
-import * as React from 'react';
-import { connect } from 'react-redux';
 import IconButton from '@material-ui/core/IconButton';
 import StarIcon from '@material-ui/icons/Star';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
+import * as React from 'react';
+import { connect } from 'react-redux';
 
 import { GameVariantEnum } from 'shared/types';
 
 import { Game } from 'client/helpers';
 
-import { DispatchProps, ReduxState } from 'client/store';
 import { changeSettings } from 'client/actions';
+import { DispatchProps, ReduxState } from 'client/store';
 
 interface OwnProps {
   variants: GameVariantEnum | GameVariantEnum[];

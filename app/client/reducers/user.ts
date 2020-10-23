@@ -2,8 +2,8 @@ import { User } from 'shared/types';
 
 import { getReducer } from 'client/helpers';
 
-import { UserState } from 'client/store';
 import { UserActions } from 'client/actions';
+import { UserState } from 'client/store';
 
 declare global {
   interface Window {

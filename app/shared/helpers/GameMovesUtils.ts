@@ -27,7 +27,6 @@ import {
   Square,
 } from 'shared/types';
 
-import GamePositionUtils from './GamePositionUtils';
 import {
   BISHOP_MOVE_INCREMENTS,
   HEX_BISHOP_MOVE_INCREMENTS,
@@ -36,6 +35,7 @@ import {
   KNIGHT_MOVE_INCREMENTS,
   ROOK_MOVE_INCREMENTS,
 } from './GameBoardUtils';
+import GamePositionUtils from './GamePositionUtils';
 
 export interface PerformMoveOptions {
   constructMoveNotation?: boolean;

@@ -1,6 +1,6 @@
-import createMuiTheme from '@material-ui/core/styles/createMuiTheme';
 import green from '@material-ui/core/colors/green';
 import orange from '@material-ui/core/colors/orange';
+import createMuiTheme from '@material-ui/core/styles/createMuiTheme';
 
 export default createMuiTheme({
   palette: {

@@ -1,10 +1,10 @@
+import MenuItem from '@material-ui/core/MenuItem';
+import map from 'lodash/map';
+import omit from 'lodash/omit';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import io from 'socket.io-client';
-import MenuItem from '@material-ui/core/MenuItem';
-import map from 'lodash/map';
-import omit from 'lodash/omit';
 
 import {
   GAME_VARIANT_SHORT_NAMES,
@@ -33,8 +33,8 @@ import {
 
 import { Game } from 'client/helpers';
 
-import { DispatchProps, ReduxState } from 'client/store';
 import { changeSettings } from 'client/actions';
+import { DispatchProps, ReduxState } from 'client/store';
 
 import Button from '../../components/Button';
 import Checkbox from '../../components/Checkbox';

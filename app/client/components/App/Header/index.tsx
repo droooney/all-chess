@@ -1,15 +1,15 @@
+import SettingsIcon from '@material-ui/icons/Settings';
 import * as qs from 'querystring';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
-import SettingsIcon from '@material-ui/icons/Settings';
 
 import { STANDARD_FEN } from 'client/constants';
 
 import { fetch } from 'client/helpers';
 
-import { DispatchProps, ReduxState } from 'client/store';
 import { setUserData } from 'client/actions';
+import { DispatchProps, ReduxState } from 'client/store';
 
 import Link from '../../Link';
 

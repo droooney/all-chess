@@ -1,7 +1,7 @@
-import * as React from 'react';
 import classNames from 'classnames';
 import cloneDeep from 'lodash/cloneDeep';
 import isEqual from 'lodash/isEqual';
+import * as React from 'react';
 
 import {
   BoardPiece as IBoardPiece,

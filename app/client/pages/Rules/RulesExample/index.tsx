@@ -1,5 +1,5 @@
-import * as React from 'react';
 import classNames from 'classnames';
+import * as React from 'react';
 
 import { GAME_VARIANT_PGN_NAMES } from 'shared/constants';
 

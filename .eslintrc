@@ -384,7 +384,11 @@
           "/config/",
           "/^(?:server|client|shared)/",
           ["parent", "sibling", "index"]
-        ]
+        ],
+        "alphabetize": {
+          "order": "asc",
+          "ignoreCase": false
+        }
       }
     ]
   }

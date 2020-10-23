@@ -1,5 +1,5 @@
-import * as React from 'react';
 import times from 'lodash/times';
+import * as React from 'react';
 
 import { SVG_SQUARE_SIZE } from 'client/constants';
 

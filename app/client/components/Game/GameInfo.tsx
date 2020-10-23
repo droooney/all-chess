@@ -1,5 +1,5 @@
-import * as React from 'react';
 import classNames from 'classnames';
+import * as React from 'react';
 
 import { COLOR_NAMES, RESULT_REASON_NAMES, SPEED_TYPE_NAMES } from 'shared/constants';
 

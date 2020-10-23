@@ -1,6 +1,6 @@
-import * as React from 'react';
 import classNames from 'classnames';
 import last from 'lodash/last';
+import * as React from 'react';
 
 import { ChatMessage } from 'shared/types';
 

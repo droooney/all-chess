@@ -1,5 +1,5 @@
-import * as React from 'react';
 import chunk from 'lodash/chunk';
+import * as React from 'react';
 
 import { AnyMove } from 'shared/types';
 

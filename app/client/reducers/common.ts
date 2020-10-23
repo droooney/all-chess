@@ -1,7 +1,7 @@
 import { getReducer, getScrollSize, isMobileDevice } from 'client/helpers';
 
-import { CommonState } from 'client/store';
 import { CommonActions } from 'client/actions';
+import { CommonState } from 'client/store';
 
 const initialState: CommonState = {
   isMobile: isMobileDevice(),

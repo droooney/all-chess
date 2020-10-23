@@ -6,11 +6,11 @@ import { Game } from 'client/helpers';
 
 import GameVariantLinks from 'client/components/GameVariantLinks';
 
-import RulesExample from '../RulesExample';
-import Combinations from '../Combinations';
-import Overview from '../Overview';
-import Moves from '../Moves';
 import CombinationLinkSection from '../CombinationLinkSection';
+import Combinations from '../Combinations';
+import Moves from '../Moves';
+import Overview from '../Overview';
+import RulesExample from '../RulesExample';
 import Setup from '../Setup';
 
 interface OwnProps {

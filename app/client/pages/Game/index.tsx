@@ -1,9 +1,9 @@
-import * as React from 'react';
-import { connect } from 'react-redux';
-import io from 'socket.io-client';
-import { RouteComponentProps } from 'react-router-dom';
 import find from 'lodash/find';
 import omit from 'lodash/omit';
+import * as React from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router-dom';
+import io from 'socket.io-client';
 
 import {
   ALICE_CHESS_BOARDS_MARGIN,

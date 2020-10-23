@@ -1,5 +1,5 @@
-import * as React from 'react';
 import times from 'lodash/times';
+import * as React from 'react';
 
 import { RealPieceLocation, Square } from 'shared/types';
 

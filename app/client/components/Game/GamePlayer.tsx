@@ -1,11 +1,11 @@
-import moment from 'moment';
-import * as React from 'react';
 import classNames from 'classnames';
 import map from 'lodash/map';
 import padStart from 'lodash/padStart';
+import moment from 'moment';
+import * as React from 'react';
 
-import { COLOR_NAMES } from 'shared/constants';
 import { pocketPieces } from 'client/constants';
+import { COLOR_NAMES } from 'shared/constants';
 
 import {
   AnyMove,
