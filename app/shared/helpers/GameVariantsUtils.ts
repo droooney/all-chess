@@ -168,6 +168,7 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isAtomic
         // TODO: add support for absorb + circe
         && !isCirce
+        // TODO: add support for absorb + madrasi
         && !isMadrasi
         && !isFrankfurt
         && !isCompensationChess

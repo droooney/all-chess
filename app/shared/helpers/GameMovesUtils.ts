@@ -322,6 +322,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
 
       for (const square of this.traverseDirection(piece.location, movementType, incrementY, incrementX)) {
         const pieceInSquare = this.getBoardPiece(square);
+        const isLastMove = ++iterations === stopAfter;
 
         if (!onlyPremove && pieceInSquare && pieceInSquare.color === pieceColor) {
           if (!forMove && !onlyPossible) {
@@ -334,11 +335,24 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         if (
           isKing
           && forMove
+          && !isLastMove
           && !this.isLeftInCheckAllowed
           && !pieceInSquare
-          && this.isAttackedByOpponentPiece(square, opponentColor)
         ) {
-          return;
+          const nextSquareInDirection = this.getSquareInDirection(
+            square, movementType, incrementY, incrementX,
+          );
+
+          if (nextSquareInDirection) {
+            const boardPieceInDirection = this.getBoardPiece(nextSquareInDirection);
+
+            if (
+              (!boardPieceInDirection || boardPieceInDirection.color !== pieceColor)
+              && this.isAttackedByOpponentPiece(square, opponentColor)
+            ) {
+              return;
+            }
+          }
         }
 
         yield square;
@@ -347,7 +361,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
           return;
         }
 
-        if (++iterations === stopAfter) {
+        if (isLastMove) {
           return;
         }
       }
@@ -445,7 +459,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         }
       }
 
-      if (onlyAttacked || onlyControlled || !this.isBenedictChess) {
+      if (onlyAttacked || onlyControlled || onlyPossible || !this.isBenedictChess) {
         for (const incrementX of [1, -1]) {
           // capture
           const square = {
