@@ -78,12 +78,12 @@
         }
 
         grid-template:
-          "boards . top-player   " auto
+          "boards . top-player   " 1fr
           "boards . .            " @grid-gap
           "boards . moves        " minmax(auto, var(--moves-max-size))
           "boards . actions      " max-content
           "boards . .            " @grid-gap
-          "boards . bottom-player" auto
+          "boards . bottom-player" 1fr
           ~"/" auto @grid-gap @right-panel-width;
 
         .game-player {
