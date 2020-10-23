@@ -18,10 +18,10 @@ import {
 
 import { Game, isDefined } from 'client/helpers';
 
-import Boards from '../../components/Boards';
-import DocumentTitle from '../../components/DocumentTitle';
-import FixedElement from '../../components/FixedElement';
-import GamePiece from '../../components/Game/GamePiece';
+import Boards from 'client/components/Boards';
+import DocumentTitle from 'client/components/DocumentTitle';
+import FixedElement from 'client/components/FixedElement';
+import GamePiece from 'client/components/Game/GamePiece';
 
 type Props = RouteComponentProps<any>;
 

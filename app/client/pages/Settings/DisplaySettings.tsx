@@ -12,7 +12,7 @@ import { Game } from 'client/helpers';
 import { changeSettings } from 'client/actions';
 import { DispatchProps, ReduxState } from 'client/store';
 
-import BoardSquare from '../../components/Boards/BoardSquare';
+import BoardSquare from 'client/components/Boards/BoardSquare';
 
 type Props = DispatchProps & ReturnType<typeof mapStateToProps>;
 

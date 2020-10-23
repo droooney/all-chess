@@ -36,13 +36,13 @@ import { Game } from 'client/helpers';
 import { changeSettings } from 'client/actions';
 import { DispatchProps, ReduxState } from 'client/store';
 
-import Button from '../../components/Button';
-import Checkbox from '../../components/Checkbox';
-import DocumentTitle from '../../components/DocumentTitle';
-import GameVariantSelect from '../../components/GameVariantSelect';
-import Modal from '../../components/Modal';
-import Select from '../../components/Select';
+import Button from 'client/components/Button';
+import Checkbox from 'client/components/Checkbox';
+import DocumentTitle from 'client/components/DocumentTitle';
+import GameVariantSelect from 'client/components/GameVariantSelect';
 import GameVariantStar from 'client/components/GameVariantStar';
+import Modal from 'client/components/Modal';
+import Select from 'client/components/Select';
 
 import './index.less';
 

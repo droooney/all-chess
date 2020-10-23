@@ -4,9 +4,9 @@ import * as React from 'react';
 
 import { fetch } from 'client/helpers';
 
-import Button from '../../components/Button';
-import DocumentTitle from '../../components/DocumentTitle';
-import Input from '../../components/Input';
+import Button from 'client/components/Button';
+import DocumentTitle from 'client/components/DocumentTitle';
+import Input from 'client/components/Input';
 
 import './index.less';
 

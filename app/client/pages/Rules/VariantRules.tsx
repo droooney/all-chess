@@ -11,7 +11,7 @@ import { EachVariant, GameVariantEnum } from 'shared/types';
 
 import { Game } from 'client/helpers';
 
-import DocumentTitle from '../../components/DocumentTitle';
+import DocumentTitle from 'client/components/DocumentTitle';
 
 import AntichessRules from './VariantRules/AntichessRules';
 import AtomicRules from './VariantRules/AtomicRules';

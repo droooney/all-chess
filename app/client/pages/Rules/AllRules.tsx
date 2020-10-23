@@ -14,10 +14,10 @@ import {
   GameVariantEnum,
 } from 'shared/types';
 
-import DocumentTitle from '../../components/DocumentTitle';
-import GameVariantLink from '../../components/GameVariantLink';
-import Route from '../../components/Route';
-import Select from '../../components/Select';
+import DocumentTitle from 'client/components/DocumentTitle';
+import GameVariantLink from 'client/components/GameVariantLink';
+import Route from 'client/components/Route';
+import Select from 'client/components/Select';
 
 import VariantRules from 'client/pages/Rules/VariantRules';
 
