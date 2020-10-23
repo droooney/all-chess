@@ -244,7 +244,7 @@ class GamePage extends React.PureComponent<Props, State> {
         } else {
           const maxHeight = (maxAvailableTabletWidth - ALICE_CHESS_BOARDS_MARGIN * (boardCount - 1)) / boardCount / boardSidesRenderedRatio;
 
-          if (maxHeight >= availableTabletHeight * 0.8) {
+          if (maxHeight >= availableTabletHeight * 0.7) {
             gridMode = 'tablet';
             boardsWidth = maxAvailableTabletWidth;
             boardToShow = 'all';

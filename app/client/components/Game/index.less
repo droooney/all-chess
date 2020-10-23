@@ -112,7 +112,7 @@
       grid-area: actions;
 
       .buttons {
-        @button-size: 30px;
+        @button-size: 25px;
 
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(@button-size, 1fr));;
@@ -120,6 +120,7 @@
 
         .button {
           .flex();
+          .user-select(none);
 
           position: relative;
           line-height: @button-size;
@@ -157,8 +158,8 @@
             position: absolute;
             bottom: 0;
             right: 0;
-            width: 15px;
-            height: 15px;
+            width: 50%;
+            height: 50%;
 
             .piece {
               position: absolute;
