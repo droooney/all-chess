@@ -33,7 +33,7 @@ class ThreeCheckRules extends React.PureComponent<Props> {
 
         <GameEnd>
           <p>
-            Additional way to win the game is making 3 checks throughout the whole game.
+            Additional way to win the game is making 3 checks throughout the game.
           </p>
 
           <RulesExample

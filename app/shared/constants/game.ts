@@ -41,7 +41,7 @@ export const GAME_VARIANT_NAMES: EachVariant<string> = {
   [GameVariantEnum.KING_OF_THE_HILL]: 'King of the Hill',
   [GameVariantEnum.CIRCE]: 'Circe',
   [GameVariantEnum.PATROL]: 'Patrol chess',
-  [GameVariantEnum.MADRASI]: 'Madrasi',
+  [GameVariantEnum.MADRASI]: 'Madrasi chess',
   [GameVariantEnum.ALICE_CHESS]: 'Alice chess',
   [GameVariantEnum.TWO_FAMILIES]: 'Two Families',
   [GameVariantEnum.DARK_CHESS]: 'Dark chess',

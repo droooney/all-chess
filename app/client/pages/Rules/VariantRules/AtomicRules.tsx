@@ -66,31 +66,31 @@ export default class AtomicRules extends React.Component<Props> {
             That means that there are no checks in Atomic chess so a king may move into "check" and castle through an attacked square.
             But that also means that a king may not capture.
           </p>
+
+          <section>
+            <h3 id="capturing-en-passant">
+              Capturing en passant
+            </h3>
+
+            <p>
+              When a pawn is capturing en passant the explosion center is not the captured pawn square, but the capturing pawn destination square
+              (see <RulesExampleLink id="2" />).
+            </p>
+
+            <RulesExample
+              id="2"
+              description="Capturing en passant"
+              variants={[GameVariantEnum.ATOMIC]}
+              fen="r1bqkb1r/p1pnpppp/1p1p1n2/3P4/8/2N2N2/PPPBPPPP/R2QKB1R b KQkq - 0 5"
+              moves="5... e5 6. dxe6"
+              symbols={[
+                [],
+                ['d5->e6', 'e6:r', 'e6->d7:r', 'e6->f6:r', 'e5:r'],
+              ]}
+              gameRef={gameRef}
+            />
+          </section>
         </Moves>
-
-        <section>
-          <h3 id="capturing-en-passant">
-            Capturing en passant
-          </h3>
-
-          <p>
-            When a pawn is capturing en passant the explosion center is not the captured pawn square, but the capturing pawn destination square
-            (see <RulesExampleLink id="2" />).
-          </p>
-
-          <RulesExample
-            id="2"
-            description="Capturing en passant"
-            variants={[GameVariantEnum.ATOMIC]}
-            fen="r1bqkb1r/p1pnpppp/1p1p1n2/3P4/8/2N2N2/PPPBPPPP/R2QKB1R b KQkq - 0 5"
-            moves="5... e5 6. dxe6"
-            symbols={[
-              [],
-              ['d5->e6', 'e6:r', 'e6->d7:r', 'e6->f6:r', 'e5:r'],
-            ]}
-            gameRef={gameRef}
-          />
-        </section>
 
         <GameEnd>
           <p>

@@ -59,7 +59,9 @@ class TwoFamiliesRules extends React.PureComponent<Props> {
               Castling
             </h3>
 
-            Each king can castle only to its own side: the "e" king - with the "a" rook, the "g" king - with the "j" rook.
+            <p>
+              Each king can castle only to its own side: the "e" king - with the "a" rook, the "g" king - with the "j" rook.
+            </p>
           </section>
         </Moves>
 
