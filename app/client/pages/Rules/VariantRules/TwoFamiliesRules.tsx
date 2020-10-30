@@ -79,7 +79,7 @@ class TwoFamiliesRules extends React.PureComponent<Props> {
 
           <RulesExample
             id="2"
-            description="Black loses because their kings are forked"
+            description="Black loses because their kings are forked and the knight can't be captured"
             variants={[GameVariantEnum.TWO_FAMILIES]}
             fen="k3k5/10/10/1N8/4KK4/10/10/10 w - - 0 43"
             moves="43. Nc7#"
@@ -91,7 +91,7 @@ class TwoFamiliesRules extends React.PureComponent<Props> {
 
           <RulesExample
             id="3"
-            description="White loses because their kings are skewered"
+            description="White loses because their kings are skewered and the bishop can't be captured or blocked"
             variants={[GameVariantEnum.TWO_FAMILIES]}
             fen="10/10/10/4kk4/10/4b5/1K8/K9 b - - 0 44"
             moves="44... Bd4#"

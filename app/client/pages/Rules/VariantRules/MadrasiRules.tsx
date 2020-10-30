@@ -73,6 +73,11 @@ class MadrasiRules extends React.PureComponent<Props> {
             from={GameVariantEnum.MADRASI}
             to={GameVariantEnum.BENEDICT_CHESS}
           />
+
+          <CombinationLinkSection
+            from={GameVariantEnum.MADRASI}
+            to={GameVariantEnum.PATROL}
+          />
         </Combinations>
       </React.Fragment>
     );

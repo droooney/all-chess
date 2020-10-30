@@ -45,8 +45,9 @@ export default class GameInfo extends React.Component<Props> {
 
           <div className="variants">
             <span className="variants-header">
-              Variants:
+              Variants:{' '}
             </span>
+
             {game.variants.length ? game.variants.map((variant, index) => (
               <React.Fragment key={variant}>
                 {index !== 0 && ', '}
@@ -56,7 +57,7 @@ export default class GameInfo extends React.Component<Props> {
                   className="variant"
                 />
               </React.Fragment>
-            )) : ' none'}
+            )) : 'none'}
           </div>
 
           <div className={classNames('result', { aborted: status === GameStatusEnum.ABORTED })}>

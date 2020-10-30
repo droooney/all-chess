@@ -1,16 +1,23 @@
 // TODO: needs testing, add more logging
 
+import { Op } from 'sequelize';
+
 import { DEFAULT_RATING } from 'shared/constants';
+
+import { GameVariantEnum } from 'shared/types';
 
 import { Game as DBGame, User } from 'server/db/models';
 
 import Game from 'server/Game';
 
 (async () => {
-  const gameIds = process.argv.slice(2);
-  const games = await Promise.all(
-    gameIds.map((gameId) => DBGame.findByPk(gameId)),
-  );
+  const games = await DBGame.findAll({
+    where: {
+      variants: {
+        [Op.contains]: [GameVariantEnum.PATROL, GameVariantEnum.DARK_CHESS, GameVariantEnum.MADRASI],
+      },
+    },
+  });
 
   for (const game of games) {
     if (!game) {
@@ -78,6 +85,8 @@ import Game from 'server/Game';
       game.destroy(),
     ]);
   }
+
+  process.exit(0);
 })().catch((err) => {
   console.log(err);
 

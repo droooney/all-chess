@@ -55,6 +55,7 @@
 - remove allowed moves after the game
 - validate en passant square right
 - fix promotion modal for circular & hex
+- sort move visible pieces by id in dark chess
 
 ### Variants
 

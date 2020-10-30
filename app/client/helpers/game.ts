@@ -128,13 +128,13 @@ export class Game extends GameHelper {
     if (timeControl.type === TimeControlEnum.CORRESPONDENCE) {
       const days = POSSIBLE_CORRESPONDENCE_BASES_IN_DAYS[POSSIBLE_CORRESPONDENCE_BASES_IN_MILLISECONDS.indexOf(timeControl.base)];
 
-      return `${days} ${days === 1 ? 'day' : 'days'}`;
+      return `${days}\u00a0${days === 1 ? 'day' : 'days'}`;
     }
 
     const base = POSSIBLE_TIMER_BASES_IN_MINUTES[POSSIBLE_TIMER_BASES_IN_MILLISECONDS.indexOf(timeControl.base)];
     const increment = POSSIBLE_TIMER_INCREMENTS_IN_SECONDS[POSSIBLE_TIMER_INCREMENTS_IN_MILLISECONDS.indexOf(timeControl.increment)];
 
-    return `${base} + ${increment}`;
+    return `${base}\u00a0+\u00a0${increment}`;
   }
 
   player: Player | null;
@@ -234,7 +234,7 @@ export class Game extends GameHelper {
     const moves: (Move | DarkChessMove)[] = game.moves;
 
     if (this.isOngoingDarkChessGame && player) {
-      this.setPieces(this.getMoveVisiblePieces(this.currentMoveIndex, player.color));
+      this.setPieces(this.getMoveVisiblePieces(-1, player.color));
 
       moves.forEach((move) => {
         this.registerLocalDarkChessMove(move as DarkChessMove);

@@ -25,6 +25,7 @@ import CylinderRules from './VariantRules/CylinderRules';
 import HexagonalRules from './VariantRules/HexagonalRules';
 import KOTHRules from './VariantRules/KOTHRules';
 import MadrasiRules from './VariantRules/MadrasiRules';
+import PatrolRules from './VariantRules/PatrolRules';
 import RetreatRules from './VariantRules/RetreatRules';
 import ThreeCheckRules from './VariantRules/ThreeCheckRules';
 import TwoFamiliesRules from './VariantRules/TwoFamiliesRules';
@@ -52,6 +53,7 @@ const VARIANT_RULES: Partial<EachVariant<React.ComponentType<{ gameRef(game: Gam
   [GameVariantEnum.HEXAGONAL_CHESS]: HexagonalRules,
   [GameVariantEnum.CRAZYHOUSE]: CrazyhouseRules,
   [GameVariantEnum.MADRASI]: MadrasiRules,
+  [GameVariantEnum.PATROL]: PatrolRules,
 };
 
 export default class VariantRules extends React.Component<Props> {

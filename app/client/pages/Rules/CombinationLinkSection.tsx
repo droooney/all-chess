@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { GAME_VARIANT_NAMES } from 'shared/constants';
+import { GAME_VARIANT_LINKS, GAME_VARIANT_NAMES } from 'shared/constants';
 
 import { GameVariantEnum } from 'shared/types';
 
@@ -26,7 +26,7 @@ class CombinationLinkSection extends React.PureComponent<Props> {
         <p>
           See{' '}
 
-          <RulesSectionLink variant={to} section={`combinations-${from}`}>
+          <RulesSectionLink variant={to} section={`combination-${GAME_VARIANT_LINKS[from]}`}>
             {GAME_VARIANT_NAMES[to]} + {GAME_VARIANT_NAMES[from]}
           </RulesSectionLink>.
         </p>

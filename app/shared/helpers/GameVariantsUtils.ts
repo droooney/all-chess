@@ -134,6 +134,10 @@ export default class GameVariantsUtils extends GameCommonUtils {
         && !isKingOfTheHill
       )
     ) && (
+      !isDarkChess
+      || !isPatrol
+      || !isMadrasi
+    ) && (
       !isCirce
       || (
         !is960
