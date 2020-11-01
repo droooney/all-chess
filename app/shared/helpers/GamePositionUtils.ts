@@ -22,6 +22,7 @@ const FEN_DIGITS_REGEX = /^\d+$/;
 const FEN_CASTLING_REGEX = /^[kq]+$/i;
 const FEN_CHECKS_COUNT_REGEX = /^\+([0-3])\+([0-3])$/i;
 const FEN_SQUARE_REGEX = /^[a-w]\d+$/;
+const FEN_PIECE_REGEX = /^([a-w])(~)?(!)?/i;
 
 export default abstract class GamePositionUtils extends GameCastlingUtils {
   static getStartingDataFromFen(fen: string, variants: readonly GameVariantEnum[]): StartingData {
@@ -142,7 +143,8 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
       color: ColorEnum,
       type: PieceTypeEnum,
       location: RealPieceLocation,
-      originalType: PieceTypeEnum = type,
+      originalType: PieceTypeEnum,
+      abilities: PieceTypeEnum | null,
     ) => {
       pieces.push({
         id: `${++id}`,
@@ -150,7 +152,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
         originalType,
         color,
         moved: false,
-        abilities: null,
+        abilities,
         location,
       } as RealPiece);
     };
@@ -177,23 +179,35 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
             file += +emptySquaresMatch[0];
             string = string.slice(emptySquaresMatch[0].length);
           } else {
-            const character = string[0];
-            const piece = GamePositionUtils.getPieceFromLiteral(character);
+            const pieceMatch = string.match(FEN_PIECE_REGEX);
 
-            if (!piece) {
-              throw new Error(`Invalid FEN: wrong piece literal (${character})`);
+            if (!pieceMatch) {
+              throw new Error(`Invalid FEN: wrong piece literal (${string[0]})`);
             }
 
-            let originalPieceType = piece.type;
+            const [pieceString, pieceLiteral, isPawnOriginally, isRoyal] = pieceMatch;
+            const piece = GamePositionUtils.getPieceFromLiteral(pieceLiteral);
 
-            if (string[1] === '~') {
+            if (!piece) {
+              throw new Error(`Invalid FEN: wrong piece literal (${pieceLiteral})`);
+            }
+
+            let pieceType = piece.type;
+            let originalPieceType = pieceType;
+            let abilities: PieceTypeEnum | null = null;
+
+            if (isPawnOriginally) {
               originalPieceType = PieceTypeEnum.PAWN;
-              string = string.slice(1);
+            }
+
+            if (isRoyal) {
+              abilities = pieceType;
+              pieceType = PieceTypeEnum.KING;
             }
 
             addPiece(
               piece.color,
-              piece.type,
+              pieceType,
               {
                 type: PieceLocationEnum.BOARD,
                 board,
@@ -201,10 +215,11 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
                 y: rank,
               },
               originalPieceType,
+              abilities,
             );
 
             file += 1;
-            string = string.slice(1);
+            string = string.slice(pieceString.length);
           }
         }
 
@@ -231,6 +246,8 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
               pieceType: piece.type,
               color: piece.color,
             },
+            piece.type,
+            null,
           );
         }
       }
@@ -345,7 +362,9 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
           if (pieceInSquare) {
             putEmptySpacesIfNeeded();
 
-            const pieceLiteral = GamePositionUtils.getPieceFullLiteral(pieceInSquare);
+            const pieceLiteral = GamePositionUtils.getPieceLiteral(
+              pieceInSquare.abilities || pieceInSquare.type,
+            );
 
             rankString += pieceInSquare.color === ColorEnum.WHITE
               ? pieceLiteral
@@ -357,6 +376,12 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
               && !GamePositionUtils.isPawn(pieceInSquare)
             ) {
               rankString += '~';
+            } else if (
+              this.isFrankfurt
+              && GamePositionUtils.isKing(pieceInSquare)
+              && pieceInSquare.abilities
+            ) {
+              rankString += '!';
             }
           } else {
             emptySpaces++;
@@ -374,7 +399,7 @@ export default abstract class GamePositionUtils extends GameCastlingUtils {
           this.pieces
             .filter(GamePositionUtils.isPocketPiece)
             .map((piece) => {
-              const pieceLiteral = GamePositionUtils.getPieceFullLiteral(piece);
+              const pieceLiteral = GamePositionUtils.getPieceLiteral(piece.type);
 
               return piece.color === ColorEnum.WHITE
                 ? pieceLiteral

@@ -56,6 +56,8 @@
 - validate en passant square right
 - fix promotion modal for circular & hex
 - sort move visible pieces by id in dark chess
+- fix correspondence games time after server restart
+- remove piece.abilities (use piece.originalType == KING for royal pieces in frankfurt and absorption)
 
 ### Variants
 

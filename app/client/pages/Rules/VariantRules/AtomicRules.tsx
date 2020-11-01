@@ -73,7 +73,7 @@ export default class AtomicRules extends React.Component<Props> {
             </h3>
 
             <p>
-              When a pawn is capturing en passant the explosion center is not the captured pawn square, but the capturing pawn destination square
+              When a pawn captures en passant the explosion center is not the captured pawn square, but the capturing pawn destination square
               (see <RulesExampleLink id="2" />).
             </p>
 

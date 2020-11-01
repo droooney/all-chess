@@ -412,7 +412,7 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
       }
 
       const rankY = this.adjustRankY(pieceY + forwardDirection);
-      const square = {
+      const square: Square = {
         board,
         x: pieceX,
         y: rankY,
@@ -425,9 +425,18 @@ export default abstract class GameMovesUtils extends GamePositionUtils {
         if (!pieceInSquare || onlyVisible || onlyPremove) {
           yield square;
 
-          if ((!pieceInSquare || onlyPremove) && this.isPawnInitialRank(piece.location, pieceColor)) {
+          if (
+            (!pieceInSquare || onlyPremove)
+            && this.isPawnInitialRank(piece.location, pieceColor)
+            && (
+              !isKing
+              || !forMove
+              || this.isLeftInCheckAllowed
+              || !this.isAttackedByOpponentPiece(square, opponentColor)
+            )
+          ) {
             // 2-forward move
-            const square = {
+            const square: Square = {
               board,
               x: pieceX,
               y: rankY + forwardDirection,

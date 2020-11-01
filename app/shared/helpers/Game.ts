@@ -1,7 +1,7 @@
 import findKey from 'lodash/findKey';
 import last from 'lodash/last';
 
-import { COLOR_NAMES, GAME_VARIANT_PGN_NAMES } from 'shared/constants';
+import { GAME_VARIANT_PGN_NAMES } from 'shared/constants';
 
 import {
   CastlingTypeEnum,
@@ -265,7 +265,6 @@ export class Game extends GameTimeUtils implements IGame {
         const isDrop = !!drop;
         const isCastling = moveSquares.includes('O-O');
         const isQueenSideCastling = !!queenSideCastling;
-        // TODO: fix piece parsing for absorption/frankfurt
         const pieceFromLiteral = Game.getPieceFromLiteral(isCastling ? 'K' : pieceLiteral || 'P');
 
         if (!pieceFromLiteral) {
@@ -444,6 +443,8 @@ export class Game extends GameTimeUtils implements IGame {
       boardHeight,
     } = Game.getBoardDimensions(variants);
 
+    // TODO: validate pawns on the first rank
+
     // not promoted pawns
     startingData.pieces.forEach((piece) => {
       if (
@@ -484,6 +485,8 @@ export class Game extends GameTimeUtils implements IGame {
       }
     });
 
+    // TODO: validate pieces and abilities according to variants
+
     // king may be captured
     const game = new Game({
       timeControl: null,
@@ -503,12 +506,6 @@ export class Game extends GameTimeUtils implements IGame {
 
     if (game.isNoMoves()) {
       throw new Error('Invalid FEN: no legal moves');
-    }
-
-    const opponentColor = Game.getOppositeColor(game.turn);
-
-    if (!game.getPieces(opponentColor).length) {
-      throw new Error(`Invalid FEN: no pieces (${COLOR_NAMES[opponentColor]})`);
     }
   }
 

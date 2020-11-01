@@ -99,14 +99,6 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
     };
   }
 
-  static getPieceFullLiteral(piece: Piece): string {
-    const pieceLiteral = GamePieceUtils.getPieceLiteral(piece.type);
-
-    return piece.abilities
-      ? `${pieceLiteral}(${GamePieceUtils.getPieceLiteral(piece.abilities)})`
-      : pieceLiteral;
-  }
-
   static getPieceTypeAfterAbsorption(originalPiece: Piece, absorbedPiece: Piece): Pick<Piece, 'type' | 'abilities'> {
     if (GamePieceUtils.isKing(originalPiece)) {
       if (GamePieceUtils.isKing(absorbedPiece)) {

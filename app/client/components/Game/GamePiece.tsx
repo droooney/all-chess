@@ -17,6 +17,8 @@ interface OwnProps {
 
 type Props = OwnProps;
 
+const CORNER_CIRCLE_STROKE_WIDTH = 1;
+
 export default class GamePiece extends React.Component<Props> {
   render() {
     const {
@@ -25,10 +27,10 @@ export default class GamePiece extends React.Component<Props> {
       className,
       originalPieceClassName,
     } = this.props;
-    const cornerPieceSize = pieceSize * 2 / 7;
+    const cornerPieceSize = pieceSize * 0.3;
     const originalPieceCoords = {
-      x: pieceSize - cornerPieceSize,
-      y: pieceSize - cornerPieceSize,
+      x: pieceSize - cornerPieceSize - CORNER_CIRCLE_STROKE_WIDTH,
+      y: pieceSize - cornerPieceSize - CORNER_CIRCLE_STROKE_WIDTH,
     };
 
     return (
@@ -49,7 +51,9 @@ export default class GamePiece extends React.Component<Props> {
               cy={originalPieceCoords.y + cornerPieceSize / 2}
               r={cornerPieceSize / 2}
               className={classNames('original-piece', originalPieceClassName)}
+              strokeWidth={CORNER_CIRCLE_STROKE_WIDTH}
             />
+
             <Piece
               {...originalPieceCoords}
               width={cornerPieceSize}
