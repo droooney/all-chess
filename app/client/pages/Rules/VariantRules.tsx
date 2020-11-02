@@ -13,6 +13,7 @@ import { Game } from 'client/helpers';
 
 import DocumentTitle from 'client/components/DocumentTitle';
 
+import AbsorptionRules from './VariantRules/AbsorptionRules';
 import AntichessRules from './VariantRules/AntichessRules';
 import AtomicRules from './VariantRules/AtomicRules';
 import BenedictRules from './VariantRules/BenedictRules';
@@ -35,8 +36,7 @@ type Props = RouteComponentProps<{ gameLink: string; }>;
 
 const EXAMPLE_BOARDS_ON_SCREEN_THRESHOLD = 0.9;
 
-// TODO: medium: patrol
-// TODO: hard: alice, dark, absorb, frankfurt, comp
+// TODO: alice, dark, comp
 
 const VARIANT_RULES: Partial<EachVariant<React.ComponentType<{ gameRef(game: Game): void; }>>> = {
   [GameVariantEnum.CHESS_960]: Chess960Rules,
@@ -56,6 +56,7 @@ const VARIANT_RULES: Partial<EachVariant<React.ComponentType<{ gameRef(game: Gam
   [GameVariantEnum.MADRASI]: MadrasiRules,
   [GameVariantEnum.PATROL]: PatrolRules,
   [GameVariantEnum.FRANKFURT]: FrankfurtRules,
+  [GameVariantEnum.ABSORPTION]: AbsorptionRules,
 };
 
 export default class VariantRules extends React.Component<Props> {
