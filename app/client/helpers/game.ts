@@ -284,6 +284,17 @@ export class Game extends GameHelper {
           ) {
             lastMove.duration = move.duration;
 
+            if (this.needToChangeTime()) {
+              const prevTurn = this.getOpponentColor();
+              const pieces = this.pieces;
+
+              this.players[prevTurn].time = lastMove.timeBeforeMove[prevTurn];
+
+              this.setPieces(this.piecesBeforePremoves);
+              this.changePlayerTime();
+              this.setPieces(pieces);
+            }
+
             this.updateGame();
 
             return;
@@ -635,19 +646,19 @@ export class Game extends GameHelper {
   }
 
   getLocalVisibleSquares(color: ColorEnum): Square[] {
-    if (this.premoves.length) {
-      const pieces = this.pieces;
-
-      this.setPieces(this.piecesBeforePremoves);
-
-      const visibleSquares = this.getVisibleSquares(color);
-
-      this.setPieces(pieces);
-
-      return visibleSquares;
+    if (!this.premoves.length) {
+      return this.getVisibleSquares(color);
     }
 
-    return this.getVisibleSquares(color);
+    const pieces = this.pieces;
+
+    this.setPieces(this.piecesBeforePremoves);
+
+    const visibleSquares = this.getVisibleSquares(color);
+
+    this.setPieces(pieces);
+
+    return visibleSquares;
   }
 
   getMovePieces(moveIndex: number): Dictionary<Piece> {

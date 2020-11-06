@@ -4,8 +4,6 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 
-import { STANDARD_FEN } from 'client/constants';
-
 import { fetch } from 'client/helpers';
 
 import { setUserData } from 'client/actions';
@@ -52,18 +50,6 @@ class Header extends React.Component<Props> {
           </Link>
         </div>
         <div className="right-header-block">
-          <Link
-            to={{
-              pathname: '/editor',
-              search: qs.stringify({
-                fen: STANDARD_FEN,
-                variants: '',
-              }),
-            }}
-            style={{ marginRight: 20 }}
-          >
-            Editor
-          </Link>
           <Link to="/rules" style={{ marginRight: 20 }}>
             Rules
           </Link>

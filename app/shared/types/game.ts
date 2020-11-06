@@ -240,6 +240,10 @@ export interface DarkChessGame extends CommonGameData {
   moves: DarkChessMove[];
 }
 
+export interface ClockGame extends Game {
+  timeControl: NonNullable<TimeControl>;
+}
+
 export interface GameInitialData {
   timestamp: number;
   player: Player | null;

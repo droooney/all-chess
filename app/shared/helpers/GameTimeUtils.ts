@@ -3,6 +3,7 @@ import last from 'lodash/last';
 import { DEFAULT_RATING } from 'shared/constants';
 
 import {
+  ClockGame,
   ColorEnum,
   GameCreateOptions,
   GamePlayers,
@@ -48,36 +49,48 @@ export default class GameTimeUtils extends GameResultUtils {
   }
 
   changePlayerTime() {
-    if (this.needToChangeTime() && this.timeControl) {
-      const prevTurn = this.getOpponentColor();
-      const player = this.players[prevTurn];
-      const {
-        duration,
-        prevPiecesWorth,
-      } = last(this.getUsedMoves())!;
+    if (!this.needToChangeTime()) {
+      return;
+    }
 
-      if (this.isFinished()) {
-        player.time! -= duration;
-      } else if (this.timeControl.type === TimeControlEnum.TIMER) {
-        player.time! -= duration - this.timeControl.increment;
+    const prevTurn = this.getOpponentColor();
+    const player = this.players[prevTurn];
+    const lastMove = last(this.getUsedMoves());
 
-        if (this.isCompensationChess) {
-          const newPiecesWorth = this.getPiecesWorth();
-          const gainedMaterial = newPiecesWorth[player.color] - prevPiecesWorth[player.color];
-          const takenMaterial = prevPiecesWorth[this.turn] - newPiecesWorth[this.turn];
+    if (player.time === null || !lastMove) {
+      return;
+    }
 
-          player.time! -= (gainedMaterial + takenMaterial) * this.pawnTimeValue;
-        }
-      } else {
-        player.time = this.timeControl.base;
+    const {
+      duration,
+      prevPiecesWorth,
+    } = lastMove;
+
+    player.time -= duration;
+
+    if (this.timeControl.type === TimeControlEnum.TIMER) {
+      if (this.isCompensationChess) {
+        const newPiecesWorth = this.getPiecesWorth();
+        const gainedMaterial = newPiecesWorth[player.color] - prevPiecesWorth[player.color];
+        const takenMaterial = prevPiecesWorth[this.turn] - newPiecesWorth[this.turn];
+
+        player.time -= (gainedMaterial + takenMaterial) * this.pawnTimeValue;
       }
 
-      player.time = Math.max(player.time!, 0);
+      if (!this.isFinished()) {
+        player.time += this.timeControl.increment;
+      }
+
+      if (player.time < 0) {
+        player.time = 0;
+      }
+    } else if (!this.isFinished()) {
+      player.time = this.timeControl.base;
     }
   }
 
-  needToChangeTime(): boolean {
-    return this.getUsedMoves().length > 2;
+  needToChangeTime(): this is ClockGame {
+    return !!this.timeControl && this.getUsedMoves().length > 2;
   }
 
   setupStartingData() {

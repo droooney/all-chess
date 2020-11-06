@@ -21,6 +21,7 @@ import CapablancaRules from './VariantRules/CapablancaRules';
 import Chess960Rules from './VariantRules/Chess960Rules';
 import CirceRules from './VariantRules/CirceRules';
 import CircularRules from './VariantRules/CircularRules';
+import CompensationChess from './VariantRules/CompensationChess';
 import CrazyhouseRules from './VariantRules/CrazyhouseRules';
 import CylinderRules from './VariantRules/CylinderRules';
 import FrankfurtRules from './VariantRules/FrankfurtRules';
@@ -36,7 +37,7 @@ type Props = RouteComponentProps<{ gameLink: string; }>;
 
 const EXAMPLE_BOARDS_ON_SCREEN_THRESHOLD = 0.9;
 
-// TODO: alice, dark, comp
+// TODO: alice, dark
 
 const VARIANT_RULES: Partial<EachVariant<React.ComponentType<{ gameRef(game: Game): void; }>>> = {
   [GameVariantEnum.CHESS_960]: Chess960Rules,
@@ -57,6 +58,7 @@ const VARIANT_RULES: Partial<EachVariant<React.ComponentType<{ gameRef(game: Gam
   [GameVariantEnum.PATROL]: PatrolRules,
   [GameVariantEnum.FRANKFURT]: FrankfurtRules,
   [GameVariantEnum.ABSORPTION]: AbsorptionRules,
+  [GameVariantEnum.COMPENSATION_CHESS]: CompensationChess,
 };
 
 export default class VariantRules extends React.Component<Props> {

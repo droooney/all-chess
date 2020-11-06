@@ -619,12 +619,15 @@ export default class Game extends GameHelper {
 
     const player = this.players[this.turn];
 
-    if (reason !== ResultReasonEnum.SELF_TIMEOUT) {
-      if (reason === ResultReasonEnum.TIMEOUT || reason === ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT) {
-        player.time = 0;
-      } else if (this.timeControl && this.timerTimeout) {
-        player.time! -= Date.now() - this.lastMoveTimestamp;
-      }
+    if (reason === ResultReasonEnum.TIMEOUT || reason === ResultReasonEnum.INSUFFICIENT_MATERIAL_AND_TIMEOUT) {
+      player.time = 0;
+    } else if (
+      this.timeControl
+      && this.timerTimeout
+      && player.time !== null
+      && (reason === ResultReasonEnum.AGREED_TO_DRAW || reason === ResultReasonEnum.RESIGN)
+    ) {
+      player.time = Math.max(player.time - (Date.now() - this.lastMoveTimestamp), 0);
     }
 
     if (this.isLive) {
@@ -696,6 +699,8 @@ export default class Game extends GameHelper {
               blackPlayer.save(),
             ]);
           }
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 0));
         }
 
         this.io?.emit('gameOver', {
@@ -708,7 +713,9 @@ export default class Game extends GameHelper {
         }
 
         await this.saveToDB();
-      })();
+      })().catch((err) => {
+        console.log('End game error', err);
+      });
     }
 
     this.clearPingTimeout();
@@ -749,8 +756,7 @@ export default class Game extends GameHelper {
       return;
     }
 
-    const newTimestamp = Date.now();
-    const serverMoveDuration = newTimestamp - this.lastMoveTimestamp;
+    const serverMoveDuration = Date.now() - this.lastMoveTimestamp;
     const pingTimes = this.playerPingTimes[player.color];
     const averagePing = Math.round(this.playerPingTimes[player.color].reduce(
       (sum, ping) => sum + ping,
@@ -769,7 +775,7 @@ export default class Game extends GameHelper {
     this.registerAnyMove(move, false);
     this.changePlayerTime();
 
-    this.lastMoveTimestamp = newTimestamp;
+    this.lastMoveTimestamp = Date.now();
 
     if (this.isDarkChess) {
       forEach(this.io?.sockets || {}, (socket) => {
@@ -791,7 +797,7 @@ export default class Game extends GameHelper {
       });
     }
 
-    if (player.time === 0) {
+    if (player.time === 0 && !this.isFinished()) {
       this.end(this.turn, ResultReasonEnum.SELF_TIMEOUT);
 
       return;
@@ -946,7 +952,7 @@ export default class Game extends GameHelper {
 
     const player = this.players[this.turn];
 
-    if (this.timeControl && needToUpdateTime) {
+    if (needToUpdateTime) {
       player.time = move.timeBeforeMove[player.color];
     }
 

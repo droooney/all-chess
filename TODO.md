@@ -41,6 +41,7 @@
 - optimize fetching players for correspondence (id: in ids)
 - remove prepareDarkChessMoveForClient
 - remove piece.moved
+- improve variants overview (describe variant and best combinations)
 
 ### Bugs/Important Features or Improvements
 
@@ -58,6 +59,7 @@
 - sort move visible pieces by id in dark chess
 - fix correspondence games time after server restart
 - remove piece.abilities (use piece.originalType == KING for royal pieces in frankfurt and absorption)
+- fix self timeout + checkmate/etc in comp
 
 ### Variants
 

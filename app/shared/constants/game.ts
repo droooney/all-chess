@@ -14,6 +14,18 @@ import {
 
 export const ONE_DAY = 24 * 60 * 60 * 1000;
 
+export const PIECE_NAMES: EachPieceType<string> = {
+  [PieceTypeEnum.KING]: 'King',
+  [PieceTypeEnum.AMAZON]: 'Amazon',
+  [PieceTypeEnum.QUEEN]: 'Queen',
+  [PieceTypeEnum.EMPRESS]: 'Empress',
+  [PieceTypeEnum.CARDINAL]: 'Cardinal',
+  [PieceTypeEnum.ROOK]: 'Rook',
+  [PieceTypeEnum.BISHOP]: 'Bishop',
+  [PieceTypeEnum.KNIGHT]: 'Knight',
+  [PieceTypeEnum.PAWN]: 'Pawn',
+};
+
 export const SHORT_PIECE_NAMES: EachPieceType<string> = {
   [PieceTypeEnum.KING]: 'K',
   [PieceTypeEnum.AMAZON]: 'A',

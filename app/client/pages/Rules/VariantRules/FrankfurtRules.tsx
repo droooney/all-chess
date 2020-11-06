@@ -7,6 +7,7 @@ import { Game } from 'client/helpers';
 import GameVariantLinks from 'client/components/GameVariantLinks';
 
 import Combination from '../Combination';
+import CombinationLinkSection from '../CombinationLinkSection';
 import Combinations from '../Combinations';
 import Moves from '../Moves';
 import Overview from '../Overview';
@@ -111,6 +112,11 @@ class FrankfurtRules extends React.PureComponent<Props> {
               In Frankfurt chess + Madrasi chess a royal piece is paralysed only if it's attacked by the same royal piece.
             </p>
           </Combination>
+
+          <CombinationLinkSection
+            from={GameVariantEnum.FRANKFURT}
+            to={GameVariantEnum.COMPENSATION_CHESS}
+          />
         </Combinations>
       </React.Fragment>
     );

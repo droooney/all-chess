@@ -150,6 +150,11 @@ export default class AtomicRules extends React.Component<Props> {
             from={GameVariantEnum.ATOMIC}
             to={GameVariantEnum.TWO_FAMILIES}
           />
+
+          <CombinationLinkSection
+            from={GameVariantEnum.ATOMIC}
+            to={GameVariantEnum.COMPENSATION_CHESS}
+          />
         </Combinations>
       </React.Fragment>
     );
