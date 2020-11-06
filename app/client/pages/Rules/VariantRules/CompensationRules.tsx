@@ -37,7 +37,7 @@ const TableHeaderCell = styled(TableCell)({
   fontWeight: 'bold',
 });
 
-class CompensationChess extends React.PureComponent<Props> {
+class CompensationRules extends React.PureComponent<Props> {
   render() {
     const {
       gameRef,
@@ -180,4 +180,4 @@ class CompensationChess extends React.PureComponent<Props> {
   }
 }
 
-export default CompensationChess;
+export default CompensationRules;

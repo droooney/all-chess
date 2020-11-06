@@ -21,7 +21,7 @@ import CapablancaRules from './VariantRules/CapablancaRules';
 import Chess960Rules from './VariantRules/Chess960Rules';
 import CirceRules from './VariantRules/CirceRules';
 import CircularRules from './VariantRules/CircularRules';
-import CompensationChess from './VariantRules/CompensationChess';
+import CompensationRules from './VariantRules/CompensationRules';
 import CrazyhouseRules from './VariantRules/CrazyhouseRules';
 import CylinderRules from './VariantRules/CylinderRules';
 import FrankfurtRules from './VariantRules/FrankfurtRules';
@@ -58,7 +58,7 @@ const VARIANT_RULES: Partial<EachVariant<React.ComponentType<{ gameRef(game: Gam
   [GameVariantEnum.PATROL]: PatrolRules,
   [GameVariantEnum.FRANKFURT]: FrankfurtRules,
   [GameVariantEnum.ABSORPTION]: AbsorptionRules,
-  [GameVariantEnum.COMPENSATION_CHESS]: CompensationChess,
+  [GameVariantEnum.COMPENSATION_CHESS]: CompensationRules,
 };
 
 export default class VariantRules extends React.Component<Props> {
