@@ -440,19 +440,12 @@ export default abstract class GamePieceUtils extends GameTurnUtils {
   }
 
   isPromoting(piece: Piece, square: Square): boolean {
-    const pieceInSquare = this.getBoardPiece(square);
-
     return (
-      GamePieceUtils.isPawn(piece)
-      && this.isLastRank(square, piece.color)
-      && (
-        !this.isFrankfurt
-        || !pieceInSquare
-        || GamePieceUtils.isPawn(pieceInSquare)
-        || (
-          GamePieceUtils.isBoardPiece(piece)
-          && piece.location.x - square.x === 0
-        )
+      this.isLastRank(square, piece.color)
+      && GamePieceUtils.isPawn(
+        this.isFrankfurt
+          ? this.getBoardPiece(square) || piece
+          : piece,
       )
     );
   }
