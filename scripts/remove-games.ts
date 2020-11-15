@@ -14,7 +14,7 @@ import Game from 'server/Game';
   const games = await DBGame.findAll({
     where: {
       variants: {
-        [Op.contains]: [GameVariantEnum.PATROL, GameVariantEnum.DARK_CHESS, GameVariantEnum.MADRASI],
+        [Op.contains]: [GameVariantEnum.HEXAGONAL_CHESS, GameVariantEnum.FRANKFURT],
       },
     },
   });
