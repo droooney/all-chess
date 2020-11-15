@@ -35,7 +35,7 @@
     "lint:fix": "eslint . --ext .ts --ext .tsx --fix",
 
     "ts:check": "tsc --noEmit",
-    "ts:run": "ts-node -r tsconfig-paths/register"
+    "ts:run": "ts-node --transpile-only -r tsconfig-paths/register"
   },
   "alias": {
     "client": "./app/client",
