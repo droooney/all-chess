@@ -101,7 +101,7 @@ class BenedictRules extends React.PureComponent<Props> {
             </p>
 
             <RulesExample
-              id="2"
+              id="3"
               description="After Qh5 the queen is not patrolled on h5 so it doesn't flip any pieces"
               variants={[GameVariantEnum.BENEDICT_CHESS, GameVariantEnum.PATROL]}
               fen="rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 2 2"
