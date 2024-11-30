@@ -110,7 +110,7 @@
     "@types/validator": "^13.1.0",
     "@typescript-eslint/parser": "^4.4.1",
     "autoprefixer": "^9.8.5",
-    "browserslist": "^4.13.0",
+    "browserslist": "^4.16.5",
     "caniuse-lite": "^1.0.30001102",
     "core-js": "^2.6.11",
     "eslint": "^7.11.0",
