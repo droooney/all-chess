@@ -195,7 +195,7 @@ export default abstract class GameResultUtils extends GameDarkChessUtils {
       return opponentPieces.some((piece) => (
         GameResultUtils.isPawn(piece)
         || GameResultUtils.isKnight(piece)
-        || (GameResultUtils.isBishop(piece) && this.getSquareColor(piece.location) === bishopColor)
+        || (GameResultUtils.isBishop(piece) && this.getSquareColor(piece.location) !== bishopColor)
         || GameResultUtils.isCardinal(piece)
       ));
     }

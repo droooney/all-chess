@@ -14,7 +14,6 @@ import {
   GameVariantEnum,
   Move,
   PGNTags,
-  PieceLocationEnum,
   PieceTypeEnum,
   RealPiece,
   ResultReasonEnum,
@@ -284,7 +283,7 @@ export class Game extends GameTimeUtils implements IGame {
           const kings = game.kings[game.turn];
           const king = isQueenSideCastling ? kings[0] : last(kings);
 
-          if (!king || !king.location || king.location.type !== PieceLocationEnum.BOARD) {
+          if (!king || !Game.isBoardPiece(king)) {
             throw new Error('Invalid PGN: wrong castling move');
           }
 
